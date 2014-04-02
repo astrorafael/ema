@@ -1,0 +1,10 @@
+/var/log/emad.log
+{
+        weekly
+        copytruncate
+        missingok
+        rotate 7
+        compress
+        notifempty
+}
+
