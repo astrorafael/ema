@@ -1,6 +1,8 @@
 #!/bin/sh
-# WebIOPi setup script
+# EMA setup script
 
+# Only needed for standalone deployment
+# I use Ansible, instead
 
 # Preresuisites python2.7 and setuptools
 
@@ -54,7 +56,7 @@ do
   chmod 0755 /usr/local/bin/$script
 done
 
-# Display WebIOPi usages
+# Display EMA usages
 echo
 echo "EMA successfully installed"
 echo "* To start EMA daemon in the foreground\t: sudo emad [-h]"
