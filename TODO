@@ -2,4 +2,4 @@
 using an API (using requests or grequest). 
 It should be designed as a nonbocking I/O not to disrupt server heartbeat.
 Maybe a separate process o thread using a queue (ZeroMQ?)
-
+2) Use Jinja2 to generate HTML
