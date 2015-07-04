@@ -48,7 +48,7 @@ if opts.log_file:
     logToFile(opts.log_file)
     
 
-logging.getLogger().info("Starting %s" % VERSION_STRING)
+logging.getLogger().info("Starting debuggin version of %s" % VERSION_STRING)
 server = EMAServer(opts.config or CONFIGFILE)
 server.run()    # Looping  until exception is caught
 server.stop()
