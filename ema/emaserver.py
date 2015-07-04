@@ -44,6 +44,7 @@ import os
 import logger
 import serdriver
 import udpdriver
+import mqttclient
 import server
 import notifier
 import genpage
@@ -154,6 +155,19 @@ class EMAServer(server.Server):
 		self.udpdriver = udpdriver.UDPDriver(ip, rx_port, tx_port, **opts)
 		self.udpdriver.addHandler(self)
 		self.addReadable(self.udpdriver)
+
+		# MQTT Driver object 
+ 		mqtt_host    = config.get("MQTT", "mqtt_host")
+                mqtt_port    = config.getint("MQTT", "mqtt_port")
+                mqtt_timeout = config.getint("MQTT", "mqtt_timeout")
+		lvl = config.get("MQTT", "mqtt_log")
+                mqttclient.setLogLevel(parseLogLevel(lvl))
+
+		self.mqttclient = mqttclient.MQTTClient(mqtt_host, mqtt_port,**opts)
+		#self.mqtt.addHandler(self)
+		#self.addLazy(self.mqttclient)
+		#self.addReadable(self.mqttclient)
+		#self.addWritable(self.mqttclient)
 
 		# Builds RTC Object
 		deltaT = config.getint("RTC", "rtc_delta")   
