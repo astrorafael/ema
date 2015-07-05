@@ -30,7 +30,7 @@ import paho.mqtt.client as mqtt
 from server import Lazy
 
 
-log = logging.getLogger('mqttclien')
+log = logging.getLogger('mqttadapt')
 
 def setLogLevel(level):
     log.setLevel(level)
@@ -38,67 +38,93 @@ def setLogLevel(level):
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
-   userdata.on_connect(client, flags, rc)
+   userdata.on_connect(flags, rc)
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
-    userdata.on_message(client, msg)
+    userdata.on_message(msg)
 
 
 class MQTTClient(Lazy):
 
    NSTATS = 1000  # Print number of reads each NSTATs times
+   NOT_CONNECTED = 0
+   CONNECTING    = 1
+   CONNECTED     = 2
+   FAILED        = 3
+   DISCONNECTING = 4
 	
-   def __init__(self, host, port, **kargs):
+   def __init__(self, ema, host, port, **kargs):
       Lazy.__init__(self)
+      self.__state = MQTTClient.NOT_CONNECTED
+      self.ema   = ema
       self.__host  = host
       self.__port  = port
       self.__timeout = 60
-      self.__client =  mqtt.Client(client_id="EMA@crispi", userdata=self)
-      self.__client.on_connect = on_connect
-      self.__client.on_message = on_message
-      
-      # An EMA message, surronded by brackets
-      try:
-        self.__client.connect(host, port, self.__timeout)
-      except Exception, e:
-         log.error("Could not contact MQTT Server %s: %s", self.__host, self.__port, e)
-         raise
-      log.info("Connected to MQTT Server %s:%s", self.__host, self.__port)
+      self.__mqtt =  mqtt.Client(client_id="EMA@crispi", userdata=self)
+      self.__mqtt.on_connect = on_connect
+      self.__mqtt.on_message = on_message
+      ema.addLazy(self)
+      log.info("MQTT client created")
 
    # ----------------------------------------
    # MQTT Callbacks
    # -----------------------------------------
-   def on_connect(self, client, flags, rc):
-     log.debug("Connected with result code "+str(rc))
-     # Subscribing in on_connect() means that if we lose the connection and
-     # reconnect then subscriptions will be renewed.
-     client.subscribe("$SYS/#")
+
+   def on_connect(self, flags, rc):
+     if rc == 0:
+       self.__state = MQTTClient.CONNECTED
+       log.info("MQTT client conected successfully") 
+       # Subscribing in on_connect() means that if we lose the connection and
+       # reconnect then subscriptions will be renewed.
+       #self.__mqtt.subscribe("$SYS/#")
+     else:
+       self.__state = MQTTClient.FAILED
+       log.error("MQTT client connection failed, rc =%d" % rc)
+
    
-   def on_message(self, client, msg):
+   def on_message(self,  msg):
      log.debug("Topic: %s , Payload: %s" % (msg.topic, msg.payload))
 
 
+   # ---------------------------------
+   # Implement the Event I/O Interface
+   # ---------------------------------
+
+   def onInput(self):
+      '''
+      Read from message buffer and notify handlers if message complete.
+      Called from Server object
+      '''
+      log.debug("onInput will use mqtt lib for reading")
+      self.__mqtt.loop_read()
+   
+   def onOutput(self):
+      '''
+      Write Event handler
+      '''
+      log.debug("onOutput will use test mqtt lib for writting")
+      if self.__mqtt.want_write():
+         log.debug("onOutput will use mqtt lib for writting")
+         self.__mqtt.loop_write()
+
+   def fileno(self):
+      '''Implement this interface to be added in select() system call'''
+      return self.__mqtt.socket().fileno()
+
    # ----------------------------------------
-   # Public interface exposed to upper layers
+   # Implement The Lazy interface
    # -----------------------------------------
 
 
-   def write(self, message):
+   def mustWork(self):
       '''
-      Enqueues message to output queue
+      Writes data to serial port configured at init. 
+      Called periodically from a Server object.
+      Write blocking behaviour.
       '''
-      pass
+      return True
 
-
-
-   def addHandler(self, object):
-      '''Registers an object implementing a handle(message) method'''
-      pass
-
-   # --------------
-   # Helper methods
-   # --------------
 
    def work(self):
       '''
@@ -106,34 +132,33 @@ class MQTTClient(Lazy):
       Called periodically from a Server object.
       Write blocking behaviour.
       '''
-      pass
+      if not self.ema.isSyncDone():
+         return
+	 
+      if self.__state == MQTTClient.NOT_CONNECTED:
+         self.connect()
+      	 return
 
+      self.__mqtt.loop_misc()
 
-   def read(self):
+   # --------------
+   # Helper methods
+   # --------------
+
+   def connect(self):
       '''
-      Reads from serial port. 
-      Return all available data in buffer.
+      Connect to MQTT Broker with parameters passed at creation time.
       '''
       try:
-	return 0
+        log.info("Connecting to MQTT Broker %s:%s", self.__host, self.__port)
+        self.__mqtt.connect(self.__host, self.__port, self.__timeout)
+        self.__state = MQTTClient.CONNECTING
       except Exception, e:
-         log.error("%s:",  e)
+         log.error("Could not contact MQTT Broker %s: %s", self.__host, self.__port, e)
+         self.__state = MQTTClient.FAILED
          raise
-
-      
-
-   def onInput(self):
-      '''
-      Read from message buffer and notify handlers if message complete.
-      Called from Server object
-      '''
-      pass
-
-
-   def fileno(self):
-      '''Implement this interface to be added in select() system call'''
-      pass      
-
+      self.ema.addReadable(self)
+      self.ema.addWritable(self)
 
 
 if __name__ == "__main__":

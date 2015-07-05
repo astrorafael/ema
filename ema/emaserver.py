@@ -162,12 +162,7 @@ class EMAServer(server.Server):
                 mqtt_timeout = config.getint("MQTT", "mqtt_timeout")
 		lvl = config.get("MQTT", "mqtt_log")
                 mqttclient.setLogLevel(parseLogLevel(lvl))
-
-		self.mqttclient = mqttclient.MQTTClient(mqtt_host, mqtt_port,**opts)
-		#self.mqtt.addHandler(self)
-		#self.addLazy(self.mqttclient)
-		#self.addReadable(self.mqttclient)
-		#self.addWritable(self.mqttclient)
+		self.mqttclient = mqttclient.MQTTClient(self, mqtt_host, mqtt_port,**opts)
 
 		# Builds RTC Object
 		deltaT = config.getint("RTC", "rtc_delta")   
