@@ -40,14 +40,17 @@ def setLogLevel(level):
 def on_connect(client, userdata, flags, rc):
    userdata.on_connect(flags, rc)
 
+def on_disconnect(client, userdata, rc):
+   userdata.on_disconnect(rc)
+
 # The callback for when a PUBLISH message is received from the server.
+# Not Needed. This is a pure 'publish type' client.
 def on_message(client, userdata, msg):
     userdata.on_message(msg)
 
 
 class MQTTClient(Lazy):
 
-   NSTATS = 1000  # Print number of reads each NSTATs times
    NOT_CONNECTED = 0
    CONNECTING    = 1
    CONNECTED     = 2
@@ -55,15 +58,16 @@ class MQTTClient(Lazy):
    DISCONNECTING = 4
 	
    def __init__(self, ema, host, port, **kargs):
-      Lazy.__init__(self)
+      Lazy.__init__(self,5)
       self.__state = MQTTClient.NOT_CONNECTED
       self.ema   = ema
       self.__host  = host
       self.__port  = port
       self.__timeout = 60
       self.__mqtt =  mqtt.Client(client_id="EMA@crispi", userdata=self)
-      self.__mqtt.on_connect = on_connect
-      self.__mqtt.on_message = on_message
+      self.__mqtt.on_connect    = on_connect
+      self.__mqtt.on_disconnect = on_disconnect
+      self.__mqtt.on_message    = on_message
       ema.addLazy(self)
       log.info("MQTT client created")
 
@@ -82,7 +86,16 @@ class MQTTClient(Lazy):
        self.__state = MQTTClient.FAILED
        log.error("MQTT client connection failed, rc =%d" % rc)
 
-   
+   def on_disconnect(self, rc):
+     self.__state = MQTTClient.NOT_CONNECTED
+     self.ema.delReadable(self)
+     self.ema.delWritable(self)
+     if rc == 0:
+       log.info("MQTT client disconected successfully") 
+     else:
+       log.error("MQTT client unexpected disconnection, rc =%d" % rc)
+
+   # Currently unusued
    def on_message(self,  msg):
      log.debug("Topic: %s , Payload: %s" % (msg.topic, msg.payload))
 
@@ -117,15 +130,6 @@ class MQTTClient(Lazy):
    # -----------------------------------------
 
 
-   def mustWork(self):
-      '''
-      Writes data to serial port configured at init. 
-      Called periodically from a Server object.
-      Write blocking behaviour.
-      '''
-      return True
-
-
    def work(self):
       '''
       Writes data to serial port configured at init. 
@@ -139,6 +143,10 @@ class MQTTClient(Lazy):
          self.connect()
       	 return
 
+      if self.__state == MQTTClient.CONNECTED:
+         self.publish()
+      	 return
+
       self.__mqtt.loop_misc()
 
    # --------------
@@ -148,6 +156,7 @@ class MQTTClient(Lazy):
    def connect(self):
       '''
       Connect to MQTT Broker with parameters passed at creation time.
+      Add MQTT library to the (external) EMA I/O event loop. 
       '''
       try:
         log.info("Connecting to MQTT Broker %s:%s", self.__host, self.__port)
@@ -159,10 +168,26 @@ class MQTTClient(Lazy):
          raise
       self.ema.addReadable(self)
       self.ema.addWritable(self)
+   
+   def disconect(self):
+      '''
+      Disconnect from the MQTT Broker.
+      '''
+      self.__mqtt.disconnect()
+
+   def publish(self):
+      '''
+      Publish real time individual readings to MQTT Broker
+      '''
+      log.debug("Publish Individual readings")
+      for device in self.ema.currentList:
+        for key, value in device.current.iteritems():
+          log.debug("%s publishing current %s => %s %s", device.name, key, value[0], value[1])
+	  topic   = "EMA/current/%s" % key
+          payload = "%s %s" % value 
+          self.__mqtt.publish(topic=topic, payload=payload)
+
 
 
 if __name__ == "__main__":
       pass
-
-
-
