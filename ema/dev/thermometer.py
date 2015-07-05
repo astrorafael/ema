@@ -41,7 +41,7 @@ THRESHOLD = {
     'name': 'Thermometer DeltaT Threshold',
     'logger' : 'thermomete',
     'mult' : 1.0,               # multiplier to internal value
-    'unit' : 'ºC',               # degrees Celsius
+    'unit' : 'deg C',               # degrees Celsius
     'get' : '(c)',              # string format for GET request
     'set' : '(C%03d)',          # string format for SET request
     'pat' : '\(C(\d{3})\)',     # pattern to recognize as response
@@ -76,20 +76,20 @@ class Thermometer(Device):
     def current(self):
         '''Return dictionary with current measured values'''
         return { 
-            Thermometer.AMBIENT:  (self.ambient.last()  / 10.0 , 'ºC'),
+            Thermometer.AMBIENT:  (self.ambient.last()  / 10.0 , 'deg C'),
             Thermometer.HUMIDITY: (self.humidity.last() / 10.0 , '%'),
-            Thermometer.DEWPOINT: (self.dewpoint.last() / 10.0 , 'ºC')
+            Thermometer.DEWPOINT: (self.dewpoint.last() / 10.0 , 'deg C')
             }
 
     @property
     def average(self):
         '''Return dictionary averaged values over a period of N samples'''
         accum, n = self.ambient.sum()
-        av1 = (accum/(10.0*n), 'ºC')
+        av1 = (accum/(10.0*n), 'deg C')
         accum, n = self.humidity.sum()
         av2 = (accum/(10.0*n), '%')
         accum, n = self.dewpoint.sum()
-        av3 = (accum/(10.0*n), 'ºC')
+        av3 = (accum/(10.0*n), 'deg C')
         return { 
             Thermometer.AMBIENT: av1, 
             Thermometer.HUMIDITY: av2, 
