@@ -67,6 +67,24 @@ udp_log = INFO
 
 #------------------------------------------------------------------------#
 
+# MQTT Client config
+
+#The unique client id string used when connecting to the broker.
+mqtt_id = EMA@crispi 
+
+# Broker to connect
+mqtt_host = test.mosquitto.org
+
+# Connection port (unauthenticated)
+mqtt_port = 1883
+
+# Publishing period for current measurements (in seconds)
+mqtt_period = 60
+
+# component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NONSET)
+mqtt_log = INFO
+#------------------------------------------------------------------------#
+
 [HTML]
 # Dynamic HTML page generated with current readings
 html_file = /var/www/ema.html
