@@ -58,7 +58,7 @@ class MQTTClient(Lazy):
    DISCONNECTING = 4
 	
    def __init__(self, ema, host, port, **kargs):
-      Lazy.__init__(self,5)
+      Lazy.__init__(self,30)
       self.__state = MQTTClient.NOT_CONNECTED
       self.ema   = ema
       self.__host  = host
@@ -181,12 +181,15 @@ class MQTTClient(Lazy):
       '''
       log.debug("Publish Individual readings")
       for device in self.ema.currentList:
-        for key, value in device.current.iteritems():
-          log.debug("%s publishing current %s => %s %s", device.name, key, value[0], value[1])
-	  topic   = "EMA/current/%s" % key
-          payload = "%s %s" % value 
-          self.__mqtt.publish(topic=topic, payload=payload)
-
+        log.debug("Device = %s", device.name)
+        try:
+          for key, value in device.current.iteritems():
+            log.debug("%s publishing current %s => %s %s", device.name, key, value[0], value[1])
+	    topic   = "EMA/current/%s" % key
+            payload = "%s %s" % value 
+            self.__mqtt.publish(topic=topic, payload=payload)
+        except IndexError as e:
+          pass
 
 
 if __name__ == "__main__":
