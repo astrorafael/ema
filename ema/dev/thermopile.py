@@ -61,17 +61,17 @@ class Thermopile(Device):
 	def current(self):
 		'''Return dictionary with current measured values'''
 		return { 
-			Thermopile.SKY:     (self.infrared.last() , 'ºC'),
-			Thermopile.AMBIENT: (self.capsule.last()  , 'ºC')
+			Thermopile.SKY:     (self.infrared.last() , ' deg C'),
+			Thermopile.AMBIENT: (self.capsule.last()  , ' deg C')
 			}
 
 	@property
 	def average(self):
 		'''Return dictionary of averaged values over a period of N samples'''
 		accum, n = self.infrared.sum()
-		av1  = (accum / n, 'ºC')
+		av1  = (accum / n, ' deg C')
 		accum, n = self.capsule.sum()
-		av2 = (accum / n, 'ºC')
+		av2 = (accum / n, ' deg C')
 		return {  Thermopile.SKY: av1 , Thermopile.AMBIENT: av2 }
 
 	
