@@ -27,10 +27,10 @@
 import logging
 import paho.mqtt.client as mqtt
 
-from server import Lazy
+from server import Lazy, Server
 
 
-log = logging.getLogger('mqttadapt')
+log = logging.getLogger('mqtt')
 
 def setLogLevel(level):
     log.setLevel(level)
@@ -57,14 +57,15 @@ class MQTTClient(Lazy):
    FAILED        = 3
    DISCONNECTING = 4
 	
-   def __init__(self, ema, host, port, **kargs):
-      Lazy.__init__(self,30)
-      self.__state = MQTTClient.NOT_CONNECTED
-      self.ema   = ema
-      self.__host  = host
-      self.__port  = port
-      self.__timeout = 60
-      self.__mqtt =  mqtt.Client(client_id="EMA@crispi", userdata=self)
+   def __init__(self, ema, id, host, port, period, **kargs):
+      Lazy.__init__(self, period / ( 2 * Server.TIMEOUT))
+      self.ema      = ema
+      self.__state  = MQTTClient.NOT_CONNECTED
+      self.__count  = 0
+      self.__host   = host
+      self.__port   = port
+      self.__period = period
+      self.__mqtt   =  mqtt.Client(client_id=id, userdata=self)
       self.__mqtt.on_connect    = on_connect
       self.__mqtt.on_disconnect = on_disconnect
       self.__mqtt.on_message    = on_message
@@ -79,9 +80,6 @@ class MQTTClient(Lazy):
      if rc == 0:
        self.__state = MQTTClient.CONNECTED
        log.info("MQTT client conected successfully") 
-       # Subscribing in on_connect() means that if we lose the connection and
-       # reconnect then subscriptions will be renewed.
-       #self.__mqtt.subscribe("$SYS/#")
      else:
        self.__state = MQTTClient.FAILED
        log.error("MQTT client connection failed, rc =%d" % rc)
@@ -143,9 +141,10 @@ class MQTTClient(Lazy):
          self.connect()
       	 return
 
-      if self.__state == MQTTClient.CONNECTED:
+      self.__count = (self.__count + 1) % 2
+      if self.__state == MQTTClient.CONNECTED and self.__count == 0:
          self.publish()
-      	 return
+	 return
 
       self.__mqtt.loop_misc()
 
@@ -160,7 +159,7 @@ class MQTTClient(Lazy):
       '''
       try:
         log.info("Connecting to MQTT Broker %s:%s", self.__host, self.__port)
-        self.__mqtt.connect(self.__host, self.__port, self.__timeout)
+        self.__mqtt.connect(self.__host, self.__port, self.__period)
         self.__state = MQTTClient.CONNECTING
       except Exception, e:
          log.error("Could not contact MQTT Broker %s: %s", self.__host, self.__port, e)
@@ -185,7 +184,7 @@ class MQTTClient(Lazy):
         try:
           for key, value in device.current.iteritems():
             log.debug("%s publishing current %s => %s %s", device.name, key, value[0], value[1])
-	    topic   = "EMA/current/%s" % key
+	    topic   = "EMA/current/%s-%s" % (device.name, key)
             payload = "%s %s" % value 
             self.__mqtt.publish(topic=topic, payload=payload)
         except IndexError as e:

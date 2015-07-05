@@ -157,12 +157,13 @@ class EMAServer(server.Server):
 		self.addReadable(self.udpdriver)
 
 		# MQTT Driver object 
- 		mqtt_host    = config.get("MQTT", "mqtt_host")
-                mqtt_port    = config.getint("MQTT", "mqtt_port")
-                mqtt_timeout = config.getint("MQTT", "mqtt_timeout")
+ 		mqtt_id     = config.get("MQTT", "mqtt_id")
+ 		mqtt_host   = config.get("MQTT", "mqtt_host")
+                mqtt_port   = config.getint("MQTT", "mqtt_port")
+                mqtt_period = config.getint("MQTT", "mqtt_period")
 		lvl = config.get("MQTT", "mqtt_log")
                 mqttclient.setLogLevel(parseLogLevel(lvl))
-		self.mqttclient = mqttclient.MQTTClient(self, mqtt_host, mqtt_port,**opts)
+		self.mqttclient = mqttclient.MQTTClient(self, mqtt_id, mqtt_host, mqtt_port, mqtt_period, **opts)
 
 		# Builds RTC Object
 		deltaT = config.getint("RTC", "rtc_delta")   
