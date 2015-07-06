@@ -31,7 +31,7 @@ from ema.parameter import Parameter
 from ema.vector    import Vector
 from ema.device    import Device
 
-log = logging.getLogger('thermomete')
+log = logging.getLogger('thermomet')
 
 
 def setLogLevel(level):
@@ -39,7 +39,7 @@ def setLogLevel(level):
 
 THRESHOLD = {
     'name': 'Thermometer DeltaT Threshold',
-    'logger' : 'thermomete',
+    'logger' : 'thermomet',
     'mult' : 1.0,               # multiplier to internal value
     'unit' : 'deg C',               # degrees Celsius
     'get' : '(c)',              # string format for GET request
