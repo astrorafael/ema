@@ -61,7 +61,7 @@ class MQTTClient(Lazy):
       Lazy.__init__(self, period / ( 2 * Server.TIMEOUT))
       self.ema      = ema
       self.__state  = MQTTClient.NOT_CONNECTED
-      self.__count  = 0
+      self.__work   = 0
       self.__host   = host
       self.__port   = port
       self.__period = period
@@ -87,11 +87,10 @@ class MQTTClient(Lazy):
    def on_disconnect(self, rc):
      self.__state = MQTTClient.NOT_CONNECTED
      self.ema.delReadable(self)
-     self.ema.delWritable(self)
      if rc == 0:
-       log.info("MQTT client disconected successfully") 
+       log.warning("MQTT client disconected successfully") 
      else:
-       log.error("MQTT client unexpected disconnection, rc =%d" % rc)
+       log.warning("MQTT client unexpected disconnection, rc =%d" % rc)
 
    # Currently unusued
    def on_message(self,  msg):
@@ -110,15 +109,6 @@ class MQTTClient(Lazy):
       log.debug("onInput will use mqtt lib for reading")
       self.__mqtt.loop_read()
    
-   def onOutput(self):
-      '''
-      Write Event handler
-      '''
-      log.debug("onOutput will use test mqtt lib for writting")
-      if self.__mqtt.want_write():
-         log.debug("onOutput will use mqtt lib for writting")
-         self.__mqtt.loop_write()
-
    def fileno(self):
       '''Implement this interface to be added in select() system call'''
       return self.__mqtt.socket().fileno()
@@ -134,6 +124,7 @@ class MQTTClient(Lazy):
       Called periodically from a Server object.
       Write blocking behaviour.
       '''
+      log.debug("mqttclient.work()")
       if not self.ema.isSyncDone():
          return
 	 
@@ -141,8 +132,8 @@ class MQTTClient(Lazy):
          self.connect()
       	 return
 
-      self.__count = (self.__count + 1) % 2
-      if self.__state == MQTTClient.CONNECTED and self.__count == 0:
+      self.__work = (self.__work + 1) % 2
+      if self.__state == MQTTClient.CONNECTED and self.__work == 0:
          self.publish()
 	 return
 
@@ -161,18 +152,12 @@ class MQTTClient(Lazy):
         log.info("Connecting to MQTT Broker %s:%s", self.__host, self.__port)
         self.__mqtt.connect(self.__host, self.__port, self.__period)
         self.__state = MQTTClient.CONNECTING
+        self.ema.addReadable(self)
       except Exception, e:
          log.error("Could not contact MQTT Broker %s: %s", self.__host, self.__port, e)
          self.__state = MQTTClient.FAILED
          raise
-      self.ema.addReadable(self)
-      self.ema.addWritable(self)
    
-   def disconect(self):
-      '''
-      Disconnect from the MQTT Broker.
-      '''
-      self.__mqtt.disconnect()
 
    def publish(self):
       '''
