@@ -158,6 +158,11 @@ low_volt_script = /home/pi/nto/ema/scripts/volt-script
 # till the previous run is over
 low_volt_mode = Once
 
+# Where to publish measurements
+# Comma list separated values with no quotes or single quotes
+# Values allowed so far: mqtt, html
+volt_publish = mqtt,html
+
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 volt_log = INFO
 
@@ -171,6 +176,11 @@ barom_height = 700
 # Barometer offeset [mBar]
 barom_offset = -19
 
+# Where to publish measurements
+# Comma list separated values with no quotes or single quotes
+# Values allowed so far: mqtt, html
+barom_publish = mqtt,html
+
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 barom_log = INFO
 
@@ -181,6 +191,11 @@ barom_log = INFO
 
 # Rain threshold to close roof (0..9) [%]
 rain_thres = 1
+
+# Where to publish measurements
+# Comma list separated values with no quotes or single quotes
+# Values allowed so far: mqtt, html
+rain_publish = mqtt,html
 
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 rain_log = INFO
@@ -195,6 +210,11 @@ pelt_gain = 1.0
 # Threshold to close roof relay [%]
 pelt_thres = 67
 
+# Where to publish measurements
+# Comma list separated values with no quotes or single quotes
+# Values allowed so far: mqtt, html
+pelt_publish = mqtt,html
+
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 pelt_log = INFO
 
@@ -203,6 +223,11 @@ pelt_log = INFO
 [PYRANOMETER]
 pyr_gain   = 1.6
 pyr_offset = 0
+
+# Where to publish measurements
+# Comma list separated values with no quotes or single quotes
+# Values allowed so far: mqtt, html
+pyr_publish = mqtt,html
 
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 pyr_log = INFO
@@ -217,6 +242,11 @@ phot_offset = -0.5
 # Threshold to close roof relay [visual mag.]
 phot_thres  = 10.5
 
+# Where to publish measurements
+# Comma list separated values with no quotes or single quotes
+# Values allowed so far: mqtt, html
+phot_publish = mqtt,html
+
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 phot_log = INFO
 
@@ -229,6 +259,11 @@ phot_log = INFO
 # If ambient temperature < (dew point + delta_thres)
 # the roof relay will close.
 delta_thres = 5.0
+
+# Where to publish measurements
+# Comma list separated values with no quotes or single quotes
+# Values allowed so far: mqtt, html
+thermo_publish = mqtt,html
 
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 thermo_log = INFO
@@ -252,6 +287,11 @@ wind_thres = 20
 # avergae wind speed > wind_thres10 will close the roof relay
 wind_thres10 = 66
 
+# Where to publish measurements
+# Comma list separated values with no quotes or single quotes
+# Values allowed so far: mqtt, html
+anem_publish = mqtt,html
+
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 anem_log = INFO
 
@@ -262,6 +302,11 @@ anem_log = INFO
 # Contsant to give readiongs in litres.
 pluv_calib = 124
 
+# Where to publish measurements
+# Comma list separated values with no quotes or single quotes
+# Values allowed so far: mqtt, html
+pluv_publish = mqtt,html
+
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 pluv_log = INFO
 
@@ -269,6 +314,11 @@ pluv_log = INFO
 #------------------------------------------------------------------------#
 # Thermopile sensor (alternative way to detect clouds)
 [THERMOPILE]
+
+# Where to publish measurements
+# Comma list separated values with no quotes or single quotes
+# Values allowed so far: mqtt, html
+thermo_publish = mqtt,html
 
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 thermo_log = INFO
@@ -288,6 +338,11 @@ roof_relay_script = /home/pi/nto/ema/scripts/roof-script
 # When launched mutiple times, EMA server does not lauch a script
 # till the previous run is over
 roof_relay_mode = Many
+
+# Where to publish relay state
+# Comma list separated values with no quotes or single quotes
+# Values allowed so far: mqtt, html
+roof_publish = mqtt,html
 
 #------------------------------------------------------------------------#
 # Auxiliar relay
@@ -312,6 +367,11 @@ aux_relay_script = /path/to/my/script
 # till the previous run is over
 aux_relay_mode = Many
 
+# Where to publish relay state
+# Comma list separated values with no quotes or single quotes
+# Values allowed so far: mqtt, html
+aux_publish = mqtt,html
 
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
+# shared with roof_relay
 aux_log = INFO
