@@ -51,8 +51,8 @@ class Pluviometer(Device):
     CURRENT     = 'current'
     ACCUMULATED = 'accumulated'
 
-    def __init__(self, ema, calibration, N):
-	Device.__init__(self)
+    def __init__(self, ema, calibration, N, publish):
+	Device.__init__(self, publish)
         self.calibration   = Parameter(ema, None, calibration, **CALIBRATION)
         self.instant       = Vector(N)
         self.accumulated   = Vector(N)

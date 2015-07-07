@@ -69,9 +69,9 @@ class Photometer(Alarmable, Device):
 
     MAGNITUDE = 'magnitude'
 
-    def __init__(self, ema, thres, offset, N):
+    def __init__(self, ema, thres, offset, N, publish):
         Alarmable.__init__(self,3)
-	Device.__init__(self)
+	Device.__init__(self,publish)
         self.thres   = Parameter(ema, self, thres, **THRESHOLD)
         self.offset      = Parameter(ema, None, offset, **OFFSET)
         self.photom      = Vector(N)

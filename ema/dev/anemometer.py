@@ -87,8 +87,8 @@ class Anemometer(Device):
     SPEED10   = 'speed10'
     DIRECTION = 'direction'
 
-    def __init__(self, ema, thres, aver_thres, calibration, model, N):
-	Device.__init__(self)
+    def __init__(self, ema, thres, aver_thres, calibration, model, N, publish):
+	Device.__init__(self, publish)
         self.windth    = Parameter(ema, None, thres, **THRESHOLD_I)
         self.wind10th  = Parameter(ema, None, aver_thres, **THRESHOLD_M)
         self.calib     = Parameter(ema, None, calibration, **CALIBRATION)

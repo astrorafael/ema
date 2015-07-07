@@ -64,8 +64,8 @@ class Pyranometer(Device):
 
     IRRADIATION = 'irradiation'
 
-    def __init__(self, ema, gain, offset, N):
-	Device.__init__(self)
+    def __init__(self, ema, gain, offset, N, publish):
+	Device.__init__(self, publish)
         self.gain   = Parameter(ema, None, gain, **GAIN)
         self.offset = Parameter(ema, None, offset, **OFFSET)
         self.led    = Vector(N)

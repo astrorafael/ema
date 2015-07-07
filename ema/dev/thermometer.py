@@ -55,8 +55,8 @@ class Thermometer(Device):
     HUMIDITY = 'humidity'
     DEWPOINT = 'dewpoint'
 
-    def __init__(self, ema, thres, N):
-	Device.__init__(self)
+    def __init__(self, ema, thres, N, publish):
+	Device.__init__(self, publish)
         self.thres    = Parameter(ema, None, thres, **THRESHOLD)
         self.ambient  = Vector(N)
         self.humidity = Vector(N)

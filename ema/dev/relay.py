@@ -111,9 +111,9 @@ class AuxRelay(Alarmable, Device):
 	}
 
 
-	def __init__(self, ema, mode, tON , tOFF, N):
+	def __init__(self, ema, mode, tON , tOFF, N, publish):
 		Alarmable.__init__(self,3)
-                Device.__init__(self)
+                Device.__init__(self, publish)
 		myself = self if AuxRelay.MAPPING[mode] == AuxRelay.TIMED else None
 		self.mode = Parameter(ema, myself, AuxRelay.MAPPING[mode], **MODE)	
 		# get rid of : in   HH:MM   and transform it to a number
@@ -193,8 +193,8 @@ class RoofRelay(Device):
 		'a' : 'Manual switch on, overriding thresholds' ,
 	}
 
-	def __init__(self, ema,  N,):
-                Device.__init__(self)
+	def __init__(self, ema,  N, publish):
+                Device.__init__(self, publish)
 		self.relay = Vector(N)
 		self.ema   = ema
 		ema.subscribeStatus(self)

@@ -191,7 +191,7 @@ class EMAServer(server.Server):
 			lvl = config.get("AUX_RELAY", "aux_log")
 			relay.setLogLevel(parseLogLevel(lvl))       
 			self.auxRelay = relay.AuxRelay(self, 
-									aux_mode, aux_on, aux_off, VECLEN) 
+									aux_mode, aux_on, aux_off, VECLEN,aux_publish) 
 
 		# Build RoofRelay Object
 		if config.has_section("ROOF_RELAY"):
@@ -199,7 +199,7 @@ class EMAServer(server.Server):
 			roof_relay_script = config.get("ROOF_RELAY","roof_relay_script")
 			roof_relay_mode = config.get("ROOF_RELAY","roof_relay_mode")
 
-		self.roofRelay  = relay.RoofRelay(self,VECLEN)
+		self.roofRelay  = relay.RoofRelay(self,VECLEN,roof_publish)
 
 		# Builds Voltmeter object
 		volt_thres  = config.getfloat("VOLTMETER", "volt_thres")
@@ -217,7 +217,7 @@ class EMAServer(server.Server):
 							volt_thres, 
 							volt_offset, 
 							volt_delta, 
-							VECLEN, AVERLEN)
+							VECLEN, AVERLEN,volt_publish)
 	
 		# Builds (optional) Photometer Sensor object
 		# Photometer is updated every 60 seconds
@@ -230,7 +230,7 @@ class EMAServer(server.Server):
 			self.photometer = photom.Photometer(self, 
 												phot_thres, 
 												phot_offset,
-												int(round(self.uploadPeriod / 60)))
+												int(round(self.uploadPeriod / 60)),phot_publish)
 
 		# Builds (optional) Barometer object
 		if config.has_section("BAROMETER"):
@@ -240,7 +240,7 @@ class EMAServer(server.Server):
 			lvl = config.get("BAROMETER", "barom_log")
 			barom.setLogLevel(parseLogLevel(lvl))
 			self.barometer = barom.Barometer(self, 
-								baro_height, baro_offset, VECLEN)
+								baro_height, baro_offset, VECLEN, baro_publish)
 			
 		
 		# Builds (optional) Rain Detector Object
@@ -249,7 +249,7 @@ class EMAServer(server.Server):
 			thres = config.getfloat("RAIN", "rain_thres")  
 			lvl = config.get("RAIN", "rain_log")
 			rain.setLogLevel(parseLogLevel(lvl))      
-			self.rainsensor = rain.RainSensor(self, thres, VECLEN)
+			self.rainsensor = rain.RainSensor(self, thres, VECLEN, rain_publish)
 			
 
 		# Builds (optional) Cloud Sensor object
@@ -260,7 +260,7 @@ class EMAServer(server.Server):
 			lvl = config.get("CLOUD", "pelt_log")
 			cloud.setLogLevel(parseLogLevel(lvl))
 			self.clouds = cloud.CloudSensor(self, pelt_thres, 
-											pelt_gain, VECLEN)
+											pelt_gain, VECLEN,pelt_publish)
 			
 
 		# Builds (optional) Pyranometer Sensor object
@@ -273,7 +273,8 @@ class EMAServer(server.Server):
 			self.pyranometer = pyran.Pyranometer(self, 
 												pyr_gain, 
 												pyr_offset,
-												VECLEN)
+												VECLEN,
+												pyr_publish)
 
 		# Builds (optional) Thermometer Object
 		if config.has_section("THERMOMETER"):
@@ -281,7 +282,7 @@ class EMAServer(server.Server):
 			thres = config.getfloat("THERMOMETER", "delta_thres") 
 			lvl = config.get("THERMOMETER", "thermo_log")
 			thermom.setLogLevel(parseLogLevel(lvl))       
-			self.thermometer = thermom.Thermometer(self, thres, VECLEN)
+			self.thermometer = thermom.Thermometer(self, thres, VECLEN, thermo_publish)
 
 		# Builds (optional) Anemometer Object
 		if config.has_section("ANEMOMETER"):
@@ -298,20 +299,21 @@ class EMAServer(server.Server):
 												w_th10, 
 												a_calib, 
 												a_model,
-												VECLEN)
+												VECLEN,
+												anem_publish)
 		# Builds (optional) Pluviometer Object
 		if config.has_section("PLUVIOMETER"):
 			pluv_publish = config.get("PLUVIOMETER","pluv_publish").split(',')
 			calib = config.getfloat("PLUVIOMETER", "pluv_calib") 
 			lvl = config.get("PLUVIOMETER", "pluv_log")
 			pluviom.setLogLevel(parseLogLevel(lvl))       
-			self.pluviometer = pluviom.Pluviometer(self, calib,VECLEN)
+			self.pluviometer = pluviom.Pluviometer(self, calib,VECLEN,pluv_publish)
 
 		# Build objects without configuration values
 		lvl = config.get("THERMOPILE", "thermo_log")
 		thermo_publish = config.get("THERMOPILE","thermo_publish").split(',')
 		thermop.setLogLevel(parseLogLevel(lvl))     
-		self.thermopile = thermop.Thermopile(self,VECLEN)
+		self.thermopile = thermop.Thermopile(self,VECLEN,thermo_publish)
 		
 		# Builds Notifier object which executes scripts
 		self.notifier = notifier.Notifier( 

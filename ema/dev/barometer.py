@@ -62,8 +62,8 @@ class Barometer(Device):
 
     PRESSURE = 'pressure'
 
-    def __init__(self, ema, height, offset, N):
-	Device.__init__(self)
+    def __init__(self, ema, height, offset, N, publish):
+	Device.__init__(self, publish)
         self.height    = Parameter(ema, None, height, **HEIGHT)
         self.offset    = Parameter(ema, None, offset, **OFFSET)
         self.pressure = Vector(N)

@@ -65,9 +65,9 @@ class Voltmeter(Alarmable, Device):
 
     VOLTAGE = 'voltage'
 
-    def __init__(self, ema, thres, offset, volt_delta, N, AVLEN):
+    def __init__(self, ema, thres, offset, volt_delta, N, AVLEN, publish):
         Alarmable.__init__(self,3)
-	Device.__init__(self)
+	Device.__init__(self, publish)
         self.ema         = ema
         self.thres       = Parameter(ema, self, thres, **THRESHOLD)
         self.offset      = Parameter(ema, None, offset, **OFFSET)
