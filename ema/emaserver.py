@@ -187,6 +187,7 @@ class EMAServer(server.Server):
 			aux_off  = config.get("AUX_RELAY", "aux_off")
 			aux_relay_script = config.get("AUX_RELAY","aux_relay_script")
 			aux_relay_mode  = config.get("AUX_RELAY","aux_relay_mode")
+			aux_publish = config.get("AUX_RELAY","aux_publish").split(',')
 			lvl = config.get("AUX_RELAY", "aux_log")
 			relay.setLogLevel(parseLogLevel(lvl))       
 			self.auxRelay = relay.AuxRelay(self, 
@@ -194,6 +195,7 @@ class EMAServer(server.Server):
 
 		# Build RoofRelay Object
 		if config.has_section("ROOF_RELAY"):
+			roof_publish = config.get("ROOF_RELAY","roof_publish").split(',')
 			roof_relay_script = config.get("ROOF_RELAY","roof_relay_script")
 			roof_relay_mode = config.get("ROOF_RELAY","roof_relay_mode")
 
@@ -204,6 +206,7 @@ class EMAServer(server.Server):
 		volt_offset = config.getfloat("VOLTMETER", "volt_offset")
 		volt_delta  = config.getfloat("VOLTMETER", "volt_delta")
 		volt_time   = config.getint("VOLTMETER",    "volt_time")
+		volt_publish = config.get("VOLTMETER","volt_publish").split(',')
 		low_volt_script = config.get("VOLTMETER","low_volt_script")
 		low_volt_mode   = config.get("VOLTMETER","low_volt_mode")
 
@@ -219,6 +222,7 @@ class EMAServer(server.Server):
 		# Builds (optional) Photometer Sensor object
 		# Photometer is updated every 60 seconds
 		if config.has_section("PHOTOMETER"):
+			phot_publish = config.get("PHOTOMETER","phot_publish").split(',')
 			phot_offset  = config.getfloat("PHOTOMETER", "phot_offset")
 			phot_thres   = config.getfloat("PHOTOMETER", "phot_thres")
 			lvl = config.get("PHOTOMETER", "phot_log")
@@ -230,6 +234,7 @@ class EMAServer(server.Server):
 
 		# Builds (optional) Barometer object
 		if config.has_section("BAROMETER"):
+			baro_publish = config.get("BAROMETER","barom_publish").split(',')
 			baro_height = config.getfloat("BAROMETER", "barom_height")
 			baro_offset = config.getfloat("BAROMETER", "barom_offset")
 			lvl = config.get("BAROMETER", "barom_log")
@@ -240,6 +245,7 @@ class EMAServer(server.Server):
 		
 		# Builds (optional) Rain Detector Object
 		if config.has_section("RAIN"):
+			rain_publish = config.get("RAIN","rain_publish").split(',')
 			thres = config.getfloat("RAIN", "rain_thres")  
 			lvl = config.get("RAIN", "rain_log")
 			rain.setLogLevel(parseLogLevel(lvl))      
@@ -248,6 +254,7 @@ class EMAServer(server.Server):
 
 		# Builds (optional) Cloud Sensor object
 		if config.has_section("CLOUD"):
+			pelt_publish = config.get("CLOUD","pelt_publish").split(',')
 			pelt_thres  = config.getfloat("CLOUD", "pelt_thres")
 			pelt_gain   = config.getfloat("CLOUD", "pelt_gain")
 			lvl = config.get("CLOUD", "pelt_log")
@@ -258,6 +265,7 @@ class EMAServer(server.Server):
 
 		# Builds (optional) Pyranometer Sensor object
 		if config.has_section("PYRANOMETER"):
+			pyr_publish = config.get("PYRANOMETER","pyr_publish").split(',')
 			pyr_offset  = config.getfloat("PYRANOMETER", "pyr_offset")
 			pyr_gain    = config.getfloat("PYRANOMETER", "pyr_gain")
 			lvl = config.get("PYRANOMETER", "pyr_log")
@@ -269,6 +277,7 @@ class EMAServer(server.Server):
 
 		# Builds (optional) Thermometer Object
 		if config.has_section("THERMOMETER"):
+			thermo_publish = config.get("THERMOMETER","thermo_publish").split(',')
 			thres = config.getfloat("THERMOMETER", "delta_thres") 
 			lvl = config.get("THERMOMETER", "thermo_log")
 			thermom.setLogLevel(parseLogLevel(lvl))       
@@ -276,6 +285,7 @@ class EMAServer(server.Server):
 
 		# Builds (optional) Anemometer Object
 		if config.has_section("ANEMOMETER"):
+			anem_publish = config.get("ANEMOMETER","anem_publish").split(',')
 			w_th   = config.getfloat("ANEMOMETER", "wind_thres")        
 			w_th10 = config.getfloat("ANEMOMETER", "wind_thres10")        
 			a_calib   = config.getfloat("ANEMOMETER", "anem_calib")        
@@ -291,6 +301,7 @@ class EMAServer(server.Server):
 												VECLEN)
 		# Builds (optional) Pluviometer Object
 		if config.has_section("PLUVIOMETER"):
+			pluv_publish = config.get("PLUVIOMETER","pluv_publish").split(',')
 			calib = config.getfloat("PLUVIOMETER", "pluv_calib") 
 			lvl = config.get("PLUVIOMETER", "pluv_log")
 			pluviom.setLogLevel(parseLogLevel(lvl))       
@@ -298,6 +309,7 @@ class EMAServer(server.Server):
 
 		# Build objects without configuration values
 		lvl = config.get("THERMOPILE", "thermo_log")
+		thermo_publish = config.get("THERMOPILE","thermo_publish").split(',')
 		thermop.setLogLevel(parseLogLevel(lvl))     
 		self.thermopile = thermop.Thermopile(self,VECLEN)
 		
