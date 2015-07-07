@@ -64,6 +64,7 @@ class CloudSensor(Device):
     CLOUD = 'cloud'
 
     def __init__(self, ema, thres, gain, N):
+	Device.__init__(self)
         self.thres       = Parameter(ema, None, thres, **THRESHOLD)
         self.gain        = Parameter(ema, None, gain, **GAIN)
         self.cloud       = Vector(N)

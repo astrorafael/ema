@@ -44,6 +44,7 @@ class Thermopile(Device):
 	AMBIENT = 'ambient'
 
 	def __init__(self, ema, N):
+		Device.__init__(self)
 		self.infrared = Vector(N)
 		self.capsule  = Vector(N)
 		ema.addCurrent(self)

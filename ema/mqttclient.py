@@ -165,15 +165,19 @@ class MQTTClient(Lazy):
       '''
       log.debug("Publish Individual readings")
       for device in self.ema.currentList:
-        log.debug("Device = %s", device.name)
-        try:
-          for key, value in device.current.iteritems():
-            log.debug("%s publishing current %s => %s %s", device.name, key, value[0], value[1])
-	    topic   = "EMA/current/%s-%s" % (device.name, key)
-            payload = "%s %s" % value 
-            self.__mqtt.publish(topic=topic, payload=payload)
-        except IndexError as e:
-          pass
+        if 'mqtt' in device.publishable:
+          log.debug("publihing Device = %s", device.name)
+          try:
+            for key, value in device.current.iteritems():
+              log.debug("%s publishing current %s => %s %s", device.name, key, value[0], value[1])
+	      topic   = "EMA/current/%s-%s" % (device.name, key)
+              payload = "%s %s" % value 
+              self.__mqtt.publish(topic=topic, payload=payload)
+          except IndexError as e:
+            pass
+        else:
+          log.debug("skipping publihing Device = %s", device.name)
+
 
 
 if __name__ == "__main__":

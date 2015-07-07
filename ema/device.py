@@ -23,6 +23,9 @@
 
 class Device(object):
 
+	def __init__(self, publish_list=[]):
+		self.__publishable = publish_list
+	
 	@property
 	def name(self):
 		'''Return object name'''
@@ -50,3 +53,10 @@ class Device(object):
 	def parameter(self):
 		'''Return dictionary with calibration constants'''
 		return {}
+
+
+	@property
+	def publishable(self):
+		'''Return list with publishable destinantions (i.e. "mqtt", "html", etc.)'''
+		return self.__publishable
+

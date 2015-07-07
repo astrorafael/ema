@@ -51,6 +51,7 @@ class RainSensor(Device):
     RAIN = 'rain'
 
     def __init__(self, ema, thres, N):
+	Device.__init__(self)
         self.thres     = Parameter(ema, None, thres, **THRESHOLD)
         self.rain      = Vector(N)
         ema.addSync(self.thres)
