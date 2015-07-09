@@ -52,6 +52,7 @@ class Thermopile(Device):
 
 
 	def add(self, message, matchobj):
+		log.debug("themopile.add(%s)", message)
 		temp = float(matchobj.group(1))
 		if message[THERMOINF] == '0':
 			self.infrared.append(temp)	

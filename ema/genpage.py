@@ -196,7 +196,7 @@ class HTML(Lazy):
 			self.globalHeader(page)
 			self.instantTable(page)
 			self.parameterTable(page)
-			#self.averagesTable(page)
+			self.averagesTable(page)
 			t = datetime.datetime.now().replace(microsecond=0).isoformat(' ')
 			self.globalFooter(page, t)
 		# os.rename is atomic in Linux, not in Windows
@@ -248,7 +248,7 @@ class HTML(Lazy):
 	def tableRowsCurrent(self, page):
 		for device in self.ema.currentList:
 			if not 'html' in device.publishable:
-				log.debug("skipping publihing Device = %s", device.name)
+				log.debug("(current) skipping publihing Device = %s", device.name)
 				continue
 			self.tableDevice(page, device)
 			try:
@@ -262,12 +262,15 @@ class HTML(Lazy):
 
 	def tableRowsAverage(self, page):
 		for device in self.ema.averageList:
+			if not 'html' in device.publishable:
+                                log.debug("(average) skipping publihing Device = %s", device.name)
+                                continue
 			self.tableDevice(page, device)
 			try:
-				for meas in device.average:
-					value, unit = device.average[meas]
-					th, uth = device.threshold.get(meas,('',''))
-					self.tableRow(page, meas, value, unit, th, uth)
+				for key,value in device.average.iteritems():
+					val = value[0] ; unit=value[1]
+					th, uth = device.threshold.get(key,('',''))
+					self.tableRow(page, key, val, unit, th, uth)
 			except (IndexError, ZeroDivisionError) as e:
 				log.warning("(average) Too early for HTML page generation, got %s", e)
 					

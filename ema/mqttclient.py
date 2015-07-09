@@ -196,7 +196,7 @@ class MQTTClient(Lazy):
             payload = "%s %s" % value 
             self.__mqtt.publish(topic=topic, payload=payload)
         except IndexError as e:
-          pass
+          log.debug("Exception: %s reading device=%s", e, device.name)
 
       self.__count += 1
       if self.__count % MQTTClient.NPUBLISH == 1:

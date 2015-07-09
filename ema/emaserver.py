@@ -328,7 +328,6 @@ class EMAServer(server.Server):
 		lvl = config.get("HTML", "html_log")
 		genpage.setLogLevel(parseLogLevel(lvl)) 
 		N   =  int(round(html_period / server.Server.TIMEOUT) )
-		genpage.setLogLevel(logging.DEBUG)
 		self.genpage = genpage.HTML(self, html_file, N)
 
 
