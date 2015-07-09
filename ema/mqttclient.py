@@ -51,6 +51,10 @@ def on_message(client, userdata, msg):
 
 class MQTTClient(Lazy):
 
+   # tog info every NPLUBLIS times 
+   NPUBLISH = 60
+
+   # MQTT Connection Status
    NOT_CONNECTED = 0
    CONNECTING    = 1
    CONNECTED     = 2
@@ -60,6 +64,7 @@ class MQTTClient(Lazy):
    def __init__(self, ema, id, host, port, period, mqtt_publish_status, **kargs):
       Lazy.__init__(self, period / ( 2 * Server.TIMEOUT))
       self.ema       = ema
+      self.__count   = 0
       self.__state   = MQTTClient.NOT_CONNECTED
       self.__work    = 0
       self.__host    = host
@@ -176,10 +181,9 @@ class MQTTClient(Lazy):
       Publish real time individual readings to MQTT Broker
       '''
       if self.__pubstat:
-        log.debug("Publish EMA Status line")
         self.__mqtt.publish(topic="EMA/current/status", payload=self.__emastat)
+        self.__emastat = "()"
 
-      log.debug("Publish Individual readings")
       for device in self.ema.currentList:
         if not 'mqtt' in device.publishable:
           log.debug("skipping publihing Device = %s", device.name)
@@ -193,6 +197,11 @@ class MQTTClient(Lazy):
             self.__mqtt.publish(topic=topic, payload=payload)
         except IndexError as e:
           pass
+
+      self.__count += 1
+      if self.__count % MQTTClient.NPUBLISH == 1:
+         log.info("Published %d measurements" % self.__count)
+
 
 
 if __name__ == "__main__":
