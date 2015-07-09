@@ -28,7 +28,7 @@ import logging
 import paho.mqtt.client as mqtt
 
 from server import Lazy, Server
-
+from ema.emaproto  import SPSB
 
 log = logging.getLogger('mqtt')
 
@@ -106,8 +106,8 @@ class MQTTClient(Lazy):
    # -----------------------------------------
 
    def onStatus(self, message):
+	'''Pick up status message and transform it into pure ASCII string'''
         self.__emastat = "%s%03d%s" % (message[:SPSB], ord(message[SPSB]), message[SPSB+1:])
-        log.debug(self.__emastat)
 
    # ---------------------------------
    # Implement the Event I/O Interface
@@ -175,6 +175,10 @@ class MQTTClient(Lazy):
       '''
       Publish real time individual readings to MQTT Broker
       '''
+      if self.__pubstat:
+        log.debug("Publish EMA Status line")
+        self.__mqtt.publish(topic="EMA/current/status", payload=self.__emastat)
+
       log.debug("Publish Individual readings")
       for device in self.ema.currentList:
         if not 'mqtt' in device.publishable:
