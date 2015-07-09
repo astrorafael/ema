@@ -374,4 +374,4 @@ aux_relay_publish = mqtt,html
 
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 # shared with roof_relay
-aux_log = INFO
+aux_relay_log = INFO
