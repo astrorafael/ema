@@ -81,6 +81,9 @@ mqtt_port = 1883
 # Publishing period for current measurements (in seconds)
 mqtt_period = 60
 
+# Publish Raw EMA status Line
+mqtt_publish_status = yes
+
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NONSET)
 mqtt_log = INFO
 #------------------------------------------------------------------------#
@@ -363,7 +366,9 @@ aux_off   = 22:00
 aux_relay_script = /path/to/my/script
 
 # Script mode: (Never, Once, Many)
-# When launched mutiple times, EMA server does not lauch a script
+# When launched# Publish Raw EMA status Line
+mqtt_publish_status = yes
+ mutiple times, EMA server does not lauch a script
 # till the previous run is over
 aux_relay_mode = Many
 

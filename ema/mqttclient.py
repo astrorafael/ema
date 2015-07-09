@@ -57,19 +57,23 @@ class MQTTClient(Lazy):
    FAILED        = 3
    DISCONNECTING = 4
 	
-   def __init__(self, ema, id, host, port, period, **kargs):
+   def __init__(self, ema, id, host, port, period, mqtt_publish_status, **kargs):
       Lazy.__init__(self, period / ( 2 * Server.TIMEOUT))
-      self.ema      = ema
-      self.__state  = MQTTClient.NOT_CONNECTED
-      self.__work   = 0
-      self.__host   = host
-      self.__port   = port
-      self.__period = period
-      self.__mqtt   =  mqtt.Client(client_id=id, userdata=self)
+      self.ema       = ema
+      self.__state   = MQTTClient.NOT_CONNECTED
+      self.__work    = 0
+      self.__host    = host
+      self.__port    = port
+      self.__period  = period
+      self.__pubstat = mqtt_publish_status
+      self.__emastat = "()"
+      self.__mqtt    =  mqtt.Client(client_id=id, userdata=self)
       self.__mqtt.on_connect    = on_connect
       self.__mqtt.on_disconnect = on_disconnect
       self.__mqtt.on_message    = on_message
       ema.addLazy(self)
+      if mqtt_publish_status:
+        ema.subscribeStatus(self)
       log.info("MQTT client created")
 
    # ----------------------------------------
@@ -96,6 +100,14 @@ class MQTTClient(Lazy):
    def on_message(self,  msg):
      log.debug("Topic: %s , Payload: %s" % (msg.topic, msg.payload))
 
+
+   # ----------------------------------------
+   # Implement the EMA Status Message calback
+   # -----------------------------------------
+
+   def onStatus(self, message):
+        self.__emastat = "%s%03d%s" % (message[:SPSB], ord(message[SPSB])), message[SPSB+1:])
+        log.debug(self.__emastat)
 
    # ---------------------------------
    # Implement the Event I/O Interface
