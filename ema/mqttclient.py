@@ -106,7 +106,7 @@ class MQTTClient(Lazy):
    # -----------------------------------------
 
    def onStatus(self, message):
-        self.__emastat = "%s%03d%s" % (message[:SPSB], ord(message[SPSB])), message[SPSB+1:])
+        self.__emastat = "%s%03d%s" % (message[:SPSB], ord(message[SPSB]), message[SPSB+1:])
         log.debug(self.__emastat)
 
    # ---------------------------------
