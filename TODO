@@ -1,5 +1,8 @@
-1) Upload measuements to an external server (i.e. Meteoclimatic) 
-using an API (using requests or grequest). 
-It should be designed as a nonbocking I/O not to disrupt server heartbeat.
-Maybe a separate process o thread using a queue (ZeroMQ?)
-2) Use Jinja2 to generate HTML
+1) rename xxxExternal -> xxxCommand
+2) Añadir constantes de longotud de mensaje extendido
+3) Añadir patron de request y response para el nuevo comando [24 expresiones regulares todas iguales]
+4) Incuir el nuevo comando cuando se de el on_connect complete del MQTT
+con retain y qos=2
+----
+5) Incluir canal EMA/meta que liste el resto de canales activos
+pubicarlo en el on_connect y con QoS=2 y retain=True

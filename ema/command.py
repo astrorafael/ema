@@ -173,7 +173,7 @@ class Command(Alarmable):
 		self.retries = 0
 		self.indexRes= 0
 		self.resetAlarm()       
-		self.ema.addExternal(self)
+		self.ema.addCommand(self)
 		self.sendMessage(message)
 		
 		
@@ -201,5 +201,5 @@ class Command(Alarmable):
 			self.sendMessage(self.message)
 			log.debug("Timeout waiting for command %s response, retrying", self.message)
 		else:	# to END state
-			self.ema.delExternal(self)
+			self.ema.delCommand(self)
 			log.error("Timeout: EMA not responding to %s command", self.message)

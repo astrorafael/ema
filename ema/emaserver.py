@@ -449,7 +449,7 @@ class EMAServer(server.Server):
 		return flag
 
 
-	def handleExternal(self, message):
+	def handleCommand(self, message):
 		'''Handler for requests from external hosts'''
 		flag = False
 		for handler in self.commandList:
@@ -463,14 +463,14 @@ class EMAServer(server.Server):
 	# Handling commands from UDP
 	# --------------------------
 
-	def addExternal(self, obj):
+	def addCommand(self, obj):
 		'''
 		Add an external command request to the lists of pending commands.
 		'''
 		self.commandList.append(obj)
 
 
-	def delExternal(self, obj):
+	def delCommand(self, obj):
 		'''
 		Delete an external command request from the lists of pending commands.
 		'''
@@ -497,7 +497,7 @@ class EMAServer(server.Server):
 			return
 		if self.handleUnsolicited(message):
 			return
-		if self.handleExternal(message):
+		if self.handleCommand(message):
 			return
 
 
