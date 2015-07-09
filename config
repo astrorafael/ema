@@ -318,10 +318,10 @@ pluv_log = INFO
 # Where to publish measurements
 # Comma list separated values with no quotes or single quotes
 # Values allowed so far: mqtt, html
-thermo_publish = mqtt,html
+thermop_publish = mqtt,html
 
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
-thermo_log = INFO
+thermop_log = INFO
 
 #========================================================================#
 #                      Actuator configuration Data                       #
@@ -342,7 +342,7 @@ roof_relay_mode = Many
 # Where to publish relay state
 # Comma list separated values with no quotes or single quotes
 # Values allowed so far: mqtt, html
-roof_publish = mqtt,html
+roof_relay_publish = mqtt,html
 
 #------------------------------------------------------------------------#
 # Auxiliar relay
@@ -370,7 +370,7 @@ aux_relay_mode = Many
 # Where to publish relay state
 # Comma list separated values with no quotes or single quotes
 # Values allowed so far: mqtt, html
-aux_publish = mqtt,html
+aux_relay_publish = mqtt,html
 
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 # shared with roof_relay

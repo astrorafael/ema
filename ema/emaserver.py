@@ -187,19 +187,19 @@ class EMAServer(server.Server):
 			aux_off  = config.get("AUX_RELAY", "aux_off")
 			aux_relay_script = config.get("AUX_RELAY","aux_relay_script")
 			aux_relay_mode  = config.get("AUX_RELAY","aux_relay_mode")
-			aux_publish = config.get("AUX_RELAY","aux_publish").split(',')
-			lvl = config.get("AUX_RELAY", "aux_log")
+			aux_relay_publish = config.get("AUX_RELAY","aux_relay_publish").split(',')
+			lvl = config.get("AUX_RELAY", "aux_relay_log")
 			relay.setLogLevel(parseLogLevel(lvl))       
 			self.auxRelay = relay.AuxRelay(self, 
-									aux_mode, aux_on, aux_off, VECLEN,aux_publish) 
+									aux_mode, aux_on, aux_off, VECLEN,aux_relay_publish) 
 
 		# Build RoofRelay Object
 		if config.has_section("ROOF_RELAY"):
-			roof_publish = config.get("ROOF_RELAY","roof_publish").split(',')
+			roof_relay_publish = config.get("ROOF_RELAY","roof_relay_publish").split(',')
 			roof_relay_script = config.get("ROOF_RELAY","roof_relay_script")
 			roof_relay_mode = config.get("ROOF_RELAY","roof_relay_mode")
 
-		self.roofRelay  = relay.RoofRelay(self,VECLEN,roof_publish)
+		self.roofRelay  = relay.RoofRelay(self,VECLEN,roof_relay_publish)
 
 		# Builds Voltmeter object
 		volt_thres  = config.getfloat("VOLTMETER", "volt_thres")
