@@ -310,10 +310,10 @@ class EMAServer(server.Server):
 			self.pluviometer = pluviom.Pluviometer(self, calib,VECLEN,pluv_publish)
 
 		# Build objects without configuration values
-		lvl = config.get("THERMOPILE", "thermo_log")
-		thermo_publish = config.get("THERMOPILE","thermo_publish").split(',')
+		lvl = config.get("THERMOPILE", "thermop_log")
+		thermop_publish = config.get("THERMOPILE","thermop_publish").split(',')
 		thermop.setLogLevel(parseLogLevel(lvl))     
-		self.thermopile = thermop.Thermopile(self,VECLEN,thermo_publish)
+		self.thermopile = thermop.Thermopile(self,VECLEN,thermop_publish)
 		
 		# Builds Notifier object which executes scripts
 		self.notifier = notifier.Notifier( 
