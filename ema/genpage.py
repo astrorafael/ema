@@ -247,12 +247,15 @@ class HTML(Lazy):
 
 	def tableRowsCurrent(self, page):
 		for device in self.ema.currentList:
+			if not 'html' in device.publishable:
+				log.debug("skipping publihing Device = %s", device.name)
+				continue
 			self.tableDevice(page, device)
 			try:
-				for meas in device.current:
-					value, unit = device.current[meas]
-					th, uth = device.threshold.get(meas,('',''))
-					self.tableRow(page, meas, value, unit, th, uth)
+				for key,value in device.current.iteritems():
+					val = value[0] ; unit=value[1]  
+					th, uth = device.threshold.get(key,('',''))
+					self.tableRow(page, key, val, unit, th, uth)
 			except IndexError as e:
 					log.warning("(current) Too early for HTML page generation, got %s", e)
 			
@@ -266,7 +269,7 @@ class HTML(Lazy):
 					th, uth = device.threshold.get(meas,('',''))
 					self.tableRow(page, meas, value, unit, th, uth)
 			except (IndexError, ZeroDivisionError) as e:
-					log.warning("(average) Too early for HTML page generation, got %s", e)
+				log.warning("(average) Too early for HTML page generation, got %s", e)
 					
 	def parameterTable(self, page):
 		self.tableHeader(page, 'Parametros de ajuste')
