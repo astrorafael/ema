@@ -60,7 +60,8 @@
 import logging
 import re
 
-from server import Alarmable
+from server   import Alarmable
+from emaproto import STATLENEXT
 
 log = logging.getLogger('command')
 
@@ -122,6 +123,12 @@ COMMAND = [
     'reqPat' : '\(s\)',            
     'resPat' : ['\(S00\d\)', '\(Son\d{4}\)' , '\(Sof\d{4}\)'],
 	},
+
+	{
+	'name'   : '24h Bulk Dump Page',
+    'reqPat' : '\(@H\d{4}\)',            
+    'resPat' : ['\(.{81}\s\d\{2}/\d{2}/\d{4})'],
+	},
 ]
 
 REGEXP = [ re.compile(cmd['reqPat']) for cmd in COMMAND]
@@ -140,12 +147,12 @@ class Command(Alarmable):
 	TIMEOUT = 4
 
 
-	def __init__(self, ema, **kargs):
+	def __init__(self, ema, retries = Command.RETRIES, **kargs):
 		self.ema      = ema
 		self.name     = kargs['name']
 		self.resPat   = [ re.compile(p) for p in kargs['resPat'] ]
 		self.indexRes = 0
-		self.NRetries = Command.RETRIES
+		self.NRetries = retries
 
 	# --------------
 	# Helper methods

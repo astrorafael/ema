@@ -28,7 +28,8 @@
 #
 
 
-STATLEN = 83	# Status message length including ( and ) 
+STATLEN = 83				# Status message length including ( and ) 
+STATLENEXT = STATLEN + 11	# Extended status message with final tumestamp
 
 # OFFSETS IN GEHERAL STATUS MESSAGE
 # 'end' constants are 1 character past the given field , 

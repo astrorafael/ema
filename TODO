@@ -1,6 +1,13 @@
-1) rename xxxExternal -> xxxCommand
 2) Añadir constantes de longotud de mensaje extendido
-3) Añadir patron de request y response para el nuevo comando [24 expresiones regulares todas iguales]
+3) Añadir patron de request y response para el nuevo comando 
+bucle de 24 páginas
+la clase comando debe admitir un callback para ue sea generica y cambiar origin por userdata
+addCommandComplete(self, obj)
+delCommandComplete(self, obj)
+callbacks:
+onCommandPartial(msg,userdata)
+onCommandComplete(msg,userdata)
+
 4) Incuir el nuevo comando cuando se de el on_connect complete del MQTT
 con retain y qos=2
 ----
