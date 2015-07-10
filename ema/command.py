@@ -147,7 +147,7 @@ class Command(Alarmable):
 	TIMEOUT = 4
 
 
-	def __init__(self, ema, retries = Command.RETRIES, **kargs):
+	def __init__(self, ema, retries =RETRIES, **kargs):
 		self.ema      = ema
 		self.name     = kargs['name']
 		self.resPat   = [ re.compile(p) for p in kargs['resPat'] ]

@@ -29,6 +29,7 @@ import paho.mqtt.client as mqtt
 
 from server import Lazy, Server
 from ema.emaproto  import SPSB
+import command
 
 log = logging.getLogger('mqtt')
 
@@ -64,6 +65,7 @@ class MQTTClient(Lazy):
    def __init__(self, ema, id, host, port, period, mqtt_publish_status, **kargs):
       Lazy.__init__(self, period / ( 2 * Server.TIMEOUT))
       self.ema       = ema
+      self.__topics  = False
       self.__count   = 0
       self.__state   = MQTTClient.NOT_CONNECTED
       self.__work    = 0
@@ -75,7 +77,6 @@ class MQTTClient(Lazy):
       self.__mqtt    =  mqtt.Client(client_id=id, userdata=self)
       self.__mqtt.on_connect    = on_connect
       self.__mqtt.on_disconnect = on_disconnect
-      self.__mqtt.on_message    = on_message
       ema.addLazy(self)
       if mqtt_publish_status:
         ema.subscribeStatus(self)
@@ -94,16 +95,13 @@ class MQTTClient(Lazy):
        log.error("MQTT client connection failed, rc =%d" % rc)
 
    def on_disconnect(self, rc):
-     self.__state = MQTTClient.NOT_CONNECTED
+     self.__state  = MQTTClient.NOT_CONNECTED
+     self.__topics = False
      self.ema.delReadable(self)
      if rc == 0:
        log.warning("MQTT client disconected successfully") 
      else:
        log.warning("MQTT client unexpected disconnection, rc =%d" % rc)
-
-   # Currently unusued
-   def on_message(self,  msg):
-     log.debug("Topic: %s , Payload: %s" % (msg.topic, msg.payload))
 
 
    # ----------------------------------------
@@ -149,10 +147,13 @@ class MQTTClient(Lazy):
          self.connect()
       	 return
 
+      if self.__state == MQTTClient.CONNECTED and not self.__topics:
+         self.__topics = True
+         self.publish_topics()
+
       self.__work = (self.__work + 1) % 2
       if self.__state == MQTTClient.CONNECTED and self.__work == 0:
          self.publish()
-	 return
 
       self.__mqtt.loop_misc()
 
@@ -202,7 +203,28 @@ class MQTTClient(Lazy):
       if self.__count % MQTTClient.NPUBLISH == 1:
          log.info("Published %d measurements" % self.__count)
 
+   def publish_topics(self):
+      '''
+      Publish active topics
+      '''
+      topics = ['EMA/events']
+      for device in self.ema.currentList:
+        if 'mqtt' in device.publishable:
+          try:
+            for key in device.current.iterkeys():
+              topics.append('EMA/current/%s-%s' % (device.name, key))
+          except IndexError as e:
+            log.error("Exception: %s listing device key=%s", e, device.name)
+            continue
+      self.__mqtt.publish(topic='EMA/topics', payload='\n'.join(topics), qos=2, retain=True)
+      log.info("Sent active topics to EMA/topics")
+      
 
+   def publish_bulk_dump(self):
+      '''
+      Publish last 24h bulk dump
+      '''
+      pass
 
 if __name__ == "__main__":
       pass
