@@ -26,6 +26,7 @@
 
 import logging
 import paho.mqtt.client as mqtt
+import socket
 
 from server import Lazy, Server
 from ema.emaproto  import SPSB
@@ -65,7 +66,7 @@ class MQTTClient(Lazy):
    def __init__(self, ema, id, host, port, period, mqtt_publish_status, **kargs):
       Lazy.__init__(self, period / ( 2 * Server.TIMEOUT))
       self.ema       = ema
-      self.__id      = id
+      self.__id      = id + socket.gethostname()
       self.__topics  = False
       self.__count   = 0
       self.__state   = MQTTClient.NOT_CONNECTED
@@ -75,7 +76,7 @@ class MQTTClient(Lazy):
       self.__period  = period
       self.__pubstat = mqtt_publish_status
       self.__emastat = "()"
-      self.__mqtt    =  mqtt.Client(client_id=id, userdata=self)
+      self.__mqtt    =  mqtt.Client(client_id=self.__id, userdata=self)
       self.__mqtt.on_connect    = on_connect
       self.__mqtt.on_disconnect = on_disconnect
       ema.addLazy(self)

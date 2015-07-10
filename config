@@ -69,8 +69,9 @@ udp_log = INFO
 
 # MQTT Client config
 
-#The unique client id string used when connecting to the broker.
-mqtt_id = EMA@crispi 
+# The unique id string used as the root name in topics (i.e EMA/#)
+# and also as part of the client_id when connecting to the broker.
+mqtt_id = EMA
 
 # Broker to connect
 mqtt_host = test.mosquitto.org
