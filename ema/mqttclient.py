@@ -65,6 +65,7 @@ class MQTTClient(Lazy):
    def __init__(self, ema, id, host, port, period, mqtt_publish_status, **kargs):
       Lazy.__init__(self, period / ( 2 * Server.TIMEOUT))
       self.ema       = ema
+      self.__id      = id
       self.__topics  = False
       self.__count   = 0
       self.__state   = MQTTClient.NOT_CONNECTED
@@ -87,8 +88,12 @@ class MQTTClient(Lazy):
    # -----------------------------------------
 
    def on_connect(self, flags, rc):
+     '''Send the initial event and set last will on unexpected diconnection'''
      if rc == 0:
        self.__state = MQTTClient.CONNECTED
+       self.__mqtt.publish("EMA/events", payload="EMA Server connected", qos=2, retain=True)
+       self.__mqtt.will_set("EMA/events", payload="EMA Server disconnected", qos=2, retain=True)
+       self.__mqtt.will_set("EMA/topics", payload="EMA/events", qos=2, retain=True)
        log.info("MQTT client conected successfully") 
      else:
        self.__state = MQTTClient.FAILED
