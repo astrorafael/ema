@@ -459,6 +459,16 @@ class EMAServer(server.Server):
 		return flag
 
 
+	# -------------------------------------------------
+	# Specialied handlers for Command Partial/Complete
+	# -------------------------------------------------
+
+	def onPartialCommand(self, message, userdata):
+		self.ema.udpdriver.write(message, userdata[0])
+
+	def onCommandComplete(self, message, userdata):
+		self.ema.udpdriver.write(message, userdata[0])
+
 	# --------------------------
 	# Handling commands from UDP
 	# --------------------------
@@ -509,6 +519,7 @@ class EMAServer(server.Server):
 		cmddesc = command.match(message)
 		if cmddesc:
 			cmd = command.Command(self, **cmddesc)
+			cmd.setCommandHandler(self)
 			cmd.request(message, origin)
 		else:
 			self.serdriver.write(message)

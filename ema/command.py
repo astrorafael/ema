@@ -127,7 +127,7 @@ COMMAND = [
 	{
 	'name'   : '24h Bulk Dump Page',
     'reqPat' : '\(@H\d{4}\)',            
-    'resPat' : ['\(.{81}\s\d\{2}/\d{2}/\d{4})'],
+    'resPat' : ['\(.{81}\s\d\{2}/\d{2}/\d{4}\)'],
 	},
 ]
 
@@ -151,8 +151,10 @@ class Command(Alarmable):
 		self.ema      = ema
 		self.name     = kargs['name']
 		self.resPat   = [ re.compile(p) for p in kargs['resPat'] ]
-		self.indexRes = 0
-		self.NRetries = retries
+		self.indexRes        = 0
+		self.NRetries        = retries
+		self.partialHandler  = None
+		self.completeHandler = None
 
 	# --------------
 	# Helper methods
@@ -172,10 +174,14 @@ class Command(Alarmable):
 	# Main interface
 	# --------------
 
-	def request(self, message, origin):
+	def setCommandHandler(self, obj):
+		self.partialHandler = obj
+		self.completeHandler = obj
+
+	def request(self, message, userdata):
 		'''Send a request to EMA on behalf of external origin'''
 		log.info("executing external command %s", self.name)
-		self.origin  = origin
+		self.userdata  = userdata
 		self.message = message
 		self.retries = 0
 		self.indexRes= 0
@@ -188,16 +194,20 @@ class Command(Alarmable):
 		'''Message event handler, handle response from EMA'''
 		matched = self.resPat[self.indexRes].search(message)
 		if matched:
-			self.ema.udpdriver.write(message, self.origin[0])
+			#self.ema.udpdriver.write(message, self.origin[0])
 			self.resetAlarm()
 			self.retries = 0
 			if (self.indexRes + 1) == len(self.resPat):
 				log.debug("Matched command response, command complete")
 				self.ema.delAlarmable(self)
-				self.ema.delExternal(self)
+				self.ema.delCommand(self)
+				if self.partialHandler:
+					self.partialHandler.onCommandComplete(message, self.userdata)
 			else:
 				log.debug("Matched command response, awaiting for more")
 				self.indexRes += 1
+				if self.completeHandler:
+					self.completeHandler.onPartialCommand(message, self.userdata)
 		return matched is not None
 
 

@@ -32,6 +32,16 @@ from server import Lazy, Server
 from ema.emaproto  import SPSB
 import command
 
+
+# Bulk Dump Request command
+BULK_DUMP_REQUEST = {
+  'name'   : '24h Bulk Dump Page',
+  'reqPat' : '\(@H\d{4}\)',
+  'resPat' : ['\(.{81}\s\d\{2}/\d{2}/\d{4}\)'],
+}
+
+
+
 log = logging.getLogger('mqtt')
 
 def setLogLevel(level):
@@ -156,6 +166,7 @@ class MQTTClient(Lazy):
       if self.__state == MQTTClient.CONNECTED and not self.__topics:
          self.__topics = True
          self.publish_topics()
+         self.publish_bulk_dump()
 
       self.__work = (self.__work + 1) % 2
       if self.__state == MQTTClient.CONNECTED and self.__work == 0:
@@ -226,11 +237,40 @@ class MQTTClient(Lazy):
       log.info("Sent active topics to EMA/topics")
       
 
+   def onPartialCommandC(self, message, userdata):
+      '''
+      Partial bulk dump request command handler
+      '''
+      log.debug("onPartialCommand => %s", message)
+     
+
+   def onCommandComplete(self, message, userdata):
+      '''
+      Bulk dump request command complete handler
+      '''
+      log.debug("onCommandComplete => %s", message)
+      self.dump.append(message)
+      if self.page < 324:
+        self.page += 1
+        log.debug("requesting page %d", self.page)
+        cmd = command.Command(self.ema, **BULK_DUMP_REQUEST)
+        cmd.setCommandHandler(self)
+        cmd.request("(@H%04d)" % self.page, self.page)
+      else:
+        log.debug(self.dump)
+
+
    def publish_bulk_dump(self):
       '''
       Publish last 24h bulk dump
       '''
-      pass
+      self.dump = []
+      self.page = 300
+      cmd = command.Command(self.ema, **BULK_DUMP_REQUEST)
+      cmd.setCommandHandler(self)
+      log.debug("sendung bulk request command")
+      cmd.request("(@H%04d)" % self.page, self.page)
+
 
 if __name__ == "__main__":
       pass
