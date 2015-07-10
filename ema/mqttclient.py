@@ -66,7 +66,7 @@ class MQTTClient(Lazy):
    def __init__(self, ema, id, host, port, period, mqtt_publish_status, **kargs):
       Lazy.__init__(self, period / ( 2 * Server.TIMEOUT))
       self.ema       = ema
-      self.__id      = id + socket.gethostname()
+      self.__id      = id + '@' + socket.gethostname()
       self.__topics  = False
       self.__count   = 0
       self.__state   = MQTTClient.NOT_CONNECTED
