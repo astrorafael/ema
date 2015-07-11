@@ -258,6 +258,7 @@ class MQTTClient(Lazy):
       cmd.setCommandHandler(self)
       cmd.request("(@H%04d)" % page, page)
 
+
    def onPartialCommand(self, message, userdata):
       '''
       Partial bulk dump request command handler
@@ -278,8 +279,9 @@ class MQTTClient(Lazy):
         self.page += 1
         self.requestPage(self.page)
       else:
+        date = message[10:19]
         log.debug("Collectd %d lines", len(self.bulkDump))
-        log.info("Uploading %d days of 24h history to %s", FLASH_END + 1 - FLASH_START, TOPIC_HISTORY)
+        log.info("Uploading %d days of 24h history (%s) to %s", FLASH_END + 1 - FLASH_START, date, TOPIC_HISTORY)
         self.__mqtt.publish(topic=TOPIC_HISTORY, payload='\n'.join(self.bulkDump), qos=2, retain=True)
 
 
