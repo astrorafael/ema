@@ -36,9 +36,16 @@
 # build a command object that will send the request to EMA and handle 
 # the responses from EMA.
 #
-# Responses are sent to the same origin IP. However, the Tx port is 
-# fixed by UDP driver. 
+# The v1.0 implemnentation  handled command response as simply writtimg
+# back to the UDP port with the same originating IP.
 #
+# Version v2.0 generalizes the command response by introducing 2 callback methods:
+#  - onPartialCommand(message, userdata)
+#  - on CommandComplete(message, userdata)
+#
+# Verion v2.0 also generalized the response string expected from EMA to handle
+# the bulk dum responses from EMA, where response messages are organized 
+# in a 3 x 24 pattern
 # ======================================================================
 
 # ====================================================================
@@ -55,6 +62,7 @@
 # Hour On          | (SonHHMM) | (SonHHMM)
 # Hour Off         | (SofHHMM) | (SofHHMM)
 # Aux Relay Status | (s)       | (S009)(Son1900)(Sof2200)
+# 24h Bulk Dump    | (@H0000)  | (<EMA STATUS LINE>)(<EMA STATUS LINE>)(16:17:05 06/03/2014) x 24 times
 
 
 import logging

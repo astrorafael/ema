@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------
-# Copyright (c) 2014 Rafael Gonzalez.
+# Copyright (c) 2015 Rafael Gonzalez.
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -22,6 +22,17 @@
 # ----------------------------------------------------------------------
 
 # ========================== DESIGN NOTES ==============================
+# An MQTT class implementing a MQTT client with a puere publishing-only
+# behaviour. No disconnection requests are ever made.
+#
+# This class ingerits from Lazy to periodically execute a work() procedure
+# whichi s responsible of most of the things, including keeping the connection alive
+# The work() procedure eexectues twice as fast as the keepalive timeout specidied to
+# the client MQTT library.
+#
+# This version publushes a 24h bulk dump to the MQTT broker
+# by using an object of class Command and implementing the necessary callbacks.
+# 
 # ======================================================================
 
 import logging
@@ -196,6 +207,35 @@ class MQTTClient(Lazy):
 
       self.__mqtt.loop_misc()
 
+   # ----------------------------------------
+   # Implement Command callbacks
+   # -----------------------------------------
+
+   def onPartialCommand(self, message, userdata):
+      '''
+      Partial bulk dump request command handler
+      '''
+      if len(message) == STATLEN:
+        self.bulkDump.append(transform(message))
+      else:
+        self.bulkDump.append(message)
+     
+
+   def onCommandComplete(self, message, userdata):
+      '''
+      Bulk dump request command complete handler
+      '''
+      log.debug("onCommandComplete => %s", message)
+      self.bulkDump.append(message)
+      if self.page < FLASH_END :
+        self.page += 1
+        self.requestPage(self.page)
+      else:
+        date = message[10:19]
+        log.debug("Collectd %d lines", len(self.bulkDump))
+        log.info("Uploading %d days of 24h history (%s) to %s", FLASH_END + 1 - FLASH_START, date, TOPIC_HISTORY)
+        self.__mqtt.publish(topic=TOPIC_HISTORY, payload='\n'.join(self.bulkDump), qos=2, retain=True)
+
    # --------------
    # Helper methods
    # --------------
@@ -270,31 +310,7 @@ class MQTTClient(Lazy):
       cmd.request("(@H%04d)" % page, page)
 
 
-   def onPartialCommand(self, message, userdata):
-      '''
-      Partial bulk dump request command handler
-      '''
-      if len(message) == STATLEN:
-        self.bulkDump.append(transform(message))
-      else:
-        self.bulkDump.append(message)
-     
-
-   def onCommandComplete(self, message, userdata):
-      '''
-      Bulk dump request command complete handler
-      '''
-      log.debug("onCommandComplete => %s", message)
-      self.bulkDump.append(message)
-      if self.page < FLASH_END :
-        self.page += 1
-        self.requestPage(self.page)
-      else:
-        date = message[10:19]
-        log.debug("Collectd %d lines", len(self.bulkDump))
-        log.info("Uploading %d days of 24h history (%s) to %s", FLASH_END + 1 - FLASH_START, date, TOPIC_HISTORY)
-        self.__mqtt.publish(topic=TOPIC_HISTORY, payload='\n'.join(self.bulkDump), qos=2, retain=True)
-
+   
 
    def publishBulkDump(self):
       '''
