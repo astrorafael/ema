@@ -127,7 +127,7 @@ COMMAND = [
 	{
 	'name'   : '24h Bulk Dump Page',
     'reqPat' : '\(@H\d{4}\)',            
-    'resPat' : ['\(.{81}\s\d\{2}/\d{2}/\d{4}\)'],
+    'resPat' : ['\(.{82}\)', '\(.{81}\)', '\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)'],
 	},
 ]
 
@@ -192,6 +192,7 @@ class Command(Alarmable):
 		
 	def onResponseDo(self, message):
 		'''Message event handler, handle response from EMA'''
+		log.debug("trying to match %s", message)
 		matched = self.resPat[self.indexRes].search(message)
 		if matched:
 			#self.ema.udpdriver.write(message, self.origin[0])

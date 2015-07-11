@@ -33,15 +33,6 @@ from ema.emaproto  import SPSB
 import command
 
 
-# Bulk Dump Request command
-BULK_DUMP_REQUEST = {
-  'name'   : '24h Bulk Dump Page',
-  'reqPat' : '\(@H\d{4}\)',
-  'resPat' : ['\(.{81}\s\d\{2}/\d{2}/\d{4}\)'],
-}
-
-
-
 log = logging.getLogger('mqtt')
 
 def setLogLevel(level):
@@ -165,8 +156,8 @@ class MQTTClient(Lazy):
 
       if self.__state == MQTTClient.CONNECTED and not self.__topics:
          self.__topics = True
-         self.publish_topics()
-         self.publish_bulk_dump()
+         self.publishTopics()
+         self.publishBulkDump()
 
       self.__work = (self.__work + 1) % 2
       if self.__state == MQTTClient.CONNECTED and self.__work == 0:
@@ -220,7 +211,7 @@ class MQTTClient(Lazy):
       if self.__count % MQTTClient.NPUBLISH == 1:
          log.info("Published %d measurements" % self.__count)
 
-   def publish_topics(self):
+   def publishTopics(self):
       '''
       Publish active topics
       '''
@@ -237,11 +228,21 @@ class MQTTClient(Lazy):
       log.info("Sent active topics to EMA/topics")
       
 
-   def onPartialCommandC(self, message, userdata):
+   def requestPage(self, page):
+      '''
+      Request current flash page to EMA
+      '''
+      log.debug("requesting page %d", page)
+      cmd = command.Command(self.ema, retries=0, **command.COMMAND[-1])
+      cmd.setCommandHandler(self)
+      cmd.request("(@H%04d)" % page, page)
+
+   def onPartialCommand(self, message, userdata):
       '''
       Partial bulk dump request command handler
       '''
       log.debug("onPartialCommand => %s", message)
+      self.bulkDump.append(message)
      
 
    def onCommandComplete(self, message, userdata):
@@ -249,28 +250,21 @@ class MQTTClient(Lazy):
       Bulk dump request command complete handler
       '''
       log.debug("onCommandComplete => %s", message)
-      self.dump.append(message)
+      self.bulkDump.append(message)
       if self.page < 324:
         self.page += 1
-        log.debug("requesting page %d", self.page)
-        cmd = command.Command(self.ema, **BULK_DUMP_REQUEST)
-        cmd.setCommandHandler(self)
-        cmd.request("(@H%04d)" % self.page, self.page)
+        self.requestPage(self.page)
       else:
-        log.debug(self.dump)
+        log.debug("Uploading bulk dump to MQTT broker")
 
 
-   def publish_bulk_dump(self):
+   def publishBulkDump(self):
       '''
       Publish last 24h bulk dump
       '''
-      self.dump = []
+      self.bulkDump = []
       self.page = 300
-      cmd = command.Command(self.ema, **BULK_DUMP_REQUEST)
-      cmd.setCommandHandler(self)
-      log.debug("sendung bulk request command")
-      cmd.request("(@H%04d)" % self.page, self.page)
-
+      self.requestPage(self.page)
 
 if __name__ == "__main__":
       pass

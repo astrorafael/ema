@@ -130,6 +130,7 @@ class EMAServer(server.Server):
 		lvl = parseLogLevel(lvl)
 		command.setLogLevel(lvl)
 		genpage.setLogLevel(lvl)
+		setLogLevel(lvl)
 
 		# Serial Port object Building
 		port = config.get("SERIAL", "serial_port")
@@ -502,13 +503,19 @@ class EMAServer(server.Server):
 		handlers in turn, by priority
 		'''
 		if self.handleStatus(message):
+			log.debug("handled as ordinary Status Message")
 			return
 		if self.handleRequest(message):
+			log.debug("handled as parameter sync request")
 			return
 		if self.handleUnsolicited(message):
+			log.debug("handled as ordinary Status Message")
 			return
 		if self.handleCommand(message):
+			log.debug("handled as Command")
 			return
+		log.debug("unhandled message from EMA")
+
 
 
 	def onUDPMessage(self, message, origin):
