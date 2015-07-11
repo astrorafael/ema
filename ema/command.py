@@ -74,60 +74,70 @@ COMMAND = [
     'name'   : 'Roof Force Open',
     'reqPat' : '\(X007\)',            
     'resPat' : ['\(X007\)', '\(\d{2}:\d{2}:\d{2} Abrir Obs. FORZADO\)' ],
+    'iterations'   : 1,
 	},
 
 	{
     'name'   : 'Roof Force Close',
     'reqPat' : '\(X000\)',            
     'resPat' : ['\(X000\)', '\(\d{2}:\d{2}:\d{2} Cerrar Obs.\)' ],	
+    'iterations'   : 1,
 	},
 
 	{
     'name'   : 'Aux Relay Force Open',
     'reqPat' : '\(S005\)',            
     'resPat' : ['\(S005\)', '\(\d{2}:\d{2}:\d{2} Calentador on.\)' ],
+    'iterations'   : 1,
 	},
 
 	{
     'name'   : 'Aux Relay Force Close',
     'reqPat' : '\(S004\)',            
     'resPat' : ['\(S004\)' , '\(\d{2}:\d{2}:\d{2} Calentador off.\)' ],
+    'iterations'   : 1,
 	},
 
 	{
 	'name'   : 'Aux Relay Timer Mode On',
     'reqPat' : '\(S009\)',            
     'resPat' : ['\(S009\)', '\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4} Timer ON\)' ],
+    'iterations'   : 1,
 	},
 
 	{
 	'name'   : 'Aux Relay Timer Mode Off',
     'reqPat' : '\(S008\)',            
     'resPat' : ['\(S008\)', '\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4} Timer OFF\)' ],
+    'iterations'   : 1,
 	},
 
 	{
 	'name'   : 'Aux Relay Timer On Hour Set',
     'reqPat' : '\(Son\d{4}\)',            
     'resPat' : ['\(Son\d{4}\)'],
+    'iterations'   : 1,
 	},
 
 	{
 	'name'   : 'Aux Relay Timer Off Hour Set',
     'reqPat' : '\(Sof\d{4}\)',            
     'resPat' : ['\(Sof\d{4}\)'],
+    'iterations'   : 1,
 	},
 
 	{
 	'name'   : 'Aux Relay Status',
     'reqPat' : '\(s\)',            
     'resPat' : ['\(S00\d\)', '\(Son\d{4}\)' , '\(Sof\d{4}\)'],
+    'iterations'   : 1,
 	},
 
 	{
 	'name'   : '24h Bulk Dump Page',
     'reqPat' : '\(@H\d{4}\)',            
     'resPat' : ['\(.{82}\)', '\(.{81}\)', '\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)'],
+    'iterations'   : 24,
 	},
 ]
 
@@ -153,6 +163,8 @@ class Command(Alarmable):
 		self.resPat   = [ re.compile(p) for p in kargs['resPat'] ]
 		self.indexRes        = 0
 		self.NRetries        = retries
+		self.NIterations     = kargs['iterations']
+		self.iteration       = 1
 		self.partialHandler  = None
 		self.completeHandler = None
 
@@ -182,9 +194,10 @@ class Command(Alarmable):
 		'''Send a request to EMA on behalf of external origin'''
 		log.info("executing external command %s", self.name)
 		self.userdata  = userdata
-		self.message = message
-		self.retries = 0
-		self.indexRes= 0
+		self.message   = message
+		self.retries   = 0
+		self.indexRes  = 0
+		self.iteration = 1
 		self.resetAlarm()       
 		self.ema.addCommand(self)
 		self.sendMessage(message)
