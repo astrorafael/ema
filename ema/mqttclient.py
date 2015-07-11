@@ -43,6 +43,21 @@ TOPIC_CURRENT_STATUS = "EMA/current/status"
 FLASH_START = 300
 FLASH_END   = 300
 
+# Hitoric dump period In tick units
+HISTORIC = (6*3600*2) /  Server.TIMEOUT
+
+# tog info every NPLUBLIS times (ticks) 
+NPUBLISH = 60
+
+# MQTT Connection Status
+NOT_CONNECTED = 0
+CONNECTING    = 1
+CONNECTED     = 2
+FAILED        = 3
+DISCONNECTING = 4
+	
+
+
 log = logging.getLogger('mqtt')
 
 def setLogLevel(level):
@@ -69,35 +84,26 @@ def transform(message):
 
 class MQTTClient(Lazy):
 
-
-   # tog info every NPLUBLIS times 
-   NPUBLISH = 60
-
-   # MQTT Connection Status
-   NOT_CONNECTED = 0
-   CONNECTING    = 1
-   CONNECTED     = 2
-   FAILED        = 3
-   DISCONNECTING = 4
-	
-   def __init__(self, ema, id, host, port, period, mqtt_publish_status, **kargs):
+   def __init__(self, ema, id, host, port, period, historic, mqtt_publish_status, **kargs):
       Lazy.__init__(self, period / ( 2 * Server.TIMEOUT))
       TOPIC_EVENTS         = "%s/events"  % id
       TOPIC_TOPICS         = "%s/topics"  % id
       TOPIC_HISTORY        = "%s/history" % id
       TOPIC_CURRENT_STATUS = "%s/current/status" % id
-      self.ema       = ema
-      self.__id      = id
-      self.__topics  = False
-      self.__count   = 0
-      self.__state   = MQTTClient.NOT_CONNECTED
-      self.__work    = 0
-      self.__host    = host
-      self.__port    = port
-      self.__period  = period
-      self.__pubstat = mqtt_publish_status
-      self.__emastat = "()"
-      self.__mqtt    =  mqtt.Client(client_id=id+'@'+socket.gethostname(), userdata=self)
+      HISTORIC        = (historic * 3600 * 2) / Server.TIMEOUT  
+      self.ema        = ema
+      self.__id       = id
+      self.__topics   = False
+      self.__stats    = 0
+      self.__count    = 0
+      self.__hiscount = 0
+      self.__state    = NOT_CONNECTED
+      self.__host     = host
+      self.__port     = port
+      self.__period   = period
+      self.__pubstat  = mqtt_publish_status
+      self.__emastat  = "()"
+      self.__mqtt     =  mqtt.Client(client_id=id+'@'+socket.gethostname(), userdata=self)
       self.__mqtt.on_connect    = on_connect
       self.__mqtt.on_disconnect = on_disconnect
       ema.addLazy(self)
@@ -112,17 +118,17 @@ class MQTTClient(Lazy):
    def on_connect(self, flags, rc):
      '''Send the initial event and set last will on unexpected diconnection'''
      if rc == 0:
-       self.__state = MQTTClient.CONNECTED
+       self.__state = CONNECTED
        self.__mqtt.publish(TOPIC_EVENTS,  payload="EMA Server connected", qos=2, retain=True)
        self.__mqtt.will_set(TOPIC_EVENTS, payload="EMA Server disconnected", qos=2, retain=True)
        self.__mqtt.will_set(TOPIC_TOPICS, payload="EMA/events", qos=2, retain=True)
        log.info("MQTT client conected successfully") 
      else:
-       self.__state = MQTTClient.FAILED
+       self.__state = FAILED
        log.error("MQTT client connection failed, rc =%d" % rc)
 
    def on_disconnect(self, rc):
-     self.__state  = MQTTClient.NOT_CONNECTED
+     self.__state  = NOT_CONNECTED
      self.__topics = False
      self.ema.delReadable(self)
      if rc == 0:
@@ -170,18 +176,23 @@ class MQTTClient(Lazy):
       if not self.ema.isSyncDone():
          return
 	 
-      if self.__state == MQTTClient.NOT_CONNECTED:
+      if self.__state == NOT_CONNECTED:
          self.connect()
       	 return
 
-      if self.__state == MQTTClient.CONNECTED and not self.__topics:
+      # Do this only once in server lifetime
+      if self.__state == CONNECTED and not self.__topics:
          self.__topics = True
          self.publishTopics()
          self.publishBulkDump()
 
-      self.__work = (self.__work + 1) % 2
-      if self.__state == MQTTClient.CONNECTED and self.__work == 0:
+      self.__count = (self.__count + 1) % 2
+      if self.__state == CONNECTED and self.__count == 0:
          self.publish()
+
+      self.__hiscount = (self.__hiscount + 1) % HISTORIC
+      if self.__state == CONNECTED and self.__hiscount == 0:
+         self.publishBulkDump()
 
       self.__mqtt.loop_misc()
 
@@ -198,11 +209,11 @@ class MQTTClient(Lazy):
       try:
         log.info("Connecting to MQTT Broker %s:%s", self.__host, self.__port)
         self.__mqtt.connect(self.__host, self.__port, self.__period)
-        self.__state = MQTTClient.CONNECTING
+        self.__state = CONNECTING
         self.ema.addReadable(self)
       except Exception, e:
          log.error("Could not contact MQTT Broker %s: %s", self.__host, self.__port, e)
-         self.__state = MQTTClient.FAILED
+         self.__state = FAILED
          raise
    
 
@@ -224,9 +235,9 @@ class MQTTClient(Lazy):
               self.__mqtt.publish(topic=topic, payload=payload)
           except IndexError as e:
             log.error("Exception: %s reading device=%s", e, device.name)
-      self.__count += 1
-      if self.__count % MQTTClient.NPUBLISH == 1:
-         log.info("Published %d measurements" % self.__count)
+      self.__stats += 1
+      if self.__stats % NPUBLISH == 1:
+         log.info("Published %d measurements" % self.__stats)
 
 
    def publishTopics(self):
