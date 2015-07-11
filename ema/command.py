@@ -136,7 +136,7 @@ COMMAND = [
 	{
 	'name'   : '24h Bulk Dump Page',
     'reqPat' : '\(@H\d{4}\)',            
-    'resPat' : ['\(.{82}\)', '\(.{81}\)', '\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)'],
+    'resPat' : ['\(.{81}\)', '\(.{81}\)', '\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)'],
     'iterations'   : 24,
 	},
 ]
@@ -177,7 +177,7 @@ class Command(Alarmable):
 		Do the actual sending of message to EMA and associated 
 		timeout bookeeping
 		'''
-		n = self.ema.serdriver.queueDelay() + Command.TIMEOUT
+		n = self.ema.serdriver.queueDelay() + Command.TIMEOUT*self.NIterations
 		self.setTimeout(n)
 		self.ema.addAlarmable(self)
 		self.ema.serdriver.write(message)
@@ -192,7 +192,7 @@ class Command(Alarmable):
 
 	def request(self, message, userdata):
 		'''Send a request to EMA on behalf of external origin'''
-		log.info("executing external command %s", self.name)
+		log.debug("executing external command %s", self.name)
 		self.userdata  = userdata
 		self.message   = message
 		self.retries   = 0
@@ -208,20 +208,25 @@ class Command(Alarmable):
 		log.debug("trying to match %s", message)
 		matched = self.resPat[self.indexRes].search(message)
 		if matched:
-			#self.ema.udpdriver.write(message, self.origin[0])
 			self.resetAlarm()
 			self.retries = 0
-			if (self.indexRes + 1) == len(self.resPat):
+			if (self.indexRes + 1) == len(self.resPat) and self.iteration == self.NIterations:
 				log.debug("Matched command response, command complete")
 				self.ema.delAlarmable(self)
 				self.ema.delCommand(self)
-				if self.partialHandler:
-					self.partialHandler.onCommandComplete(message, self.userdata)
-			else:
-				log.debug("Matched command response, awaiting for more")
-				self.indexRes += 1
 				if self.completeHandler:
-					self.completeHandler.onPartialCommand(message, self.userdata)
+					self.completeHandler.onCommandComplete(message, self.userdata)
+			elif (self.indexRes + 1) == len(self.resPat) and self.iteration < self.NIterations:
+				log.debug("Matched command response, iteration complete")
+				self.iteration += 1
+				self.indexRes = 0
+				if self.partialHandler:
+					self.partialHandler.onPartialCommand(message, self.userdata)
+			else:
+				log.debug("Matched command response (iteration %d), awaiting for more", self.iteration)
+				self.indexRes += 1
+				if self.partialHandler:
+					self.partialHandler.onPartialCommand(message, self.userdata)
 		return matched is not None
 
 
