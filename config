@@ -167,7 +167,7 @@ low_volt_mode = Once
 
 # Where to publish measurements
 # Comma list separated values with no quotes or single quotes
-# Values allowed so far: mqtt, html
+# Allowed values: html, mqtt  (or just leave a blank line)
 volt_publish = mqtt,html
 
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
@@ -185,7 +185,7 @@ barom_offset = -19
 
 # Where to publish measurements
 # Comma list separated values with no quotes or single quotes
-# Values allowed so far: mqtt, html
+# Allowed values: html, mqtt  (or just leave a blank line)
 barom_publish = mqtt,html
 
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
@@ -201,7 +201,7 @@ rain_thres = 1
 
 # Where to publish measurements
 # Comma list separated values with no quotes or single quotes
-# Values allowed so far: mqtt, html
+# Allowed values: html, mqtt  (or just leave a blank line)
 rain_publish = mqtt,html
 
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
@@ -219,7 +219,7 @@ pelt_thres = 67
 
 # Where to publish measurements
 # Comma list separated values with no quotes or single quotes
-# Values allowed so far: mqtt, html
+# Allowed values: html, mqtt  (or just leave a blank line)
 pelt_publish = mqtt,html
 
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
@@ -233,7 +233,7 @@ pyr_offset = 0
 
 # Where to publish measurements
 # Comma list separated values with no quotes or single quotes
-# Values allowed so far: mqtt, html
+# Allowed values: html, mqtt  (or just leave a blank line)
 pyr_publish = mqtt,html
 
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
@@ -251,7 +251,7 @@ phot_thres  = 10.5
 
 # Where to publish measurements
 # Comma list separated values with no quotes or single quotes
-# Values allowed so far: mqtt, html
+# Allowed values: html, mqtt  (or just leave a blank line)
 phot_publish = mqtt,html
 
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
@@ -269,7 +269,7 @@ delta_thres = 5.0
 
 # Where to publish measurements
 # Comma list separated values with no quotes or single quotes
-# Values allowed so far: mqtt, html
+# Allowed values: html, mqtt  (or just leave a blank line)
 thermo_publish = mqtt,html
 
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
@@ -296,7 +296,7 @@ wind_thres10 = 66
 
 # Where to publish measurements
 # Comma list separated values with no quotes or single quotes
-# Values allowed so far: mqtt, html
+# Allowed values: html, mqtt  (or just leave a blank line)
 anem_publish = mqtt,html
 
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
@@ -311,7 +311,7 @@ pluv_calib = 124
 
 # Where to publish measurements
 # Comma list separated values with no quotes or single quotes
-# Values allowed so far: mqtt, html
+# Allowed values: html, mqtt  (or just leave a blank line)
 pluv_publish = mqtt,html
 
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
@@ -324,7 +324,7 @@ pluv_log = INFO
 
 # Where to publish measurements
 # Comma list separated values with no quotes or single quotes
-# Values allowed so far: mqtt, html
+# Allowed values: html, mqtt  (or just leave a blank line)
 thermop_publish = mqtt,html
 
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
@@ -348,7 +348,7 @@ roof_relay_mode = Many
 
 # Where to publish relay state
 # Comma list separated values with no quotes or single quotes
-# Values allowed so far: mqtt, html
+# Allowed values: html, mqtt  (or just leave a blank line)
 roof_relay_publish = mqtt,html
 
 #------------------------------------------------------------------------#
@@ -378,7 +378,7 @@ aux_relay_mode = Many
 
 # Where to publish relay state
 # Comma list separated values with no quotes or single quotes
-# Values allowed so far: mqtt, html
+# Allowed values: html, mqtt  (or just leave a blank line)
 aux_relay_publish = mqtt,html
 
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
