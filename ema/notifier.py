@@ -126,7 +126,7 @@ class Script(object):
 		try:
 			self.child = subprocess.Popen((self.path,) + args)
 		except (OSError, ValueError) as e:
-			log.error(e)
+			log.error("runOnce(%s): %s", self.path, e)
 		else:
 			self.executed = True
 			raise ExecutedScript(self.name, *args)
@@ -145,7 +145,7 @@ class Script(object):
 		try:
 			self.child = subprocess.Popen((self.path,) + args)
 		except (OSError, ValueError) as e:
-			log.error(e)
+			log.error("runMany(%s): %s", self.path, e)
 		else:
 			raise ExecutedScript(self.name, *args)
 		return
