@@ -164,9 +164,10 @@ class EMAServer(server.Server):
 		mqtt_period = config.getint("MQTT", "mqtt_period")
 		mqtt_historic = config.getint("MQTT", "mqtt_period_historic")
 		mqtt_publish_status = config.getboolean("MQTT", "mqtt_publish_status")
+		mqtt_poweroff = config.getboolean("MQTT", "mqtt_energy_savings")
 		lvl = config.get("MQTT", "mqtt_log")
                 mqttclient.setLogLevel(parseLogLevel(lvl))
-		self.mqttclient = mqttclient.MQTTClient(self, mqtt_id, mqtt_host, mqtt_port, mqtt_period, mqtt_historic, mqtt_publish_status, **opts)
+		self.mqttclient = mqttclient.MQTTClient(self, mqtt_id, mqtt_host, mqtt_port, mqtt_period, mqtt_historic, mqtt_publish_status, mqtt_poweroff, **opts)
 
 		# Builds RTC Object
 		deltaT = config.getint("RTC", "rtc_delta")   

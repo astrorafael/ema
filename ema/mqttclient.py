@@ -38,6 +38,7 @@
 import logging
 import paho.mqtt.client as mqtt
 import socket
+from datetime import datetime
 
 from server import Lazy, Server
 from ema.emaproto  import SPSB, STATLEN
@@ -95,7 +96,7 @@ def transform(message):
 
 class MQTTClient(Lazy):
 
-   def __init__(self, ema, id, host, port, period, historic, mqtt_publish_status, **kargs):
+   def __init__(self, ema, id, host, port, period, historic, publish_status, poweroff, **kargs):
       Lazy.__init__(self, period / ( 2 * Server.TIMEOUT))
       TOPIC_EVENTS         = "%s/events"  % id
       TOPIC_TOPICS         = "%s/topics"  % id
@@ -103,6 +104,7 @@ class MQTTClient(Lazy):
       TOPIC_CURRENT_STATUS = "%s/current/status" % id
       HISTORIC        = (historic * 3600 * 2) / Server.TIMEOUT  
       self.ema        = ema
+      self.__poweroff = poweroff
       self.__id       = id
       self.__topics   = False
       self.__stats    = 0
@@ -112,16 +114,16 @@ class MQTTClient(Lazy):
       self.__host     = host
       self.__port     = port
       self.__period   = period
-      self.__pubstat  = mqtt_publish_status
+      self.__pubstat  = publish_status
       self.__emastat  = "()"
       self.__mqtt     =  mqtt.Client(client_id=id+'@'+socket.gethostname(), userdata=self)
       self.__mqtt.on_connect    = on_connect
       self.__mqtt.on_disconnect = on_disconnect
       ema.addLazy(self)
-      if mqtt_publish_status:
-        ema.subscribeStatus(self)
-      log.info("MQTT client created")
-
+      if publish_status:
+         ema.subscribeStatus(self)
+      log.info("MQTT client created. Energy savings mode = %s", poweroff)
+ 
    # ----------------------------------------
    # MQTT Callbacks
    # -----------------------------------------
@@ -235,6 +237,12 @@ class MQTTClient(Lazy):
         log.debug("Collectd %d lines", len(self.bulkDump))
         log.info("Uploading %d days of 24h history (%s) to %s", FLASH_END + 1 - FLASH_START, date, TOPIC_HISTORY)
         self.__mqtt.publish(topic=TOPIC_HISTORY, payload='\n'.join(self.bulkDump), qos=2, retain=True)
+        if self.__poweroff:
+           msg = "EMA Server powering off at %s" % datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+           self.__mqtt.publish(TOPIC_EVENTS,  payload=msg, qos=2, retain=True)
+           log.info("Gracefully powering off the computer")
+           [h.flush() for h in log.handlers]
+           subprocess.call(['sudo','shutdown','-h','now'])
 
    # --------------
    # Helper methods
