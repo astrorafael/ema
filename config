@@ -88,8 +88,17 @@ mqtt_period_historic = 6
 # Publish Raw EMA status Line
 mqtt_publish_status = yes
 
+# Enery savings mode.
+# In this mode, EMA Server will publish historic data and then gracefully
+# powers the computer off.
+# You must configure Aux relay to power the computer on every day,
+# This mode superseedes periodic data publication.
+# Allowed values: yes / no
+mqtt_energy_savings = no
+
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NONSET)
 mqtt_log = INFO
+
 #------------------------------------------------------------------------#
 
 [HTML]
