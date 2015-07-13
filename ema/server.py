@@ -183,10 +183,10 @@ class Server(object):
             try:
                 self.step(Server.TIMEOUT)
             except KeyboardInterrupt:
-                log.exception("Keyboard Interrupt")
+                log.warning("Server.run() aborted by user request")
                 break
             except Exception as e:
-                log.error(e)
+                log.exception(e)
                 break
            
 
