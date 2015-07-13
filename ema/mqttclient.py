@@ -235,8 +235,8 @@ class MQTTClient(Lazy):
       else:
         date = message[10:19]
         log.debug("Collectd %d lines", len(self.bulkDump))
-        log.info("Uploading %d days of 24h history (%s) to %s", FLASH_END + 1 - FLASH_START, date, TOPIC_HISTORY)
         self.__mqtt.publish(topic=TOPIC_HISTORY, payload='\n'.join(self.bulkDump), qos=2, retain=True)
+        log.info("Uploaded %d days of 24h history (%s) to %s", FLASH_END + 1 - FLASH_START, date, TOPIC_HISTORY)
         if self.__poweroff:
            msg = "EMA Server powering off at %s" % datetime.now().strftime('%Y-%m-%d %H:%M:%S')
            self.__mqtt.publish(TOPIC_EVENTS,  payload=msg, qos=2, retain=True)
@@ -282,10 +282,10 @@ class MQTTClient(Lazy):
               payload = "%s %s" % value 
               self.__mqtt.publish(topic=topic, payload=payload)
           except IndexError as e:
-            log.error("Exception: %s reading device=%s", e, device.name)
-      self.__stats += 1
-      if self.__stats % NPUBLISH == 1:
+            log.error("publish() Exception: %s reading device=%s", e, device.name)
+      if self.__stats % NPUBLISH == 0:
          log.info("Published %d measurements" % self.__stats)
+      self.__stats += 1
 
 
    def publishTopics(self):
