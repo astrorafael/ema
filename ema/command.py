@@ -67,6 +67,8 @@
 
 import logging
 import re
+from   abc import abstractmethod
+
 
 from server   import Alarmable
 from emaproto import STATLENEXT
@@ -158,6 +160,8 @@ def match(message):
 			return COMMAND[REGEXP.index(regexp)]
 	return None
 
+# Note that command inherits form Alarmabe, which allready has
+# ABMeta as its metaclass 
 class Command(Alarmable):
 
 	# Command retry
@@ -194,10 +198,6 @@ class Command(Alarmable):
 	# Main interface
 	# --------------
 
-	def setCommandHandler(self, obj):
-		self.partialHandler = obj
-		self.completeHandler = obj
-
 	def request(self, message, userdata):
 		'''Send a request to EMA on behalf of external origin'''
 		log.debug("executing external command %s", self.name)
@@ -222,19 +222,16 @@ class Command(Alarmable):
 				log.debug("Matched command response, command complete")
 				self.ema.delAlarmable(self)
 				self.ema.delCommand(self)
-				if self.completeHandler:
-					self.completeHandler.onCommandComplete(message, self.userdata)
+				self.onCommandComplete(message, self.userdata)
 			elif (self.indexRes + 1) == len(self.resPat) and self.iteration < self.NIterations:
 				log.debug("Matched command response, iteration complete")
 				self.iteration += 1
 				self.indexRes = 0
-				if self.partialHandler:
-					self.partialHandler.onPartialCommand(message, self.userdata)
+				self.onPartialCommand(message, self.userdata)
 			else:
 				log.debug("Matched command response (iteration %d), awaiting for more", self.iteration)
 				self.indexRes += 1
-				if self.partialHandler:
-					self.partialHandler.onPartialCommand(message, self.userdata)
+				self.onPartialCommand(message, self.userdata)
 		return matched is not None
 
 
@@ -247,3 +244,20 @@ class Command(Alarmable):
 		else:	# to END state
 			self.ema.delCommand(self)
 			log.error("Timeout: EMA not responding to %s command", self.message)
+	
+	# ----------------------------------------------
+	# Abstract methods to be overriden in subclasses
+	# ----------------------------------------------
+
+	@abstractmethod
+	def onPartialCommand(self, message, userdata):
+		'''To be subclassed and overriden'''
+		pass
+
+	@abstractmethod
+	def onCommandComplete(self, message, userdata):
+		'''To be subclassed and overriden'''
+		pass
+
+
+

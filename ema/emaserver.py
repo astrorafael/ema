@@ -49,6 +49,7 @@ import server
 import notifier
 import genpage
 import command
+
 from emaproto import STATLEN, MTCUR, SMTB
 
 import dev.rtc         as rtc
@@ -462,16 +463,6 @@ class EMAServer(server.Server):
 		return flag
 
 
-	# -------------------------------------------------
-	# Specialied handlers for Command Partial/Complete
-	# -------------------------------------------------
-
-	def onPartialCommand(self, message, userdata):
-		self.ema.udpdriver.write(message, userdata[0])
-
-	def onCommandComplete(self, message, userdata):
-		self.ema.udpdriver.write(message, userdata[0])
-
 	# --------------------------
 	# Handling commands from UDP
 	# --------------------------
@@ -527,8 +518,7 @@ class EMAServer(server.Server):
 		'''
 		cmddesc = command.match(message)
 		if cmddesc:
-			cmd = command.Command(self, **cmddesc)
-			cmd.setCommandHandler(self)
+			cmd = ExternalCommand(self, **cmddesc)
 			cmd.request(message, origin)
 		else:
 			self.serdriver.write(message)
@@ -571,6 +561,22 @@ class EMAServer(server.Server):
 	def stop(self):
 		log.info("Shutting down EMA server")
 		logging.shutdown()
+
+
+class ExternalCommand(command.Command):
+	'''Handles external commands comming from UDP messages'''
+        def __init__(self, ema, retries=command.Command.RETRIES, **kargs):
+                command.Command.__init__(self,ema,retries,**kargs)
+
+        def onPartialCommand(self, message, userdata):
+		'''Forward it to UDP driver'''
+                self.ema.udpdriver.write(message, userdata[0])
+
+        def onCommandComplete(self, message, userdata):
+		'''Forward it to UDP driver'''
+                self.ema.udpdriver.write(message, userdata[0])
+
+
 
 if __name__ == "__main__":
 	import logger

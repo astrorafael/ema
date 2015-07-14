@@ -42,7 +42,7 @@ from datetime import datetime
 
 from server import Lazy, Server
 from ema.emaproto  import SPSB, STATLEN
-import command
+from command import Command, COMMAND
 
 
 # TOPIC Default vaules
@@ -92,6 +92,32 @@ def on_message(client, userdata, msg):
 def transform(message):
     '''Transform EMA status message into a pure ASCII string'''
     return "%s%03d%s" % (message[:SPSB], ord(message[SPSB]), message[SPSB+1:])
+
+
+
+class BulkDumpCommand(Command):
+   '''
+   Commad subclass to handle bulk dump request and responses via callbacks
+   '''
+
+   def __init__(self, ema, retries, **kargs):
+      Command.__init__(self,ema,retries,**kargs)
+
+   # delegate to MQTT client object as it has all the needed context
+   def onPartialCommand(self, message, userdata):
+      '''
+      Partial bulk dump handler
+      '''
+      self.ema.mqttclient.onPartialCommand(message,userdata)
+
+   # delegate to MQTT client object as it has all he needed context
+   def onCommandComplete(self, message, userdata):
+      '''
+      Bulk dump Command complete handler
+      '''
+      self.ema.mqttclient.onCommandComplete(message,userdata)
+
+
 
 
 class MQTTClient(Lazy):
@@ -313,8 +339,7 @@ class MQTTClient(Lazy):
       Request current flash page to EMA
       '''
       log.debug("requesting page %d", page)
-      cmd = command.Command(self.ema, retries=0, **command.COMMAND[-1])
-      cmd.setCommandHandler(self)
+      cmd = BulkDumpCommand(self.ema, retries=0, **COMMAND[-1])
       cmd.request("(@H%04d)" % page, page)
 
 
@@ -327,6 +352,7 @@ class MQTTClient(Lazy):
       self.bulkDump = []
       self.page = FLASH_START
       self.requestPage(self.page)
+
 
 if __name__ == "__main__":
       pass
