@@ -114,9 +114,11 @@ class RTCParameter(AbstractParameter):
 
 class RTC(Lazy):
 
-    def __init__(self, ema, config):
-        deltaT = config.getint("RTC", "rtc_delta")
-        N      = config.getfloat("RTC", "rtc_period")
+    def __init__(self, ema, parser):
+        lvl = parser.get("RTC", "rtc_log")
+        log.setLevel(lvl)
+        deltaT = parser.getint("RTC", "rtc_delta")
+        N      = parser.getfloat("RTC", "rtc_period")
         N      =  int(round(N / PERIOD))
         Lazy.__init__(self, N)
         self.ema = ema

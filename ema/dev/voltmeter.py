@@ -32,9 +32,6 @@ from ema.device    import Device
 
 log = logging.getLogger('voltmeter')
 
-def setLogLevel(level):
-    log.setLevel(level)
-
 THRESHOLD = {
     'name': 'Voltmeter Threshold',
     'logger': 'voltmeter' ,
@@ -65,16 +62,16 @@ class Voltmeter(Alarmable, Device):
 
     VOLTAGE = 'voltage'
 
-    def __init__(self, ema, config, N):
-        lvl = config.get("VOLTMETER", "volt_log")
+    def __init__(self, ema, parser, N):
+        lvl = parser.get("VOLTMETER", "volt_log")
         log.setLevel(lvl)
-        thres   = config.getfloat("VOLTMETER", "volt_thres")
-        offset  = config.getfloat("VOLTMETER", "volt_offset")
-        delta   = config.getfloat("VOLTMETER", "volt_delta")
-        time    = config.getint("VOLTMETER",    "volt_time")
-        publish = config.get("VOLTMETER","volt_publish").split(',')
-        script  = config.get("VOLTMETER","low_volt_script")
-        mode    = config.get("VOLTMETER","low_volt_mode")
+        thres   = parser.getfloat("VOLTMETER", "volt_thres")
+        offset  = parser.getfloat("VOLTMETER", "volt_offset")
+        delta   = parser.getfloat("VOLTMETER", "volt_delta")
+        time    = parser.getint("VOLTMETER",    "volt_time")
+        publish = parser.get("VOLTMETER","volt_publish").split(',')
+        script  = parser.get("VOLTMETER","low_volt_script")
+        mode    = parser.get("VOLTMETER","low_volt_mode")
         Alarmable.__init__(self,3)
 	Device.__init__(self, publish)
         self.ema         = ema
