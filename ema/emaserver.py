@@ -172,16 +172,7 @@ class EMAServer(server.Server):
 
 		# Build Auxiliar Relay Object
 		if config.has_section("AUX_RELAY"):
-			aux_mode = config.get("AUX_RELAY", "aux_mode")
-			aux_on   = config.get("AUX_RELAY", "aux_on") 
-			aux_off  = config.get("AUX_RELAY", "aux_off")
-			aux_relay_script = config.get("AUX_RELAY","aux_relay_script")
-			aux_relay_mode  = config.get("AUX_RELAY","aux_relay_mode")
-			aux_relay_publish = config.get("AUX_RELAY","aux_relay_publish").split(',')
-			lvl = config.get("AUX_RELAY", "aux_relay_log")
-			relay.setLogLevel(parseLogLevel(lvl))       
-			self.auxRelay = relay.AuxRelay(self, 
-									aux_mode, aux_on, aux_off, VECLEN,aux_relay_publish) 
+			self.auxRelay = relay.AuxRelay(self, config)
 
 		# Build RoofRelay Object
 		if config.has_section("ROOF_RELAY"):
