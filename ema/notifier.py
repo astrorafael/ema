@@ -182,7 +182,7 @@ class Notifier(object):
 		''' *_script are tuples of (path, mode)'''
 		self.lowVoltScript   = Script((script,mode))
 		
-	def addVAuxRelaycript(self, mode, script):
+	def addAuxRelayScript(self, mode, script):
 		''' *_script are tuples of (path, mode)'''
 		self.auxRelayScript  = Script((script,mode))
 

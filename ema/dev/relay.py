@@ -111,15 +111,15 @@ class AuxRelay(Alarmable, Device):
 	}
 
 
-	def __init__(self, ema, parser):
+	def __init__(self, ema, parser, N):
 		lvl = parser.get("AUX_RELAY", "aux_relay_log")
 		log.setLevel(lvl)
-		mode = parser.get("AUX_RELAY", "aux_mode")
-		tON  = parser.get("AUX_RELAY", "aux_on")
-		tOFF = parser.get("AUX_RELAY", "aux_off")
-		script = parser.get("AUX_RELAY","aux_relay_script")
+		mode         = parser.get("AUX_RELAY", "aux_mode")
+		tON          = parser.get("AUX_RELAY", "aux_on")
+		tOFF         = parser.get("AUX_RELAY", "aux_off")
+		script       = parser.get("AUX_RELAY","aux_relay_script")
 		script_mode  = parser.get("AUX_RELAY","aux_relay_mode")
-		publish = parser.get("AUX_RELAY","aux_relay_publish").split(',')
+		publish      = parser.get("AUX_RELAY","aux_relay_publish").split(',')
 		Alarmable.__init__(self,3)
                 Device.__init__(self, publish)
 		myself = self if AuxRelay.MAPPING[mode] == AuxRelay.TIMED else None
@@ -134,7 +134,7 @@ class AuxRelay(Alarmable, Device):
 		ema.addSync(self.mode)
 		ema.subscribeStatus(self)
 		ema.addParameter(self)
-		ema.notfier.addAuxRelayScript((script, script_mode))
+		ema.notifier.addAuxRelayScript(script_mode, script)
 
 	def onTimeoutDo(self):
 		if self.mode.value != AuxRelay.TIMED :

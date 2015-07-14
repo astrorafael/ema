@@ -172,7 +172,7 @@ class EMAServer(server.Server):
 
 		# Build Auxiliar Relay Object
 		if config.has_section("AUX_RELAY"):
-			self.auxRelay = relay.AuxRelay(self, config)
+			self.auxRelay = relay.AuxRelay(self, config, VECLEN)
 
 		# Build RoofRelay Object
 		if config.has_section("ROOF_RELAY"):
