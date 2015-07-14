@@ -30,9 +30,6 @@ from ema.device    import Device
 
 log = logging.getLogger('watchdog')
 
-def setLogLevel(level):
-    log.setLevel(level)
-
 PERIOD = {
     'name': 'Watchdog Period',
     'logger' : 'watchdog' ,
@@ -46,7 +43,10 @@ PERIOD = {
 
 class WatchDog(Lazy, Device):
 
-    def __init__(self, ema, period):
+    def __init__(self, ema, parser):
+        lvl = parser.get("WATCHDOG", "wdog_log")
+        log.setLevel(lvl)
+        period = parser.getint("WATCHDOG", "keepalive")
         Lazy.__init__(self)
         self.ema = ema
         self.period = Parameter(ema, None, period, **PERIOD)

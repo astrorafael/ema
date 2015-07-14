@@ -167,12 +167,8 @@ class EMAServer(server.Server):
 		# Builds RTC Object
 		self.rtc = rtc.RTC(self, config)
 		
-
 		# Builds Watchdog object
-		keepalive = config.getint("WATCHDOG", "keepalive")
-		lvl = config.get("WATCHDOG", "wdog_log")
-		wdog.setLogLevel(parseLogLevel(lvl))
-		self.watchdog = wdog.WatchDog(self,keepalive)
+		self.watchdog = wdog.WatchDog(self, config)
 
 		# Build Auxiliar Relay Object
 		if config.has_section("AUX_RELAY"):
