@@ -304,7 +304,7 @@ class MQTTClient(Lazy):
           try:
             for key, value in device.current.iteritems():
               log.debug("%s publishing current %s => %s %s", device.name, key, value[0], value[1])
-	      topic   = "%s/current/%s-%s" % (self.__id, device.name, key)
+	      topic   = "%s/current/%s/%s" % (self.__id, device.name, key)
               payload = "%s %s" % value 
               self.__mqtt.publish(topic=topic, payload=payload)
           except IndexError as e:
@@ -326,7 +326,7 @@ class MQTTClient(Lazy):
         if 'mqtt' in device.publishable:
           try:
             for key in device.current.iterkeys():
-              topics.append('%s/current/%s-%s' % (self.__id, device.name, key))
+              topics.append('%s/current/%s/%s' % (self.__id, device.name, key))
           except IndexError as e:
             log.error("Exception: %s listing device key=%s", e, device.name)
             continue
