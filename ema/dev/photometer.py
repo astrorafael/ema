@@ -33,9 +33,6 @@ from ema.device    import Device
 
 log = logging.getLogger('photomete')
 
-def setLogLevel(level):
-    log.setLevel(level)
-
 THRESHOLD = {
     'name': 'Photometer Threshold',
     'logger' : 'photomete',
@@ -69,7 +66,12 @@ class Photometer(Alarmable, Device):
 
     MAGNITUDE = 'magnitude'
 
-    def __init__(self, ema, thres, offset, N, publish):
+    def __init__(self, ema, parser, N):
+        lvl     = parser.get("PHOTOMETER", "phot_log")
+        log.setLevel(lvl)
+        publish = parser.get("PHOTOMETER","phot_publish").split(',')
+        offset  = parser.getfloat("PHOTOMETER", "phot_offset")
+        thres   = parser.getfloat("PHOTOMETER", "phot_thres")
         Alarmable.__init__(self,3)
 	Device.__init__(self,publish)
         self.thres   = Parameter(ema, self, thres, **THRESHOLD)

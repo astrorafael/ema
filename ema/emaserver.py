@@ -186,15 +186,7 @@ class EMAServer(server.Server):
 		# Builds (optional) Photometer Sensor object
 		# Photometer is updated every 60 seconds
 		if config.has_section("PHOTOMETER"):
-			phot_publish = config.get("PHOTOMETER","phot_publish").split(',')
-			phot_offset  = config.getfloat("PHOTOMETER", "phot_offset")
-			phot_thres   = config.getfloat("PHOTOMETER", "phot_thres")
-			lvl = config.get("PHOTOMETER", "phot_log")
-			photom.setLogLevel(parseLogLevel(lvl))
-			self.photometer = photom.Photometer(self, 
-												phot_thres, 
-												phot_offset,
-												int(round(self.uploadPeriod / 60)),phot_publish)
+			self.photometer = photom.Photometer(self, config, int(round(self.uploadPeriod / 60))) 
 
 		# Builds (optional) Barometer object
 		if config.has_section("BAROMETER"):
