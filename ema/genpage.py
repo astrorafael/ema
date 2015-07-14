@@ -58,13 +58,9 @@ import os
 import os.path
 import datetime
 
-from server import Lazy
+from server import Lazy, Server
 
 log = logging.getLogger('genpage')
-
-def setLogLevel(level):
-    log.setLevel(level)
-
 
 
 HEADER = '''
@@ -181,7 +177,12 @@ PARAMETER = {
 class HTML(Lazy):
 	TEMPNAME = '.ema.html'
 
-	def __init__(self, ema, path, N):
+	def __init__(self, ema, parser):
+                lvl      = parser.get("HTML", "html_log")
+		log.setLevel(lvl)
+		path     = parser.get("HTML", "html_file")
+                period   = parser.getfloat("HTML", "html_period")
+                N        =  int(round(period / Server.TIMEOUT) )
 		Lazy.__init__(self, N)
 		self.path     = path
 		self.dirname  = os.path.dirname(path)

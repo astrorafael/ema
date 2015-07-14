@@ -130,7 +130,6 @@ class EMAServer(server.Server):
 		lvl = config.get("GENERIC", "generic_log")
 		lvl = parseLogLevel(lvl)
 		command.setLogLevel(lvl)
-		genpage.setLogLevel(lvl)
 		setLogLevel(lvl)
 
 		# Serial Port object Building
@@ -160,6 +159,9 @@ class EMAServer(server.Server):
 
 		# Builds Notifier object which executes scripts
 		self.notifier = notifier.Notifier()
+
+		# Build EMA HTML Page Generator object
+		self.genpage = genpage.HTML(self, config)
 
 		# MQTT Driver object 
 		self.mqttclient = mqttclient.MQTTClient(self, config, **opts)
@@ -277,14 +279,6 @@ class EMAServer(server.Server):
 		thermop.setLogLevel(parseLogLevel(lvl))     
 		self.thermopile = thermop.Thermopile(self,VECLEN,thermop_publish)
 		
-
-		# Build EMA Page Generator object
-		html_file     = config.get("HTML", "html_file")
-		html_period   = config.getfloat("HTML", "html_period")
-		lvl = config.get("HTML", "html_log")
-		genpage.setLogLevel(parseLogLevel(lvl)) 
-		N   =  int(round(html_period / server.Server.TIMEOUT) )
-		self.genpage = genpage.HTML(self, html_file, N)
 
 
 	# ----------------------------------
