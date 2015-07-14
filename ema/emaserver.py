@@ -176,11 +176,7 @@ class EMAServer(server.Server):
 
 		# Build RoofRelay Object
 		if config.has_section("ROOF_RELAY"):
-			roof_relay_publish = config.get("ROOF_RELAY","roof_relay_publish").split(',')
-			roof_relay_script = config.get("ROOF_RELAY","roof_relay_script")
-			roof_relay_mode = config.get("ROOF_RELAY","roof_relay_mode")
-
-		self.roofRelay  = relay.RoofRelay(self,VECLEN,roof_relay_publish)
+			self.roofRelay  = relay.RoofRelay(self, config, VECLEN)
 
 		# Builds Voltmeter object
 		self.voltmeter = volt.Voltmeter(self, config, VECLEN)

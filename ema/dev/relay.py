@@ -32,9 +32,6 @@ from ema.device    import Device
 
 log = logging.getLogger('relays')
 
-def setLogLevel(level):
-	log.setLevel(level)
-
 # On/Off flags as string constants
 ON  = 'ON'
 OFF = 'OFF'
@@ -201,13 +198,17 @@ class RoofRelay(Device):
 		'a' : 'Manual switch on, overriding thresholds' ,
 	}
 
-	def __init__(self, ema,  N, publish):
+	def __init__(self, ema,  parser, N):
+		publish      = parser.get("ROOF_RELAY","roof_relay_publish").split(',')
+		relay_script = parser.get("ROOF_RELAY","roof_relay_script")
+		relay_mode   = parser.get("ROOF_RELAY","roof_relay_mode")
                 Device.__init__(self, publish)
 		self.relay = Vector(N)
 		self.ema   = ema
 		ema.subscribeStatus(self)
 		ema.addCurrent(self)
 		ema.addAverage(self)
+		ema.notifier.addRoofRelayScript(relay_mode, relay_script)
 		
 
 	def onStatus(self, message):
