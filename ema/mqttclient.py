@@ -122,7 +122,16 @@ class BulkDumpCommand(Command):
 
 class MQTTClient(Lazy):
 
-   def __init__(self, ema, id, host, port, period, historic, publish_status, poweroff, **kargs):
+   def __init__(self, ema, parser, **kargs):
+      lvl      = parser.get("MQTT", "mqtt_log")
+      log.setLevel(lvl)
+      id       = parser.get("MQTT", "mqtt_id")
+      host     = parser.get("MQTT", "mqtt_host")
+      port     = parser.getint("MQTT", "mqtt_port")
+      period   = parser.getint("MQTT", "mqtt_period")
+      historic = parser.getint("MQTT", "mqtt_period_historic")
+      poweroff = parser.getboolean("MQTT", "mqtt_energy_savings")
+      publish_status = parser.getboolean("MQTT", "mqtt_publish_status")
       Lazy.__init__(self, period / ( 2 * Server.TIMEOUT))
       TOPIC_EVENTS         = "%s/events"  % id
       TOPIC_TOPICS         = "%s/topics"  % id
