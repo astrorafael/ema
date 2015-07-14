@@ -174,12 +174,7 @@ class EMAServer(server.Server):
 		self.mqttclient = mqttclient.MQTTClient(self, mqtt_id, mqtt_host, mqtt_port, mqtt_period, mqtt_historic, mqtt_publish_status, mqtt_poweroff, **opts)
 
 		# Builds RTC Object
-		deltaT = config.getint("RTC", "rtc_delta")   
-		N = config.getfloat("RTC", "rtc_period")
-		N =  int(round(N / EMAServer.PERIOD))  
-		lvl = config.get("RTC", "rtc_log")
-		rtc.setLogLevel(parseLogLevel(lvl))    
-		self.rtc = rtc.RTC(self, deltaT, N)
+		self.rtc = rtc.RTC(self, config)
 		
 
 		# Builds Watchdog object

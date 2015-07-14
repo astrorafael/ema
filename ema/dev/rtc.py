@@ -27,6 +27,7 @@ import datetime
 
 from ema.server    import Server, Lazy
 from ema.parameter import AbstractParameter
+from ema.emaproto  import PERIOD
 
 log = logging.getLogger('rtc')
 
@@ -113,7 +114,10 @@ class RTCParameter(AbstractParameter):
 
 class RTC(Lazy):
 
-    def __init__(self, ema, deltaT, N):
+    def __init__(self, ema, config):
+        deltaT = config.getint("RTC", "rtc_delta")
+        N      = config.getfloat("RTC", "rtc_period")
+        N      =  int(round(N / PERIOD))
         Lazy.__init__(self, N)
         self.ema = ema
         self.param = RTCParameter(ema, deltaT)
