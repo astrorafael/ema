@@ -171,13 +171,25 @@ class Notifier(object):
 	# Modes as a set text strings to be used in config file
 	MODES = {'Never', 'Once', 'Many'}
 
-	def __init__(self,  low_voltage_script, 
-				roof_relay_script, aux_relay_script):
+	def __init__(self):
+		pass
+
+	# ---------------------------								
+	# Adding scripts to notifier
+	# ---------------------------
+
+	def addVoltScript(self, mode, script):
 		''' *_script are tuples of (path, mode)'''
-		self.roofRelayScript = Script(roof_relay_script) 
-		self.auxRelayScript  = Script(aux_relay_script)
-		self.lowVoltScript   = Script(low_voltage_script)
-								
+		self.lowVoltScript   = Script((script,mode))
+		
+	def addVAuxRelaycript(self, mode, script):
+		''' *_script are tuples of (path, mode)'''
+		self.auxRelayScript  = Script((script,mode))
+
+	def addRoofRelayScript(self, mode, script):
+		''' *_script are tuples of (path, mode)'''
+		self.roofRelayScript = Script((script,mode)) 
+
 	# ---------------------------
 	# Event handlers from Devices
 	# ---------------------------

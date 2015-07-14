@@ -25,7 +25,7 @@ import logging
 import re
 
 from ema.server    import Alarmable
-from ema.emaproto  import SPSB
+from ema.emaproto  import SPSB, PERIOD
 from ema.parameter import Parameter
 from ema.vector    import Vector
 from ema.device    import Device
@@ -65,15 +65,25 @@ class Voltmeter(Alarmable, Device):
 
     VOLTAGE = 'voltage'
 
-    def __init__(self, ema, thres, offset, volt_delta, N, AVLEN, publish):
+    def __init__(self, ema, config, N):
+        lvl = config.get("VOLTMETER", "volt_log")
+        log.setLevel(lvl)
+        thres   = config.getfloat("VOLTMETER", "volt_thres")
+        offset  = config.getfloat("VOLTMETER", "volt_offset")
+        delta   = config.getfloat("VOLTMETER", "volt_delta")
+        time    = config.getint("VOLTMETER",    "volt_time")
+        publish = config.get("VOLTMETER","volt_publish").split(',')
+        script  = config.get("VOLTMETER","low_volt_script")
+        mode    = config.get("VOLTMETER","low_volt_mode")
         Alarmable.__init__(self,3)
 	Device.__init__(self, publish)
         self.ema         = ema
         self.thres       = Parameter(ema, self, thres, **THRESHOLD)
         self.offset      = Parameter(ema, None, offset, **OFFSET)
         self.voltage     = Vector(N)
-        self.averlen     = AVLEN
-        self.lowvolt     = volt_delta + thres
+        self.averlen     = int(round(time / PERIOD))
+        self.lowvolt     = delta + thres
+	ema.notifier.addVoltScript(mode,script)
         ema.addSync(self.thres)
         ema.subscribeStatus(self)
         ema.addCurrent(self)

@@ -27,6 +27,8 @@
 # EMA protocol is sometimes revised
 #
 
+# EMA send status messages every 5 seconds
+PERIOD = 5
 
 STATLEN = 83				# Status message length including ( and ) 
 STATLENEXT = STATLEN + 11	# Extended status message with final tumestamp

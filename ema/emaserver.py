@@ -87,7 +87,7 @@ import ConfigParser as parser
 
 class EMAServer(server.Server):
 
-	PERIOD = 5 # EMA sends message status  each PERIOD seconds
+	PERIOD = 5
 
 	# Unsolicited Responses Patterns
 	URPAT = ( '\(\d{2}:\d{2}:\d{2} wait\)' ,            # Photometer 1
@@ -158,6 +158,9 @@ class EMAServer(server.Server):
 		self.udpdriver.addHandler(self)
 		self.addReadable(self.udpdriver)
 
+		# Builds Notifier object which executes scripts
+		self.notifier = notifier.Notifier()
+
 		# MQTT Driver object 
  		mqtt_id     = config.get("MQTT", "mqtt_id")
 		mqtt_host   = config.get("MQTT", "mqtt_host")
@@ -207,22 +210,7 @@ class EMAServer(server.Server):
 		self.roofRelay  = relay.RoofRelay(self,VECLEN,roof_relay_publish)
 
 		# Builds Voltmeter object
-		volt_thres  = config.getfloat("VOLTMETER", "volt_thres")
-		volt_offset = config.getfloat("VOLTMETER", "volt_offset")
-		volt_delta  = config.getfloat("VOLTMETER", "volt_delta")
-		volt_time   = config.getint("VOLTMETER",    "volt_time")
-		volt_publish = config.get("VOLTMETER","volt_publish").split(',')
-		low_volt_script = config.get("VOLTMETER","low_volt_script")
-		low_volt_mode   = config.get("VOLTMETER","low_volt_mode")
-
-		AVERLEN     =  int(round(volt_time / EMAServer.PERIOD)) 
-		lvl = config.get("VOLTMETER", "volt_log")
-		volt.setLogLevel(parseLogLevel(lvl))
-		self.voltmeter = volt.Voltmeter(self, 
-							volt_thres, 
-							volt_offset, 
-							volt_delta, 
-							VECLEN, AVERLEN,volt_publish)
+		self.voltmeter = volt.Voltmeter(self, config, VECLEN)
 	
 		# Builds (optional) Photometer Sensor object
 		# Photometer is updated every 60 seconds
@@ -320,11 +308,6 @@ class EMAServer(server.Server):
 		thermop.setLogLevel(parseLogLevel(lvl))     
 		self.thermopile = thermop.Thermopile(self,VECLEN,thermop_publish)
 		
-		# Builds Notifier object which executes scripts
-		self.notifier = notifier.Notifier( 
-					(low_volt_script, low_volt_mode),
-					(roof_relay_script, roof_relay_mode),
-					(aux_relay_script, aux_relay_mode))
 
 		# Build EMA Page Generator object
 		html_file     = config.get("HTML", "html_file")
