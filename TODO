@@ -1,15 +1,13 @@
-2) Añadir constantes de longotud de mensaje extendido
-3) Añadir patron de request y response para el nuevo comando 
-bucle de 24 páginas
-la clase comando debe admitir un callback para ue sea generica y cambiar origin por userdata
-addCommandComplete(self, obj)
-delCommandComplete(self, obj)
-callbacks:
-onCommandPartial(msg,userdata)
-onCommandComplete(msg,userdata)
+1) Que cada device se lea su configuracion del config parser para aliviar el build de la EMA
+2) Subclaasificar comandos en lugar de que los coallbacks vayan a un tercer objeto
+3) Planficador de horas de enciendio y apagado
+  - Para permitir varios ciclos de apagado/enciendio al dia
+     - aux_start    = 01:00,13:00,20:00
+     - aux_duration = 00:15,00:15,01:00
+  - tON y tOFF ya no srran parametros. habra que controlar eso con comandos
+  - Si el modo es energy_savings, now() debe estar comprendido en uno de los intervalos
+    si no pasa eso, hay algo mal configurado
+  No se si el planificador debe ser parte del objeto AuxRelay, probabemente no ...
+  
 
-4) Incuir el nuevo comando cuando se de el on_connect complete del MQTT
-con retain y qos=2
-----
-5) Incluir canal EMA/meta que liste el resto de canales activos
-pubicarlo en el on_connect y con QoS=2 y retain=True
+   
