@@ -210,21 +210,8 @@ class EMAServer(server.Server):
 
 		# Builds (optional) Anemometer Object
 		if config.has_section("ANEMOMETER"):
-			anem_publish = config.get("ANEMOMETER","anem_publish").split(',')
-			w_th   = config.getfloat("ANEMOMETER", "wind_thres")        
-			w_th10 = config.getfloat("ANEMOMETER", "wind_thres10")        
-			a_calib   = config.getfloat("ANEMOMETER", "anem_calib")        
-			a_type    = config.get("ANEMOMETER", "anem_type")
-			a_model = 1 if a_type == "TX20" else 0
-			lvl = config.get("ANEMOMETER", "anem_log")
-			anemom.setLogLevel(parseLogLevel(lvl))
-			self.anemometer = anemom.Anemometer(self,
-												w_th, 
-												w_th10, 
-												a_calib, 
-												a_model,
-												VECLEN,
-												anem_publish)
+			self.anemometer = anemom.Anemometer(self, config, VECLEN)
+
 		# Builds (optional) Pluviometer Object
 		if config.has_section("PLUVIOMETER"):
 			pluv_publish = config.get("PLUVIOMETER","pluv_publish").split(',')

@@ -87,8 +87,16 @@ class Anemometer(Device):
     SPEED10   = 'speed10'
     DIRECTION = 'direction'
 
-    def __init__(self, ema, thres, aver_thres, calibration, model, N, publish):
-	Device.__init__(self, publish)
+    def __init__(self, ema, parser, N):
+        lvl         = parser.get("ANEMOMETER", "anem_log")
+        log.setLevel(lvl)
+        publish     = parser.get("ANEMOMETER","anem_publish").split(',')
+        thres       = parser.getfloat("ANEMOMETER", "wind_thres")
+        aver_thres  = parser.getfloat("ANEMOMETER", "wind_thres10")
+        calibration = parser.getfloat("ANEMOMETER", "anem_calib")
+        model       = parser.get("ANEMOMETER", "anem_type")
+        model       = 1 if model == "TX20" else 0
+        Device.__init__(self, publish)
         self.windth    = Parameter(ema, None, thres, **THRESHOLD_I)
         self.wind10th  = Parameter(ema, None, aver_thres, **THRESHOLD_M)
         self.calib     = Parameter(ema, None, calibration, **CALIBRATION)
