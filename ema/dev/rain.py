@@ -50,7 +50,11 @@ class RainSensor(Device):
 
     RAIN = 'rain'
 
-    def __init__(self, ema, thres, N, publish):
+    def __init__(self, ema, parser, N):
+        lvl     = parser.get("RAIN", "rain_log")
+        log.setLevel(lvl)
+        publish = parser.get("RAIN","rain_publish").split(',')
+        thres   = parser.getfloat("RAIN", "rain_thres")
 	Device.__init__(self, publish)
         self.thres     = Parameter(ema, None, thres, **THRESHOLD)
         self.rain      = Vector(N)

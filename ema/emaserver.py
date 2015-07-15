@@ -194,11 +194,7 @@ class EMAServer(server.Server):
 		
 		# Builds (optional) Rain Detector Object
 		if config.has_section("RAIN"):
-			rain_publish = config.get("RAIN","rain_publish").split(',')
-			thres = config.getfloat("RAIN", "rain_thres")  
-			lvl = config.get("RAIN", "rain_log")
-			rain.setLogLevel(parseLogLevel(lvl))      
-			self.rainsensor = rain.RainSensor(self, thres, VECLEN, rain_publish)
+			self.rainsensor = rain.RainSensor(self, config, VECLEN)
 			
 
 		# Builds (optional) Cloud Sensor object
