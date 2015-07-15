@@ -202,16 +202,7 @@ class EMAServer(server.Server):
 
 		# Builds (optional) Pyranometer Sensor object
 		if config.has_section("PYRANOMETER"):
-			pyr_publish = config.get("PYRANOMETER","pyr_publish").split(',')
-			pyr_offset  = config.getfloat("PYRANOMETER", "pyr_offset")
-			pyr_gain    = config.getfloat("PYRANOMETER", "pyr_gain")
-			lvl = config.get("PYRANOMETER", "pyr_log")
-			pyran.setLogLevel(parseLogLevel(lvl))
-			self.pyranometer = pyran.Pyranometer(self, 
-												pyr_gain, 
-												pyr_offset,
-												VECLEN,
-												pyr_publish)
+			self.pyranometer = pyran.Pyranometer(self, config, VECLEN)
 
 		# Builds (optional) Thermometer Object
 		if config.has_section("THERMOMETER"):
