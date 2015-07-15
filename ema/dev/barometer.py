@@ -62,11 +62,16 @@ class Barometer(Device):
 
     PRESSURE = 'pressure'
 
-    def __init__(self, ema, height, offset, N, publish):
-	Device.__init__(self, publish)
+    def __init__(self, ema, parser, N):
+        lvl = parser.get("BAROMETER", "barom_log")
+        log.setLevel(lvl)
+        publish = parser.get("BAROMETER","barom_publish").split(',')
+        height  = parser.getfloat("BAROMETER", "barom_height")
+        offset  = parser.getfloat("BAROMETER", "barom_offset")
+        Device.__init__(self, publish)
         self.height    = Parameter(ema, None, height, **HEIGHT)
         self.offset    = Parameter(ema, None, offset, **OFFSET)
-        self.pressure = Vector(N)
+        self.pressure  = Vector(N)
         ema.addSync(self.height)
         ema.addSync(self.offset)
         ema.subscribeStatus(self)

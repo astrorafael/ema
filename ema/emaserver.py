@@ -190,14 +190,7 @@ class EMAServer(server.Server):
 
 		# Builds (optional) Barometer object
 		if config.has_section("BAROMETER"):
-			baro_publish = config.get("BAROMETER","barom_publish").split(',')
-			baro_height = config.getfloat("BAROMETER", "barom_height")
-			baro_offset = config.getfloat("BAROMETER", "barom_offset")
-			lvl = config.get("BAROMETER", "barom_log")
-			barom.setLogLevel(parseLogLevel(lvl))
-			self.barometer = barom.Barometer(self, 
-								baro_height, baro_offset, VECLEN, baro_publish)
-			
+			self.barometer = barom.Barometer(self, config, VECLEN) 
 		
 		# Builds (optional) Rain Detector Object
 		if config.has_section("RAIN"):
