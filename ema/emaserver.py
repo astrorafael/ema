@@ -195,18 +195,10 @@ class EMAServer(server.Server):
 		# Builds (optional) Rain Detector Object
 		if config.has_section("RAIN"):
 			self.rainsensor = rain.RainSensor(self, config, VECLEN)
-			
 
 		# Builds (optional) Cloud Sensor object
 		if config.has_section("CLOUD"):
-			pelt_publish = config.get("CLOUD","pelt_publish").split(',')
-			pelt_thres  = config.getfloat("CLOUD", "pelt_thres")
-			pelt_gain   = config.getfloat("CLOUD", "pelt_gain")
-			lvl = config.get("CLOUD", "pelt_log")
-			cloud.setLogLevel(parseLogLevel(lvl))
-			self.clouds = cloud.CloudSensor(self, pelt_thres, 
-											pelt_gain, VECLEN,pelt_publish)
-			
+			self.clouds = cloud.CloudSensor(self, config, VECLEN)
 
 		# Builds (optional) Pyranometer Sensor object
 		if config.has_section("PYRANOMETER"):
