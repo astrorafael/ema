@@ -165,7 +165,8 @@ volt_delta = 0.2
 # Note 'volt_time' should be less than 'upload_period' (see above)
 volt_time = 30
 
-# Absolute path to a script invoked when low voltage is detected. 
+# List of comma separated scripts to execute on low voltage 
+# Each script should show the full path. 
 # leave empty if not used
 low_volt_script = /home/pi/nto/ema/scripts/volt-script
 
@@ -347,7 +348,10 @@ thermop_log = INFO
 # Roof relay
 [ROOF_RELAY]
 
-# Aboslute path to a script invoked when this relay switches on/off 
+# List of comma separated scripts to execute  
+# on change of roof relay switch 
+# Each script should show the full path. 
+# leave empty if not used
 roof_relay_script = /home/pi/nto/ema/scripts/roof-script
 
 # Script mode: (Never, Once, Many)
@@ -374,7 +378,9 @@ aux_mode = Timed
 aux_on    = 19:00
 aux_off   = 22:00
 
-# Absolute path to a script invoked when this relay switches on/off 
+# List of comma separated scripts to execute  
+# on change of aux relay switch 
+# Each script should show the full path. 
 # leave empty if not used
 aux_relay_script = /path/to/my/script
 
