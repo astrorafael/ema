@@ -214,17 +214,10 @@ class EMAServer(server.Server):
 
 		# Builds (optional) Pluviometer Object
 		if config.has_section("PLUVIOMETER"):
-			pluv_publish = config.get("PLUVIOMETER","pluv_publish").split(',')
-			calib = config.getfloat("PLUVIOMETER", "pluv_calib") 
-			lvl = config.get("PLUVIOMETER", "pluv_log")
-			pluviom.setLogLevel(parseLogLevel(lvl))       
-			self.pluviometer = pluviom.Pluviometer(self, calib,VECLEN,pluv_publish)
+			self.pluviometer = pluviom.Pluviometer(self, config, VECLEN)
 
 		# Build objects without configuration values
-		lvl = config.get("THERMOPILE", "thermop_log")
-		thermop_publish = config.get("THERMOPILE","thermop_publish").split(',')
-		thermop.setLogLevel(parseLogLevel(lvl))     
-		self.thermopile = thermop.Thermopile(self,VECLEN,thermop_publish)
+		self.thermopile = thermop.Thermopile(self, config, VECLEN)
 		
 
 

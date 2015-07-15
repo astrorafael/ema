@@ -43,7 +43,10 @@ class Thermopile(Device):
 	SKY     = 'sky'
 	AMBIENT = 'ambient'
 
-	def __init__(self, ema, N, publish):
+	def __init__(self, ema, parser, N):
+		lvl = parser.get("THERMOPILE", "thermop_log")
+		log.setLevel(lvl)
+		publish = parser.get("THERMOPILE","thermop_publish").split(',')
 		Device.__init__(self, publish)
 		self.infrared = Vector(N)
 		self.capsule  = Vector(N)
