@@ -173,6 +173,9 @@ class Notifier(object):
 
 	def __init__(self):
 		pass
+		self.lowVoltScript   = []
+		self.auxRelayScript  = []
+		self.roofRelayScript = []
 
 	# ---------------------------								
 	# Adding scripts to notifier
@@ -180,15 +183,15 @@ class Notifier(object):
 
 	def addVoltScript(self, mode, script):
 		''' *_script are tuples of (path, mode)'''
-		self.lowVoltScript   = Script((script,mode))
+		self.lowVoltScript.append(Script((script,mode)))
 		
 	def addAuxRelayScript(self, mode, script):
 		''' *_script are tuples of (path, mode)'''
-		self.auxRelayScript  = Script((script,mode))
+		self.auxRelayScript.append(Script((script,mode)))
 
 	def addRoofRelayScript(self, mode, script):
 		''' *_script are tuples of (path, mode)'''
-		self.roofRelayScript = Script((script,mode)) 
+		self.roofRelayScript.append(Script((script,mode))) 
 
 	# ---------------------------
 	# Event handlers from Devices
@@ -196,20 +199,23 @@ class Notifier(object):
 
 	def onVoltageLow(self, voltage, threshold, n):
 		try:
-			self.lowVoltScript.run("--voltage", voltage, "--threshold", threshold, "--size", n)
+			for script in self.lowVoltScript:
+				script.run("--voltage", voltage, "--threshold", threshold, "--size", n)
 		except ExecutedScript as e:
 			log.critical("Executed a Low Voltage script: %s ", e)
 
 
 	def onRoofRelaySwitch(self, on_off, reason):
 		try:
-			self.roofRelayScript.run("--status", on_off, "--reason", reason)
+			for script in self.roofRelayScript:
+				script.run("--status", on_off, "--reason", reason)
 		except ExecutedScript as e:
 			log.warning("Executed a Roof Relay script: %s ", e)
 
 
 	def onAuxRelaySwitch(self, on_off, reason):
 		try:
-			self.auxRelayScript.run("--status", on_off, "--reason", reason)
+			for script in self.auxRelayScript:
+				script.run("--status", on_off, "--reason", reason)
 		except ExecutedScript as e:
 			log.warning("Executed an Aux Relay script: %s ", e)

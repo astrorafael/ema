@@ -70,7 +70,7 @@ class Voltmeter(Alarmable, Device):
         delta   = parser.getfloat("VOLTMETER", "volt_delta")
         time    = parser.getint("VOLTMETER",    "volt_time")
         publish = parser.get("VOLTMETER","volt_publish").split(',')
-        script  = parser.get("VOLTMETER","low_volt_script")
+        scripts = parser.get("VOLTMETER","low_volt_script").split(',')
         mode    = parser.get("VOLTMETER","low_volt_mode")
         Alarmable.__init__(self,3)
 	Device.__init__(self, publish)
@@ -80,7 +80,8 @@ class Voltmeter(Alarmable, Device):
         self.voltage     = Vector(N)
         self.averlen     = int(round(time / PERIOD))
         self.lowvolt     = delta + thres
-	ema.notifier.addVoltScript(mode,script)
+	for script in scripts:
+		ema.notifier.addVoltScript(mode,script)
         ema.addSync(self.thres)
         ema.subscribeStatus(self)
         ema.addCurrent(self)
