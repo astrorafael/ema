@@ -206,11 +206,7 @@ class EMAServer(server.Server):
 
 		# Builds (optional) Thermometer Object
 		if config.has_section("THERMOMETER"):
-			thermo_publish = config.get("THERMOMETER","thermo_publish").split(',')
-			thres = config.getfloat("THERMOMETER", "delta_thres") 
-			lvl = config.get("THERMOMETER", "thermo_log")
-			thermom.setLogLevel(parseLogLevel(lvl))       
-			self.thermometer = thermom.Thermometer(self, thres, VECLEN, thermo_publish)
+			self.thermometer = thermom.Thermometer(self, config, VECLEN)
 
 		# Builds (optional) Anemometer Object
 		if config.has_section("ANEMOMETER"):
