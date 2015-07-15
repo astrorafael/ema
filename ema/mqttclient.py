@@ -45,18 +45,9 @@ from ema.emaproto  import SPSB, STATLEN
 from command import Command, COMMAND
 
 
-# TOPIC Default vaules
-TOPIC_EVENTS         = "EMA/events"
-TOPIC_TOPICS         = "EMA/topics"
-TOPIC_HISTORY        = "EMA/history"
-TOPIC_CURRENT_STATUS = "EMA/current/status"
-
 # FLASH PAges where History data re stored
 FLASH_START = 300
 FLASH_END   = 300
-
-# Hitoric dump period In tick units
-HISTORIC = (6*3600*2) /  Server.TIMEOUT
 
 # tog info every NPLUBLIS times (ticks) 
 NPUBLISH = 60
@@ -122,6 +113,16 @@ class BulkDumpCommand(Command):
 
 class MQTTClient(Lazy):
 
+   # Hitoric dump period In tick units
+   HISTORIC = (6*3600*2) /  Server.TIMEOUT
+
+   # TOPIC Default vaules
+   TOPIC_EVENTS         = "EMA/events"
+   TOPIC_TOPICS         = "EMA/topics"
+   TOPIC_HISTORY        = "EMA/history"
+   TOPIC_CURRENT_STATUS = "EMA/current/status"
+
+
    def __init__(self, ema, parser, **kargs):
       lvl      = parser.get("MQTT", "mqtt_log")
       log.setLevel(lvl)
@@ -133,11 +134,11 @@ class MQTTClient(Lazy):
       poweroff = parser.getboolean("MQTT", "mqtt_energy_savings")
       publish_status = parser.getboolean("MQTT", "mqtt_publish_status")
       Lazy.__init__(self, period / ( 2 * Server.TIMEOUT))
-      TOPIC_EVENTS         = "%s/events"  % id
-      TOPIC_TOPICS         = "%s/topics"  % id
-      TOPIC_HISTORY        = "%s/history" % id
-      TOPIC_CURRENT_STATUS = "%s/current/status" % id
-      HISTORIC        = (historic * 3600 * 2) / Server.TIMEOUT  
+      MQTTClient.TOPIC_EVENTS         = "%s/events"  % id
+      MQTTClient.TOPIC_TOPICS         = "%s/topics"  % id
+      MQTTClient.TOPIC_HISTORY        = "%s/history" % id
+      MQTTClient.TOPIC_CURRENT_STATUS = "%s/current/status" % id
+      MQTTClient.HISTORIC        = (historic * 3600 * 2) / Server.TIMEOUT  
       self.ema        = ema
       self.__poweroff = poweroff
       self.__id       = id
@@ -167,9 +168,9 @@ class MQTTClient(Lazy):
      '''Send the initial event and set last will on unexpected diconnection'''
      if rc == 0:
        self.__state = CONNECTED
-       self.__mqtt.publish(TOPIC_EVENTS,  payload="EMA Server connected", qos=2, retain=True)
-       self.__mqtt.will_set(TOPIC_EVENTS, payload="EMA Server disconnected", qos=2, retain=True)
-       self.__mqtt.will_set(TOPIC_TOPICS, payload="EMA/events", qos=2, retain=True)
+       self.__mqtt.publish(MQTTClient.TOPIC_EVENTS,  payload="EMA Server connected", qos=2, retain=True)
+       self.__mqtt.will_set(MQTTClient.TOPIC_EVENTS, payload="EMA Server disconnected", qos=2, retain=True)
+       self.__mqtt.will_set(MQTTClient.TOPIC_TOPICS, payload=MQTTClient.TOPIC_EVENTS, qos=2, retain=True)
        log.info("MQTT client conected successfully") 
      else:
        self.__state = FAILED
@@ -238,7 +239,7 @@ class MQTTClient(Lazy):
       if self.__state == CONNECTED and self.__count == 0:
          self.publish()
 
-      self.__hiscount = (self.__hiscount + 1) % HISTORIC
+      self.__hiscount = (self.__hiscount + 1) % MQTTClient.HISTORIC
       if self.__state == CONNECTED and self.__hiscount == 0:
          self.publishBulkDump()
 
@@ -270,11 +271,11 @@ class MQTTClient(Lazy):
       else:
         date = message[10:19]
         log.debug("Collectd %d lines", len(self.bulkDump))
-        self.__mqtt.publish(topic=TOPIC_HISTORY, payload='\n'.join(self.bulkDump), qos=2, retain=True)
-        log.info("Uploaded %d days of 24h history (%s) to %s", FLASH_END + 1 - FLASH_START, date, TOPIC_HISTORY)
+        self.__mqtt.publish(topic=MQTTClient.TOPIC_HISTORY, payload='\n'.join(self.bulkDump), qos=2, retain=True)
+        log.info("Uploaded %d days of 24h history (%s) to %s", FLASH_END + 1 - FLASH_START, date, MQTTClient.TOPIC_HISTORY)
         if self.__poweroff:
            msg = "EMA Server powering off at %s" % datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-           self.__mqtt.publish(TOPIC_EVENTS,  payload=msg, qos=2, retain=True)
+           self.__mqtt.publish(MQTTClient.TOPIC_EVENTS,  payload=msg, qos=2, retain=True)
            log.info("Gracefully powering off the computer")
            [h.flush() for h in log.handlers]
            subprocess.call(['sudo','shutdown','-h','now'])
@@ -305,7 +306,7 @@ class MQTTClient(Lazy):
       Publish real time individual readings to MQTT Broker
       '''
       if self.__pubstat:
-        self.__mqtt.publish(topic=TOPIC_CURRENT_STATUS, payload=self.__emastat)
+        self.__mqtt.publish(topic=MQTTClient.TOPIC_CURRENT_STATUS, payload=self.__emastat)
         self.__emastat = "()"
 
       for device in self.ema.currentList:
@@ -327,9 +328,9 @@ class MQTTClient(Lazy):
       '''
       Publish active topics
       '''
-      topics = [TOPIC_EVENTS, TOPIC_HISTORY]
+      topics = [MQTTClient.TOPIC_EVENTS, MQTTClient.TOPIC_HISTORY]
       if self.__pubstat:
-        topics.append(TOPIC_CURRENT_STATUS)
+        topics.append(MQTTClient.TOPIC_CURRENT_STATUS)
 
       for device in self.ema.currentList:
         if 'mqtt' in device.publishable:
@@ -339,8 +340,8 @@ class MQTTClient(Lazy):
           except IndexError as e:
             log.error("Exception: %s listing device key=%s", e, device.name)
             continue
-      self.__mqtt.publish(topic=TOPIC_TOPICS, payload='\n'.join(topics), qos=2, retain=True)
-      log.info("Sent active topics to %s",TOPIC_TOPICS)
+      self.__mqtt.publish(topic=MQTTClient.TOPIC_TOPICS, payload='\n'.join(topics), qos=2, retain=True)
+      log.info("Sent active topics to %s", MQTTClient.TOPIC_TOPICS)
       
 
    def requestPage(self, page):
