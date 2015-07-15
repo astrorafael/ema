@@ -114,7 +114,7 @@ class AuxRelay(Alarmable, Device):
 		mode         = parser.get("AUX_RELAY", "aux_mode")
 		tON          = parser.get("AUX_RELAY", "aux_on")
 		tOFF         = parser.get("AUX_RELAY", "aux_off")
-		script       = parser.get("AUX_RELAY","aux_relay_script")
+		scripts      = parser.get("AUX_RELAY","aux_relay_script").split(',')
 		script_mode  = parser.get("AUX_RELAY","aux_relay_mode")
 		publish      = parser.get("AUX_RELAY","aux_relay_publish").split(',')
 		Alarmable.__init__(self,3)
@@ -131,7 +131,8 @@ class AuxRelay(Alarmable, Device):
 		ema.addSync(self.mode)
 		ema.subscribeStatus(self)
 		ema.addParameter(self)
-		ema.notifier.addAuxRelayScript(script_mode, script)
+		for script in scripts:
+			ema.notifier.addAuxRelayScript(script_mode, script)
 
 	def onTimeoutDo(self):
 		if self.mode.value != AuxRelay.TIMED :
@@ -199,16 +200,17 @@ class RoofRelay(Device):
 	}
 
 	def __init__(self, ema,  parser, N):
-		publish      = parser.get("ROOF_RELAY","roof_relay_publish").split(',')
-		relay_script = parser.get("ROOF_RELAY","roof_relay_script")
-		relay_mode   = parser.get("ROOF_RELAY","roof_relay_mode")
+		publish    = parser.get("ROOF_RELAY","roof_relay_publish").split(',')
+		scripts    = parser.get("ROOF_RELAY","roof_relay_script").split(',')
+		relay_mode = parser.get("ROOF_RELAY","roof_relay_mode")
                 Device.__init__(self, publish)
 		self.relay = Vector(N)
 		self.ema   = ema
 		ema.subscribeStatus(self)
 		ema.addCurrent(self)
 		ema.addAverage(self)
-		ema.notifier.addRoofRelayScript(relay_mode, relay_script)
+		for script in scripts:
+			ema.notifier.addRoofRelayScript(relay_mode, script)
 		
 
 	def onStatus(self, message):

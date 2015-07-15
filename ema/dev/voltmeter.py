@@ -80,14 +80,14 @@ class Voltmeter(Alarmable, Device):
         self.voltage     = Vector(N)
         self.averlen     = int(round(time / PERIOD))
         self.lowvolt     = delta + thres
-	for script in scripts:
-		ema.notifier.addVoltScript(mode,script)
         ema.addSync(self.thres)
         ema.subscribeStatus(self)
         ema.addCurrent(self)
         ema.addAverage(self)
         ema.addThreshold(self)
         ema.addParameter(self)
+	for script in scripts:
+		ema.notifier.addVoltScript(mode,script)
        
 
     def onStatus(self, message):
