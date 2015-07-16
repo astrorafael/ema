@@ -46,8 +46,9 @@ class Thermopile(Device):
 	def __init__(self, ema, parser, N):
 		lvl = parser.get("THERMOPILE", "thermop_log")
 		log.setLevel(lvl)
-		publish = parser.get("THERMOPILE","thermop_publish").split(',')
-		Device.__init__(self, publish)
+		publish_where = parser.get("THERMOPILE","thermop_publish_where").split(',')
+		publish_what = parser.get("THERMOPILE","thermop_publish_what").split(',')
+		Device.__init__(self, publish_where, publish_what)
 		self.infrared = Vector(N)
 		self.capsule  = Vector(N)
 		ema.addCurrent(self)
