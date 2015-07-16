@@ -178,7 +178,11 @@ low_volt_mode = Once
 # Where to publish measurements
 # Comma list separated values with no quotes or single quotes
 # Allowed values: html, mqtt  (or just leave a blank line)
-volt_publish = mqtt,html
+volt_publish_where = mqtt,html
+
+# What to publish: current, average or both
+# comma-separated list with no quotes or single quotes
+volt_publish_what = current,average
 
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 volt_log = INFO
@@ -196,7 +200,11 @@ barom_offset = -19
 # Where to publish measurements
 # Comma list separated values with no quotes or single quotes
 # Allowed values: html, mqtt  (or just leave a blank line)
-barom_publish = mqtt,html
+barom_publish_where = mqtt,html
+
+# What to publish: current, average or both
+# comma-separated list with no quotes or single quotes
+barom_publish_what = current,average
 
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 barom_log = INFO
@@ -212,7 +220,11 @@ rain_thres = 1
 # Where to publish measurements
 # Comma list separated values with no quotes or single quotes
 # Allowed values: html, mqtt  (or just leave a blank line)
-rain_publish = mqtt,html
+rain_publish_where = mqtt,html
+
+# What to publish: current, average or both
+# comma-separated list with no quotes or single quotes
+rain_publish_what = current,average
 
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 rain_log = INFO
@@ -230,7 +242,11 @@ pelt_thres = 67
 # Where to publish measurements
 # Comma list separated values with no quotes or single quotes
 # Allowed values: html, mqtt  (or just leave a blank line)
-pelt_publish = mqtt,html
+pelt_publish_where = mqtt,html
+
+# What to publish: current, average or both
+# comma-separated list with no quotes or single quotes
+pelt_publish_what = current,average
 
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 pelt_log = INFO
@@ -244,7 +260,11 @@ pyr_offset = 0
 # Where to publish measurements
 # Comma list separated values with no quotes or single quotes
 # Allowed values: html, mqtt  (or just leave a blank line)
-pyr_publish = mqtt,html
+pyr_publish_where = mqtt,html
+
+# What to publish: current, average or both
+# comma-separated list with no quotes or single quotes
+pyr_publish_what = current,average
 
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 pyr_log = INFO
@@ -262,7 +282,11 @@ phot_thres  = 10.5
 # Where to publish measurements
 # Comma list separated values with no quotes or single quotes
 # Allowed values: html, mqtt  (or just leave a blank line)
-phot_publish = mqtt,html
+phot_publish_where = mqtt,html
+
+# What to publish: current, average or both
+# comma-separated list with no quotes or single quotes
+phot_publish_what = current,average
 
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 phot_log = INFO
@@ -280,7 +304,11 @@ delta_thres = 5.0
 # Where to publish measurements
 # Comma list separated values with no quotes or single quotes
 # Allowed values: html, mqtt  (or just leave a blank line)
-thermo_publish = mqtt,html
+thermo_publish_where = mqtt,html
+
+# What to publish: current, average or both
+# comma-separated list with no quotes or single quotes
+thermo_publish_what = current,average
 
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 thermo_log = INFO
@@ -307,7 +335,11 @@ wind_thres10 = 66
 # Where to publish measurements
 # Comma list separated values with no quotes or single quotes
 # Allowed values: html, mqtt  (or just leave a blank line)
-anem_publish = mqtt,html
+anem_publish_where = mqtt,html
+
+# What to publish: current, average or both
+# comma-separated list with no quotes or single quotes
+anem_publish_what = current,average
 
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 anem_log = INFO
@@ -322,7 +354,11 @@ pluv_calib = 124
 # Where to publish measurements
 # Comma list separated values with no quotes or single quotes
 # Allowed values: html, mqtt  (or just leave a blank line)
-pluv_publish = mqtt,html
+pluv_publish_where = mqtt,html
+
+# What to publish: current, average or both
+# comma-separated list with no quotes or single quotes
+pluv_publish_what = current,average
 
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 pluv_log = INFO
@@ -335,7 +371,11 @@ pluv_log = INFO
 # Where to publish measurements
 # Comma list separated values with no quotes or single quotes
 # Allowed values: html, mqtt  (or just leave a blank line)
-thermop_publish = mqtt,html
+thermop_publish_where = mqtt,html
+
+# What to publish: current, average or both
+# comma-separated list with no quotes or single quotes
+thermop_relay_publish_what = current,average        
 
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 thermop_log = INFO
@@ -362,7 +402,11 @@ roof_relay_mode = Many
 # Where to publish relay state
 # Comma list separated values with no quotes or single quotes
 # Allowed values: html, mqtt  (or just leave a blank line)
-roof_relay_publish = mqtt,html
+roof_relay_publish_where = mqtt,html
+
+# What to publish: current, average or both
+# comma-separated list with no quotes or single quotes
+roof_relay_publish_what = current        
 
 #------------------------------------------------------------------------#
 # Auxiliar relay
@@ -386,7 +430,7 @@ aux_relay_script = /path/to/my/script
 
 # Script mode: (Never, Once, Many)
 # When launched# Publish Raw EMA status Line
-mqtt_publish_status = yes
+mqtt_publish_where_status = yes
  mutiple times, EMA server does not lauch a script
 # till the previous run is over
 aux_relay_mode = Many
@@ -394,7 +438,11 @@ aux_relay_mode = Many
 # Where to publish relay state
 # Comma list separated values with no quotes or single quotes
 # Allowed values: html, mqtt  (or just leave a blank line)
-aux_relay_publish = mqtt,html
+aux_relay_publish_where = mqtt,html
+
+# What to publish: current, average or both 
+# comma-separated list with no quotes or single quotes
+aux_relay_publish_what = current
 
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 # shared with roof_relay
