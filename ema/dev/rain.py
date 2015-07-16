@@ -53,9 +53,10 @@ class RainSensor(Device):
     def __init__(self, ema, parser, N):
         lvl     = parser.get("RAIN", "rain_log")
         log.setLevel(lvl)
-        publish = parser.get("RAIN","rain_publish").split(',')
+        publish_where = parser.get("RAIN","rain_publish_where").split(',')
+        publish_what = parser.get("RAIN","rain_publish_what").split(',')
         thres   = parser.getfloat("RAIN", "rain_thres")
-	Device.__init__(self, publish)
+	Device.__init__(self, publish_where, publish_what)
         self.thres     = Parameter(ema, None, thres, **THRESHOLD)
         self.rain      = Vector(N)
         ema.addSync(self.thres)

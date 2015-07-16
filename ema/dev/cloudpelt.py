@@ -64,12 +64,13 @@ class CloudSensor(Device):
     CLOUD = 'cloud'
 
     def __init__(self, ema, parser, N):
-        publish = parser.get("CLOUD","pelt_publish").split(',')
-        thres   = parser.getfloat("CLOUD", "pelt_thres")
-        gain    = parser.getfloat("CLOUD", "pelt_gain")
         lvl     = parser.get("CLOUD", "pelt_log")
         log.setLevel(lvl)
-        Device.__init__(self, publish)
+        publish_where = parser.get("CLOUD","pelt_publish_where").split(',')
+        publish_what = parser.get("CLOUD","pelt_publish_what").split(',')
+        thres   = parser.getfloat("CLOUD", "pelt_thres")
+        gain    = parser.getfloat("CLOUD", "pelt_gain")
+        Device.__init__(self, publish_where, publish_what)
         self.thres       = Parameter(ema, None, thres, **THRESHOLD)
         self.gain        = Parameter(ema, None, gain, **GAIN)
         self.cloud       = Vector(N)
