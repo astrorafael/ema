@@ -23,8 +23,8 @@
 
 class Device(object):
 
-	def __init__(self, publish_list=[]):
-		self.__publishable = publish_list
+	def __init__(self, publish_where=tuple(), publish_what=tuple()):
+		self.__publishable = [(where,what) for where in publish_where for what in publish_what]
 	
 	@property
 	def name(self):
@@ -57,6 +57,7 @@ class Device(object):
 
 	@property
 	def publishable(self):
-		'''Return list with publishable destinantions (i.e. "mqtt", "html", etc.)'''
+		'''Return list of tuples with publishable destinantions (i.e. "mqtt", "html", etc.)
+		and what things to bublish '''
 		return self.__publishable
 

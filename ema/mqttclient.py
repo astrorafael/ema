@@ -305,12 +305,14 @@ class MQTTClient(Lazy):
       '''
       Publish real time individual readings to MQTT Broker
       '''
+      # publish raw status line
       if self.__pubstat:
         self.__mqtt.publish(topic=MQTTClient.TOPIC_CURRENT_STATUS, payload=self.__emastat)
         self.__emastat = "()"
 
+      # publish last current values
       for device in self.ema.currentList:
-        if 'mqtt' in device.publishable:
+        if ('mqtt','current') in device.publishable:
           try:
             for key, value in device.current.iteritems():
               log.debug("%s publishing current %s => %s %s", device.name, key, value[0], value[1])
@@ -318,7 +320,20 @@ class MQTTClient(Lazy):
               payload = "%s %s" % value 
               self.__mqtt.publish(topic=topic, payload=payload)
           except IndexError as e:
-            log.error("publish() Exception: %s reading device=%s", e, device.name)
+            log.error("publish(current) Exception: %s reading device=%s", e, device.name)
+      
+      # Publish averages
+      for device in self.ema.averageList:
+        if ('mqtt','average') in device.publishable:
+          try:
+            for key, value in device.average.iteritems():
+              log.debug("%s publishing average %s => %s %s", device.name, key, value[0], value[1])
+	      topic   = "%s/average/%s/%s" % (self.__id, device.name, key)
+              payload = "%s %s" % value 
+              self.__mqtt.publish(topic=topic, payload=payload)
+          except IndexError as e:
+            log.error("publish(average) Exception: %s reading device=%s", e, device.name)
+
       if self.__stats % NPUBLISH == 0:
          log.info("Published %d measurements" % self.__stats)
       self.__stats += 1
@@ -333,7 +348,7 @@ class MQTTClient(Lazy):
         topics.append(MQTTClient.TOPIC_CURRENT_STATUS)
 
       for device in self.ema.currentList:
-        if 'mqtt' in device.publishable:
+        if ('mqtt','current') in device.publishable:
           try:
             for key in device.current.iterkeys():
               topics.append('%s/current/%s/%s' % (self.__id, device.name, key))
@@ -341,6 +356,17 @@ class MQTTClient(Lazy):
             log.error("Exception: %s listing device key=%s", e, device.name)
             continue
       self.__mqtt.publish(topic=MQTTClient.TOPIC_TOPICS, payload='\n'.join(topics), qos=2, retain=True)
+
+      for device in self.ema.averageList:
+        if ('mqtt','average') in device.publishable:
+          try:
+            for key in device.average.iterkeys():
+              topics.append('%s/average/%s/%s' % (self.__id, device.name, key))
+          except IndexError as e:
+            log.error("Exception: %s listing device key=%s", e, device.name)
+            continue
+      self.__mqtt.publish(topic=MQTTClient.TOPIC_TOPICS, payload='\n'.join(topics), qos=2, retain=True)
+
       log.info("Sent active topics to %s", MQTTClient.TOPIC_TOPICS)
       
 
