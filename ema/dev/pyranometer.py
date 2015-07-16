@@ -67,10 +67,11 @@ class Pyranometer(Device):
     def __init__(self, ema, parser, N):
         lvl = parser.get("PYRANOMETER", "pyr_log")
         log.setLevel(lvl)
-        publish = parser.get("PYRANOMETER","pyr_publish").split(',')
+        publish_where = parser.get("PYRANOMETER","pyr_publish_where").split(',')
+        publish_what = parser.get("PYRANOMETER","pyr_publish_what").split(',')
         offset  = parser.getfloat("PYRANOMETER", "pyr_offset")
         gain    = parser.getfloat("PYRANOMETER", "pyr_gain")
-        Device.__init__(self, publish)
+        Device.__init__(self, publish_where, publish_what)
         self.gain   = Parameter(ema, None, gain, **GAIN)
         self.offset = Parameter(ema, None, offset, **OFFSET)
         self.led    = Vector(N)
