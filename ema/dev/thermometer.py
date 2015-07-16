@@ -58,9 +58,10 @@ class Thermometer(Device):
     def __init__(self, ema, parser, N):
         lvl = parser.get("THERMOMETER", "thermo_log")
         log.setLevel(lvl)
-        publish = parser.get("THERMOMETER","thermo_publish").split(',')
+        publish_where = parser.get("THERMOMETER","thermo_publish_where").split(',')
+        publish_what  = parser.get("THERMOMETER","thermo_publish_what").split(',')
         thres   = parser.getfloat("THERMOMETER", "delta_thres")
-        Device.__init__(self, publish)
+        Device.__init__(self, publish_where, publish_what)
         self.thres    = Parameter(ema, None, thres, **THRESHOLD)
         self.ambient  = Vector(N)
         self.humidity = Vector(N)
