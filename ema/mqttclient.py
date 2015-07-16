@@ -355,7 +355,6 @@ class MQTTClient(Lazy):
           except IndexError as e:
             log.error("Exception: %s listing device key=%s", e, device.name)
             continue
-      self.__mqtt.publish(topic=MQTTClient.TOPIC_TOPICS, payload='\n'.join(topics), qos=2, retain=True)
 
       for device in self.ema.averageList:
         if ('mqtt','average') in device.publishable:
