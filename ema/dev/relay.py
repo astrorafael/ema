@@ -116,9 +116,10 @@ class AuxRelay(Alarmable, Device):
 		tOFF         = parser.get("AUX_RELAY", "aux_off")
 		scripts      = parser.get("AUX_RELAY","aux_relay_script").split(',')
 		script_mode  = parser.get("AUX_RELAY","aux_relay_mode")
-		publish      = parser.get("AUX_RELAY","aux_relay_publish").split(',')
+		publish_where = parser.get("AUX_RELAY","aux_relay_publish_where").split(',')
+		publish_what  = parser.get("AUX_RELAY","aux_relay_publish_what").split(',')
 		Alarmable.__init__(self,3)
-                Device.__init__(self, publish)
+                Device.__init__(self, publish_where, publish_what)
 		myself = self if AuxRelay.MAPPING[mode] == AuxRelay.TIMED else None
 		self.mode = Parameter(ema, myself, AuxRelay.MAPPING[mode], **MODE)	
 		# get rid of : in   HH:MM   and transform it to a number
@@ -200,10 +201,11 @@ class RoofRelay(Device):
 	}
 
 	def __init__(self, ema,  parser, N):
-		publish    = parser.get("ROOF_RELAY","roof_relay_publish").split(',')
+		publish_where = parser.get("ROOF_RELAY","roof_relay_publish_where").split(',')
+		publish_what  = parser.get("ROOF_RELAY","roof_relay_publish_what").split(',')
 		scripts    = parser.get("ROOF_RELAY","roof_relay_script").split(',')
 		relay_mode = parser.get("ROOF_RELAY","roof_relay_mode")
-                Device.__init__(self, publish)
+                Device.__init__(self, publish_where, publish_what)
 		self.relay = Vector(N)
 		self.ema   = ema
 		ema.subscribeStatus(self)
