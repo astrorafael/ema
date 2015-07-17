@@ -88,7 +88,7 @@ class Voltmeter(Alarmable, Device):
         ema.addThreshold(self)
         ema.addParameter(self)
 	for script in scripts:
-		ema.notifier.addVoltScript(mode,script)
+		ema.notifier.addScript('VoltageLow',mode,script)
        
 
     def onStatus(self, message):
@@ -96,7 +96,7 @@ class Voltmeter(Alarmable, Device):
         accum, n = self.voltage.sum(self.averlen)
         average = accum / (n * 10.0)
         if average < self.lowvolt:
-            self.ema.onVoltageLow("%.1f" % average, "%.1f" % self.lowvolt, str(n))
+            self.ema.notifier.onEventExecute('VoltageLow', '--voltage', "%.1f" % average, '--threshold', "%.1f" % self.lowvolt, '--size' , str(n))
 
 
     def onTimeoutDo(self):

@@ -133,7 +133,7 @@ class AuxRelay(Alarmable, Device):
 		ema.subscribeStatus(self)
 		ema.addParameter(self)
 		for script in scripts:
-			ema.notifier.addAuxRelayScript(script_mode, script)
+			ema.notifier.addScript('AuxRelaySwitch', script_mode, script)
 
 	def onTimeoutDo(self):
 		if self.mode.value != AuxRelay.TIMED :
@@ -158,12 +158,12 @@ class AuxRelay(Alarmable, Device):
 		if self.relay.last() and not openFlag:
 			log.warning("Aux Relay Switch Off: %s", AuxRelay.REASON[c])
 			self.relay.append(openFlag)
-			self.ema.onAuxRelaySwitch(OFF, c)
+			self.ema.notifier.onEventExecute('AuxRelaySwitch', "--status" , OFF, "--reason", c)
 		# Detects Close-> Open transitions and notify
 		elif not self.relay.last() and openFlag:
 			log.warning("Aux Relay Switch On: %s", AuxRelay.REASON[c])
 			self.relay.append(openFlag)
-			self.ema.onAuxRelaySwitch(ON, c)
+			self.ema.notifier.onEventExecute('AuxRelaySwitch', "--status" , ON, "--reason", c)
 		else:
 			self.relay.append(openFlag)
 
@@ -212,7 +212,7 @@ class RoofRelay(Device):
 		ema.addCurrent(self)
 		ema.addAverage(self)
 		for script in scripts:
-			ema.notifier.addRoofRelayScript(relay_mode, script)
+			ema.notifier.addScript('RoofRelaySwitch', relay_mode, script)
 		
 
 	def onStatus(self, message):
@@ -228,11 +228,12 @@ class RoofRelay(Device):
 		# Detects Open -> Close transitions and notify
 		if self.relay.last() and not openFlag:
 			self.relay.append(openFlag)
-			self.ema.onRoofRelaySwitch(OFF, c)
+			self.ema.notifier.onEventExecute('RoofRelaySwitch', "--status" , OFF, "--reason", c)
+
 		# Detects Close-> Open transitions and notify
 		elif not self.relay.last() and openFlag:
 			self.relay.append(openFlag)
-			self.ema.onRoofRelaySwitch(ON, c)
+			self.ema.notifier.onEventExecute('RoofRelaySwitch', "--status" , ON, "--reason", c)
 		else:
 			self.relay.append(openFlag)
 
