@@ -183,9 +183,9 @@ class Notifier(object):
 
 	def addScript(self, event, mode, path):
 		''' *_script are tuples of (path, mode)'''
-		list = self.scripts.get(event,[])
-		list.append(Script((path, mode)))
-		self.scripts[event] = list
+		aList = self.scripts.get(event,[])
+		aList.append(Script((path, mode)))
+		self.scripts[event] = aList
 
 	# ---------------------------
 	# Event handler from Devices
