@@ -62,7 +62,7 @@ class Thermometer(Device):
         publish_what  = parser.get("THERMOMETER","thermo_publish_what").split(',')
         thres   = parser.getfloat("THERMOMETER", "delta_thres")
         Device.__init__(self, publish_where, publish_what)
-        self.thres    = Parameter(ema, None, thres, **THRESHOLD)
+        self.thres    = Parameter(ema, thres, None, **THRESHOLD)
         self.ambient  = Vector(N)
         self.humidity = Vector(N)
         self.dewpoint = Vector(N)

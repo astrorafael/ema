@@ -76,8 +76,8 @@ class Voltmeter(Alarmable, Device):
         Alarmable.__init__(self,3)
 	Device.__init__(self, publish_where, publish_what)
         self.ema         = ema
-        self.thres       = Parameter(ema, self, thres, **THRESHOLD)
-        self.offset      = Parameter(ema, None, offset, **OFFSET)
+        self.thres       = Parameter(ema, thres, self, **THRESHOLD)
+        self.offset      = Parameter(ema, offset, None, **OFFSET)
         self.voltage     = Vector(N)
         self.averlen     = int(round(time / PERIOD))
         self.lowvolt     = delta + thres

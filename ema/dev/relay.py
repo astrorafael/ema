@@ -121,12 +121,12 @@ class AuxRelay(Alarmable, Device):
 		Alarmable.__init__(self,3)
                 Device.__init__(self, publish_where, publish_what)
 		myself = self if AuxRelay.MAPPING[mode] == AuxRelay.TIMED else None
-		self.mode = Parameter(ema, myself, AuxRelay.MAPPING[mode], **MODE)	
+		self.mode = Parameter(ema, AuxRelay.MAPPING[mode], myself, **MODE)	
 		# get rid of : in   HH:MM   and transform it to a number
 		tON        =  timeFromString(tON)
 		tOFF       =  timeFromString(tOFF)
-		self.ton   = Parameter(ema, myself, tON,  **TON)
-		self.toff  = Parameter(ema, None,   tOFF, **TOFF)
+		self.ton   = Parameter(ema, tON,  myself, **TON)
+		self.toff  = Parameter(ema, tOFF, None, **TOFF)
 		self.relay = Vector(N)
 		self.ema   = ema
 		ema.addSync(self.mode)

@@ -57,7 +57,7 @@ class RainSensor(Device):
         publish_what = parser.get("RAIN","rain_publish_what").split(',')
         thres   = parser.getfloat("RAIN", "rain_thres")
 	Device.__init__(self, publish_where, publish_what)
-        self.thres     = Parameter(ema, None, thres, **THRESHOLD)
+        self.thres     = Parameter(ema, thres, None, **THRESHOLD)
         self.rain      = Vector(N)
         ema.addSync(self.thres)
         ema.subscribeStatus(self)

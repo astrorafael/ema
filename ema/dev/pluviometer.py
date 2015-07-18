@@ -58,7 +58,7 @@ class Pluviometer(Device):
         publish_what     = parser.get("PLUVIOMETER","pluv_publish_what").split(',')
         calibration = parser.getfloat("PLUVIOMETER", "pluv_calib")
         Device.__init__(self, publish_where, publish_what)
-        self.calibration   = Parameter(ema, None, calibration, **CALIBRATION)
+        self.calibration   = Parameter(ema, calibration, None, **CALIBRATION)
         self.instant       = Vector(N)
         self.accumulated   = Vector(N)
         ema.addSync(self.calibration)

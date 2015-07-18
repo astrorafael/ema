@@ -252,7 +252,7 @@ Sample Descriptor
 
 class Parameter(AbstractParameter):
 
-	def __init__(self, ema, parent, value, **kargs):
+	def __init__(self, ema, value, parent,  **kargs):
 		AbstractParameter.__init__(self, ema, 
 									   AbstractParameter.TIMEOUT, 
 									   kargs['pat'], 
