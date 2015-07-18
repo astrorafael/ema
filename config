@@ -417,10 +417,12 @@ roof_relay_publish_what = current
 # 'Timed'  = Timed, with On/Off hour:minute
 aux_mode = Timed
 
-# If auto_timer is True, these are the HH:MM to turn on/off
+# List of time windows for relay switch on/switch off
+# Must be monotonic sequence of increasing time 
+# except for the possible last wrap around
 # Time given in UTC Time. 
-aux_on    = 19:00
-aux_off   = 22:00
+#aux_window = 10:00-15:30,18:10-18:15,22:00-22:15
+aux_window = 22:05-00:15
 
 # List of comma separated scripts to execute  
 # on change of aux relay switch 
