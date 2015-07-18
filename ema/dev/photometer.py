@@ -25,7 +25,6 @@ import logging
 import re
 
 
-from ema.server    import Alarmable
 from ema.emaproto  import MVI, MVD
 from ema.parameter import Parameter
 from ema.vector    import Vector
@@ -62,7 +61,7 @@ OFFSET = {
 # Photometer values (in magnitudes) do not come in status messages
 # but in an independent message so there is no onStatus() method
 
-class Photometer(Alarmable, Device):
+class Photometer(Device):
 
     MAGNITUDE = 'magnitude'
 
@@ -73,10 +72,9 @@ class Photometer(Alarmable, Device):
         publish_what = parser.get("PHOTOMETER","phot_publish_what").split(',')
         offset  = parser.getfloat("PHOTOMETER", "phot_offset")
         thres   = parser.getfloat("PHOTOMETER", "phot_thres")
-        Alarmable.__init__(self,3)
 	Device.__init__(self,publish_where,publish_what)
-        self.thres   = Parameter(ema, self, thres, **THRESHOLD)
-        self.offset      = Parameter(ema, None, offset, **OFFSET)
+        self.offset      = Parameter(ema, offset, **OFFSET)
+        self.thres       = Parameter(ema, thres,  self.offset, **THRESHOLD)
         self.photom      = Vector(N)
         ema.addSync(self.thres)
         ema.addCurrent(self)
@@ -88,10 +86,6 @@ class Photometer(Alarmable, Device):
     def add(self, message, matchobj):
         self.photom.append(int(message[MVI:MVI+2])*100 + int(message[MVD:MVD+2]))
         
-
-    def onTimeoutDo(self):
-        self.offset.sync()      # trigger offset sync from here
-
 
     @property
     def current(self):
