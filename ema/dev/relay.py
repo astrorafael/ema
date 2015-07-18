@@ -126,7 +126,7 @@ class AuxRelay(Alarmable, Device):
 		tON        =  timeFromString(tON)
 		tOFF       =  timeFromString(tOFF)
 		self.ton   = Parameter(ema, tON,  myself, **TON)
-		self.toff  = Parameter(ema, tOFF, None, **TOFF)
+		self.toff  = Parameter(ema, tOFF, **TOFF)
 		self.relay = Vector(N)
 		self.ema   = ema
 		ema.addSync(self.mode)

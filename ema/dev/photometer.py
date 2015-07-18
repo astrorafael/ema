@@ -76,7 +76,7 @@ class Photometer(Alarmable, Device):
         Alarmable.__init__(self,3)
 	Device.__init__(self,publish_where,publish_what)
         self.thres       = Parameter(ema, thres,  self, **THRESHOLD)
-        self.offset      = Parameter(ema, offset, None, **OFFSET)
+        self.offset      = Parameter(ema, offset, **OFFSET)
         self.photom      = Vector(N)
         ema.addSync(self.thres)
         ema.addCurrent(self)

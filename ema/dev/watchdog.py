@@ -49,7 +49,7 @@ class WatchDog(Lazy, Device):
         period = parser.getint("WATCHDOG", "keepalive")
         Lazy.__init__(self)
         self.ema = ema
-        self.period = Parameter(ema, period, None, **PERIOD)
+        self.period = Parameter(ema, period, **PERIOD)
         self.setPeriod(int(self.period.value / (2*Server.TIMEOUT)))
         ema.addLazy(self)
         ema.addSync(self.period)
