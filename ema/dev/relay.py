@@ -120,13 +120,13 @@ class AuxRelay(Alarmable, Device):
 		publish_what  = parser.get("AUX_RELAY","aux_relay_publish_what").split(',')
 		Alarmable.__init__(self,3)
                 Device.__init__(self, publish_where, publish_what)
-		myself = self if AuxRelay.MAPPING[mode] == AuxRelay.TIMED else None
-		self.mode = Parameter(ema, AuxRelay.MAPPING[mode], myself, **MODE)	
 		# get rid of : in   HH:MM   and transform it to a number
 		tON        =  timeFromString(tON)
 		tOFF       =  timeFromString(tOFF)
-		self.ton   = Parameter(ema, tON,  myself, **TON)
-		self.toff  = Parameter(ema, tOFF, **TOFF)
+		self.ton   = Parameter(ema, tON,  **TON)
+		self.toff  = Parameter(ema, tOFF, self.ton, **TOFF)
+		nextcmd    = self.toff if AuxRelay.MAPPING[mode] == AuxRelay.TIMED else None
+		self.mode  = Parameter(ema, AuxRelay.MAPPING[mode], nextcmd, **MODE)	
 		self.relay = Vector(N)
 		self.ema   = ema
 		ema.addSync(self.mode)
@@ -136,6 +136,7 @@ class AuxRelay(Alarmable, Device):
 			ema.notifier.addScript('AuxRelaySwitch', script_mode, script)
 
 	def onTimeoutDo(self):
+		return
 		if self.mode.value != AuxRelay.TIMED :
 			return
 		if self.ton.isDone() : 

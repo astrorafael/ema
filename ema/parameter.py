@@ -252,7 +252,7 @@ Sample Descriptor
 
 class Parameter(AbstractParameter):
 
-	def __init__(self, ema, value, parent=None, **kargs):
+	def __init__(self, ema, value, parameter=None, **kargs):
 		AbstractParameter.__init__(self, ema, 
 									   AbstractParameter.TIMEOUT, 
 									   kargs['pat'], 
@@ -267,8 +267,7 @@ class Parameter(AbstractParameter):
 		self.pat  = kargs['pat']
 		self.grp  = kargs['grp']
 		self.value = int(round(value * self.mult))
-		self.parent = parent
-		
+		self.next = parameter
 		self.log.debug("created Parameter %s = %d", self.name, self.value)
 
 
@@ -276,10 +275,13 @@ class Parameter(AbstractParameter):
 		n = self.ema.serdriver.queueDelay()
 		n += AbstractParameter.TIMEOUT
 		self.setTimeout(n)      # adjust for queue length
-		self.ema.serdriver.write(self.set % self.value)
+		value = self.set % self.value
+		self.log.debug("Parameter %s: sending new value", self.name)
+		self.ema.serdriver.write(value)
 
 
 	def actionStart(self):
+		self.log.debug("Parameter %s: starting sync", self.name)
 		n = self.ema.serdriver.queueDelay()
 		n += AbstractParameter.TIMEOUT
 		self.setTimeout(n)      # adjust for queue length
@@ -287,42 +289,43 @@ class Parameter(AbstractParameter):
 		
 
 	def actionGet(self, message, matchobj):
-		self.log.debug("matched GET message %s", message)
+		self.log.debug("Parameter %s: matched GET message", self.name)
 		value = int(matchobj.group(self.grp))
 		if value != self.value:
 			self.sendValue()
 			needsSync = True
 		else:
-			self.log.debug("No need to sync %s value", self.name)
+			self.log.debug("Parameter %s: No need to sync value", self.name)
 			needsSync = False
 		return needsSync
 
 
 	def actionSet(self, message, matchobj):
-		self.log.debug("matched SET message %s", message)
+		self.log.debug("Parameter %s: matched SET message", self.name)
 		value = int(matchobj.group(self.grp))
 		if value != self.value:
-			self.log.warning("EMA %s value is still not synchronized", self.name)
+			self.log.warning("Parameter %s: value is still not synchronized", self.name)
 
 
 	def actionEnd(self):
 		self.log.debug("Parameter %s succesfully synchronized", self.name)
 		# kludge: schedule an alarm on the parent 
 		# whose timeout will trigger next thing
-		if(self.parent):
-			self.log.debug("Triggering another parameter sync")
-			self.ema.addAlarmable(self.parent) 
-
+		if(self.next):
+			self.log.debug("Parameter %s: Triggering next parameter sync: %s", self.name, self.next.name)
+			self.next.sync()
 
 	def retryGet(self):
-		self.log.debug("Retry a GET message (%d/%d)" % self.getRetries() )
+		i, N = self.getRetries()
+		self.log.debug("Parameter %s: Retry a GET message (%d/%d)", self.name,  i, N )
 		self.actionStart()
 
 
 	def retrySet(self):
-		self.log.debug("Retry a SET message (%d/%d)" % self.getRetries() )
+		i, N = self.getRetries()
+		self.log.debug("Parameter %s: Retry a SET message (%d/%d)" , self.name, i, N)
 		self.sendValue()
 
 
 	def actionTimeout(self):
-		self.log.error("Timeout: EMA not responding to %s sync request", self.name)
+		self.log.error("Parameter %s: Timeout. EMA not responding to ync request", self.name)

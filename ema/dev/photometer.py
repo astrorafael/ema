@@ -75,8 +75,8 @@ class Photometer(Alarmable, Device):
         thres   = parser.getfloat("PHOTOMETER", "phot_thres")
         Alarmable.__init__(self,3)
 	Device.__init__(self,publish_where,publish_what)
-        self.thres       = Parameter(ema, thres,  self, **THRESHOLD)
         self.offset      = Parameter(ema, offset, **OFFSET)
+        self.thres       = Parameter(ema, thres,  self.offset, **THRESHOLD)
         self.photom      = Vector(N)
         ema.addSync(self.thres)
         ema.addCurrent(self)
@@ -90,7 +90,8 @@ class Photometer(Alarmable, Device):
         
 
     def onTimeoutDo(self):
-        self.offset.sync()      # trigger offset sync from here
+	pass
+        #self.offset.sync()      # trigger offset sync from here
 
 
     @property
