@@ -24,7 +24,6 @@
 import logging
 import re
 
-from ema.server    import Alarmable
 from ema.emaproto  import SPSB, PERIOD
 from ema.parameter import Parameter
 from ema.vector    import Vector
@@ -58,7 +57,7 @@ OFFSET = {
 # inheriting from alarmable is a kludge to solve the two message respones issue
 # in voltmeter adjustments
 
-class Voltmeter(Alarmable, Device):
+class Voltmeter(Device):
 
     VOLTAGE = 'voltage'
 
@@ -73,7 +72,6 @@ class Voltmeter(Alarmable, Device):
         publish_what  = parser.get("VOLTMETER","volt_publish_what").split(',')
         scripts = parser.get("VOLTMETER","low_volt_script").split(',')
         mode    = parser.get("VOLTMETER","low_volt_mode")
-        Alarmable.__init__(self,3)
 	Device.__init__(self, publish_where, publish_what)
         self.ema         = ema
         self.offset      = Parameter(ema, offset, **OFFSET)
@@ -97,12 +95,6 @@ class Voltmeter(Alarmable, Device):
         average = accum / (n * 10.0)
         if average < self.lowvolt:
             self.ema.notifier.onEventExecute('VoltageLow', '--voltage', "%.1f" % average, '--threshold', "%.1f" % self.lowvolt, '--size' , str(n))
-
-
-    def onTimeoutDo(self):
-        pass
-#        self.offset.sync()      # trigger offset sync from here
-
 
     @property
     def current(self):

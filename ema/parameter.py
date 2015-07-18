@@ -309,8 +309,6 @@ class Parameter(AbstractParameter):
 
 	def actionEnd(self):
 		self.log.debug("Parameter %s succesfully synchronized", self.name)
-		# kludge: schedule an alarm on the parent 
-		# whose timeout will trigger next thing
 		if(self.next):
 			self.log.debug("Parameter %s: Triggering next parameter sync: %s", self.name, self.next.name)
 			self.next.sync()

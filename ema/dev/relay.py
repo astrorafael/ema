@@ -24,7 +24,6 @@
 import logging
 import re
 
-from ema.server    import Alarmable
 from ema.parameter import Parameter
 from ema.vector    import Vector
 from ema.emaproto  import SRRB, SARB
@@ -80,7 +79,7 @@ def timeToString(itime):
 	return '%02d:%02d' % (itime // 100, itime % 100) 
 
 
-class AuxRelay(Alarmable, Device):
+class AuxRelay(Device):
 
 	OPEN = 'open'
 
@@ -118,7 +117,6 @@ class AuxRelay(Alarmable, Device):
 		script_mode  = parser.get("AUX_RELAY","aux_relay_mode")
 		publish_where = parser.get("AUX_RELAY","aux_relay_publish_where").split(',')
 		publish_what  = parser.get("AUX_RELAY","aux_relay_publish_what").split(',')
-		Alarmable.__init__(self,3)
                 Device.__init__(self, publish_where, publish_what)
 		# get rid of : in   HH:MM   and transform it to a number
 		tON        =  timeFromString(tON)
@@ -134,15 +132,6 @@ class AuxRelay(Alarmable, Device):
 		ema.addParameter(self)
 		for script in scripts:
 			ema.notifier.addScript('AuxRelaySwitch', script_mode, script)
-
-	def onTimeoutDo(self):
-		return
-		if self.mode.value != AuxRelay.TIMED :
-			return
-		if self.ton.isDone() : 
-			self.toff.sync()
-		else: 
-			self.ton.sync()
 
 
 	def onStatus(self, message):
