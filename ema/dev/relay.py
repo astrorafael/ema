@@ -134,9 +134,7 @@ class AuxRelay(Alarmable, Device):
 		for script in scripts:
 			ema.notifier.addScript('AuxRelaySwitch', script_mode, script)
 		# ESTO ES NUEVO
-		window = parser.get("AUX_RELAY", "aux_window")
-		self.window =[ time.split('-') for time in window.split(',')  ]
-		analiza(self.window)
+		self.scheduler = TimeScheduler(self, parser)
 
 	def onTimeoutDo(self):
 		if self.mode.value != AuxRelay.TIMED :
@@ -263,35 +261,122 @@ import datetime
 def now():
 	return datetime.datetime.utcnow().replace(microsecond=0).time()
 
-def toMinutes(hhmm):
-	'''Converts an HH:MM sttring to minutes'''
-	minutes = int(hhmm[0:2])*60  + int(hhmm[3:5])
-	log.debug ("hh:mm => %d minutes", minutes)
-	return minutes
+def toTime(hhmm):
+	'''Converts HH:MM strings into time objects'''
+	return datetime.time(hour=int(hhmm[0:2]), minute=int(hhmm[3:5]))
 
-def analiza(w):
-	'''Analyzes a  series of time windows'''
-	for i in range(0,len(w)):
-		log.debug("w[%i]= %s", i, w[i])		
+def reversed(w):
+	'''Detects time wrap around in a time window w 0=start, 1=end'''
+	return not (w[0] < w[1])
 
-	# Start Time[i] must be less than End Time[i]
-	# except for the last window which could wrap around		
+def inInterval(time, w):
+	'''Returns whether a given itme is in a given window'''
+	return time >= w[0] and time <= w[1]
+
+def strfwin(w):
+	'''return formatted string for an interval w'''
+	return "[%s-%s]" % (w[0].strftime("%H:%M"), w[1].strftime("%H:%M"))
+
+def windows(winstr):
+	'''Build a window list from a windows list spec string 
+	taiking the following format HH:MM-HH:MM,HH:MM-HH:MM,etc
+	Window interval (Start % end time) separated by dashes
+	Window ist separated by commands'''
+	return [ map(toTime, t.split('-')) for t in winstr.split(',')  ]
+
+def gaps(windows):
+	'''Build the complementary windows with the gaps in the original windows'''
+	aList = []
+	if reversed(windows[-1]):
+		aList.append([ windows[-1][1], windows[0][0] ])
+		for i in range(0,len(windows)-1):
+			aList.append([ windows[i][1], windows[i+1][0] ])
+	else:
+		for i in range(0,len(windows)-1):
+			aList.append([ windows[i][1], windows[i+1][0] ])
+		aList.append([ windows[-1][1], windows[0][0] ])
+	return aList
+
+def positive(windows):
+	'''Returns true if individual window lengths are positive'''
 	log.debug("checking each start/end time window")
-	for i in range(0,len(w)-1):
-		log.debug("w[%d][start] (%s) < w[%d][end] (%s)", i, w[i][0], i,  w[i][1])		
-		if not toMinutes(w[i][0]) < toMinutes(w[i][1]):
-			raise IndexError
+	if not reversed(windows[-1]):
+		for i in range(0,len(windows)):
+                	if reversed(windows[i]):
+                        	return False, i
+		log.debug("checking positive window ok.")
+		return True, -1
+	else:
+		return positive(gaps(windows))
+
+
+def monotonic(windows):
+	'''Returns true if monotonic window sequence'''
+	log.debug("checking monotonic time windows series")
+	if not reversed(windows[-1]):
+		for i in range(0,len(windows)-1):
+			if not (windows[i][1] < windows[i+1][0]):
+				return False, i
+		log.debug("checking monotonic windows ok.")
+		return True, -1
+	else:
+		return monotonic(gaps(windows))
+
 	
-	# End Time[i] must be less than Start Time[i+1]
-	# except for the last window which could wrap around		
-	log.debug("checking concatenated end/start time window")
-	for i in range(0,len(w)-1):
-		log.debug("w[%d][end] (%s) < w[%d][start] (%s)", i, w[i][1], i+1, w[i+1][0])		
-		if not  toMinutes(w[i][1]) < toMinutes(w[i+1][0]):
-			raise IndexError
+def curWindow(windows, tNow):
+	if not reversed (windows[-1]):
+		for i in range(0,len(windows)):
+			if inInterval(tNow, windows[i]):
+				return True, i
+		return False, -1
+	else:
+		for i in range(0, len(windows)-1):
+			if inInterval(tNow, windows[i]):
+				return True, i
+		if inInterval(tNow, [windows[-1][0], datetime.time.max]) or inInterval(tNow, [datetime.time.min, windows[-1][1]]):
+			return True, len(windows)-1
+		return False, -1
 
-	if not toMinutes(w[-1][0]) < toMinutes(w[-1][1]):
-		log.debug("detected last time window wrap around")
+
+def where(windows):
+	log.debug("Finding current relay window")
+	tNow = now()
+	found, i = curWindow(windows, tNow)
+	if found:
+		log.debug("current relay window is %s", strfwin(windows[i]))
+	else:
+		log.debug("No current relay window active, finding gap")
+		g = gaps(windows) 
+		found, i = curWindow(g, tNow)
+		log.debug("now() is in gap %s", strfwin(g[i]))
 
 
+def verify(windows):
+	'''Verify a  series of time windows'''
+	positive_flag, i = positive(windows)
+	if not positive_flag:
+		log.error("Window with negative length => %s", strfwin(windows[i]))
+		raise InvalidTimeWindow(windows[i])
+	monotonic_flag, i = monotonic(windows)
+	if not monotonic_flag:
+		log.error("Window series not monotonic starting at => %s", strfwin(windows[i]))
+		raise InvalidTimeWindow(windows[i])
 
+
+class InvalidTimeWindow(Exception):
+	'''Signals a script has executed'''
+	def __init__(self, w):
+		self.win = w
+	def  __str__(self):
+		'''Prints useful information'''
+		return "[%s-%s]" % (self.w[0].strftime("%H:%M"), self.w[1].strftime("%H:%M"))
+
+
+class TimeScheduler(object):
+
+	def __init__(self, relay, parser):
+		self.relay = relay
+		winstr = parser.get("AUX_RELAY", "aux_window")
+		self.windows = windows(winstr)
+		verify(self.windows)
+		where(self.windows)
