@@ -45,8 +45,8 @@ class RoofRelay(Device):
 	def __init__(self, ema,  parser, N):
 		publish_where = parser.get("ROOF_RELAY","roof_relay_publish_where").split(',')
 		publish_what  = parser.get("ROOF_RELAY","roof_relay_publish_what").split(',')
-		scripts    = parser.get("ROOF_RELAY","roof_relay_script").split(',')
-		relay_mode = parser.get("ROOF_RELAY","roof_relay_mode")
+		scripts       = parser.get("ROOF_RELAY","roof_relay_script").split(',')
+		relay_mode    = parser.get("ROOF_RELAY","roof_relay_mode")
                 Device.__init__(self, publish_where, publish_what)
 		self.relay = Vector(N)
 		self.ema   = ema
@@ -134,7 +134,7 @@ TOFF = {
 }
 
 def timeFromString(stime):
-	'''Conversion from HH:MM to EMA tiem string HHMM'''
+	'''Conversion from HH:MM to EMA time string HHMM'''
 	return int(stime[0:2]  + stime[3:5])
 
 
@@ -176,28 +176,26 @@ class AuxRelay(Device):
 		lvl = parser.get("AUX_RELAY", "aux_relay_log")
 		log.setLevel(lvl)
 		mode         = parser.get("AUX_RELAY", "aux_mode")
-		tON          = parser.get("AUX_RELAY", "aux_on")
-		tOFF         = parser.get("AUX_RELAY", "aux_off")
 		scripts      = parser.get("AUX_RELAY","aux_relay_script").split(',')
 		script_mode  = parser.get("AUX_RELAY","aux_relay_mode")
 		publish_where = parser.get("AUX_RELAY","aux_relay_publish_where").split(',')
 		publish_what  = parser.get("AUX_RELAY","aux_relay_publish_what").split(',')
+ 		winstr        = parser.get("AUX_RELAY", "aux_window")
                 Device.__init__(self, publish_where, publish_what)
-		# get rid of : in   HH:MM   and transform it to a number
-		tON        =  timeFromString(tON)
-		tOFF       =  timeFromString(tOFF)
-		self.ton   = Parameter(ema, tON,  **TON)
-		self.toff  = Parameter(ema, tOFF, self.ton, **TOFF)
-		nextcmd    = self.toff if AuxRelay.MAPPING[mode] == AuxRelay.TIMED else None
-		self.mode  = Parameter(ema, AuxRelay.MAPPING[mode], nextcmd, **MODE)	
+		self.mode  = Parameter(ema, AuxRelay.MAPPING[mode], **MODE)	
 		self.relay = Vector(N)
 		self.ema   = ema
+		self.windows = windows(winstr)
+		self.gaps    = gaps(self.windows)
 		ema.addSync(self.mode)
 		ema.subscribeStatus(self)
 		ema.addParameter(self)
 		for script in scripts:
 			ema.notifier.addScript('AuxRelaySwitch', script_mode, script)
-
+		if AuxRelay.MAPPING[mode] == AuxRelay.TIMED: 
+			self.verifyWindows()
+			self.findCurrentWindow()
+			self.programRelay()
 
 	def onStatus(self, message):
 		'''Aux Relay, accumulate open/close readings'''
@@ -242,14 +240,62 @@ class AuxRelay(Device):
 			self.ton.name  : ( timeToString(self.ton.value), self.ton.unit) ,
 			self.toff.name : ( timeToString(self.toff.value), self.toff.unit) ,
 			}
+	# ------------------
+	# Intervals handling
+	# ------------------
+
+	def verifyWindows(self):
+        	'''Verify a  series of time windows'''
+        	positive_flag, i = positive(self.windows)
+        	if not positive_flag:
+                	log.error("Window with negative length => %s", strfwin(self.windows[i]))
+                	raise InvalidTimeWindow(self.windows[i])
+        	monotonic_flag, i = monotonic(self.windows)
+        	if not monotonic_flag:
+                	log.error("Window series not monotonic starting at => %s", strfwin(self.windows[i]))
+                	raise InvalidTimeWindow(self.windows[i])
+		log.info("%d time windows processed ok.", len(self.windows))
+
+
+	def findCurrentWindow(self):
+        	log.debug("Finding current relay window")
+        	tNow = now()
+        	found, i = curWindow(self.windows, tNow)
+        	if found:
+			self.where = 'window'
+			self.wIndex = i
+                	log.info("now we are in window  %s", strfwin(self.windows[i]))
+        	else:
+                	found, i = curWindow(self.gaps, tNow)
+			self.where = 'gap'
+			self.wIndex = i
+                	log.info("now we are in the gap %s", strfwin(self.gaps[i]))
 	
-		
+	def programRelay(self):
+		if self.where == 'gap':
+			i = (self.wIndex + 1 ) % len(self.windows) 
+			tON  =  int(self.windows[i][0].strftime("%H%M"))
+			tOFF =  int(self.windows[i][1].strftime("%H%M"))
+			self.ton   = Parameter(self.ema, tON,  **TON)
+			self.toff  = Parameter(self.ema, tOFF, self.ton, **TOFF)
+			log.info("Programing next window (tON-tOFF) to %s",strfwin(self.windows[i]))
+			self.toff.sync()
+		else:
+			i = self.wIndex  
+			tOFF =  int(self.gaps[i][0].strftime("%H%M"))
+			tON  =  int(self.gaps[i][1].strftime("%H%M"))
+			self.ton   = Parameter(self.ema, tON,  **TON)
+			self.toff  = Parameter(self.ema, tOFF, self.ton, **TOFF)
+			log.info("Programing next window (tOFF-tON) to (%s-%s)", self.gaps[i][0], self.gaps[i][1])
+			self.toff.sync()
+	
 
 
 # ============================================================================
 # ============================================================================
 # ============================================================================
 
+	
 def now():
         return datetime.datetime.utcnow().replace(microsecond=0).time()
 
@@ -267,7 +313,7 @@ def inInterval(time, w):
 
 def strfwin(w):
         '''return formatted string for an interval w'''
-        return "[%s-%s]" % (w[0].strftime("%H:%M"), w[1].strftime("%H:%M"))
+        return "(%s-%s)" % (w[0].strftime("%H:%M"), w[1].strftime("%H:%M"))
 
 def windows(winstr):
         '''Build a window list from a windows list spec string 
@@ -315,6 +361,7 @@ def monotonic(windows):
                 return monotonic(gaps(windows))
 
 def curWindow(windows, tNow):
+	'''Fnd out whether tNow is in nay of the window series'''
         if not reversed (windows[-1]):
                 for i in range(0,len(windows)):
                         if inInterval(tNow, windows[i]):
@@ -329,28 +376,7 @@ def curWindow(windows, tNow):
                 return False, -1
 
 
-def where(windows):
-        log.debug("Finding current relay window")
-        tNow = now()
-        found, i = curWindow(windows, tNow)
-        if found:
-                log.debug("current relay window is %s", strfwin(windows[i]))
-        else:
-                log.debug("No current relay window active, finding gap")
-                g = gaps(windows)
-                found, i = curWindow(g, tNow)
-                log.debug("now() is in gap %s", strfwin(g[i]))
 
-def verify(windows):
-        '''Verify a  series of time windows'''
-        positive_flag, i = positive(windows)
-        if not positive_flag:
-                log.error("Window with negative length => %s", strfwin(windows[i]))
-                raise InvalidTimeWindow(windows[i])
-        monotonic_flag, i = monotonic(windows)
-        if not monotonic_flag:
-                log.error("Window series not monotonic starting at => %s", strfwin(windows[i]))
-                raise InvalidTimeWindow(windows[i])
 
 
 class InvalidTimeWindow(Exception):

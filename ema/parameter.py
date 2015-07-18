@@ -289,7 +289,7 @@ class Parameter(AbstractParameter):
 		
 
 	def actionGet(self, message, matchobj):
-		self.log.debug("Parameter %s: matched GET message", self.name)
+		self.log.debug("Parameter %s: matched GET response message", self.name)
 		value = int(matchobj.group(self.grp))
 		if value != self.value:
 			self.sendValue()
@@ -301,7 +301,7 @@ class Parameter(AbstractParameter):
 
 
 	def actionSet(self, message, matchobj):
-		self.log.debug("Parameter %s: matched SET message", self.name)
+		self.log.debug("Parameter %s: matched SET response message", self.name)
 		value = int(matchobj.group(self.grp))
 		if value != self.value:
 			self.log.warning("Parameter %s: value is still not synchronized", self.name)
