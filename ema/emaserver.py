@@ -410,36 +410,6 @@ class EMAServer(server.Server):
 			self.serdriver.write(message)
 		
 
-	# ---------------------------
-	# Event handlers from Devices
-	# ---------------------------
-
-	def onRoofRelaySwitch(self, mode, reason):
-		'''
-		Roof Relay Open Event handler.
-		'mode' is either 'ON' or 'OFF'
-		'reason' is the reason code in EMA status message.
-		'''
-		self.notifier.onRoofRelaySwitch(mode, reason)
-
-
-	def onAuxRelaySwitch(self, mode, reason):
-		'''
-		Aux Relay Close Event handler.
-		'reason' is the reason code in EMA status message.
-		'''
-		self.notifier.onAuxRelaySwitch(mode, reason)
-
-
-	def onVoltageLow(self, voltage, threshold, n):
-		'''
-		Voltmeter low event handler.
-		'vltage' is the actual voltage in EMA status message.
-		'threshold' is the low threshold
-		'n' is the sampe size on which the average was made
-		'''
-		self.notifier.onVoltageLow(voltage, threshold, n)
-
 	# --------------
 	# Server Control
 	# --------------

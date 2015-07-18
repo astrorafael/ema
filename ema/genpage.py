@@ -248,7 +248,7 @@ class HTML(Lazy):
 
 	def tableRowsCurrent(self, page):
 		for device in self.ema.currentList:
-			if not 'html' in device.publishable:
+			if not ('html','current') in device.publishable:
 				log.debug("(current) skipping publihing Device = %s", device.name)
 				continue
 			self.tableDevice(page, device)
@@ -263,7 +263,7 @@ class HTML(Lazy):
 
 	def tableRowsAverage(self, page):
 		for device in self.ema.averageList:
-			if not 'html' in device.publishable:
+			if not ('html','average') in device.publishable:
                                 log.debug("(average) skipping publihing Device = %s", device.name)
                                 continue
 			self.tableDevice(page, device)

@@ -69,11 +69,12 @@ class Voltmeter(Alarmable, Device):
         offset  = parser.getfloat("VOLTMETER", "volt_offset")
         delta   = parser.getfloat("VOLTMETER", "volt_delta")
         time    = parser.getint("VOLTMETER",    "volt_time")
-        publish = parser.get("VOLTMETER","volt_publish").split(',')
+        publish_where = parser.get("VOLTMETER","volt_publish_where").split(',')
+        publish_what  = parser.get("VOLTMETER","volt_publish_what").split(',')
         scripts = parser.get("VOLTMETER","low_volt_script").split(',')
         mode    = parser.get("VOLTMETER","low_volt_mode")
         Alarmable.__init__(self,3)
-	Device.__init__(self, publish)
+	Device.__init__(self, publish_where, publish_what)
         self.ema         = ema
         self.thres       = Parameter(ema, self, thres, **THRESHOLD)
         self.offset      = Parameter(ema, None, offset, **OFFSET)
@@ -87,7 +88,7 @@ class Voltmeter(Alarmable, Device):
         ema.addThreshold(self)
         ema.addParameter(self)
 	for script in scripts:
-		ema.notifier.addVoltScript(mode,script)
+		ema.notifier.addScript('VoltageLow',mode,script)
        
 
     def onStatus(self, message):
@@ -95,7 +96,7 @@ class Voltmeter(Alarmable, Device):
         accum, n = self.voltage.sum(self.averlen)
         average = accum / (n * 10.0)
         if average < self.lowvolt:
-            self.ema.onVoltageLow("%.1f" % average, "%.1f" % self.lowvolt, str(n))
+            self.ema.notifier.onEventExecute('VoltageLow', '--voltage', "%.1f" % average, '--threshold', "%.1f" % self.lowvolt, '--size' , str(n))
 
 
     def onTimeoutDo(self):

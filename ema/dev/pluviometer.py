@@ -54,9 +54,10 @@ class Pluviometer(Device):
     def __init__(self, ema, parser, N):
         lvl         = parser.get("PLUVIOMETER", "pluv_log")
         log.setLevel(lvl)
-        publish     = parser.get("PLUVIOMETER","pluv_publish").split(',')
+        publish_where    = parser.get("PLUVIOMETER","pluv_publish_where").split(',')
+        publish_what     = parser.get("PLUVIOMETER","pluv_publish_what").split(',')
         calibration = parser.getfloat("PLUVIOMETER", "pluv_calib")
-        Device.__init__(self, publish)
+        Device.__init__(self, publish_where, publish_what)
         self.calibration   = Parameter(ema, None, calibration, **CALIBRATION)
         self.instant       = Vector(N)
         self.accumulated   = Vector(N)

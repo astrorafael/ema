@@ -79,38 +79,6 @@ def timeToString(itime):
 	'''Conversion fromr EMA integer HHMM value to HH:MM string'''
 	return '%02d:%02d' % (itime // 100, itime % 100) 
 
-def toMinutes(hhmm):
-	'''Converts an HH:MM sttring to minutes'''
-	minutes = int(hhmm[0:2])*60  + int(hhmm[3:5])
-	log.debug ("hh:mm => %d minutes", minutes)
-	return minutes
-
-def analiza(w):
-	'''Analyzes a  series of time windows'''
-	for i in range(0,len(w)):
-		log.debug("w[%i]= %s", i, w[i])		
-
-	# Start Time[i] must be less than End Time[i]
-	# except for the last window which could wrap around		
-	log.debug("checking each start/end time window")
-	for i in range(0,len(w)-1):
-		log.debug("w[%d][start] (%s) < w[%d][end] (%s)", i, w[i][0], i,  w[i][1])		
-		if not toMinutes(w[i][0]) < toMinutes(w[i][1]):
-			raise IndexError
-	
-	# End Time[i] must be less than Start Time[i+1]
-	# except for the last window which could wrap around		
-	log.debug("checking concatenated end/start time window")
-	for i in range(0,len(w)-1):
-		log.debug("w[%d][end] (%s) < w[%d][start] (%s)", i, w[i][1], i+1, w[i+1][0])		
-		if not  toMinutes(w[i][1]) < toMinutes(w[i+1][0]):
-			raise IndexError
-
-	if not toMinutes(w[-1][0]) < toMinutes(w[-1][1]):
-		log.debug("detected last time window wrap around")
-
-
-
 class AuxRelay(Alarmable, Device):
 
 	OPEN = 'open'
@@ -147,9 +115,10 @@ class AuxRelay(Alarmable, Device):
 		tOFF         = parser.get("AUX_RELAY", "aux_off")
 		scripts      = parser.get("AUX_RELAY","aux_relay_script").split(',')
 		script_mode  = parser.get("AUX_RELAY","aux_relay_mode")
-		publish      = parser.get("AUX_RELAY","aux_relay_publish").split(',')
+		publish_where = parser.get("AUX_RELAY","aux_relay_publish_where").split(',')
+		publish_what  = parser.get("AUX_RELAY","aux_relay_publish_what").split(',')
 		Alarmable.__init__(self,3)
-		Device.__init__(self, publish)
+                Device.__init__(self, publish_where, publish_what)
 		myself = self if AuxRelay.MAPPING[mode] == AuxRelay.TIMED else None
 		self.mode = Parameter(ema, myself, AuxRelay.MAPPING[mode], **MODE)	
 		# get rid of : in   HH:MM   and transform it to a number
@@ -163,12 +132,11 @@ class AuxRelay(Alarmable, Device):
 		ema.subscribeStatus(self)
 		ema.addParameter(self)
 		for script in scripts:
-			ema.notifier.addAuxRelayScript(script_mode, script)
+			ema.notifier.addScript('AuxRelaySwitch', script_mode, script)
 		# ESTO ES NUEVO
 		window = parser.get("AUX_RELAY", "aux_window")
 		self.window =[ time.split('-') for time in window.split(',')  ]
 		analiza(self.window)
-
 
 	def onTimeoutDo(self):
 		if self.mode.value != AuxRelay.TIMED :
@@ -193,12 +161,12 @@ class AuxRelay(Alarmable, Device):
 		if self.relay.last() and not openFlag:
 			log.warning("Aux Relay Switch Off: %s", AuxRelay.REASON[c])
 			self.relay.append(openFlag)
-			self.ema.onAuxRelaySwitch(OFF, c)
+			self.ema.notifier.onEventExecute('AuxRelaySwitch', "--status" , OFF, "--reason", c)
 		# Detects Close-> Open transitions and notify
 		elif not self.relay.last() and openFlag:
 			log.warning("Aux Relay Switch On: %s", AuxRelay.REASON[c])
 			self.relay.append(openFlag)
-			self.ema.onAuxRelaySwitch(ON, c)
+			self.ema.notifier.onEventExecute('AuxRelaySwitch', "--status" , ON, "--reason", c)
 		else:
 			self.relay.append(openFlag)
 
@@ -236,17 +204,18 @@ class RoofRelay(Device):
 	}
 
 	def __init__(self, ema,  parser, N):
-		publish    = parser.get("ROOF_RELAY","roof_relay_publish").split(',')
+		publish_where = parser.get("ROOF_RELAY","roof_relay_publish_where").split(',')
+		publish_what  = parser.get("ROOF_RELAY","roof_relay_publish_what").split(',')
 		scripts    = parser.get("ROOF_RELAY","roof_relay_script").split(',')
 		relay_mode = parser.get("ROOF_RELAY","roof_relay_mode")
-                Device.__init__(self, publish)
+                Device.__init__(self, publish_where, publish_what)
 		self.relay = Vector(N)
 		self.ema   = ema
 		ema.subscribeStatus(self)
 		ema.addCurrent(self)
 		ema.addAverage(self)
 		for script in scripts:
-			ema.notifier.addRoofRelayScript(relay_mode, script)
+			ema.notifier.addScript('RoofRelaySwitch', relay_mode, script)
 		
 
 	def onStatus(self, message):
@@ -262,11 +231,12 @@ class RoofRelay(Device):
 		# Detects Open -> Close transitions and notify
 		if self.relay.last() and not openFlag:
 			self.relay.append(openFlag)
-			self.ema.onRoofRelaySwitch(OFF, c)
+			self.ema.notifier.onEventExecute('RoofRelaySwitch', "--status" , OFF, "--reason", c)
+
 		# Detects Close-> Open transitions and notify
 		elif not self.relay.last() and openFlag:
 			self.relay.append(openFlag)
-			self.ema.onRoofRelaySwitch(ON, c)
+			self.ema.notifier.onEventExecute('RoofRelaySwitch', "--status" , ON, "--reason", c)
 		else:
 			self.relay.append(openFlag)
 
@@ -282,3 +252,46 @@ class RoofRelay(Device):
 		'''Return dictionary averaged values over a period of N samples'''
 		accum, n = self.relay.sum()
 		return { RoofRelay.OPEN: ((accum*100.0)/n, '%') }
+
+
+# ============================================================================
+# ============================================================================
+# ============================================================================
+
+import datetime
+
+def now():
+	return datetime.datetime.utcnow().replace(microsecond=0).time()
+
+def toMinutes(hhmm):
+	'''Converts an HH:MM sttring to minutes'''
+	minutes = int(hhmm[0:2])*60  + int(hhmm[3:5])
+	log.debug ("hh:mm => %d minutes", minutes)
+	return minutes
+
+def analiza(w):
+	'''Analyzes a  series of time windows'''
+	for i in range(0,len(w)):
+		log.debug("w[%i]= %s", i, w[i])		
+
+	# Start Time[i] must be less than End Time[i]
+	# except for the last window which could wrap around		
+	log.debug("checking each start/end time window")
+	for i in range(0,len(w)-1):
+		log.debug("w[%d][start] (%s) < w[%d][end] (%s)", i, w[i][0], i,  w[i][1])		
+		if not toMinutes(w[i][0]) < toMinutes(w[i][1]):
+			raise IndexError
+	
+	# End Time[i] must be less than Start Time[i+1]
+	# except for the last window which could wrap around		
+	log.debug("checking concatenated end/start time window")
+	for i in range(0,len(w)-1):
+		log.debug("w[%d][end] (%s) < w[%d][start] (%s)", i, w[i][1], i+1, w[i+1][0])		
+		if not  toMinutes(w[i][1]) < toMinutes(w[i+1][0]):
+			raise IndexError
+
+	if not toMinutes(w[-1][0]) < toMinutes(w[-1][1]):
+		log.debug("detected last time window wrap around")
+
+
+

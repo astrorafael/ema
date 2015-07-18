@@ -1,6 +1,6 @@
-1) Que cada device se lea su configuracion del config parser para aliviar el build de la EMA
-2) Subclaasificar comandos en lugar de que los coallbacks vayan a un tercer objeto
-3) Planficador de horas de enciendio y apagado
+*) Tiempo de sncronizacion RTC en horas en el fichero config
+*) Opcion de publicar o no los datos historicos
+*) Planficador de horas de enciendio y apagado
   - Para permitir varios ciclos de apagado/enciendio al dia
      - aux_start    = 01:00,13:00,20:00
      - aux_duration = 00:15,00:15,01:00

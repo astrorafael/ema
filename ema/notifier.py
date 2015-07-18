@@ -67,6 +67,8 @@
 # executed. I think this is cleaner than carrying return information 
 # across two levels.
 #
+# In V2.0, notifier is generic, allowing regsitering and execution of any
+# event
 # ======================================================================
 
 
@@ -173,49 +175,26 @@ class Notifier(object):
 
 	def __init__(self):
 		pass
-		self.lowVoltScript   = []
-		self.auxRelayScript  = []
-		self.roofRelayScript = []
+		self.scripts   = {}
 
 	# ---------------------------								
 	# Adding scripts to notifier
 	# ---------------------------
 
-	def addVoltScript(self, mode, script):
+	def addScript(self, event, mode, path):
 		''' *_script are tuples of (path, mode)'''
-		self.lowVoltScript.append(Script((script,mode)))
-		
-	def addAuxRelayScript(self, mode, script):
-		''' *_script are tuples of (path, mode)'''
-		self.auxRelayScript.append(Script((script,mode)))
-
-	def addRoofRelayScript(self, mode, script):
-		''' *_script are tuples of (path, mode)'''
-		self.roofRelayScript.append(Script((script,mode))) 
+		aList = self.scripts.get(event,[])
+		aList.append(Script((path, mode)))
+		self.scripts[event] = aList
 
 	# ---------------------------
-	# Event handlers from Devices
+	# Event handler from Devices
 	# ---------------------------
 
-	def onVoltageLow(self, voltage, threshold, n):
+	def onEventExecute(self, event, *args):
 		try:
-			for script in self.lowVoltScript:
-				script.run("--voltage", voltage, "--threshold", threshold, "--size", n)
+			for script in self.scripts[event]:
+				script.run(*args)
 		except ExecutedScript as e:
-			log.critical("Executed a Low Voltage script: %s ", e)
+			log.warning("On event %s executed script => %s ", event, e)
 
-
-	def onRoofRelaySwitch(self, on_off, reason):
-		try:
-			for script in self.roofRelayScript:
-				script.run("--status", on_off, "--reason", reason)
-		except ExecutedScript as e:
-			log.warning("Executed a Roof Relay script: %s ", e)
-
-
-	def onAuxRelaySwitch(self, on_off, reason):
-		try:
-			for script in self.auxRelayScript:
-				script.run("--status", on_off, "--reason", reason)
-		except ExecutedScript as e:
-			log.warning("Executed an Aux Relay script: %s ", e)
