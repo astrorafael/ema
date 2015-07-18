@@ -182,20 +182,23 @@ class AuxRelay(Device):
 		publish_what  = parser.get("AUX_RELAY","aux_relay_publish_what").split(',')
  		winstr        = parser.get("AUX_RELAY", "aux_window")
                 Device.__init__(self, publish_where, publish_what)
-		self.mode  = Parameter(ema, AuxRelay.MAPPING[mode], **MODE)	
-		self.relay = Vector(N)
-		self.ema   = ema
-		self.windows = windows(winstr)
-		self.gaps    = gaps(self.windows)
-		ema.addSync(self.mode)
-		ema.subscribeStatus(self)
-		ema.addParameter(self)
+		self.mode    = Parameter(ema, AuxRelay.MAPPING[mode], **MODE)	
+		self.ton     = None
+		self.toff    = None
+		self.relay   = Vector(N)
+		self.ema     = ema
+		self.windows = []
+		self.gaps    = []
 		for script in scripts:
 			ema.notifier.addScript('AuxRelaySwitch', script_mode, script)
 		if AuxRelay.MAPPING[mode] == AuxRelay.TIMED: 
+			self.windows = windows(winstr)
+			self.gaps    = gaps(self.windows)
 			self.verifyWindows()
-			self.findCurrentWindow()
 			self.programRelay()
+		ema.addSync(self.mode)
+		ema.subscribeStatus(self)
+		ema.addParameter(self)
 
 	def onStatus(self, message):
 		'''Aux Relay, accumulate open/close readings'''
@@ -235,11 +238,16 @@ class AuxRelay(Device):
 	@property
 	def parameter(self):
 		'''Return dictionary with calibration constants'''
-		return {
-			self.mode.name : (AuxRelay.MAPPING[self.mode.value] , self.mode.unit) ,
-			self.ton.name  : ( timeToString(self.ton.value), self.ton.unit) ,
-			self.toff.name : ( timeToString(self.toff.value), self.toff.unit) ,
-			}
+		if self.ton is not None:
+			return {
+				self.mode.name : (AuxRelay.MAPPING[self.mode.value] , self.mode.unit) ,
+				self.ton.name  : ( timeToString(self.ton.value), self.ton.unit) ,
+				self.toff.name : ( timeToString(self.toff.value), self.toff.unit) ,
+				}
+		else:
+			return {
+				self.mode.name : (AuxRelay.MAPPING[self.mode.value] , self.mode.unit) ,
+				}
 	# ------------------
 	# Intervals handling
 	# ------------------
@@ -254,41 +262,35 @@ class AuxRelay(Device):
         	if not monotonic_flag:
                 	log.error("Window series not monotonic starting at => %s", strfwin(self.windows[i]))
                 	raise InvalidTimeWindow(self.windows[i])
-		log.info("%d time windows processed ok.", len(self.windows))
 
 
-	def findCurrentWindow(self):
+	def programRelay(self):
         	log.debug("Finding current relay window")
         	tNow = now()
         	found, i = curWindow(self.windows, tNow)
         	if found:
-			self.where = 'window'
-			self.wIndex = i
+			where = 'window'
                 	log.info("now we are in window  %s", strfwin(self.windows[i]))
         	else:
+			where = 'gap'
                 	found, i = curWindow(self.gaps, tNow)
-			self.where = 'gap'
-			self.wIndex = i
                 	log.info("now we are in the gap %s", strfwin(self.gaps[i]))
 	
-	def programRelay(self):
-		if self.where == 'gap':
-			i = (self.wIndex + 1 ) % len(self.windows) 
+		if where == 'gap':
+			i = (i + 1) % len(self.windows) 
 			tON  =  int(self.windows[i][0].strftime("%H%M"))
 			tOFF =  int(self.windows[i][1].strftime("%H%M"))
 			self.ton   = Parameter(self.ema, tON,  **TON)
 			self.toff  = Parameter(self.ema, tOFF, self.ton, **TOFF)
-			log.info("Programing next window (tON-tOFF) to %s",strfwin(self.windows[i]))
+			log.info("Programming next window (tON-tOFF) to %s",strfwin(self.windows[i]))
 			self.toff.sync()
 		else:
-			i = self.wIndex  
 			tOFF =  int(self.gaps[i][0].strftime("%H%M"))
 			tON  =  int(self.gaps[i][1].strftime("%H%M"))
 			self.ton   = Parameter(self.ema, tON,  **TON)
 			self.toff  = Parameter(self.ema, tOFF, self.ton, **TOFF)
-			log.info("Programing next window (tOFF-tON) to (%s-%s)", self.gaps[i][0], self.gaps[i][1])
+			log.info("Programming next window (tOFF-tON) to (%s-%s)", self.gaps[i][0].strftime("%H:%M"), self.gaps[i][1].strftime("%H:%M"))
 			self.toff.sync()
-	
 
 
 # ============================================================================
