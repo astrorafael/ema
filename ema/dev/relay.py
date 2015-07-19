@@ -22,6 +22,7 @@
 # ----------------------------------------------------------------------
 
 import logging
+import subprocess
 import re
 import datetime
 from ema.server    import Server, Alarmable
@@ -319,15 +320,21 @@ class AuxRelay(Device, Alarmable):
 			log.info("Programming next window (tOFF-tON) to (%s-%s)", self.gaps[i][0].strftime("%H:%M"), self.gaps[i][1].strftime("%H:%M"))
 			self.toff.sync()
 
-		# Porgrams wlef power off time		
-		if self.poweroff:
-			subprocess.call(['sudo','shutdown','-k', timeToString(tOFF)])
-
 		# anyway sets an alarm to self-check relay status on next
 		log.info("Next check at %s",tMID.strftime("%H:%M:%S"))
 		t = durationFromNow(tMID).total_seconds()
 		self.setTimeout( int(t / Server.TIMEOUT) )
 		self.ema.addAlarmable(self)
+
+		# Porgrams wlef power off time		
+		# WARNING !!!!! tMID IS GIVEN AS UTC !!!!!!
+		# AND SHUTDOWN REQUIRES LOCAL TIME !!!!!
+		# his will only work if local time is UTC as well
+		if self.poweroff:
+			log.warning("Calling shutdown at %s",tMID.strftime("%H:%M"))
+			[h.flush() for h in log.handlers]
+			subprocess.call(['sudo','shutdown','-k', timeToString(tOFF)])
+
 
 # ============================================================================
 # ============================================================================
