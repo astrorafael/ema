@@ -1,13 +1,10 @@
 *) Tiempo de sncronizacion RTC en horas en el fichero config
 *) Opcion de publicar o no los datos historicos
-*) Planficador de horas de enciendio y apagado
-  - Para permitir varios ciclos de apagado/enciendio al dia
-     - aux_start    = 01:00,13:00,20:00
-     - aux_duration = 00:15,00:15,01:00
-  - tON y tOFF ya no srran parametros. habra que controlar eso con comandos
-  - Si el modo es energy_savings, now() debe estar comprendido en uno de los intervalos
-    si no pasa eso, hay algo mal configurado
-  No se si el planificador debe ser parte del objeto AuxRelay, probabemente no ...
-  
+  mqtt_publish_historic = yes/no
 
+*) Planficador de horas de enciendio y apagado
+ - calcular los minutos necesarios par hacer un shutdown 
+- dar 2 minutos de margen a la Pi
+- aux_relay_shutdown = yes / no 
+quotar el shutdown del codigo del mqttclient.py
    
