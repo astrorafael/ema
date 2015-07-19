@@ -30,6 +30,11 @@ from ema.vector    import Vector
 from ema.emaproto  import SRRB, SARB
 from ema.device    import Device
 
+# On/Off flags as string constants
+ON  = 'ON'
+OFF = 'OFF'
+
+
 log = logging.getLogger('relays')
 
 
@@ -95,10 +100,6 @@ class RoofRelay(Device):
 
 
 
-# On/Off flags as string constants
-ON  = 'ON'
-OFF = 'OFF'
-
 
 MODE = {
 	'name': 'Aux Relay mode',
@@ -144,6 +145,15 @@ def timeToString(itime):
 
 
 
+class InvalidTimeWindow(Exception):
+        '''Signals a script has executed'''
+        def __init__(self, w):
+                self.win = w
+        def  __str__(self):
+                '''Prints useful information'''
+                return "(%s-%s)" % (self.w[0].strftime("%H:%M"), self.w[1].strftime("%H:%M"))
+
+
 class AuxRelay(Device):
 
 	OPEN = 'open'
@@ -182,11 +192,11 @@ class AuxRelay(Device):
 		publish_what  = parser.get("AUX_RELAY","aux_relay_publish_what").split(',')
  		winstr        = parser.get("AUX_RELAY", "aux_window")
                 Device.__init__(self, publish_where, publish_what)
+		self.ema     = ema
 		self.mode    = Parameter(ema, AuxRelay.MAPPING[mode], **MODE)	
 		self.ton     = None
 		self.toff    = None
 		self.relay   = Vector(N)
-		self.ema     = ema
 		self.windows = []
 		self.gaps    = []
 		for script in scripts:
@@ -270,11 +280,11 @@ class AuxRelay(Device):
         	found, i = curWindow(self.windows, tNow)
         	if found:
 			where = 'window'
-                	log.info("now we are in window  %s", strfwin(self.windows[i]))
+                	log.info("now (%s) we are in window  %s", tNow, strfwin(self.windows[i]))
         	else:
 			where = 'gap'
                 	found, i = curWindow(self.gaps, tNow)
-                	log.info("now we are in the gap %s", strfwin(self.gaps[i]))
+                	log.info("now (%s) we are in the gap %s", tNow, strfwin(self.gaps[i]))
 	
 		if where == 'gap':
 			i = (i + 1) % len(self.windows) 
@@ -310,9 +320,26 @@ def reversed(w):
         return not (w[0] < w[1])
 
 def inInterval(time, w):
-        '''Returns whether a given itme is in a given window'''
+        '''Returns whether a given time is in a given window'''
         return time >= w[0] and time <= w[1]
 
+def midpoint(w):
+	'''Find the interval midpoint. Returns a time object'''
+	today = datetime.date.today()
+	ts0 = datetime.datetime.combine(today, w[0])
+	ts1 = datetime.datetime.combine(today, w[1])
+	if ts1 < ts0:
+		ts1 += datetime.timedelta(hours=24)
+	return (abs(ts1 - ts0)/2 + ts0).time()
+
+def adjust(time, minutes):
+	''' adjust a time object by some integer minutes, 
+	returning a new time object'''
+	today = datetime.date.today()
+	ts0 = datetime.datetime.combine(today, time)
+	mm = datetime.timedelta(minutes=minutes)
+	return (ts0 + mm).time()
+    
 def strfwin(w):
         '''return formatted string for an interval w'''
         return "(%s-%s)" % (w[0].strftime("%H:%M"), w[1].strftime("%H:%M"))
@@ -378,26 +405,6 @@ def curWindow(windows, tNow):
                 return False, -1
 
 
-
-
-
-class InvalidTimeWindow(Exception):
-        '''Signals a script has executed'''
-        def __init__(self, w):
-                self.win = w
-        def  __str__(self):
-                '''Prints useful information'''
-                return "(%s-%s)" % (self.w[0].strftime("%H:%M"), self.w[1].strftime("%H:%M"))
-
-
-class TimeScheduler(object):
-
-        def __init__(self, relay, parser):
-                self.relay = relay
-                winstr = parser.get("AUX_RELAY", "aux_window")
-                self.windows = windows(winstr)
-                verify(self.windows)
-                where(self.windows)
 
 
 
