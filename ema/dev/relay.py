@@ -333,7 +333,7 @@ class AuxRelay(Device, Alarmable):
 		if self.poweroff:
 			log.warning("Calling shutdown at %s",tMID.strftime("%H:%M"))
 			[h.flush() for h in log.handlers]
-			subprocess.call(['sudo','shutdown','-k', timeToString(tOFF)])
+			subprocess.Popen(['sudo','shutdown','-k', timeToString(tOFF)])
 
 
 # ============================================================================
