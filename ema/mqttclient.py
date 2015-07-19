@@ -130,8 +130,8 @@ class MQTTClient(Lazy):
       host     = parser.get("MQTT", "mqtt_host")
       port     = parser.getint("MQTT", "mqtt_port")
       period   = parser.getint("MQTT", "mqtt_period")
-      historic = parser.getint("MQTT", "mqtt_period_historic")
-      poweroff = parser.getboolean("MQTT", "mqtt_energy_savings")
+      histflag = parser.getboolean("MQTT", "mqtt_publish_history")
+      historic = parser.getint("MQTT", "mqtt_period_history")
       publish_status = parser.getboolean("MQTT", "mqtt_publish_status")
       Lazy.__init__(self, period / ( 2 * Server.TIMEOUT))
       MQTTClient.TOPIC_EVENTS         = "%s/events"  % id
@@ -140,12 +140,12 @@ class MQTTClient(Lazy):
       MQTTClient.TOPIC_CURRENT_STATUS = "%s/current/status" % id
       MQTTClient.HISTORIC        = (historic * 3600 * 2) / Server.TIMEOUT  
       self.ema        = ema
-      self.__poweroff = poweroff
       self.__id       = id
       self.__topics   = False
       self.__stats    = 0
       self.__count    = 0
       self.__hiscount = 0
+      self.__histflag = histflag
       self.__state    = NOT_CONNECTED
       self.__host     = host
       self.__port     = port
@@ -158,7 +158,7 @@ class MQTTClient(Lazy):
       ema.addLazy(self)
       if publish_status:
          ema.subscribeStatus(self)
-      log.info("MQTT client created. Energy savings mode = %s", poweroff)
+      log.info("MQTT client created")
  
    # ----------------------------------------
    # MQTT Callbacks
@@ -233,7 +233,8 @@ class MQTTClient(Lazy):
       if self.__state == CONNECTED and not self.__topics:
          self.__topics = True
          self.publishTopics()
-         self.publishBulkDump()
+         if self.__histflag:
+            self.publishBulkDump()
 
       self.__count = (self.__count + 1) % 2
       if self.__state == CONNECTED and self.__count == 0:
@@ -273,12 +274,6 @@ class MQTTClient(Lazy):
         log.debug("Collectd %d lines", len(self.bulkDump))
         self.__mqtt.publish(topic=MQTTClient.TOPIC_HISTORY, payload='\n'.join(self.bulkDump), qos=2, retain=True)
         log.info("Uploaded %d days of 24h history (%s) to %s", FLASH_END + 1 - FLASH_START, date, MQTTClient.TOPIC_HISTORY)
-        if self.__poweroff:
-           msg = "EMA Server powering off at %s" % datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-           self.__mqtt.publish(MQTTClient.TOPIC_EVENTS,  payload=msg, qos=2, retain=True)
-           log.info("Gracefully powering off the computer")
-           [h.flush() for h in log.handlers]
-           subprocess.call(['sudo','shutdown','-h','now'])
 
    # --------------
    # Helper methods

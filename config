@@ -82,19 +82,15 @@ mqtt_port = 1883
 # Publishing period for real time, current measurements (in seconds)
 mqtt_period = 60
 
+# Publish historic data (24h)
+mqtt_publish_history = yes
+
 # Publishing period for historic data stored in EMA (in hours)
-mqtt_period_historic = 6
+mqtt_period_history = 6
+
 
 # Publish Raw EMA status Line
 mqtt_publish_status = yes
-
-# Enery savings mode.
-# In this mode, EMA Server will publish historic data and then gracefully
-# powers the computer off.
-# You must configure Aux relay to power the computer on every day,
-# This mode superseedes periodic data publication.
-# Allowed values: yes / no
-mqtt_energy_savings = no
 
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NONSET)
 mqtt_log = INFO
@@ -423,6 +419,10 @@ aux_mode = Timed
 # Time given in UTC Time. 
 #aux_window = 10:00-15:30,18:10-18:15,22:00-22:15
 aux_window = 22:05-00:15
+
+# Set to true if aux relay actually shuts down power supply
+# the host computer will shutdown a couple of minites before
+aux_poweroff = no
 
 # List of comma separated scripts to execute  
 # on change of aux relay switch 

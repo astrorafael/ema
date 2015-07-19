@@ -191,16 +191,17 @@ class AuxRelay(Device, Alarmable):
 		publish_where = parser.get("AUX_RELAY","aux_relay_publish_where").split(',')
 		publish_what  = parser.get("AUX_RELAY","aux_relay_publish_what").split(',')
  		winstr        = parser.get("AUX_RELAY", "aux_window")
+ 		poweroff      = parser.getboolean("AUX_RELAY", "aux_poweroff")
                 Device.__init__(self, publish_where, publish_what)
 		Alarmable.__init__(self)
-		self.ema     = ema
-		self.mode    = Parameter(ema, AuxRelay.MAPPING[mode], **MODE)	
-		self.ton     = None
-		self.toff    = None
-		self.relay   = Vector(N)
-		self.windows = []
-		self.gaps    = []
-		self.poweroff = False
+		self.ema      = ema
+		self.poweroff = poweroff
+		self.mode     = Parameter(ema, AuxRelay.MAPPING[mode], **MODE)	
+		self.ton      = None
+		self.toff     = None
+		self.relay    = Vector(N)
+		self.windows  = []
+		self.gaps     = []
 		for script in scripts:
 			ema.notifier.addScript('AuxRelaySwitch', script_mode, script)
 		if AuxRelay.MAPPING[mode] == AuxRelay.TIMED: 
