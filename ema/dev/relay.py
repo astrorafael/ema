@@ -24,7 +24,7 @@
 import logging
 import re
 import datetime
-
+from ema.server    import Server, Alarmable
 from ema.parameter import Parameter
 from ema.vector    import Vector
 from ema.emaproto  import SRRB, SARB
@@ -154,7 +154,7 @@ class InvalidTimeWindow(Exception):
                 return "(%s-%s)" % (self.w[0].strftime("%H:%M"), self.w[1].strftime("%H:%M"))
 
 
-class AuxRelay(Device):
+class AuxRelay(Device, Alarmable):
 
 	OPEN = 'open'
 
@@ -192,6 +192,7 @@ class AuxRelay(Device):
 		publish_what  = parser.get("AUX_RELAY","aux_relay_publish_what").split(',')
  		winstr        = parser.get("AUX_RELAY", "aux_window")
                 Device.__init__(self, publish_where, publish_what)
+		Alarmable.__init__(self)
 		self.ema     = ema
 		self.mode    = Parameter(ema, AuxRelay.MAPPING[mode], **MODE)	
 		self.ton     = None
@@ -199,6 +200,7 @@ class AuxRelay(Device):
 		self.relay   = Vector(N)
 		self.windows = []
 		self.gaps    = []
+		self.poweroff = False
 		for script in scripts:
 			ema.notifier.addScript('AuxRelaySwitch', script_mode, script)
 		if AuxRelay.MAPPING[mode] == AuxRelay.TIMED: 
@@ -209,6 +211,10 @@ class AuxRelay(Device):
 		ema.addSync(self.mode)
 		ema.subscribeStatus(self)
 		ema.addParameter(self)
+
+	# -------------------------------------------
+	# Implements the EMA status message interface
+	# -------------------------------------------
 
 	def onStatus(self, message):
 		'''Aux Relay, accumulate open/close readings'''
@@ -232,6 +238,13 @@ class AuxRelay(Device):
 			self.ema.notifier.onEventExecute('AuxRelaySwitch', "--status" , ON, "--reason", c)
 		else:
 			self.relay.append(openFlag)
+
+	# ----------------------------------
+	# Implements the ALarmable interface
+	# ----------------------------------
+
+	def onTimeoutDo(self):
+		self.programRelay()
 
 	@property
 	def current(self):
@@ -275,6 +288,7 @@ class AuxRelay(Device):
 
 
 	def programRelay(self):
+		'''Program Aux Relay tON and tOFF times'''
         	log.debug("Finding current relay window")
         	tNow = now()
         	found, i = curWindow(self.windows, tNow)
@@ -290,6 +304,7 @@ class AuxRelay(Device):
 			i = (i + 1) % len(self.windows) 
 			tON  =  int(self.windows[i][0].strftime("%H%M"))
 			tOFF =  int(self.windows[i][1].strftime("%H%M"))
+			tMID =  midpoint(self.windows[i])
 			self.ton   = Parameter(self.ema, tON,  **TON)
 			self.toff  = Parameter(self.ema, tOFF, self.ton, **TOFF)
 			log.info("Programming next window (tON-tOFF) to %s",strfwin(self.windows[i]))
@@ -297,11 +312,21 @@ class AuxRelay(Device):
 		else:
 			tOFF =  int(self.gaps[i][0].strftime("%H%M"))
 			tON  =  int(self.gaps[i][1].strftime("%H%M"))
+			tMID =  midpoint(self.gaps[i])
 			self.ton   = Parameter(self.ema, tON,  **TON)
 			self.toff  = Parameter(self.ema, tOFF, self.ton, **TOFF)
 			log.info("Programming next window (tOFF-tON) to (%s-%s)", self.gaps[i][0].strftime("%H:%M"), self.gaps[i][1].strftime("%H:%M"))
 			self.toff.sync()
 
+		# Porgrams wlef power off time		
+		if self.poweroff:
+			subprocess.call(['sudo','shutdown','-k', timeToString(tOFF)])
+
+		# anyway sets an alarm to self-check relay status on next
+		log.info("Next check at %s",tMID.strftime("%H:%M:%S"))
+		t = durationFromNow(tMID).total_seconds()
+		self.setTimeout( int(t / Server.TIMEOUT) )
+		self.ema.addAlarmable(self)
 
 # ============================================================================
 # ============================================================================
@@ -330,7 +355,7 @@ def midpoint(w):
 	ts1 = datetime.datetime.combine(today, w[1])
 	if ts1 < ts0:
 		ts1 += datetime.timedelta(hours=24)
-	return (abs(ts1 - ts0)/2 + ts0).time()
+	return ((ts1 - ts0)/2 + ts0).time()
 
 def adjust(time, minutes):
 	''' adjust a time object by some integer minutes, 
@@ -339,6 +364,14 @@ def adjust(time, minutes):
 	ts0 = datetime.datetime.combine(today, time)
 	mm = datetime.timedelta(minutes=minutes)
 	return (ts0 + mm).time()
+
+def durationFromNow(time):
+	today = datetime.date.today()
+	ts0   = datetime.datetime.utcnow()
+	ts1   = datetime.datetime.combine(today, time)
+	if ts1 < ts0:
+		ts1 += datetime.timedelta(hours=24)
+	return ts1 - ts0
     
 def strfwin(w):
         '''return formatted string for an interval w'''
