@@ -70,9 +70,7 @@ def sighandler(signum, frame):
     '''
     Signal handler (SIGALARM only)
     '''
-    signal.signal(signal.SIGALRM, signal.SIG_IGN)
     Server.instance.sigflag = True
-    signal.signal(signal.SIGALRM, sighandler)
 
 
 class Server(object):
@@ -161,8 +159,8 @@ class Server(object):
 
     def setSigAlarmHandler(self, obj, T):
         '''
-        Set a new object for signal handler and arms the SIGALARM
-       with period T in integer seconds.
+        Set a new object as SIGALARM signal handler and arm 
+        the SIGALARM signal with new tiemout T in integer seconds.
 	'''
         callable(getattr(obj,'onSigAlarmDo'))
         self.__sighandler = obj
@@ -173,6 +171,9 @@ class Server(object):
         '''
         Single step run, invoking I/O handlers or timeout handlers
         '''
+
+	# Catch SIGALARM signal suring select()
+	# and execute its handler first
         try:
             nreadables, nwritables, nexceptionals = select.select(
               self.__readables, self.__writables, [], timeout)
