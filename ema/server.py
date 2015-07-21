@@ -55,6 +55,8 @@
 # enforcing some methods to be implemented in subclasses.
 # ======================================================================
 
+import errno
+import signal
 import select
 import logging
 from   abc import ABCMeta, abstractmethod
@@ -64,16 +66,30 @@ log = logging.getLogger('server')
 def setLogLevel(level):
     log.setLevel(level)
 
+def sighandler(signum, frame):
+    '''
+    Signal handler (SIGALARM only)
+    '''
+    signal.signal(signal.SIGALRM, signal.SIG_IGN)
+    Server.instance.sigflag = True
+    signal.signal(signal.SIGALRM, sighandler)
+
 
 class Server(object):
 
     TIMEOUT = 1   # seconds timeout in select()
+
+    instance = None
 
     def __init__(self):
         self.__readables  = []
         self.__writables  = []
         self.__alarmables = []
         self.__lazy       = []
+        self.__sighandler = None
+        self.sigflag      = True
+        Server.instance   = self
+        signal.signal(signal.SIGALRM, sighandler)
 
     def SetTimeout(self, newT):
         '''Set the select() timeout'''
@@ -143,13 +159,31 @@ class Server(object):
         callable(getattr(obj,'mustWork'))
         self.__lazy.append(obj)
 
+    def setSigAlarmHandler(self, obj, T):
+        '''
+        Set a new object for signal handler and arms the SIGALARM
+       with period T in integer seconds.
+	'''
+        callable(getattr(obj,'onSigAlarmDo'))
+        self.__sighandler = obj
+        signal.alarm(T)
+
 
     def step(self,timeout):
         '''
         Single step run, invoking I/O handlers or timeout handlers
         '''
-        nreadables, nwritables, nexceptionals = select.select(
-            self.__readables, self.__writables, [], timeout)
+        try:
+            nreadables, nwritables, nexceptionals = select.select(
+              self.__readables, self.__writables, [], timeout)
+        except select.error as e:
+            if e[0] == errno.EINTR and self.sigflag:
+               self.__sighandler.onSigAlarmDo()
+               self.sigflag = False
+               return
+            raise
+        except Exception:
+          raise
 
         io_activity = False
         if nreadables:

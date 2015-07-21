@@ -155,7 +155,7 @@ class InvalidTimeWindow(Exception):
                 return "(%s-%s)" % (self.w[0].strftime("%H:%M"), self.w[1].strftime("%H:%M"))
 
 
-class AuxRelay(Device, Alarmable):
+class AuxRelay(Device):
 
 	OPEN = 'open'
 
@@ -194,7 +194,6 @@ class AuxRelay(Device, Alarmable):
  		winstr        = parser.get("AUX_RELAY", "aux_window")
  		poweroff      = parser.getboolean("AUX_RELAY", "aux_poweroff")
                 Device.__init__(self, publish_where, publish_what)
-		Alarmable.__init__(self)
 		self.ema      = ema
 		self.poweroff = poweroff
 		self.mode     = Parameter(ema, AuxRelay.MAPPING[mode], **MODE)	
@@ -241,11 +240,11 @@ class AuxRelay(Device, Alarmable):
 		else:
 			self.relay.append(openFlag)
 
-	# ----------------------------------
-	# Implements the ALarmable interface
-	# ----------------------------------
+	# ----------------------------------------
+	# Implements the Signal SIGALARM interface
+	# ----------------------------------------
 
-	def onTimeoutDo(self):
+	def onSigAlarmDo(self):
 		self.programRelay()
 
 	@property
@@ -322,9 +321,8 @@ class AuxRelay(Device, Alarmable):
 
 		# anyway sets an alarm to self-check relay status on next
 		log.info("Next check at %s",tMID.strftime("%H:%M:%S"))
-		t = durationFromNow(tMID).total_seconds()
-		self.setTimeout( int(t / Server.TIMEOUT) )
-		self.ema.addAlarmable(self)
+		t = int(durationFromNow(tMID).total_seconds())
+		self.ema.setSigAlarmHandler(self, t)
 
 		# Porgrams wlef power off time		
 		# WARNING !!!!! tMID IS GIVEN AS UTC !!!!!!
