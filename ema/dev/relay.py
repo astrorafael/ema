@@ -294,21 +294,21 @@ class AuxRelay(Device):
         	tNow = now()
         	found, i = curWindow(self.windows, tNow)
         	if found:
-			where = 'window'
-                	log.info("now (%s) we are in window  %s", tNow, strfwin(self.windows[i]))
+			where = 'active'
+                	log.info("now (%s) we are in the active window  %s", tNow, strfwin(self.windows[i]))
         	else:
 			where = 'gap'
                 	found, i = curWindow(self.gaps, tNow)
-                	log.info("now (%s) we are in the gap %s", tNow, strfwin(self.gaps[i]))
+                	log.info("now (%s) we are in the inactive window %s", tNow, strfwin(self.gaps[i]))
 	
-		if where == 'gap':
+		if where == 'inactive':
 			i = (i + 1) % len(self.windows) 
 			tON  =  int(self.windows[i][0].strftime("%H%M"))
 			tOFF =  int(self.windows[i][1].strftime("%H%M"))
 			tMID =  midpoint(self.windows[i])
 			self.ton   = Parameter(self.ema, tON,  **TON)
 			self.toff  = Parameter(self.ema, tOFF, self.ton, **TOFF)
-			log.info("Programming next window (tON-tOFF) to %s",strfwin(self.windows[i]))
+			log.info("Programming next active window (tON-tOFF) to %s",strfwin(self.windows[i]))
 			self.toff.sync()
 		else:
 			tOFF =  int(self.gaps[i][0].strftime("%H%M"))
@@ -316,7 +316,7 @@ class AuxRelay(Device):
 			tMID =  midpoint(self.gaps[i])
 			self.ton   = Parameter(self.ema, tON,  **TON)
 			self.toff  = Parameter(self.ema, tOFF, self.ton, **TOFF)
-			log.info("Programming next window (tOFF-tON) to (%s-%s)", self.gaps[i][0].strftime("%H:%M"), self.gaps[i][1].strftime("%H:%M"))
+			log.info("Programming next inactive window (tOFF-tON) to (%s-%s)", self.gaps[i][0].strftime("%H:%M"), self.gaps[i][1].strftime("%H:%M"))
 			self.toff.sync()
 
 		# anyway sets an alarm to self-check relay status on next
