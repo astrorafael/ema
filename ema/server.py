@@ -53,6 +53,11 @@
 #
 # We use ABCMeta metaclass and @abstractmethod decorator, to enforce
 # enforcing some methods to be implemented in subclasses.
+#
+# In v2.0, we add a SIGALARM event handler to handle tiemout duration
+# of several hours with seconds precision. There is onle one SIGALARM
+# handler. ALarmable and Laazy classers are just fine for short timeouts.
+#
 # ======================================================================
 
 import errno
