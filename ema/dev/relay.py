@@ -297,7 +297,7 @@ class AuxRelay(Device):
 			where = 'active'
                 	log.info("now (%s) we are in the active window  %s", tNow, strfwin(self.windows[i]))
         	else:
-			where = 'gap'
+			where = 'inactive'
                 	found, i = curWindow(self.gaps, tNow)
                 	log.info("now (%s) we are in the inactive window %s", tNow, strfwin(self.gaps[i]))
 	
