@@ -347,10 +347,15 @@ class AuxRelay(Device):
 		# AND SHUTDOWN REQUIRES LOCAL TIME !!!!!
 		# his will only work if local time is UTC as well
 		if self.poweroff:
-			tSHUstr = tSHU.strftime("%H:%M")
-			log.warning("Calling shutdown at %s",tSHUstr)
-			[h.flush() for h in log.handlers]
-			subprocess.Popen(['sudo','shutdown','-k', tSHUstr])
+			if tSHU > now():
+				tSHUstr = tSHU.strftime("%H:%M")
+				log.warning("Calling shutdown at %s",tSHUstr)
+				[h.flush() for h in log.handlers]
+				subprocess.Popen(['sudo','shutdown','-k', tSHUstr])
+			else:						
+				log.warning("Calling shutdown now")
+				[h.flush() for h in log.handlers]
+				subprocess.Popen(['sudo','shutdown','-k', 'now'])
 
 	
     
