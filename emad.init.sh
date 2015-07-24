@@ -38,7 +38,7 @@ CONFIG_FILE=/etc/ema/config
 # and status_of_proc is working.
 . /lib/lsb/init-functions
 
-DAEMON_ARGS="-O0 -m ema -l $LOG_FILE -c $CONFIG_FILE"
+DAEMON_ARGS="-m ema -l $LOG_FILE -c $CONFIG_FILE"
 
 
 #
