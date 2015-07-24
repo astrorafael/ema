@@ -25,11 +25,13 @@ import logging
 import subprocess
 import re
 import datetime
+
 from ema.server    import Server, Alarmable
 from ema.parameter import Parameter
 from ema.vector    import Vector
 from ema.emaproto  import SRRB, SARB
 from ema.device    import Device
+from ema.intervals import Interval, Intervals
 
 # On/Off flags as string constants
 ON  = 'ON'
@@ -37,6 +39,10 @@ OFF = 'OFF'
 
 
 log = logging.getLogger('relays')
+
+# ================
+# Rool Relay Class
+# ================
 
 
 class RoofRelay(Device):
@@ -135,6 +141,12 @@ TOFF = {
 	'grp' : 1,                 # match group to extract value and compare
 }
 
+
+# =====================================
+# Utility functions for Aux Relay Class
+# =====================================
+
+
 def timeFromString(stime):
 	'''Conversion from HH:MM to EMA time string HHMM'''
 	return int(stime[0:2]  + stime[3:5])
@@ -145,14 +157,29 @@ def timeToString(itime):
 	return '%02d:%02d' % (itime // 100, itime % 100) 
 
 
+def now():
+        return datetime.datetime.utcnow().replace(microsecond=0).time()
 
-class InvalidTimeWindow(Exception):
-        '''Signals a script has executed'''
-        def __init__(self, w):
-                self.win = w
-        def  __str__(self):
-                '''Prints useful information'''
-                return "(%s-%s)" % (self.w[0].strftime("%H:%M"), self.w[1].strftime("%H:%M"))
+def adjust(time, minutes):
+	''' adjust a time object by some integer minutes, 
+	returning a new time object'''
+	today  = datetime.date.today()
+	tsnow  = datetime.datetime.combine(today, time)
+	dur    = datetime.timedelta(minutes=minutes)
+	return (tsnow + dur).time()
+
+def durationFromNow(time):
+	'''Retuns a time delta object from given time to now'''
+	today  = datetime.date.today()
+	tsnow  = datetime.datetime.utcnow()
+	tstime = datetime.datetime.combine(today, time)
+	if tstime < tsnow:
+		tstime += datetime.timedelta(hours=24)
+	return tstime - tsnow
+
+# ====================
+# Auxiliar Relay Class
+# ====================
 
 
 class AuxRelay(Device):
@@ -200,14 +227,14 @@ class AuxRelay(Device):
 		self.ton      = None
 		self.toff     = None
 		self.relay    = Vector(N)
-		self.windows  = []
-		self.gaps     = []
+		self.windows  = Intervals([])
+		self.gaps     = Intervals([])
 		for script in scripts:
 			ema.notifier.addScript('AuxRelaySwitch', script_mode, script)
 		if AuxRelay.MAPPING[mode] == AuxRelay.TIMED: 
-			self.windows = windows(winstr)
-			self.gaps    = gaps(self.windows)
-			self.verifyWindows()
+			self.windows = Intervals.parse(winstr)
+			self.gaps    = ~ self.windows
+			log.debug("processed %d active intervals and %d inactive intervals", len(self.windows), len(self.gaps))
 			self.programRelay()
 		ema.addSync(self.mode)
 		ema.subscribeStatus(self)
@@ -276,175 +303,57 @@ class AuxRelay(Device):
 	# Intervals handling
 	# ------------------
 
-	def verifyWindows(self):
-        	'''Verify a  series of time windows'''
-        	positive_flag, i = positive(self.windows)
-        	if not positive_flag:
-                	log.error("Window with negative length => %s", strfwin(self.windows[i]))
-                	raise InvalidTimeWindow(self.windows[i])
-        	monotonic_flag, i = monotonic(self.windows)
-        	if not monotonic_flag:
-                	log.error("Window series not monotonic starting at => %s", strfwin(self.windows[i]))
-                	raise InvalidTimeWindow(self.windows[i])
-
-
 	def programRelay(self):
 		'''Program Aux Relay tON and tOFF times'''
         	log.debug("Finding current relay window")
         	tNow = now()
-        	found, i = curWindow(self.windows, tNow)
+        	found, i = self.windows.find(tNow)
+		margin = -2
         	if found:
 			where = 'active'
-                	log.info("now (%s) we are in the active window  %s", tNow, strfwin(self.windows[i]))
+                	log.info("now (%s) we are in the active window  %s", tNow, self.windows[i])
         	else:
 			where = 'inactive'
-                	found, i = curWindow(self.gaps, tNow)
-                	log.info("now (%s) we are in the inactive window %s", tNow, strfwin(self.gaps[i]))
+                	found, i = self.gaps.find(tNow)
+                	log.info("now (%s) we are in the inactive window %s", tNow, self.gaps[i])
 	
 		if where == 'inactive':
-			i = (i + 1) % len(self.windows) 
-			tON  =  int(self.windows[i][0].strftime("%H%M"))
-			tOFF =  int(self.windows[i][1].strftime("%H%M"))
-			tMID =  midpoint(self.windows[i])
-			self.ton   = Parameter(self.ema, tON,  **TON)
-			self.toff  = Parameter(self.ema, tOFF, self.ton, **TOFF)
-			log.info("Programming next active window (tON-tOFF) to %s",strfwin(self.windows[i]))
+			i         = (i + 1) % len(self.windows) 
+			tSHU      = adjust(self.windows[i].t0, margin)
+			tON       = int(self.windows[i].t0.strftime("%H%M"))
+			tOFF      = int(self.windows[i].t1.strftime("%H%M"))
+			tMID      = self.windows[i].midpoint()
+			self.ton  = Parameter(self.ema, tON,  **TON)
+			self.toff = Parameter(self.ema, tOFF, self.ton, **TOFF)
+			log.info("Programming next active window (tON-tOFF) to %s",self.windows[i])
 			self.toff.sync()
 		else:
-			tOFF =  int(self.gaps[i][0].strftime("%H%M"))
-			tON  =  int(self.gaps[i][1].strftime("%H%M"))
-			tMID =  midpoint(self.gaps[i])
-			self.ton   = Parameter(self.ema, tON,  **TON)
-			self.toff  = Parameter(self.ema, tOFF, self.ton, **TOFF)
-			log.info("Programming next inactive window (tOFF-tON) to (%s-%s)", self.gaps[i][0].strftime("%H:%M"), self.gaps[i][1].strftime("%H:%M"))
+			tSHU      = adjust(self.windows[i].t0, margin)
+			tOFF      = int(self.gaps[i].t0.strftime("%H%M"))
+			tON       = int(self.gaps[i].t1.strftime("%H%M"))
+			tMID      = self.gaps[i].midpoint()
+			self.ton  = Parameter(self.ema, tON,  **TON)
+			self.toff = Parameter(self.ema, tOFF, self.ton, **TOFF)
+			log.info("Programming next inactive window (tOFF-tON) to (%s-%s)", self.gaps[i].t0.strftime("%H:%M"), self.gaps[i].t1.strftime("%H:%M"))
 			self.toff.sync()
 
 		# anyway sets an alarm to self-check relay status on next
-		log.info("Next check at %s",tMID.strftime("%H:%M:%S"))
 		t = int(durationFromNow(tMID).total_seconds())
+		log.info("Next check at %s, %d seconds from now",tMID.strftime("%H:%M:%S"), t)
 		self.ema.setSigAlarmHandler(self, t)
 
 		# Porgrams wlef power off time		
-		# WARNING !!!!! tMID IS GIVEN AS UTC !!!!!!
+		# WARNING !!!!! tSHU IS GIVEN AS UTC !!!!!!
 		# AND SHUTDOWN REQUIRES LOCAL TIME !!!!!
 		# his will only work if local time is UTC as well
 		if self.poweroff:
-			log.warning("Calling shutdown at %s",tMID.strftime("%H:%M"))
+			tSHUstr = tSHU.strftime("%H:%M")
+			log.warning("Calling shutdown at %s",tSHUstr)
 			[h.flush() for h in log.handlers]
-			subprocess.Popen(['sudo','shutdown','-k', timeToString(tOFF)])
-
-
-# ============================================================================
-# ============================================================================
-# ============================================================================
+			subprocess.Popen(['sudo','shutdown','-k', tSHUstr])
 
 	
-def now():
-        return datetime.datetime.utcnow().replace(microsecond=0).time()
-
-def toTime(hhmm):
-        '''Converts HH:MM strings into time objects'''
-        return datetime.time(hour=int(hhmm[0:2]), minute=int(hhmm[3:5]))
-
-def reversed(w):
-        '''Detects time wrap around in a time window w 0=start, 1=end'''
-        return not (w[0] < w[1])
-
-def inInterval(time, w):
-        '''Returns whether a given time is in a given window'''
-        return time >= w[0] and time <= w[1]
-
-def midpoint(w):
-	'''Find the interval midpoint. Returns a time object'''
-	today = datetime.date.today()
-	ts0 = datetime.datetime.combine(today, w[0])
-	ts1 = datetime.datetime.combine(today, w[1])
-	if ts1 < ts0:
-		ts1 += datetime.timedelta(hours=24)
-	return ((ts1 - ts0)/2 + ts0).time()
-
-def adjust(time, minutes):
-	''' adjust a time object by some integer minutes, 
-	returning a new time object'''
-	today = datetime.date.today()
-	ts0 = datetime.datetime.combine(today, time)
-	mm = datetime.timedelta(minutes=minutes)
-	return (ts0 + mm).time()
-
-def durationFromNow(time):
-	today = datetime.date.today()
-	ts0   = datetime.datetime.utcnow()
-	ts1   = datetime.datetime.combine(today, time)
-	if ts1 < ts0:
-		ts1 += datetime.timedelta(hours=24)
-	return ts1 - ts0
     
-def strfwin(w):
-        '''return formatted string for an interval w'''
-        return "(%s-%s)" % (w[0].strftime("%H:%M"), w[1].strftime("%H:%M"))
-
-def windows(winstr):
-        '''Build a window list from a windows list spec string 
-        taiking the following format HH:MM-HH:MM,HH:MM-HH:MM,etc
-        Window interval (Start % end time) separated by dashes
-        Window ist separated by commands'''
-        return [ map(toTime, t.split('-')) for t in winstr.split(',')  ]
-
-def gaps(windows):
-        '''Build the complementary windows with the gaps in the original window'''
-        aList = []
-        if reversed(windows[-1]):
-                aList.append([ windows[-1][1], windows[0][0] ])
-                for i in range(0,len(windows)-1):
-                        aList.append([ windows[i][1], windows[i+1][0] ])
-        else:
-                for i in range(0,len(windows)-1):
-                        aList.append([ windows[i][1], windows[i+1][0] ])
-                aList.append([ windows[-1][1], windows[0][0] ])
-        return aList
-
-def positive(windows):
-        '''Returns true if individual window lengths are positive'''
-        log.debug("checking each start/end time window")
-        if not reversed(windows[-1]):
-                for i in range(0,len(windows)):
-                        if reversed(windows[i]):
-                                return False, i
-                log.debug("checking positive window ok.")
-                return True, -1
-        else:
-                return positive(gaps(windows))
-
-
-def monotonic(windows):
-        '''Returns true if monotonic window sequence'''
-        log.debug("checking monotonic time windows series")
-        if not reversed(windows[-1]):
-                for i in range(0,len(windows)-1):
-                        if not (windows[i][1] < windows[i+1][0]):
-                                return False, i
-                log.debug("checking monotonic windows ok.")
-                return True, -1
-        else:
-                return monotonic(gaps(windows))
-
-def curWindow(windows, tNow):
-	'''Fnd out whether tNow is in nay of the window series'''
-        if not reversed (windows[-1]):
-                for i in range(0,len(windows)):
-                        if inInterval(tNow, windows[i]):
-                                return True, i
-                return False, -1
-        else:
-                for i in range(0, len(windows)-1):
-                        if inInterval(tNow, windows[i]):
-                                return True, i
-                if inInterval(tNow, [windows[-1][0], datetime.time.max]) or inInterval(tNow, [windows[-1][0], datetime.time.min]):
-                        return True, len(windows)-1
-                return False, -1
-
-
-
 
 
 
