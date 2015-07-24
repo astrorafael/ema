@@ -159,7 +159,7 @@ class MQTTClient(Lazy):
       if publish_status:
          ema.subscribeStatus(self)
       log.info("MQTT client created")
- 
+
    # ----------------------------------------
    # MQTT Callbacks
    # -----------------------------------------
@@ -179,7 +179,11 @@ class MQTTClient(Lazy):
    def on_disconnect(self, rc):
      self.__state  = NOT_CONNECTED
      self.__topics = False
-     self.ema.delReadable(self)
+     try:
+       self.ema.delReadable(self)
+     except ValueError as e:
+       log.warning("Recovered from mqtt library 'double disconnection' bug")
+
      if rc == 0:
        log.warning("MQTT client disconected successfully") 
      else:
