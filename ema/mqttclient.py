@@ -245,7 +245,7 @@ class MQTTClient(Lazy):
          self.publish()
 
       self.__hiscount = (self.__hiscount + 1) % MQTTClient.HISTORIC
-      if self.__state == CONNECTED and self.__hiscount == 0:
+      if self.__state == CONNECTED and self.__histflag and self.__hiscount == 0:
          self.publishBulkDump()
 
       self.__mqtt.loop_misc()
