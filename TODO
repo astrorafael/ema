@@ -1,10 +1,2 @@
 *) Tiempo de sncronizacion RTC en horas en el fichero config
-*) Opcion de publicar o no los datos historicos
-  mqtt_publish_historic = yes/no
-
-*) Planficador de horas de enciendio y apagado
- - calcular los minutos necesarios par hacer un shutdown 
-- dar 2 minutos de margen a la Pi
-- aux_relay_shutdown = yes / no 
-quotar el shutdown del codigo del mqttclient.py
    
