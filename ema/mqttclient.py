@@ -171,24 +171,19 @@ class MQTTClient(Lazy):
        self.__mqtt.publish(MQTTClient.TOPIC_EVENTS,  payload="EMA Server connected", qos=2, retain=True)
        self.__mqtt.will_set(MQTTClient.TOPIC_EVENTS, payload="EMA Server disconnected", qos=2, retain=True)
        self.__mqtt.will_set(MQTTClient.TOPIC_TOPICS, payload=MQTTClient.TOPIC_EVENTS, qos=2, retain=True)
-       log.info("MQTT client conected successfully") 
+       log.info("Conected successfully") 
      else:
        self.__state = FAILED
-       log.error("MQTT client connection failed, rc =%d" % rc)
+       log.error("Connection failed, rc =%d" % rc)
 
    def on_disconnect(self, rc):
+     log.warning("Unexpected disconnection, rc =%d" % rc)
      self.__state  = NOT_CONNECTED
      self.__topics = False
      try:
        self.ema.delReadable(self)
      except ValueError as e:
        log.warning("Recovered from mqtt library 'double disconnection' bug")
-
-     if rc == 0:
-       log.warning("MQTT client disconected successfully") 
-     else:
-       log.warning("MQTT client unexpected disconnection, rc =%d" % rc)
-
 
    # ----------------------------------------
    # Implement the EMA Status Message calback
