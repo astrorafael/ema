@@ -88,7 +88,6 @@ mqtt_publish_history = yes
 # Publishing period for historic data stored in EMA (in hours)
 mqtt_period_history = 6
 
-
 # Publish Raw EMA status Line
 mqtt_publish_status = yes
 
@@ -123,14 +122,14 @@ wdog_log = INFO
 #------------------------------------------------------------------------#
 
 [RTC]
-# Min. difference to sincronize time [seconds].
+# Max difference to synchronize time [seconds].
 # Delays in TX Serial output queue (1 sec, at least) 
 # prevents to have seconds accuarcy
 rtc_delta  = 5
 
-# Synchronization period [seconds]
-# Recommedned once per day (86400)
-rtc_period = 86400
+# Synchronization period [hours]
+# Recommended at least once per day        
+rtc_period = 12   
 
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 rtc_log = INFO

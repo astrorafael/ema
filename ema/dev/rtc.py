@@ -119,7 +119,7 @@ class RTC(Lazy):
         log.setLevel(lvl)
         deltaT = parser.getint("RTC", "rtc_delta")
         N      = parser.getfloat("RTC", "rtc_period")
-        N      =  int(round(N / PERIOD))
+        N      =  int(round(N*3600 / PERIOD))
         Lazy.__init__(self, N)
         self.ema = ema
         self.param = RTCParameter(ema, deltaT)
