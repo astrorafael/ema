@@ -1,7 +1,7 @@
 EMA
 ===
 
-Linux service and command ine tool for [Cristobal Garcia's EMA Weather Station](http://www.observatorioremoto.com/emav2/meteoen.htm)
+Linux service and command line tool for [Cristobal Garcia's EMA Weather Station](http://www.observatorioremoto.com/emav2/meteoen.htm)
 
 Description
 -----------
@@ -26,14 +26,14 @@ the document root of a given webserver.
 6. Generates an HTML page with current, averages measurements to be used
 with a local web server
 
-7. Publishes current, averages and historic data to an MQTT borker
+7. Publishes current, averages and historic data to an MQTT broker
 
 8. Manages active/inactive auxiliar relay time windows. Shuts down
 host computer if needed.
 
 9. Receives commands from the *ema* command line tool to manually open or close relays or extending aux relay the Timed mode.
 
-Most of the files contain desing notes  explaining its intent.
+Most of the files contain desing notes explaining its intent.
 Enjoy !
 
 Instalation
