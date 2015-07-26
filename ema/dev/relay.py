@@ -105,8 +105,9 @@ class RoofRelay(Device):
 		return { RoofRelay.OPEN: ((accum*100.0)/n, '%') }
 
 
-
-
+# =======================================
+# Parameter definition for AuxRelay class
+# =======================================
 
 MODE = {
 	'name': 'Aux Relay mode',
@@ -182,7 +183,7 @@ def durationFromNow(time):
 # ====================
 
 
-class AuxRelay(Device):
+class AuxRelay(Device, Alarmable):
 
 	OPEN = 'open'
 
@@ -213,14 +214,15 @@ class AuxRelay(Device):
 	def __init__(self, ema, parser, N):
 		lvl = parser.get("AUX_RELAY", "aux_relay_log")
 		log.setLevel(lvl)
-		mode         = parser.get("AUX_RELAY", "aux_mode")
-		scripts      = parser.get("AUX_RELAY","aux_relay_script").split(',')
-		script_mode  = parser.get("AUX_RELAY","aux_relay_mode")
+		mode          = parser.get("AUX_RELAY", "aux_mode")
+		scripts       = parser.get("AUX_RELAY","aux_relay_script").split(',')
+		script_mode   = parser.get("AUX_RELAY","aux_relay_mode")
 		publish_where = parser.get("AUX_RELAY","aux_relay_publish_where").split(',')
 		publish_what  = parser.get("AUX_RELAY","aux_relay_publish_what").split(',')
  		winstr        = parser.get("AUX_RELAY", "aux_window")
  		poweroff      = parser.getboolean("AUX_RELAY", "aux_poweroff")
                 Device.__init__(self, publish_where, publish_what)
+                Alarmable.__init__(self)
 		self.ema      = ema
 		self.poweroff = poweroff
 		self.mode     = Parameter(ema, AuxRelay.MAPPING[mode], **MODE)	
@@ -229,16 +231,16 @@ class AuxRelay(Device):
 		self.relay    = Vector(N)
 		self.windows  = Intervals([])
 		self.gaps     = Intervals([])
+		ema.addSync(self.mode)
+		ema.subscribeStatus(self)
+		ema.addParameter(self)
 		for script in scripts:
 			ema.notifier.addScript('AuxRelaySwitch', script_mode, script)
 		if AuxRelay.MAPPING[mode] == AuxRelay.TIMED: 
 			self.windows = Intervals.parse(winstr)
 			self.gaps    = ~ self.windows
 			log.debug("processed %d active intervals and %d inactive intervals", len(self.windows), len(self.gaps))
-			self.programRelay()
-		ema.addSync(self.mode)
-		ema.subscribeStatus(self)
-		ema.addParameter(self)
+			self.programRelay(by="initialization")
 
 	# -------------------------------------------
 	# Implements the EMA status message interface
@@ -267,12 +269,23 @@ class AuxRelay(Device):
 		else:
 			self.relay.append(openFlag)
 
+	# ----------------------------------
+	# Implements the Alarmable interface
+	# -----------------------------------
+
+	def onTimeoutDo(self):
+		self.programRelay(by="Soft Alarm")
+
 	# ----------------------------------------
 	# Implements the Signal SIGALARM interface
 	# ----------------------------------------
 
 	def onSigAlarmDo(self):
-		self.programRelay()
+		self.programRelay(by="SIGALRM")
+
+	# ----------
+	# Properties
+	# ----------
 
 	@property
 	def current(self):
@@ -303,19 +316,19 @@ class AuxRelay(Device):
 	# Intervals handling
 	# ------------------
 
-	def programRelay(self):
+	def programRelay(self, by):
 		'''Program Aux Relay tON and tOFF times'''
-        	log.debug("Finding current relay window")
+        	log.info("Programing Aux relay triggered by %s", by)
         	tNow = now()
         	found, i = self.windows.find(tNow)
 		margin = -2
         	if found:
 			where = 'active'
-                	log.info("now (%s) we are in the active window  %s", tNow, self.windows[i])
+                	log.info("now we are in the active window  %s", self.windows[i])
         	else:
 			where = 'inactive'
                 	found, i = self.gaps.find(tNow)
-                	log.info("now (%s) we are in the inactive window %s", tNow, self.gaps[i])
+                	log.info("now we are in the inactive window %s", self.gaps[i])
 	
 		if where == 'inactive':
 			i         = (i + 1) % len(self.windows) 
@@ -341,6 +354,9 @@ class AuxRelay(Device):
 		t = int(durationFromNow(tMID).total_seconds())
 		log.info("Next check at %s, %d seconds from now",tMID.strftime("%H:%M:%S"), t)
 		self.ema.setSigAlarmHandler(self, t)
+		self.resetAlarm()
+		self.setTimeout(t / Server.TIMEOUT)
+		self.ema.addAlarmable(self)
 
 		# Porgrams wlef power off time		
 		# WARNING !!!!! tSHU IS GIVEN AS UTC !!!!!!
@@ -351,14 +367,9 @@ class AuxRelay(Device):
 				tSHUstr = tSHU.strftime("%H:%M")
 				log.warning("Calling shutdown at %s",tSHUstr)
 				[h.flush() for h in log.handlers]
-				subprocess.Popen(['sudo','shutdown','-k', tSHUstr])
+				subprocess.Popen(['sudo','shutdown','-h', tSHUstr])
 			else:						
 				log.warning("Calling shutdown now")
 				[h.flush() for h in log.handlers]
-				subprocess.Popen(['sudo','shutdown','-k', 'now'])
-
-	
-    
-
-
+				subprocess.Popen(['sudo','shutdown','-h', 'now'])
 
