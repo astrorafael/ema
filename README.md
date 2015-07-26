@@ -23,7 +23,15 @@ the document root of a given webserver.
 
 5. Maintains periodic sync with the host computer RTC.
 
-6. Receives commands from the *ema* command line tool to manually open or close relays or extending aux relay the Timed mode.
+6. Generates an HTML page with current, averages measurements to be used
+with a local web server
+
+7. Publishes current, averages and historic data to an MQTT borker
+
+8. Manages active/inactive auxiliar relay time windows. Shuts down
+host computer if needed.
+
+9. Receives commands from the *ema* command line tool to manually open or close relays or extending aux relay the Timed mode.
 
 Most of the files contain desing notes  explaining its intent.
 Enjoy !
@@ -42,9 +50,21 @@ An available startup service script for debian-based systems is provided.
 Type `sudo service emad start` to start it
 Type `sudo update-rc.d emad defaults` to install it at boot time
 
+### EMA Server Configuation ###
+
+By default, file `/etc/ema/config` provdes the configuration options needed.
+This file is self explanatory.
+
+### Logging ###
+
+Log file is placed under `/var/log/emad.log`. 
+Default log level is INFO. It generates very litte logging at this level
+File is rotated by a logrotate policy installed under `/etc/logrotate.d`.
+
 ### EMA command line utility ###
 
 **ema** is a command line utility that ends commands to the emad service. 
+It only works in the same LAN, not through Internet.
 
 Commands implemented so far are:
 * roof relay force open
@@ -56,14 +76,4 @@ Commands implemented so far are:
 * auxrelay, extends switch time by N minutes
 
 Type `ema -h` or `ema --help` to see actual command line options.
-
-### EMA Server Configuation ###
-
-By default, file `/etc/ema/config` provdes the configuration options needed
-
-### Logging ###
-
-Log file is placed under `/var/log/emad.log`. 
-Default log level is INFO. It generates very litte logging at this level
-File is rotated by a logrotate policy installed under `/etc/logrotate.d`.
 
