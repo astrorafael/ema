@@ -66,7 +66,8 @@ import dev.pluviometer as pluviom
 import dev.thermopile  as thermop
 import dev.relay       as relay
 
-
+# Only Python 2
+import ConfigParser as parser
 
 log = logging.getLogger('emaserver')
 
@@ -80,10 +81,6 @@ def parseLogLevel(levelstring):
 		return eval(lvl)
 	except:
 		return logging.NOTSET
-
-
-# Only Python 2
-import ConfigParser as parser
 
 class EMAServer(server.Server):
 

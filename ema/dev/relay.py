@@ -332,7 +332,7 @@ class AuxRelay(Device, Alarmable):
 	
 		if where == 'inactive':
 			i         = (i + 1) % len(self.windows) 
-			tSHU      = adjust(self.windows[i].t0, margin)
+			tSHU      = adjust(self.windows[i].t1, margin)
 			tON       = int(self.windows[i].t0.strftime("%H%M"))
 			tOFF      = int(self.windows[i].t1.strftime("%H%M"))
 			tMID      = self.windows[i].midpoint()
@@ -341,7 +341,7 @@ class AuxRelay(Device, Alarmable):
 			log.info("Programming next active window (tON-tOFF) to %s",self.windows[i])
 			self.toff.sync()
 		else:
-			tSHU      = adjust(self.windows[i].t0, margin)
+			tSHU      = adjust(self.windows[i].t1, margin)
 			tOFF      = int(self.gaps[i].t0.strftime("%H%M"))
 			tON       = int(self.gaps[i].t1.strftime("%H%M"))
 			tMID      = self.gaps[i].midpoint()
@@ -363,13 +363,43 @@ class AuxRelay(Device, Alarmable):
 		# AND SHUTDOWN REQUIRES LOCAL TIME !!!!!
 		# his will only work if local time is UTC as well
 		if self.poweroff:
+			log.info("Programmed shutdown at %s",tSHU.strftime("%H:%M:%S"))
 			if tSHU > now():
 				tSHUstr = tSHU.strftime("%H:%M")
 				log.warning("Calling shutdown at %s",tSHUstr)
-				[h.flush() for h in log.handlers]
-				subprocess.Popen(['sudo','shutdown','-h', tSHUstr])
+				subprocess.Popen(['sudo','shutdown','-k', tSHUstr])
+				self.lastAlarm = ShutDownAlarm(self.ema,tSHU)
 			else:						
 				log.warning("Calling shutdown now")
-				[h.flush() for h in log.handlers]
-				subprocess.Popen(['sudo','shutdown','-h', 'now'])
+				subprocess.Popen(['sudo','shutdown','-k', 'now'])
+				raise ShutDownException("Host computer shuts down inmediately")
 
+# ----------------------------------------------------------------------
+# This alarm will cshut down EMA server cleanly just a bit before before
+# the global shutdown command takes effect in the host computer
+# ----------------------------------------------------------------------
+
+# Custom exception to signal that the host computer 
+#is shutong down almost immediately
+
+class ShutDownException(Exception):
+        pass
+
+class ShutDownAlarm(Alarmable):
+
+	MARGIN = 30	# seconds
+
+	def __init__(self, ema, tSHUT):
+		t = durationFromNow(tSHUT).total_seconds() - ShutDownAlarm.MARGIN
+		N = t / Server.TIMEOUT
+		Alarmable.__init__(self, N)
+		ema.addAlarmable(self)
+
+        # ----------------------------------
+        # Implements the Alarmable interface
+        # -----------------------------------
+
+        def onTimeoutDo(self):
+		raise ShutDownException("Host computer shuts down inmediately")
+
+     
