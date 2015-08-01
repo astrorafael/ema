@@ -11,3 +11,4 @@
     MQTTClient and AunxRelay subscribe on it through EMA
 
  * Active Intervals should span at least 15 minutes (expand validate method & exception)
+* Parameters sync as an option and reporting differences to logfile.
