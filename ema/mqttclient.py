@@ -214,7 +214,6 @@ class MQTTClient(Lazy):
       if self.__state == CONNECTED:
          if self.__histflag:
             self.publishBulkDump()
-         log.warn("Published 24h Bulk data")
       else:
          log.warn("Not connected to broker: can't publish 24h Bulk data")
 	
@@ -243,7 +242,6 @@ class MQTTClient(Lazy):
          self.publishTopics()
          if self.__histflag:
             self.publishBulkDump()
-            log.info("Published 24h Bulk data at server startup")
 
       self.__count = (self.__count + 1) % 2
       if self.__state == CONNECTED and self.__count == 0:
@@ -387,6 +385,7 @@ class MQTTClient(Lazy):
       self.bulkDump = []
       self.page = FLASH_START
       self.requestPage(self.page)
+      log.debug("Request to publish 24h Bulk data")
 
 
 if __name__ == "__main__":
