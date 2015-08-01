@@ -184,13 +184,25 @@ class TODTimer(Device, Alarmable):
 		self.setTimeout(t / Server.TIMEOUT)
 		self.ema.addAlarmable(self)
 
+	def isShuttingDown(self):
+		'''Find if a shutdown process is under way'''
+		p1 = subprocess.Popen(["ps", "-ef"], stdout=subprocess.PIPE)
+		p2 = subprocess.Popen(["grep", "shutdown"], stdin=p1.stdout, stdout=subprocess.PIPE)
+		p3 = subprocess.Popen(["grep", "-v", "grep"], stdin=p2.stdout, stdout=subprocess.PIPE)
+		output = p3.communicate()[0]
+		if len(output) != 0:
+			log.debug("Previous Shutdown under way")
+			return True
+		else:
+			log.debug("No previous Shutdown under way")
+			return False
+
 	def shutdown(self, tSHU):
 		'''Manages a possible shutdow request'''
 		# WARNING !!!!! tSHU IS GIVEN AS UTC !!!!!!
 		# AND SHUTDOWN REQUIRES LOCAL TIME !!!!!
 		# This will only work if local time is UTC as well
-		if self.poweroff:
-			self.poweroff = False
+		if self.poweroff and not self.isShuttingDown():
 			if tSHU > now():
                                 tSHUstr = tSHU.strftime("%H:%M")
                                 log.warning("Calling shutdown at %s",tSHUstr)
