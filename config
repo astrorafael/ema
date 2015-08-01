@@ -107,9 +107,11 @@ html_log = INFO
 #------------------------------------------------------------------------#
 
 [TOD_TIMER]
-# Time of day timer that kkeps a list of active window to
+# Time of day timer keeps a list of active window to
 # do thins like sending historic 24 data and programming the aux relay for
 # powering on/off
+# At minimun, one active interval should be defined and should be at least 
+# 15 minutes long
 
 # Publish current active or inactive interval
 tod_publish_what = current
