@@ -1,14 +1,2 @@
 * Find out why Alarmable ticks run faster than expected.   
-* Refactor: new TODTimer Class:
-  should be a device 
-    with its own config section
-    with current property : interval type active/inactive and the itnerval itself
-    with average property: ????
-    should subscribe to EMA property list (for remote publication)
-    handles Alarmable & signals
-    Offers a subsription API. addOnNewIntervalList. EMA Must hide it
-    Triggers onNewInterval(type, i)
-    MQTTClient and AunxRelay subscribe on it through EMA
-
- * Active Intervals should span at least 15 minutes (expand validate method & exception)
 * Parameters sync as an option and reporting differences to logfile.
