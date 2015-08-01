@@ -1,2 +1,3 @@
+* Fix low volt script to cancel programmed shutdown and override with its own shutdown
 * Find out why Alarmable ticks run faster than expected.   
 * Parameters sync as an option and reporting differences to logfile.
