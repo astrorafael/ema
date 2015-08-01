@@ -65,6 +65,7 @@ import dev.anemometer  as anemom
 import dev.pluviometer as pluviom
 import dev.thermopile  as thermop
 import dev.relay       as relay
+import dev.todtimer    as todtimer
 
 # Only Python 2
 import ConfigParser as parser
@@ -160,6 +161,9 @@ class EMAServer(server.Server):
 		# Build EMA HTML Page Generator object
 		self.genpage = genpage.HTML(self, config)
 
+		# Time of Day Timer object 
+		self.todtimer = todtimer.TODTimer(self, config)
+
 		# MQTT Driver object 
 		self.mqttclient = mqttclient.MQTTClient(self, config, **opts)
 
@@ -216,7 +220,9 @@ class EMAServer(server.Server):
 		# Build objects without configuration values
 		self.thermopile = thermop.Thermopile(self, config, VECLEN)
 		
-
+		# Run an interval search process once all the clients
+		# has subscribed to TODTimer
+		self.todtimer.onNewInterval()
 
 	# ----------------------------------
 	# Synchroniztaion at startup process

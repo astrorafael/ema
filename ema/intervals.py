@@ -24,7 +24,7 @@
 import datetime
 import logging
 
-log = logging.getLogger('relays')
+log = logging.getLogger('todtimer')
 
 # =================
 # Utility functions
@@ -55,6 +55,15 @@ class OverlappedIntervals(Exception):
 	def __str__(self):
 		'''Prints useful information'''
                 return "Exception: Interval %s overlaps with %s" % (self.w1, self.w2)
+
+class TooShortInterval(Exception):
+        '''Signals overlapped intervals'''
+	def __init__(self, w1, min):
+		self.w1  = w1
+		self.min = min
+	def __str__(self):
+		'''Prints useful information'''
+                return "Exception: Interval %s duration %d < %d (minimun allowed)" % (self.w1, self.w1.duration(), self.min)
 
 # ==============
 # Interval Class
@@ -96,11 +105,11 @@ class Interval(object):
 
 	# Implements interval other operators
 
-	def  __invert__(self, other):
+	def __invert__(self, other):
 		'''Interval inversion'''
 		return Interval(self.T[1], self.T[0])
 
-	def  reversed(self):
+	def reversed(self):
 		'''detect interval inverted'''
 		return not self.T[0] < self.T[1]
 
@@ -108,6 +117,15 @@ class Interval(object):
 		'''Returns whether a given datetime.time 
 		is in a given interval'''
 		return time >= self.T[0] and time <= self.T[1]
+
+	def duration(self):
+		'''Returns time interval in seconds'''
+		today  = datetime.date.today()
+		ts0 = datetime.datetime.combine(today, self.T[0])
+		ts1 = datetime.datetime.combine(today, self.T[1])
+		if ts1 < ts0:
+			ts1 += datetime.timedelta(hours=24)
+		return int((ts1 - ts0).total_seconds())
 
 	def midpoint(self):
 		'''Find the interval midpoint. 
@@ -129,13 +147,13 @@ class Intervals(object):
 		self.windows = alist
 
 	@staticmethod
-	def parse(winstr):
+	def parse(winstr, minutes):
 		'''Build a window list from a windows list spec string 
 		taiking the following format HH:MM-HH:MM,HH:MM-HH:MM,etc
 		Window interval (Start % end time) separated by dashes
 		Window ist separated by commands'''	 
 		il = Intervals([ Interval(map(toTime, t.split('-'))) for t in winstr.split(',')  ]).sorted()
-		il.validate()
+		il.validate(minutes*60)
 		return il
 
 	# Inmutable sequences protocol
@@ -174,8 +192,14 @@ class Intervals(object):
 		Returns a new Intervals object'''
 		return Intervals(sorted(self.windows, key=lambda interval: interval.t0))
 		
-	def validate(self):
-		'''Check for non overlapping, non reversed intervals in a sorted interval list'''
+	def validate(self, min):
+		'''Check for non overlapping, non reversed, 
+		minimun width interval (in seconds) 
+		in a sorted interval list'''
+		for w in self.windows:
+			if w.duration() < min:
+				raise TooShortInterval(w,min)
+
 		for i in range(0,len(self.windows)-1):
 			w1 = self.windows[i]
 			if w1.reversed():
@@ -186,12 +210,12 @@ class Intervals(object):
 	
 	def find(self, tNow):
 		'''Find out whether time tNow is in any of the intervals.
-		Return True, index if found or False, -1 if not found'''
+		Return True, index if found or False, None if not found'''
 		if not self.windows[-1].reversed():
 			for i in range(0,len(self.windows)):
 				if self.windows[i].inside(tNow):
 					return True, i
-			return False, -1
+			return False, None
 		else:
 			for i in range(0, len(self.windows)-1):
 				if self.windows[i].inside(tNow):
@@ -200,7 +224,7 @@ class Intervals(object):
 			i2 = Interval([self.windows[-1].t0, datetime.time.min])
 			if i1.inside(tNow) or i2.inside(tNow):
 				return True, len(self.windows)-1
-			return False, -1
+			return False, None
 
 
 ##########################################################################

@@ -39,14 +39,14 @@ ROOT.setLevel(logging.DEBUG)
 
 
 def logToConsole():
-    formatter = logging.Formatter(fmt='[%(levelname)5s] %(name)9s - %(message)s')
+    formatter = logging.Formatter(fmt='[%(levelname)7s] %(name)9s - %(message)s')
     consoleHandler = logging.StreamHandler()
     consoleHandler.setFormatter(formatter)
     ROOT.addHandler(consoleHandler)
 
 
 def logToFile(filename):
-    formatter   = logging.Formatter(fmt='%(asctime)s [%(levelname)5s] - %(name)9s %(message)s')
+    formatter   = logging.Formatter(fmt='%(asctime)s [%(levelname)7s] - %(name)9s %(message)s')
     fileHandler = logging.FileHandler(filename)
     fileHandler.setFormatter(formatter)
     ROOT.addHandler(fileHandler)

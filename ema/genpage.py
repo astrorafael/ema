@@ -133,7 +133,8 @@ DEVICE = {
 	'Pluviometer' : 'Pluviómetro' ,
 	'Thermopile' : 'Termopila' ,
 	'WatchDog' : 'Perro Guardian',
-	'AuxRelay' : 'Relé Auxiliar'
+	'AuxRelay' : 'Relé Auxiliar',
+	'TODTimer' : 'Temporizador Diario',
 }
 
 MEASUREMENT = {
@@ -154,6 +155,8 @@ MEASUREMENT = {
 	'accumulated' : 'Lluvia acumulada' ,
 	'sky' : 'Temperatura del cielo' ,
 	'ambient' : 'Temperatura ambiente' ,
+	'active'  : 'Ventana de tiempo activa',
+	'inactive'  : 'Ventana de tiempo inactiva',
 }
 
 PARAMETER = {
@@ -170,6 +173,7 @@ PARAMETER = {
 	'Pyranometer Gain' : 'Ganancia del Piranómetro' ,
 	'Anemometer Calibration Constant': 'Constante de calibración del anemómetro',
 	'Pluviometer Calibration constant': 'Constante de calibracion del Pluviometro',
+	'Timer Active Intervals' : 'Intervalos activos del temporizador',
 } 
 
 

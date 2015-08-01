@@ -43,6 +43,7 @@ from datetime import datetime
 from server import Lazy, Server
 from ema.emaproto  import SPSB, STATLEN
 from command import Command, COMMAND
+from dev.todtimer import TODTimer
 
 
 # FLASH PAges where History data re stored
@@ -113,9 +114,6 @@ class BulkDumpCommand(Command):
 
 class MQTTClient(Lazy):
 
-   # Hitoric dump period In tick units
-   HISTORIC = (6*3600*2) /  Server.TIMEOUT
-
    # TOPIC Default vaules
    TOPIC_EVENTS         = "EMA/events"
    TOPIC_TOPICS         = "EMA/topics"
@@ -131,20 +129,17 @@ class MQTTClient(Lazy):
       port     = parser.getint("MQTT", "mqtt_port")
       period   = parser.getint("MQTT", "mqtt_period")
       histflag = parser.getboolean("MQTT", "mqtt_publish_history")
-      historic = parser.getint("MQTT", "mqtt_period_history")
       publish_status = parser.getboolean("MQTT", "mqtt_publish_status")
       Lazy.__init__(self, period / ( 2 * Server.TIMEOUT))
       MQTTClient.TOPIC_EVENTS         = "%s/events"  % id
       MQTTClient.TOPIC_TOPICS         = "%s/topics"  % id
       MQTTClient.TOPIC_HISTORY        = "%s/history" % id
       MQTTClient.TOPIC_CURRENT_STATUS = "%s/current/status" % id
-      MQTTClient.HISTORIC        = (historic * 3600 * 2) / Server.TIMEOUT  
       self.ema        = ema
       self.__id       = id
       self.__topics   = False
       self.__stats    = 0
       self.__count    = 0
-      self.__hiscount = 0
       self.__histflag = histflag
       self.__state    = NOT_CONNECTED
       self.__host     = host
@@ -156,6 +151,7 @@ class MQTTClient(Lazy):
       self.__mqtt.on_connect    = on_connect
       self.__mqtt.on_disconnect = on_disconnect
       ema.addLazy(self)
+      ema.todtimer.addSubscriber(self)
       if publish_status:
          ema.subscribeStatus(self)
       log.info("MQTT client created")
@@ -209,6 +205,19 @@ class MQTTClient(Lazy):
       '''Implement this interface to be added in select() system call'''
       return self.__mqtt.socket().fileno()
 
+
+   # -----------------------------------------------
+   # Implement the TOD Timer onNewInterval interface
+   # -----------------------------------------------
+
+   def onNewInterval(self, where, i):
+      if self.__state == CONNECTED:
+         if self.__histflag:
+            self.publishBulkDump()
+         log.warn("Published 24h Bulk data")
+      else:
+         log.warn("Not connected to broker: can't publish 24h Bulk data")
+	
    # ----------------------------------------
    # Implement The Lazy interface
    # -----------------------------------------
@@ -234,14 +243,11 @@ class MQTTClient(Lazy):
          self.publishTopics()
          if self.__histflag:
             self.publishBulkDump()
+            log.info("Published 24h Bulk data at server startup")
 
       self.__count = (self.__count + 1) % 2
       if self.__state == CONNECTED and self.__count == 0:
          self.publish()
-
-      self.__hiscount = (self.__hiscount + 1) % MQTTClient.HISTORIC
-      if self.__state == CONNECTED and self.__histflag and self.__hiscount == 0:
-         self.publishBulkDump()
 
       self.__mqtt.loop_misc()
 

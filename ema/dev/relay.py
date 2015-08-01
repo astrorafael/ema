@@ -22,7 +22,6 @@
 # ----------------------------------------------------------------------
 
 import logging
-import subprocess
 import re
 import datetime
 
@@ -32,6 +31,7 @@ from ema.vector    import Vector
 from ema.emaproto  import SRRB, SARB
 from ema.device    import Device
 from ema.intervals import Interval, Intervals
+from todtimer      import TODTimer
 
 # On/Off flags as string constants
 ON  = 'ON'
@@ -158,32 +158,12 @@ def timeToString(itime):
 	return '%02d:%02d' % (itime // 100, itime % 100) 
 
 
-def now():
-        return datetime.datetime.utcnow().replace(microsecond=0).time()
-
-def adjust(time, minutes):
-	''' adjust a time object by some integer minutes, 
-	returning a new time object'''
-	today  = datetime.date.today()
-	tsnow  = datetime.datetime.combine(today, time)
-	dur    = datetime.timedelta(minutes=minutes)
-	return (tsnow + dur).time()
-
-def durationFromNow(time):
-	'''Retuns a time delta object from given time to now'''
-	today  = datetime.date.today()
-	tsnow  = datetime.datetime.utcnow()
-	tstime = datetime.datetime.combine(today, time)
-	if tstime < tsnow:
-		tstime += datetime.timedelta(hours=24)
-	return tstime - tsnow
-
 # ====================
 # Auxiliar Relay Class
 # ====================
 
 
-class AuxRelay(Device, Alarmable):
+class AuxRelay(Device):
 
 	OPEN = 'open'
 
@@ -219,28 +199,19 @@ class AuxRelay(Device, Alarmable):
 		script_mode   = parser.get("AUX_RELAY","aux_relay_mode")
 		publish_where = parser.get("AUX_RELAY","aux_relay_publish_where").split(',')
 		publish_what  = parser.get("AUX_RELAY","aux_relay_publish_what").split(',')
- 		winstr        = parser.get("AUX_RELAY", "aux_window")
- 		poweroff      = parser.getboolean("AUX_RELAY", "aux_poweroff")
                 Device.__init__(self, publish_where, publish_what)
-                Alarmable.__init__(self)
 		self.ema      = ema
-		self.poweroff = poweroff
 		self.mode     = Parameter(ema, AuxRelay.MAPPING[mode], **MODE)	
 		self.ton      = None
 		self.toff     = None
 		self.relay    = Vector(N)
-		self.windows  = Intervals([])
-		self.gaps     = Intervals([])
 		ema.addSync(self.mode)
 		ema.subscribeStatus(self)
 		ema.addParameter(self)
 		for script in scripts:
 			ema.notifier.addScript('AuxRelaySwitch', script_mode, script)
-		if AuxRelay.MAPPING[mode] == AuxRelay.TIMED: 
-			self.windows = Intervals.parse(winstr)
-			self.gaps    = ~ self.windows
-			log.debug("processed %d active intervals and %d inactive intervals", len(self.windows), len(self.gaps))
-			self.programRelay(by="initialization")
+		if AuxRelay.MAPPING[mode] == AuxRelay.TIMED:
+			ema.todtimer.addSubscriber(self)
 
 	# -------------------------------------------
 	# Implements the EMA status message interface
@@ -268,20 +239,6 @@ class AuxRelay(Device, Alarmable):
 			self.ema.notifier.onEventExecute('AuxRelaySwitch', "--status" , ON, "--reason", c)
 		else:
 			self.relay.append(openFlag)
-
-	# ----------------------------------
-	# Implements the Alarmable interface
-	# -----------------------------------
-
-	def onTimeoutDo(self):
-		self.programRelay(by="Soft Alarm")
-
-	# ----------------------------------------
-	# Implements the Signal SIGALARM interface
-	# ----------------------------------------
-
-	def onSigAlarmDo(self):
-		self.programRelay(by="SIGALRM")
 
 	# ----------
 	# Properties
@@ -312,94 +269,23 @@ class AuxRelay(Device, Alarmable):
 			return {
 				self.mode.name : (AuxRelay.MAPPING[self.mode.value] , self.mode.unit) ,
 				}
-	# ------------------
-	# Intervals handling
-	# ------------------
+	# --------------------------------------
+	# Implement the onNewIntervalDo interface
+	# ---------------------------------------
 
-	def programRelay(self, by):
+	def onNewInterval(self, where, i):
 		'''Program Aux Relay tON and tOFF times'''
-        	log.info("Programing Aux relay triggered by %s", by)
-        	tNow = now()
-        	found, i = self.windows.find(tNow)
-		margin = -2
-        	if found:
-			where = 'active'
-                	log.info("now we are in the active window  %s", self.windows[i])
-        	else:
-			where = 'inactive'
-                	found, i = self.gaps.find(tNow)
-                	log.info("now we are in the inactive window %s", self.gaps[i])
-	
-		if where == 'inactive':
-			i         = (i + 1) % len(self.windows) 
-			tSHU      = adjust(self.windows[i].t1, margin)
-			tON       = int(self.windows[i].t0.strftime("%H%M"))
-			tOFF      = int(self.windows[i].t1.strftime("%H%M"))
-			tMID      = self.windows[i].midpoint()
-			self.ton  = Parameter(self.ema, tON,  **TON)
-			self.toff = Parameter(self.ema, tOFF, self.ton, **TOFF)
-			log.info("Programming next active window (tON-tOFF) to %s",self.windows[i])
-			self.toff.sync()
+		if where == TODTimer.INACTIVE:
+			i         = self.ema.todtimer.nextActiveIndex(i)
+			interval  = self.ema.todtimer.getInterval(TODTimer.ACTIVE,i) 
+			tON       = int(interval.t0.strftime("%H%M"))
+			tOFF      = int(interval.t1.strftime("%H%M"))
+			log.info("Programming next active window (tON-tOFF) to %s",interval)
 		else:
-			tSHU      = adjust(self.windows[i].t1, margin)
-			tOFF      = int(self.gaps[i].t0.strftime("%H%M"))
-			tON       = int(self.gaps[i].t1.strftime("%H%M"))
-			tMID      = self.gaps[i].midpoint()
-			self.ton  = Parameter(self.ema, tON,  **TON)
-			self.toff = Parameter(self.ema, tOFF, self.ton, **TOFF)
-			log.info("Programming next inactive window (tOFF-tON) to (%s-%s)", self.gaps[i].t0.strftime("%H:%M"), self.gaps[i].t1.strftime("%H:%M"))
-			self.toff.sync()
-
-		# anyway sets an alarm to self-check relay status on next
-		t = int(durationFromNow(tMID).total_seconds())
-		log.info("Next check at %s, %d seconds from now",tMID.strftime("%H:%M:%S"), t)
-		self.ema.setSigAlarmHandler(self, t)
-		self.resetAlarm()
-		self.setTimeout(t / Server.TIMEOUT)
-		self.ema.addAlarmable(self)
-
-		# Porgrams wlef power off time		
-		# WARNING !!!!! tSHU IS GIVEN AS UTC !!!!!!
-		# AND SHUTDOWN REQUIRES LOCAL TIME !!!!!
-		# his will only work if local time is UTC as well
-		if self.poweroff:
-			log.info("Programmed shutdown at %s",tSHU.strftime("%H:%M:%S"))
-			if tSHU > now():
-				tSHUstr = tSHU.strftime("%H:%M")
-				log.warning("Calling shutdown at %s",tSHUstr)
-				subprocess.Popen(['sudo','shutdown','-k', tSHUstr])
-				self.lastAlarm = ShutDownAlarm(self.ema,tSHU)
-			else:						
-				log.warning("Calling shutdown now")
-				subprocess.Popen(['sudo','shutdown','-k', 'now'])
-				raise ShutDownException("Host computer shuts down inmediately")
-
-# ----------------------------------------------------------------------
-# This alarm will cshut down EMA server cleanly just a bit before before
-# the global shutdown command takes effect in the host computer
-# ----------------------------------------------------------------------
-
-# Custom exception to signal that the host computer 
-#is shutong down almost immediately
-
-class ShutDownException(Exception):
-        pass
-
-class ShutDownAlarm(Alarmable):
-
-	MARGIN = 30	# seconds
-
-	def __init__(self, ema, tSHUT):
-		t = durationFromNow(tSHUT).total_seconds() - ShutDownAlarm.MARGIN
-		N = t / Server.TIMEOUT
-		Alarmable.__init__(self, N)
-		ema.addAlarmable(self)
-
-        # ----------------------------------
-        # Implements the Alarmable interface
-        # -----------------------------------
-
-        def onTimeoutDo(self):
-		raise ShutDownException("Host computer shuts down inmediately")
-
-     
+			interval  = self.ema.todtimer.getInterval(TODTimer.INACTIVE,i) 
+			tOFF      = int(interval.t0.strftime("%H%M"))
+			tON       = int(interval.t1.strftime("%H%M"))
+			log.info("Programming next inactive window (tOFF-tON) to %s", interval)
+		self.ton  = Parameter(self.ema, tON,  **TON)
+		self.toff = Parameter(self.ema, tOFF, self.ton, **TOFF)
+		self.toff.sync()
