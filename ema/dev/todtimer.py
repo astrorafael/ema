@@ -206,10 +206,10 @@ class TODTimer(Device, Alarmable):
 			if tSHU > now():
                                 tSHUstr = tSHU.strftime("%H:%M")
                                 log.warning("Calling shutdown at %s",tSHUstr)
-                                subprocess.Popen(['sudo','shutdown','-k', tSHUstr])
+                                subprocess.Popen(['sudo','shutdown','-h', tSHUstr])
 			else:						
                                 log.warning("Calling shutdown now")
-                                subprocess.Popen(['sudo','shutdown','-k', 'now'])
+                                subprocess.Popen(['sudo','shutdown','-h', 'now'])
 			log.info("Programmed shutdown at %s",tSHU.strftime("%H:%M:%S"))
 
 
