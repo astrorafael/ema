@@ -83,10 +83,8 @@ mqtt_port = 1883
 mqtt_period = 60
 
 # Publish historic data (24h)
+# in each active interval defined in TOD_Timer section
 mqtt_publish_history = yes
-
-# Publishing period for historic data stored in EMA (in hours)
-mqtt_period_history = 6
 
 # Publish Raw EMA status Line
 mqtt_publish_status = yes
@@ -105,6 +103,32 @@ html_period = 60
 
 # component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 html_log = INFO
+
+#------------------------------------------------------------------------#
+
+[TOD_TIMER]
+# Time of day timer that kkeps a list of active window to
+# do thins like sending historic 24 data and programming the aux relay for
+# powering on/off
+
+# Publish current active or inactive interval
+tod_publish_what = current
+
+# Where to publish intervals
+# Comma list separated values with no single or double quotes
+tod_publish_where = mqtt
+
+# Set to true to shutdown the host computer
+# a couple of minites before the aux relay actualy switch off
+tod_poweroff = no
+
+# List of comma-separated intervals hh1:mm1-hh2:mm2
+# Time given in UTC Time.
+tod_intervals = 12:00-12:15,20:00-20:15
+
+# component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
+tod_log = INFO
+
 
 #========================================================================#
 #                      Sensor configuration Data                         #
@@ -412,17 +436,6 @@ roof_relay_publish_what = current
 # 'Timed'  = Timed, with On/Off hour:minute
 aux_mode = Timed
 
-# List of time windows for relay switch on/switch off
-# Must be monotonic sequence of increasing time 
-# except for the possible last wrap around
-# Time given in UTC Time. 
-#aux_window = 10:00-15:30,18:10-18:15,22:00-22:15
-aux_window = 22:05-00:15
-
-# Set to true if aux relay actually shuts down power supply
-# the host computer will shutdown a couple of minites before
-aux_poweroff = no
-
 # List of comma separated scripts to execute  
 # on change of aux relay switch 
 # Each script should show the full path. 
@@ -434,7 +447,7 @@ aux_relay_script = /path/to/my/script
 mqtt_publish_where_status = yes
  mutiple times, EMA server does not lauch a script
 # till the previous run is over
-aux_relay_mode = Many
+aux_relay_mode = Never
 
 # Where to publish relay state
 # Comma list separated values with no quotes or single quotes

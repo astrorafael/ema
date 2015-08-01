@@ -207,11 +207,9 @@ class TODTimer(Device, Alarmable):
                                 tSHUstr = tSHU.strftime("%H:%M")
                                 log.warning("Calling shutdown at %s",tSHUstr)
                                 subprocess.Popen(['sudo','shutdown','-k', tSHUstr])
-                                self.lastAlarm = ShutDownAlarm(self.ema,tSHU)
 			else:						
                                 log.warning("Calling shutdown now")
                                 subprocess.Popen(['sudo','shutdown','-k', 'now'])
-                                raise ShutDownException("Host computer shuts down")
 			log.info("Programmed shutdown at %s",tSHU.strftime("%H:%M:%S"))
 
 
@@ -239,33 +237,5 @@ class TODTimer(Device, Alarmable):
 		# Programs power off time		
 		self.shutdown(tSHU)
 
-
-# ----------------------------------------------------------------------
-# This alarm will shut down EMA server cleanly just a bit before before
-# the global shutdown command takes effect in the host computer
-# ----------------------------------------------------------------------
-
-# Custom exception to signal that the host computer 
-#is shutong down almost immediately
-
-class ShutDownException(Exception):
-        pass
-
-class ShutDownAlarm(Alarmable):
-
-	MARGIN = 30	# seconds
-
-	def __init__(self, ema, tSHUT):
-		t = durationFromNow(tSHUT).total_seconds() - ShutDownAlarm.MARGIN
-		N = t / Server.TIMEOUT
-		Alarmable.__init__(self, N)
-		ema.addAlarmable(self)
-
-        # ----------------------------------
-        # Implements the Alarmable interface
-        # -----------------------------------
-
-        def onTimeoutDo(self):
-		raise ShutDownException("Host computer shuts down inmediately")
 
      
