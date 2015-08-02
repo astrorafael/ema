@@ -61,7 +61,7 @@ def durationFromNow(time):
 # =======================
 
 
-class TODTimer(Device, Alarmable):
+class Timer(Device, Alarmable):
 
 	# Minimun active interval size in minutes
 	MIN_DUR = 15
@@ -82,7 +82,7 @@ class TODTimer(Device, Alarmable):
                 Alarmable.__init__(self)
 		self.ema      = ema
 		self.poweroff = poweroff
-		self.windows  = Intervals.parse(intervals, TODTimer.MIN_DUR)
+		self.windows  = Intervals.parse(intervals, Timer.MIN_DUR)
 		self.gaps     = ~ self.windows
 		self.where    = None
 		self.i        = None
@@ -135,22 +135,22 @@ class TODTimer(Device, Alarmable):
 	def current(self):
 		'''Return dictionary with current measured values'''
 		i = self.i
-		if self.where == TODTimer.ACTIVE:
-			return { TODTimer.INTERVAL: ( "%s %s" % (self.where, self.windows[i]) , 'UTC') }
+		if self.where == Timer.ACTIVE:
+			return { Timer.INTERVAL: ( "%s %s" % (self.where, self.windows[i]) , 'UTC') }
 		else:
-			return { TODTimer.INTERVAL: ( "%s %s" % (self.where, self.gaps[i]) , 'UTC') }
+			return { Timer.INTERVAL: ( "%s %s" % (self.where, self.gaps[i]) , 'UTC') }
 
 	@property
 	def average(self):
 		'''Return dictionary averaged values over a period of N samples'''
-		return { TODTimer.INTERVAL : ("N/A" , '') }
+		return { Timer.INTERVAL : ("N/A" , '') }
 
 
 	@property
 	def parameter(self):
 		'''Return dictionary with calibration constants'''
 		return {
-			TODTimer.INTERVALS : ( str(self.windows) , 'UTC') ,
+			Timer.INTERVALS : ( str(self.windows) , 'UTC') ,
 			}
 
 	# ------------------
@@ -161,7 +161,7 @@ class TODTimer(Device, Alarmable):
 		return (i + 1) % len(self.windows)
 
 	def getInterval(self, where, i):
-		if where == TODTimer.ACTIVE:
+		if where == Timer.ACTIVE:
 			return self.windows[i]
 		else:
 			return self.gaps[i]
@@ -219,13 +219,13 @@ class TODTimer(Device, Alarmable):
         	tNow = now()
         	found, i = self.windows.find(tNow)
 		if found:
-			self.where = TODTimer.ACTIVE
+			self.where = Timer.ACTIVE
 			self.i    = i
                 	log.info("now (%s) we are in the active window %s", tNow.strftime("%H:%M:%S"), self.windows[i])
 			tSHU      = adjust(self.windows[i].t1, minutes=-2)
 			tMID      = self.gaps[i].midpoint()
 		else:
-			self.where = TODTimer.INACTIVE
+			self.where = Timer.INACTIVE
                 	found, i = self.gaps.find(tNow)
                 	log.info("now (%s) we are in the inactive window %s", tNow.strftime("%H:%M:%S"), self.gaps[i])
 			self.i    = i

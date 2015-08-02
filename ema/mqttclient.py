@@ -43,7 +43,7 @@ from datetime import datetime
 from server import Lazy, Server
 from ema.emaproto  import SPSB, STATLEN
 from command import Command, COMMAND
-from dev.todtimer import TODTimer
+from dev.todtimer import Timer
 
 
 # FLASH PAges where History data re stored

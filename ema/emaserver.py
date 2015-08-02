@@ -162,7 +162,7 @@ class EMAServer(server.Server):
 		self.genpage = genpage.HTML(self, config)
 
 		# Time of Day Timer object 
-		self.todtimer = todtimer.TODTimer(self, config)
+		self.todtimer = todtimer.Timer(self, config)
 
 		# MQTT Driver object 
 		self.mqttclient = mqttclient.MQTTClient(self, config, **opts)
@@ -221,7 +221,7 @@ class EMAServer(server.Server):
 		self.thermopile = thermop.Thermopile(self, config, VECLEN)
 		
 		# Run an interval search process once all the clients
-		# has subscribed to TODTimer
+		# has subscribed to TOD Timer
 		self.todtimer.onNewInterval()
 
 	# ----------------------------------

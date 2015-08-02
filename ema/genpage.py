@@ -134,7 +134,7 @@ DEVICE = {
 	'Thermopile' : 'Termopila' ,
 	'WatchDog' : 'Perro Guardian',
 	'AuxRelay' : 'Relé Auxiliar',
-	'TODTimer' : 'Temporizador Diario',
+	'Timer' : 'Temporizador Diario',
 }
 
 MEASUREMENT = {

@@ -31,7 +31,7 @@ from ema.vector    import Vector
 from ema.emaproto  import SRRB, SARB
 from ema.device    import Device
 from ema.intervals import Interval, Intervals
-from todtimer      import TODTimer
+from todtimer      import Timer
 
 # On/Off flags as string constants
 ON  = 'ON'
@@ -275,14 +275,14 @@ class AuxRelay(Device):
 
 	def onNewInterval(self, where, i):
 		'''Program Aux Relay tON and tOFF times'''
-		if where == TODTimer.INACTIVE:
+		if where == Timer.INACTIVE:
 			i         = self.ema.todtimer.nextActiveIndex(i)
-			interval  = self.ema.todtimer.getInterval(TODTimer.ACTIVE,i) 
+			interval  = self.ema.todtimer.getInterval(Timer.ACTIVE,i) 
 			tON       = int(interval.t0.strftime("%H%M"))
 			tOFF      = int(interval.t1.strftime("%H%M"))
 			log.info("Programming next active window (tON-tOFF) to %s",interval)
 		else:
-			interval  = self.ema.todtimer.getInterval(TODTimer.INACTIVE,i) 
+			interval  = self.ema.todtimer.getInterval(Timer.INACTIVE,i) 
 			tOFF      = int(interval.t0.strftime("%H%M"))
 			tON       = int(interval.t1.strftime("%H%M"))
 			log.info("Programming next inactive window (tOFF-tON) to %s", interval)
