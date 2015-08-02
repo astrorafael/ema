@@ -66,9 +66,10 @@ class TODTimer(Device, Alarmable):
 	# Minimun active interval size in minutes
 	MIN_DUR = 15
 
+	INTERVAL  = "interval"
 	INTERVALS = "Timer Active Intervals"
-	ACTIVE   = "active"
-	INACTIVE = "inactive"
+	ACTIVE    = "active"
+	INACTIVE  = "inactive"
 
 	def __init__(self, ema, parser):
 		lvl = parser.get("TOD_TIMER", "tod_log")
@@ -135,14 +136,14 @@ class TODTimer(Device, Alarmable):
 		'''Return dictionary with current measured values'''
 		i = self.i
 		if self.where == TODTimer.ACTIVE:
-			return { self.where: (self.windows[i] , 'UTC') }
+			return { TODTimer.INTERVAL: ( "%s %s" % (self.where, self.windows[i]) , 'UTC') }
 		else:
-			return { self.where: (self.gaps[i] , 'UTC') }
+			return { TODTimer.INTERVAL: ( "%s %s" % (self.where, self.gaps[i]) , 'UTC') }
 
 	@property
 	def average(self):
 		'''Return dictionary averaged values over a period of N samples'''
-		return { self.where: ("N/A" , '') }
+		return { TODTimer.INTERVAL : ("N/A" , '') }
 
 
 	@property
