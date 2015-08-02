@@ -1,3 +1,17 @@
-* Fix low volt script to cancel programmed shutdown and override with its own shutdown
+* Fix bug no active interval found:
+Traceback (most recent call last):
+  File "/usr/local/lib/python2.7/dist-packages/EMA-0.1.0-py2.7.egg/ema/server.py", line 224, in run
+    self.step(Server.TIMEOUT)
+  File "/usr/local/lib/python2.7/dist-packages/EMA-0.1.0-py2.7.egg/ema/server.py", line 187, in step
+    self.__sighandler.onSigAlarmDo()
+  File "/usr/local/lib/python2.7/dist-packages/EMA-0.1.0-py2.7.egg/ema/dev/todtimer.py", line 127, in onSigAlarmDo
+    self.onNewInterval()
+  File "/usr/local/lib/python2.7/dist-packages/EMA-0.1.0-py2.7.egg/ema/dev/todtimer.py", line 174, in onNewInterval
+    self.findCurrentInterval()
+  File "/usr/local/lib/python2.7/dist-packages/EMA-0.1.0-py2.7.egg/ema/dev/todtimer.py", line 229, in findCurrentInterval
+    log.info("now (%s) we are in the inactive window %s", tNow.strftime("%H:%M:%S"), self.gaps[i])
+  File "/usr/local/lib/python2.7/dist-packages/EMA-0.1.0-py2.7.egg/ema/intervals.py", line 164, in __getitem__
+    return self.windows[i]
+TypeError: list indices must be integers, not NoneType
 * Find out why Alarmable ticks run faster than expected.   
 * Parameters sync as an option and reporting differences to logfile.
