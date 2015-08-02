@@ -111,7 +111,7 @@ class Interval(object):
 
 	def reversed(self):
 		'''detect interval inverted'''
-		return not self.T[0] < self.T[1]
+		return self.T[0] > self.T[1]
 
 	def inside(self, time):
 		'''Returns whether a given datetime.time 
@@ -212,18 +212,26 @@ class Intervals(object):
 		'''Find out whether time tNow is in any of the intervals.
 		Return True, index if found or False, None if not found'''
 		if not self.windows[-1].reversed():
+			log.debug("last interval is not reversed")
 			for i in range(0,len(self.windows)):
 				if self.windows[i].inside(tNow):
+					log.debug("found interval %d = %s", i, self.windows[i])
 					return True, i
+			log.debug("No interval found")
 			return False, None
 		else:
+			log.debug("last interval is reversed")
 			for i in range(0, len(self.windows)-1):
 				if self.windows[i].inside(tNow):
+					log.debug("found interval %d = %s", i, self.windows[i])
 					return True, i
+			log.debug("Checking border intervals")
 			i1 = Interval([self.windows[-1].t0, datetime.time.max])
-			i2 = Interval([self.windows[-1].t0, datetime.time.min])
+			i2 = Interval([datetime.time.min, self.windows[0].t0])
 			if i1.inside(tNow) or i2.inside(tNow):
+				log.debug("found interval in borders i1=%s, i2=%s", i1, i2)
 				return True, len(self.windows)-1
+			log.debug("No interval found")
 			return False, None
 
 

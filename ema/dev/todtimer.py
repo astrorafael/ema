@@ -217,6 +217,7 @@ class Timer(Device, Alarmable):
 	def findCurrentInterval(self):
 		'''Find the current interval'''		
         	tNow = now()
+		log.debug("checking active intervals %s", self.windows)
         	found, i = self.windows.find(tNow)
 		if found:
 			self.where = Timer.ACTIVE
@@ -226,6 +227,7 @@ class Timer(Device, Alarmable):
 			tMID      = self.gaps[i].midpoint()
 		else:
 			self.where = Timer.INACTIVE
+			log.debug("checking inactive intervals %s", self.gaps)
                 	found, i = self.gaps.find(tNow)
                 	log.info("now (%s) we are in the inactive window %s", tNow.strftime("%H:%M:%S"), self.gaps[i])
 			self.i    = i
