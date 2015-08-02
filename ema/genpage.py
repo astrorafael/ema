@@ -155,8 +155,7 @@ MEASUREMENT = {
 	'accumulated' : 'Lluvia acumulada' ,
 	'sky' : 'Temperatura del cielo' ,
 	'ambient' : 'Temperatura ambiente' ,
-	'active'  : 'Ventana de tiempo activa',
-	'inactive'  : 'Ventana de tiempo inactiva',
+	'interval'  : 'Ventana de tiempo',
 }
 
 PARAMETER = {
