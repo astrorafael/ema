@@ -180,9 +180,9 @@ class Timer(Device, Alarmable):
 		'''Program next alarm'''
 		t = int(durationFromNow(tMID).total_seconds())
 		log.info("Next check at %s, %d seconds from now",tMID.strftime("%H:%M:%S"), t)
-		self.ema.setSigAlarmHandler(self, t)
-		self.resetAlarm()
+		# self.ema.setSigAlarmHandler(self, t)
 		self.setTimeout(t / Server.TIMEOUT)
+		self.resetAlarm()
 		self.ema.addAlarmable(self)
 
 	def isShuttingDown(self):

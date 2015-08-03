@@ -60,6 +60,7 @@ class RTCParameter(AbstractParameter):
         msg = self.now.strftime('(Y%d%m%y%H%M%S)')
         self.ema.serdriver.write(msg)
         self.setTimeout(n+RTCParameter.TIMEOUT)      # adjust for queue length
+        self.resetAlarm()        
         log.debug("Tadj = %d seconds", tadj)
 
 
@@ -67,6 +68,7 @@ class RTCParameter(AbstractParameter):
         n = self.ema.serdriver.queueDelay()
         n += RTCParameter.TIMEOUT
         self.setTimeout(n)      # adjust for queue length
+        self.resetAlarm()        
         self.ema.serdriver.write('(y)')
 
 

@@ -64,6 +64,7 @@ import errno
 import signal
 import select
 import logging
+import datetime
 from   abc import ABCMeta, abstractmethod
 
 log = logging.getLogger('server')
@@ -289,25 +290,21 @@ class Alarmable(object):
     __metaclass__ = ABCMeta     # Only Python 2.7
 
     def __init__(self, N=1):
-        self.__count = 0
-        self.__limit = N
-
+	self.__delta   = datetime.timedelta(seconds=N)
+	self.__tsFinal = datetime.datetime.utcnow() + self.__delta
 
     def resetAlarm(self):
-        self.__count = 0
-
+	self.__tsFinal    = datetime.datetime.utcnow() + self.__delta
 
     def setTimeout(self, N):
-        self.__limit = N
+	self.__delta = datetime.timedelta(seconds=N)
 
 
     def timeout(self):
         '''
-        Increments counter modulo N.
-        Returns True if counter wraps around.
+        Returns True if timeout elapsed.
         '''
-        self.__count = (self.__count + 1) % self.__limit
-        return  (self.__count == 0)
+        return datetime.datetime.utcnow() >= self.__tsFinal   
 
 
     @abstractmethod

@@ -326,4 +326,4 @@ class Parameter(AbstractParameter):
 
 
 	def actionTimeout(self):
-		self.log.error("Parameter %s: Timeout. EMA not responding to ync request", self.name)
+		self.log.error("Parameter %s: Timeout. EMA not responding to sync request", self.name)

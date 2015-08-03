@@ -170,6 +170,7 @@ class Command(Alarmable):
 
 
 	def __init__(self, ema, retries =RETRIES, **kargs):
+		Alarmable.__init__(self, Command.TIMEOUT)
 		self.ema      = ema
 		self.name     = kargs['name']
 		self.resPat   = [ re.compile(p) for p in kargs['resPat'] ]
@@ -191,6 +192,7 @@ class Command(Alarmable):
 		'''
 		n = self.ema.serdriver.queueDelay() + Command.TIMEOUT*self.NIterations
 		self.setTimeout(n)
+		self.resetAlarm()
 		self.ema.addAlarmable(self)
 		self.ema.serdriver.write(message)
 
