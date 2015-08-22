@@ -25,7 +25,7 @@ import logging
 import datetime
 import subprocess
 
-from ema.server    import Server, Alarmable
+from ema.server    import Server, Alarmable2
 from ema.device    import Device
 from ema.intervals import Interval, Intervals
 
@@ -61,7 +61,7 @@ def durationFromNow(time):
 # =======================
 
 
-class Timer(Device, Alarmable):
+class Timer(Device, Alarmable2):
 
 	# Minimun active interval size in minutes
 	MIN_DUR = 15
@@ -79,7 +79,7 @@ class Timer(Device, Alarmable):
  		intervals     = parser.get("TOD_TIMER","tod_intervals")
  		poweroff      = parser.getboolean("TOD_TIMER","tod_poweroff")
                 Device.__init__(self, publish_where, publish_what)
-                Alarmable.__init__(self)
+                Alarmable2.__init__(self)
 		self.ema      = ema
 		self.poweroff = poweroff
 		self.windows  = Intervals.parse(intervals, Timer.MIN_DUR)

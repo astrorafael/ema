@@ -283,8 +283,49 @@ class Lazy(object):
 
 class Alarmable(object):
     '''
+    Superclass for all objects implementing a OnTimeoutDo() method
+    to be used within the select() system call when this system call times out.
+    Efficient but not accurate implememtation valid for a few seconds 
+    '''
+
+    __metaclass__ = ABCMeta     # Only Python 2.7
+
+    def __init__(self, N=1):
+        self.__count = 0
+        self.__limit = N
+
+
+    def resetAlarm(self):
+        self.__count = 0
+
+
+    def setTimeout(self, N):
+        self.__limit = N
+
+
+    def timeout(self):
+        '''
+        Increments counter modulo N.
+        Returns True if counter wraps around.
+        '''
+        self.__count = (self.__count + 1) % self.__limit
+        return  (self.__count == 0)
+
+
+    @abstractmethod
+    def onTimeoutDo(self):
+        '''
+        To be subclassed and overriden
+        '''
+        pass
+
+# ==========================================================
+
+class Alarmable2(object):
+    '''
     Abstract class for all objects implementing a OnTimeoutDo() method
     to be used within the select() system call when this system call times out.
+    Accurate implememtation valid for sevtral hours using timestamps. 
     '''
 
     __metaclass__ = ABCMeta     # Only Python 2.7
