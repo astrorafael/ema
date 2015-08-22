@@ -61,7 +61,6 @@
 # ======================================================================
 
 import errno
-import signal
 import select
 import logging
 import datetime
@@ -71,12 +70,6 @@ log = logging.getLogger('server')
 
 def setLogLevel(level):
     log.setLevel(level)
-
-def sighandler(signum, frame):
-    '''
-    Signal handler (SIGALARM only)
-    '''
-    Server.instance.sigflag = True
 
 
 class Server(object):
@@ -90,10 +83,7 @@ class Server(object):
         self.__writables  = []
         self.__alarmables = []
         self.__lazy       = []
-        self.__sighandler = None
-        self.sigflag      = True
         Server.instance   = self
-        signal.signal(signal.SIGALRM, sighandler)
 
     def SetTimeout(self, newT):
         '''Set the select() timeout'''
@@ -163,34 +153,14 @@ class Server(object):
         callable(getattr(obj,'mustWork'))
         self.__lazy.append(obj)
 
-    def setSigAlarmHandler(self, obj, T):
-        '''
-        Set a new object as SIGALARM signal handler and arm 
-        the SIGALARM signal with new tiemout T in integer seconds.
-	'''
-        callable(getattr(obj,'onSigAlarmDo'))
-        self.__sighandler = obj
-        signal.alarm(T)
-
 
     def step(self,timeout):
         '''
         Single step run, invoking I/O handlers or timeout handlers
         '''
 
-	# Catch SIGALARM signal suring select()
-	# and execute its handler first
-        try:
-            nreadables, nwritables, nexceptionals = select.select(
+        nreadables, nwritables, nexceptionals = select.select(
               self.__readables, self.__writables, [], timeout)
-        except select.error as e:
-            if e[0] == errno.EINTR and self.sigflag:
-               self.__sighandler.onSigAlarmDo()
-               self.sigflag = False
-               return
-            raise
-        except Exception:
-          raise
 
         io_activity = False
         if nreadables:

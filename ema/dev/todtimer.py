@@ -116,15 +116,6 @@ class Timer(Device, Alarmable2):
 	# -----------------------------------
 
 	def onTimeoutDo(self):
-		log.debug("Triggered by Soft Alarm")
-		self.onNewInterval()
-
-	# ----------------------------------------
-	# Implements the Signal SIGALARM interface
-	# ----------------------------------------
-
-	def onSigAlarmDo(self):
-		log.debug("Triggered by SIGALRM")
 		self.onNewInterval()
 
 	# ----------
@@ -160,6 +151,7 @@ class Timer(Device, Alarmable2):
 	def nextActiveIndex(self, i):
 		return (i + 1) % len(self.windows)
 
+
 	def getInterval(self, where, i):
 		if where == Timer.ACTIVE:
 			return self.windows[i]
@@ -170,20 +162,22 @@ class Timer(Device, Alarmable2):
 	def getActiveInterval(self, i):
 		return self.windows[i]
 
+
 	def onNewInterval(self):
 		'''Executes the callbacks, triggered by alarms'''
 		self.findCurrentInterval()
 		for o in self.subscribedList:
 			o.onNewInterval(self.where, self.i)
+
 	
 	def nextAlarm(self, tMID):
 		'''Program next alarm'''
 		t = int(durationFromNow(tMID).total_seconds())
 		log.info("Next check at %s, %d seconds from now",tMID.strftime("%H:%M:%S"), t)
-		# self.ema.setSigAlarmHandler(self, t)
-		self.setTimeout(t / Server.TIMEOUT)
+		self.setTimeout(t)
 		self.resetAlarm()
 		self.ema.addAlarmable(self)
+
 
 	def isShuttingDown(self):
 		'''Find if a shutdown process is under way'''
