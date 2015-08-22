@@ -273,10 +273,10 @@ class MQTTClient(Lazy):
         self.page += 1
         self.requestPage(self.page)
       else:
-        date = message[10:19]
-        log.debug("Collectd %d lines", len(self.bulkDump))
+        date = message[10:20]
+        log.info("Uploading last 24h (%s) of hourly minmax history to %s", date, MQTTClient.TOPIC_HISTORY)
         self.__mqtt.publish(topic=MQTTClient.TOPIC_HISTORY, payload='\n'.join(self.bulkDump), qos=2, retain=True)
-        log.info("Uploaded %d days of 24h history (%s) to %s", FLASH_END + 1 - FLASH_START, date, MQTTClient.TOPIC_HISTORY)
+        log.info("Upload complete, processed %d lines", len(self.bulkDump))
 
    # --------------
    # Helper methods
