@@ -113,7 +113,7 @@ class MQTTClient(Lazy):
    # TOPIC Default vaules
    TOPIC_EVENTS         = "EMA/events"
    TOPIC_TOPICS         = "EMA/topics"
-   TOPIC_HISTORY        = "EMA/history"
+   TOPIC_HISTORY_MINMAX = "EMA/history/minmax"
    TOPIC_CURRENT_STATUS = "EMA/current/status"
 
 
@@ -129,7 +129,7 @@ class MQTTClient(Lazy):
       Lazy.__init__(self, period / 2.0 )
       MQTTClient.TOPIC_EVENTS         = "%s/events"  % id
       MQTTClient.TOPIC_TOPICS         = "%s/topics"  % id
-      MQTTClient.TOPIC_HISTORY        = "%s/history" % id
+      MQTTClient.TOPIC_HISTORY_MINMAX = "%s/history/minmax" % id
       MQTTClient.TOPIC_CURRENT_STATUS = "%s/current/status" % id
       self.ema        = ema
       self.__id       = id
@@ -211,7 +211,7 @@ class MQTTClient(Lazy):
          if self.__histflag:
             self.publishBulkDump()
       else:
-         log.warn("Not connected to broker: can't publish 24h Bulk data")
+         log.warn("Not connected to broker: can't publish minmax history")
 	
    # ----------------------------------------
    # Implement The Lazy interface
@@ -270,8 +270,8 @@ class MQTTClient(Lazy):
         self.requestPage(self.page)
       else:
         date = message[10:20]
-        log.info("Uploading last 24h (%s) of hourly minmax history to %s", date, MQTTClient.TOPIC_HISTORY)
-        self.__mqtt.publish(topic=MQTTClient.TOPIC_HISTORY, payload='\n'.join(self.bulkDump), qos=2, retain=True)
+        log.info("Uploading (%s) hourly minmax history to %s", date, MQTTClient.TOPIC_HISTORY_MINMAX)
+        self.__mqtt.publish(topic=MQTTClient.TOPIC_HISTORY_MINMAX, payload='\n'.join(self.bulkDump), qos=2, retain=True)
         log.info("Upload complete, processed %d lines", len(self.bulkDump))
 
    # --------------
@@ -337,7 +337,7 @@ class MQTTClient(Lazy):
       '''
       Publish active topics
       '''
-      topics = [MQTTClient.TOPIC_EVENTS, MQTTClient.TOPIC_HISTORY]
+      topics = [MQTTClient.TOPIC_EVENTS, MQTTClient.TOPIC_HISTORY_MINMAX]
       if self.__pubstat:
         topics.append(MQTTClient.TOPIC_CURRENT_STATUS)
 
