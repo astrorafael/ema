@@ -34,8 +34,7 @@ import logging
 
         
 ROOT = logging.getLogger()
-ROOT.setLevel(logging.DEBUG)
-
+ROOT.setLevel(logging.INFO)
 
 
 def logToConsole():
@@ -51,16 +50,3 @@ def logToFile(filename):
     fileHandler.setFormatter(formatter)
     ROOT.addHandler(fileHandler)
 
-def globalLevel(levelstring):
-	ROOT.setLevel(parseLogLevel(levelstring))
-
-def parseLogLevel(levelstring):
-	'''
-	Returns a log level contant from its name. 
-	Returns NOTSET if not found
-	'''
-	lvl = 'logging.' + levelstring
-	try:
-		return eval(lvl)
-	except:
-		return logging.NOTSET
