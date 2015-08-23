@@ -257,17 +257,17 @@ class Alarmable(object):
 
     __metaclass__ = ABCMeta     # Only Python 2.7
 
-    def __init__(self, N=1):
+    def __init__(self, timeout=1.0):
         self.__count = 0
-        self.__limit = N
+        self.__limit = int(round(timeout/Server.TIMEOUT))
 
 
     def resetAlarm(self):
         self.__count = 0
 
 
-    def setTimeout(self, N):
-        self.__limit = N
+    def setTimeout(self, timeout):
+        self.__limit = int(round(timeout/Server.TIMEOUT))
 
 
     def timeout(self):
@@ -297,15 +297,15 @@ class Alarmable2(object):
 
     __metaclass__ = ABCMeta     # Only Python 2.7
 
-    def __init__(self, N=1):
-	self.__delta   = datetime.timedelta(seconds=N)
+    def __init__(self, timeout=1):
+	self.__delta   = datetime.timedelta(seconds=timeout)
 	self.__tsFinal = datetime.datetime.utcnow() + self.__delta
 
     def resetAlarm(self):
 	self.__tsFinal    = datetime.datetime.utcnow() + self.__delta
 
-    def setTimeout(self, N):
-	self.__delta = datetime.timedelta(seconds=N)
+    def setTimeout(self, timeout):
+	self.__delta = datetime.timedelta(seconds=timeout)
 
 
     def timeout(self):

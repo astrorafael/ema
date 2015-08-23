@@ -60,14 +60,14 @@ import re
 import logging
 from abc import ABCMeta, abstractmethod
 
-from server import Alarmable
+from server import Server, Alarmable
 
 # Note that AbstractClass also uses ABCMetaclass, inherited from Alarmable
 class AbstractParameter(Alarmable):
 
 
 	# Default constanst
-	TIMEOUT = 5                 # timeout cycles
+	TIMEOUT = 5                 # timeout in seconds
 	RETRIES = 2                 # retries (0 = no retry)
 
 	# States
@@ -272,9 +272,9 @@ class Parameter(AbstractParameter):
 
 
 	def sendValue(self):
-		n = self.ema.serdriver.queueDelay()
-		n += AbstractParameter.TIMEOUT
-		self.setTimeout(n)      # adjust for queue length
+		t = AbstractParameter.TIMEOUT
+		t += self.ema.serdriver.queueDelay()*Server.TIMEOUT
+		self.setTimeout(t)      # adjusted for queue length
 		value = self.set % self.value
 		self.log.debug("Parameter %s: sending new value", self.name)
 		self.ema.serdriver.write(value)
@@ -282,9 +282,9 @@ class Parameter(AbstractParameter):
 
 	def actionStart(self):
 		self.log.debug("Parameter %s: starting sync", self.name)
-		n = self.ema.serdriver.queueDelay()
-		n += AbstractParameter.TIMEOUT
-		self.setTimeout(n)      # adjust for queue length
+		t = AbstractParameter.TIMEOUT
+		t += self.ema.serdriver.queueDelay()*Server.TIMEOUT
+		self.setTimeout(t)      # adjusted for queue length
 		self.ema.serdriver.write(self.get)
 		
 

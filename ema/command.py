@@ -70,7 +70,7 @@ import re
 from   abc import abstractmethod
 
 
-from server   import Alarmable
+from server   import Server, Alarmable
 from emaproto import STATLENEXT
 
 log = logging.getLogger('command')
@@ -157,7 +157,7 @@ def match(message):
 			return COMMAND[REGEXP.index(regexp)]
 	return None
 
-# Note that command inherits form Alarmabe, which allready has
+# Note that command inherits form Alarmable, which already has
 # ABMeta as its metaclass 
 class Command(Alarmable):
 
@@ -187,8 +187,8 @@ class Command(Alarmable):
 		Do the actual sending of message to EMA and associated 
 		timeout bookeeping
 		'''
-		n = self.ema.serdriver.queueDelay() + Command.TIMEOUT*self.NIterations
-		self.setTimeout(n)
+		t = self.ema.serdriver.queueDelay()*Server.TIMEOUT + Command.TIMEOUT*self.NIterations
+		self.setTimeout(t)
 		self.resetAlarm()
 		self.ema.addAlarmable(self)
 		self.ema.serdriver.write(message)

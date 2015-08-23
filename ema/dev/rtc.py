@@ -51,12 +51,12 @@ class RTCParameter(AbstractParameter):
 
 
     def sendDateTime(self):
-        n    = self.ema.serdriver.queueDelay()
-        tadj = int(round(n*Server.TIMEOUT))
+        t    = self.ema.serdriver.queueDelay()*Server.TIMEOUT
+        tadj = int(round(t))
         self.now = (datetime.datetime.utcnow() + datetime.timedelta(seconds=tadj)).replace(microsecond=0)
         msg = self.now.strftime('(Y%d%m%y%H%M%S)')
         self.ema.serdriver.write(msg)
-        self.setTimeout(n+RTCParameter.TIMEOUT)      # adjust for queue length
+        self.setTimeout(t+RTCParameter.TIMEOUT)      # adjusted for queue length
         self.resetAlarm()        
         log.debug("Tadj = %d seconds", tadj)
 
