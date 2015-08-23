@@ -1,5 +1,1 @@
-* feature/alarmable: 
-  - Reworked Alarmable to use time stamps instead of select() cycles.
-  - Some parameters report timeout. Find out why   
-
 * Parameters sync as an option and reporting differences to logfile.
