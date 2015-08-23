@@ -185,8 +185,7 @@ class HTML(Lazy):
 		log.setLevel(lvl)
 		path     = parser.get("HTML", "html_file")
                 period   = parser.getfloat("HTML", "html_period")
-                N        =  int(round(period / Server.TIMEOUT) )
-		Lazy.__init__(self, N)
+		Lazy.__init__(self, period)
 		self.path     = path
 		self.dirname  = os.path.dirname(path)
 		self.ema  = ema

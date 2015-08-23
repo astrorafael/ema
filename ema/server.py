@@ -217,17 +217,17 @@ class Lazy(object):
 
     __metaclass__ = ABCMeta     # Only Python 2.7
 
-    def __init__(self, N=1):
+    def __init__(self, period=1.0):
         self.__count = 0
-        self.__limit = N
+        self.__limit = int(round(period/Server.TIMEOUT))
 
 
     def reset(self):
         self.__count = 0
 
 
-    def setPeriod(self, N):
-        self.__limit = N
+    def setPeriod(self, period):
+        self.__limit = int(round(period/Server.TIMEOUT))
 
 
     def mustWork(self):

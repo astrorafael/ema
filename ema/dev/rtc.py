@@ -31,9 +31,6 @@ from ema.emaproto  import PERIOD
 
 log = logging.getLogger('rtc')
 
-def setLogLevel(level):
-    log.setLevel(level)
-
 
 class RTCParameter(AbstractParameter):
     '''RTC sync parameter does not fit into the generic Parameter class
@@ -120,9 +117,8 @@ class RTC(Lazy):
         lvl = parser.get("RTC", "rtc_log")
         log.setLevel(lvl)
         deltaT = parser.getint("RTC", "rtc_delta")
-        N      = parser.getfloat("RTC", "rtc_period")
-        N      =  int(round(N*3600 / PERIOD))
-        Lazy.__init__(self, N)
+        period = parser.getfloat("RTC", "rtc_period")
+        Lazy.__init__(self, 3600*period)
         self.ema = ema
         self.param = RTCParameter(ema, deltaT)
         ema.addSync(self.param)

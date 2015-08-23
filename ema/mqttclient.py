@@ -126,7 +126,7 @@ class MQTTClient(Lazy):
       period   = parser.getint("MQTT", "mqtt_period")
       histflag = parser.getboolean("MQTT", "mqtt_publish_history")
       publish_status = parser.getboolean("MQTT", "mqtt_publish_status")
-      Lazy.__init__(self, period / ( 2 * Server.TIMEOUT))
+      Lazy.__init__(self, period / 2.0 )
       MQTTClient.TOPIC_EVENTS         = "%s/events"  % id
       MQTTClient.TOPIC_TOPICS         = "%s/topics"  % id
       MQTTClient.TOPIC_HISTORY        = "%s/history" % id
