@@ -1,1 +1,5 @@
+* Quitar los setloglevel superfluos
+* quitar los ema.* superfluos
+* refactorizar el Lazy para que coja segunods, no ciclos
+* refactorizar Alarmable para que coja segundos, no ciclos
 * Parameters sync as an option and reporting differences to logfile.
