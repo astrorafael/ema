@@ -78,10 +78,6 @@ import os
 
 log = logging.getLogger('notifier')
 
-def setLogLevel(level):
-	log.setLevel(level)
-
-
 
 class ExecutedScript(Exception):
 	'''Signals a script has executed'''

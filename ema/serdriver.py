@@ -63,9 +63,6 @@ from server import Lazy
 
 log = logging.getLogger('serdriver')
 
-def setLogLevel(level):
-    log.setLevel(level)
-
 
 class SerialDriver(Lazy):
 

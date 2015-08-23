@@ -72,17 +72,6 @@ import ConfigParser as parser
 
 log = logging.getLogger('emaserver')
 
-def setLogLevel(level):
-	log.setLevel(level)
-
-
-def parseLogLevel(levelstring):
-	lvl = 'logging.' + levelstring
-	try:
-		return eval(lvl)
-	except:
-		return logging.NOTSET
-
 class EMAServer(server.Server):
 
 	PERIOD = 5
@@ -126,16 +115,15 @@ class EMAServer(server.Server):
 		self.uploadPeriod = config.getfloat("GENERIC", "upload_period")
 		VECLEN =  int(round(self.uploadPeriod / EMAServer.PERIOD)) 
 		lvl = config.get("GENERIC", "generic_log")
-		lvl = parseLogLevel(lvl)
-		command.setLogLevel(lvl)
-		setLogLevel(lvl)
+		command.log.setLevel(lvl)
+		log.setLevel(lvl)
 
 		# Serial Port object Building
 		port = config.get("SERIAL", "serial_port")
 		baud = config.getint("SERIAL", "serial_baud")
 		opts = dict(config.items("SERIAL"))
 		lvl = config.get("SERIAL", "serial_log")
-		serdriver.setLogLevel(parseLogLevel(lvl))
+		serdriver.log.setLevel(lvl)
 
 		self.serdriver = serdriver.SerialDriver(port,baud,**opts)
 		self.serdriver.addHandler(self)
@@ -149,7 +137,7 @@ class EMAServer(server.Server):
 		self.multicast = config.getboolean("UDP", "mcast_enabled")
 		opts    = dict(config.items("UDP"))
 		lvl = config.get("UDP", "udp_log")
-		udpdriver.setLogLevel(parseLogLevel(lvl))
+		udpdriver.log.setLevel(lvl)
 
 		self.udpdriver = udpdriver.UDPDriver(ip, rx_port, tx_port, **opts)
 		self.udpdriver.addHandler(self)

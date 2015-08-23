@@ -50,9 +50,6 @@ import logging
 
 log = logging.getLogger('vector')
 
-def setLogLevel(level):
-    log.setLevel(level)
-
 class Vector(object):
 	"""
 	Vector implementing a sliding window protocolof size N.

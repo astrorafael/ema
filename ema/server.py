@@ -68,9 +68,6 @@ from   abc import ABCMeta, abstractmethod
 
 log = logging.getLogger('server')
 
-def setLogLevel(level):
-    log.setLevel(level)
-
 
 class Server(object):
 

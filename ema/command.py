@@ -75,9 +75,6 @@ from emaproto import STATLENEXT
 
 log = logging.getLogger('command')
 
-def setLogLevel(level):
-	log.setLevel(level)
-
 # List of allowed commands
 COMMAND = [
 	{

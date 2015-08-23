@@ -70,9 +70,6 @@ import logging
 
 log = logging.getLogger('udpdriver')
 
-def setLogLevel(level):
-    log.setLevel(level)
-
 def udpsocket(rx_port, mcast_ip=None):
    '''Creates a UDP socket boind on port rx_port'''
    '''Optionally joins a multicast group on mcast_ip'''

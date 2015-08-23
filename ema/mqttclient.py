@@ -41,12 +41,12 @@ import socket
 from datetime import datetime
 
 from server import Lazy, Server
-from ema.emaproto  import SPSB, STATLEN
+from emaproto  import SPSB, STATLEN
 from command import Command, COMMAND
 from dev.todtimer import Timer
 
 
-# FLASH PAges where History data re stored
+# FLASH Pages where History data re stored
 FLASH_START = 300
 FLASH_END   = 300
 
@@ -61,11 +61,7 @@ FAILED        = 3
 DISCONNECTING = 4
 	
 
-
 log = logging.getLogger('mqtt')
-
-def setLogLevel(level):
-    log.setLevel(level)
 
 
 # The callback for when the client receives a CONNACK response from the server.
