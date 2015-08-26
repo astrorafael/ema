@@ -127,10 +127,10 @@ class MQTTClient(Lazy):
       histflag = parser.getboolean("MQTT", "mqtt_publish_history")
       publish_status = parser.getboolean("MQTT", "mqtt_publish_status")
       Lazy.__init__(self, period / 2.0 )
-      MQTTClient.TOPIC_EVENTS         = "%s/events"  % id
-      MQTTClient.TOPIC_TOPICS         = "%s/topics"  % id
-      MQTTClient.TOPIC_HISTORY_MINMAX = "%s/history/minmax" % id
-      MQTTClient.TOPIC_CURRENT_STATUS = "%s/current/status" % id
+      MQTTClient.TOPIC_EVENTS         = "EMA/%s/events"  % id
+      MQTTClient.TOPIC_TOPICS         = "EMA/%s/topics"  % id
+      MQTTClient.TOPIC_HISTORY_MINMAX = "EMA/%s/history/minmax" % id
+      MQTTClient.TOPIC_CURRENT_STATUS = "EMA/%s/current/status" % id
       self.ema        = ema
       self.__id       = id
       self.__topics   = False
