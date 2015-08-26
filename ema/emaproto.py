@@ -94,6 +94,10 @@ SMTE = SMTB + 1     # Status Message Type End
 # Status Message Types
 MTCUR = 'a'			# Current values status message type
 MTHIS = 't'			# 24h historic values message type
+MTISO = '0'			# 24h isolated historic values message type
+MTMIN = 'm'			# daily minima message type
+MTMAX = 'M'			# daily maxima message type
+
 
 # Independen Thermpile message
 THERMOINF = 4 		# Thermopile digit string offset ('0' = infrared ; '1' = ambient)

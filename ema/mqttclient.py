@@ -38,7 +38,7 @@
 import logging
 import paho.mqtt.client as mqtt
 import socket
-from datetime import datetime
+import datetime
 
 from server import Lazy, Server
 from emaproto  import SPSB, STATLEN
@@ -182,8 +182,11 @@ class MQTTClient(Lazy):
    # -----------------------------------------
 
    def onStatus(self, message):
-	'''Pick up status message and transform it into pure ASCII string'''
-        self.__emastat = transform(message)
+      '''Pick up status message and transform it into pure ASCII string'''
+      tstamp = (datetime.datetime.utcnow() + \
+             datetime.timedelta(seconds=0.5)).strftime("\n(%H:%M:%S %d/%m/%Y)")
+      self.__emastat = transform(message)
+      self.__emastat += tstamp
 
    # ---------------------------------
    # Implement the Event I/O Interface

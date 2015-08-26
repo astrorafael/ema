@@ -4,3 +4,4 @@
 * ADiff emaproto con el del cargador (new message types)
 * Gestionar la excepcion del socket de network unavailable
 * Parameters sync as an option and reporting differences to logfile.
+* Mejor manejo del station_id
