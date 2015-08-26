@@ -1,7 +1,4 @@
 * Integrar chop (modulo untils + modulos afectados + configfile)
-* Añadir timestamp al status message como una nueva linea en el MQTT
-  con el mismo formato que el usado por el minmax
-* ADiff emaproto con el del cargador (new message types)
 * Gestionar la excepcion del socket de network unavailable
 * Parameters sync as an option and reporting differences to logfile.
 * Mejor manejo del station_id
