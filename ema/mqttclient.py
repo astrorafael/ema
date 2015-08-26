@@ -288,14 +288,18 @@ class MQTTClient(Lazy):
       Add MQTT library to the (external) EMA I/O event loop. 
       '''
       try:
-        log.info("Connecting to MQTT Broker %s:%s", self.__host, self.__port)
-        self.__mqtt.connect(self.__host, self.__port, self.__period)
-        self.__state = CONNECTING
-        self.ema.addReadable(self)
-      except Exception, e:
-         log.error("Could not contact MQTT Broker %s: %s", self.__host, self.__port, e)
-         self.__state = FAILED
-         raise
+         log.info("Connecting to MQTT Broker %s:%s", self.__host, self.__port)
+         self.__state = CONNECTING
+         self.__mqtt.connect(self.__host, self.__port, self.__period)
+         self.ema.addReadable(self)
+      except IOError, e:	
+         log.error("%s",e)
+         if e.errno == 101:
+            log.warning("Trying to connect on the next cycle")
+            self.__state = NOT_CONNECTED
+         else:
+            self.__state = FAILED
+            raise
    
 
    def publish(self):
