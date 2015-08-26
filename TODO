@@ -1,2 +1,8 @@
 * Integrar chop (modulo untils + modulos afectados + configfile)
+* backport logger module from emadb 
+  - add VERBPSE level to config file
+  - edit __main__.py to include more options to argparse
+* Revisar el setup.sh
+* Revisar el emad.sh para ponerlo como el emadb.sh
 * Parameters sync as an option and reporting differences to logfile.
+
