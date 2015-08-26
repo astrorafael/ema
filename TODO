@@ -2,7 +2,11 @@
 * backport logger module from emadb 
   - add VERBPSE level to config file
   - edit __main__.py to include more options to argparse
+* Revisar el layout del proyecto
 * Revisar el setup.sh
 * Revisar el emad.sh para ponerlo como el emadb.sh
+* Revisar el servicio emad.init.sh para pasar argumentos
+* Revisra el defaults file para pasar extra argumentos
+  por defecto hay que rotar por tamaño
 * Parameters sync as an option and reporting differences to logfile.
 
