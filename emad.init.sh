@@ -112,7 +112,7 @@ case "$1" in
   status)
 	status_of_proc "$DAEMON" "$NAME" && exit 0 || exit $?
 	;;
-  #reload|force-reload)
+  reload|force-reload)
 	#
 	# If do_reload() is not implemented then leave this commented out
 	# and leave 'force-reload' as an alias for 'restart'.
