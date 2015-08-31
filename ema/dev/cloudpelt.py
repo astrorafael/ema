@@ -28,6 +28,7 @@ from ema.emaproto  import SCLB, SCLE
 from ema.parameter import Parameter
 from ema.vector    import Vector
 from ema.device    import Device
+from ema.utils     import chop
 
 log = logging.getLogger('peltier')
 
@@ -38,8 +39,8 @@ def setLogLevel(level):
 THRESHOLD = {
    'name': 'Cloud Sensor Threshold',
    'logger' : 'peltier',
-   'mult' : 1.0,              # multiplier to internal value
-   'unit' : '%',              # 
+   'mult' : 1.0,               # multiplier to internal value
+   'unit' : '%',               # 
    'get' : '(n)',              # string format for GET request
    'set' : '(N%03d)',          # string format for SET request
    'pat' :  '\(N(\d{3})\)',    # pattern to recognize as response
@@ -50,10 +51,10 @@ THRESHOLD = {
 GAIN = {
    'name': 'Cloud Sensor Gain',
    'logger' : 'peltier',
-   'mult' : 10.0,              # multiplier to internal value
+   'mult' : 10.0,             # multiplier to internal value
    'unit' : 'none',           # 
    'get' : '(r)',             # string format for GET request
-   'set' : '(R%03d)',        # string format for SET request
+   'set' : '(R%03d)',         # string format for SET request
    'pat' : '\(R(\d{3})\)',    # pattern to recognize as response
    'grp' : 1,                 # match group to extract value and compare
 }
@@ -66,8 +67,8 @@ class CloudSensor(Device):
    def __init__(self, ema, parser, N):
       lvl     = parser.get("CLOUD", "pelt_log")
       log.setLevel(lvl)
-      publish_where = parser.get("CLOUD","pelt_publish_where").split(',')
-      publish_what = parser.get("CLOUD","pelt_publish_what").split(',')
+      publish_where = chop(parser.get("CLOUD","pelt_publish_where"), ',')
+      publish_what  = chop(parser.get("CLOUD","pelt_publish_what"), ',')
       thres   = parser.getfloat("CLOUD", "pelt_thres")
       gain    = parser.getfloat("CLOUD", "pelt_gain")
       Device.__init__(self, publish_where, publish_what)

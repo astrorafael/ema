@@ -30,6 +30,7 @@ from ema.emaproto  import SPYB, SPYE
 from ema.parameter import Parameter
 from ema.vector    import Vector
 from ema.device    import Device
+from ema.utils     import chop
 
 log = logging.getLogger('pyranomet')
 
@@ -67,8 +68,8 @@ class Pyranometer(Device):
    def __init__(self, ema, parser, N):
       lvl = parser.get("PYRANOMETER", "pyr_log")
       log.setLevel(lvl)
-      publish_where = parser.get("PYRANOMETER","pyr_publish_where").split(',')
-      publish_what = parser.get("PYRANOMETER","pyr_publish_what").split(',')
+      publish_where = chop(parser.get("PYRANOMETER","pyr_publish_where"), ',')
+      publish_what = chop(parser.get("PYRANOMETER","pyr_publish_what"), ',')
       offset  = parser.getfloat("PYRANOMETER", "pyr_offset")
       gain    = parser.getfloat("PYRANOMETER", "pyr_gain")
       Device.__init__(self, publish_where, publish_what)

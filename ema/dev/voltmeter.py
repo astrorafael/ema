@@ -28,6 +28,7 @@ from ema.emaproto  import SPSB, PERIOD
 from ema.parameter import Parameter
 from ema.vector    import Vector
 from ema.device    import Device
+from ema.utils     import chop
 
 log = logging.getLogger('voltmeter')
 
@@ -68,9 +69,9 @@ class Voltmeter(Device):
         offset  = parser.getfloat("VOLTMETER", "volt_offset")
         delta   = parser.getfloat("VOLTMETER", "volt_delta")
         time    = parser.getint("VOLTMETER",    "volt_time")
-        publish_where = parser.get("VOLTMETER","volt_publish_where").split(',')
-        publish_what  = parser.get("VOLTMETER","volt_publish_what").split(',')
-        scripts = parser.get("VOLTMETER","low_volt_script").split(',')
+        publish_where = chop(parser.get("VOLTMETER","volt_publish_where"), ',')
+        publish_what  = chop(parser.get("VOLTMETER","volt_publish_what"), ',')
+        scripts = chop(parser.get("VOLTMETER","low_volt_script"), ',')
         mode    = parser.get("VOLTMETER","low_volt_mode")
 	Device.__init__(self, publish_where, publish_what)
         self.ema         = ema

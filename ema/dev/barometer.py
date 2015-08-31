@@ -28,6 +28,7 @@ from ema.emaproto  import SABB, SABE
 from ema.parameter import Parameter
 from ema.vector    import Vector
 from ema.device    import Device
+from ema.utils     import chop
 
 log = logging.getLogger('barometer')
 
@@ -37,8 +38,8 @@ def setLogLevel(level):
 HEIGHT = {
    'name': 'Barometer Height',
    'logger' : 'barometer' ,
-   'mult' : 1.0,              # multiplier to internal value
-   'unit' : 'm',              # meters
+   'mult' : 1.0,               # multiplier to internal value
+   'unit' : 'm',               # meters
    'get' : '(m)',              # string format for GET request
    'set' : '(M%05d)',          # string format for SET request
    'pat' :  '\(M(\d{5})\)',    # pattern to recognize as response
@@ -65,8 +66,8 @@ class Barometer(Device):
    def __init__(self, ema, parser, N):
       lvl = parser.get("BAROMETER", "barom_log")
       log.setLevel(lvl)
-      publish_where = parser.get("BAROMETER","barom_publish_where").split(',')
-      publish_what = parser.get("BAROMETER","barom_publish_what").split(',')
+      publish_where = chop(parser.get("BAROMETER","barom_publish_where"), ',')
+      publish_what = chop(parser.get("BAROMETER","barom_publish_what"), ',')
       height  = parser.getfloat("BAROMETER", "barom_height")
       offset  = parser.getfloat("BAROMETER", "barom_offset")
       Device.__init__(self, publish_where, publish_what)

@@ -28,6 +28,7 @@ import logging
 from ema.emaproto  import THERMOINF
 from ema.vector    import Vector
 from ema.device    import Device
+from ema.utils     import chop
 
 log = logging.getLogger('thermopil')
 
@@ -46,8 +47,8 @@ class Thermopile(Device):
    def __init__(self, ema, parser, N):
       lvl = parser.get("THERMOPILE", "thermop_log")
       log.setLevel(lvl)
-      publish_where = parser.get("THERMOPILE","thermop_publish_where").split(',')
-      publish_what = parser.get("THERMOPILE","thermop_publish_what").split(',')
+      publish_where = chop(parser.get("THERMOPILE","thermop_publish_where"), ',')
+      publish_what = chop(parser.get("THERMOPILE","thermop_publish_what"), ',')
       Device.__init__(self, publish_where, publish_what)
       self.infrared = Vector(N)
       self.capsule  = Vector(N)

@@ -30,6 +30,7 @@ from ema.emaproto  import SATB, SATE, SRHB, SRHE, SDPB, SDPE
 from ema.parameter import Parameter
 from ema.vector    import Vector
 from ema.device    import Device
+from ema.utils     import chop
 
 log = logging.getLogger('thermomet')
 
@@ -58,8 +59,8 @@ class Thermometer(Device):
    def __init__(self, ema, parser, N):
       lvl = parser.get("THERMOMETER", "thermo_log")
       log.setLevel(lvl)
-      publish_where = parser.get("THERMOMETER","thermo_publish_where").split(',')
-      publish_what  = parser.get("THERMOMETER","thermo_publish_what").split(',')
+      publish_where = chop(parser.get("THERMOMETER","thermo_publish_where"), ',')
+      publish_what  = chop(parser.get("THERMOMETER","thermo_publish_what"), ',')
       thres   = parser.getfloat("THERMOMETER", "delta_thres")
       Device.__init__(self, publish_where, publish_what)
       self.thres    = Parameter(ema, thres, **THRESHOLD)

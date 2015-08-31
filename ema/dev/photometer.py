@@ -29,6 +29,7 @@ from ema.emaproto  import MVI, MVD
 from ema.parameter import Parameter
 from ema.vector    import Vector
 from ema.device    import Device
+from ema.utils     import chop
 
 log = logging.getLogger('photomete')
 
@@ -68,8 +69,8 @@ class Photometer(Device):
    def __init__(self, ema, parser, N):
       lvl     = parser.get("PHOTOMETER", "phot_log")
       log.setLevel(lvl)
-      publish_where = parser.get("PHOTOMETER","phot_publish_where").split(',')
-      publish_what = parser.get("PHOTOMETER","phot_publish_what").split(',')
+      publish_where = chop(parser.get("PHOTOMETER","phot_publish_where"), ',')
+      publish_what = chop(parser.get("PHOTOMETER","phot_publish_what"), ',')
       offset  = parser.getfloat("PHOTOMETER", "phot_offset")
       thres   = parser.getfloat("PHOTOMETER", "phot_thres")
       Device.__init__(self,publish_where,publish_what)

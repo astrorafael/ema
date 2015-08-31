@@ -32,6 +32,7 @@ from ema.emaproto  import SRRB, SARB
 from ema.device    import Device
 from ema.intervals import Interval, Intervals
 from todtimer      import Timer
+from ema.utils     import chop
 
 # On/Off flags as string constants
 ON  = 'ON'
@@ -55,9 +56,9 @@ class RoofRelay(Device):
    }
 
    def __init__(self, ema,  parser, N):
-      publish_where = parser.get("ROOF_RELAY","roof_relay_publish_where").split(',')
-      publish_what  = parser.get("ROOF_RELAY","roof_relay_publish_what").split(',')
-      scripts       = parser.get("ROOF_RELAY","roof_relay_script").split(',')
+      publish_where = parser.get("ROOF_RELAY","roof_relay_publish_where"), ',')
+      publish_what  = parser.get("ROOF_RELAY","roof_relay_publish_what"), ',')
+      scripts       = parser.get("ROOF_RELAY","roof_relay_script"), ',')
       relay_mode    = parser.get("ROOF_RELAY","roof_relay_mode")
       Device.__init__(self, publish_where, publish_what)
       self.relay = Vector(N)
@@ -195,10 +196,10 @@ class AuxRelay(Device):
       lvl = parser.get("AUX_RELAY", "aux_relay_log")
       log.setLevel(lvl)
       mode          = parser.get("AUX_RELAY", "aux_mode")
-      scripts       = parser.get("AUX_RELAY","aux_relay_script").split(',')
-      script_mode   = parser.get("AUX_RELAY","aux_relay_mode")
-      publish_where = parser.get("AUX_RELAY","aux_relay_publish_where").split(',')
-      publish_what  = parser.get("AUX_RELAY","aux_relay_publish_what").split(',')
+      scripts       = parser.get("AUX_RELAY","aux_relay_script"), ',')
+      script_mode   = chop(parser.get("AUX_RELAY","aux_relay_mode")
+      publish_where = chop(parser.get("AUX_RELAY","aux_relay_publish_where"), ',')
+      publish_what  = chop(parser.get("AUX_RELAY","aux_relay_publish_what"), ',')
       Device.__init__(self, publish_where, publish_what)
       self.ema      = ema
       self.mode     = Parameter(ema, AuxRelay.MAPPING[mode], **MODE) 

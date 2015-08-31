@@ -28,6 +28,7 @@ from ema.emaproto  import SPCB, SPCE, SPAB, SPAE
 from ema.parameter import Parameter
 from ema.vector    import Vector
 from ema.device    import Device
+from ema.utils     import chop
 
 log = logging.getLogger('pluviomet')
 
@@ -54,8 +55,8 @@ class Pluviometer(Device):
    def __init__(self, ema, parser, N):
       lvl         = parser.get("PLUVIOMETER", "pluv_log")
       log.setLevel(lvl)
-      publish_where    = parser.get("PLUVIOMETER","pluv_publish_where").split(',')
-      publish_what     = parser.get("PLUVIOMETER","pluv_publish_what").split(',')
+      publish_where    = chop(parser.get("PLUVIOMETER","pluv_publish_where"), ',')
+      publish_what     = chop(parser.get("PLUVIOMETER","pluv_publish_what"), ',')
       calibration = parser.getfloat("PLUVIOMETER", "pluv_calib")
       Device.__init__(self, publish_where, publish_what)
       self.calibration   = Parameter(ema, calibration, **CALIBRATION)

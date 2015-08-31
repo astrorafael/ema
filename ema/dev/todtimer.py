@@ -28,6 +28,7 @@ import subprocess
 from ema.server    import Server, Alarmable2
 from ema.device    import Device
 from ema.intervals import Interval, Intervals
+from ema.utils     import chop
 
 log = logging.getLogger('todtimer')
 
@@ -74,8 +75,8 @@ class Timer(Device, Alarmable2):
    def __init__(self, ema, parser):
       lvl = parser.get("TOD_TIMER", "tod_log")
       log.setLevel(lvl)
-      publish_where = parser.get("TOD_TIMER","tod_publish_where").split(',')
-      publish_what  = parser.get("TOD_TIMER","tod_publish_what").split(',')
+      publish_where = chop(parser.get("TOD_TIMER","tod_publish_where"), ',')
+      publish_what  = chop(parser.get("TOD_TIMER","tod_publish_what"), ',')
       intervals     = parser.get("TOD_TIMER","tod_intervals")
       poweroff      = parser.getboolean("TOD_TIMER","tod_poweroff")
       Device.__init__(self, publish_where, publish_what)

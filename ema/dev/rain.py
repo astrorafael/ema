@@ -28,6 +28,7 @@ from ema.emaproto  import SRAB, SRAE
 from ema.parameter import Parameter
 from ema.vector    import Vector
 from ema.device    import Device
+from ema.utils     import chop
 
 log = logging.getLogger('rainsenso')
 
@@ -53,8 +54,8 @@ class RainSensor(Device):
    def __init__(self, ema, parser, N):
       lvl     = parser.get("RAIN", "rain_log")
       log.setLevel(lvl)
-      publish_where = parser.get("RAIN","rain_publish_where").split(',')
-      publish_what = parser.get("RAIN","rain_publish_what").split(',')
+      publish_where = chop(parser.get("RAIN","rain_publish_where"), ',')
+      publish_what = chop(parser.get("RAIN","rain_publish_what"), ',')
       thres   = parser.getfloat("RAIN", "rain_thres")
       Device.__init__(self, publish_where, publish_what)
       self.thres     = Parameter(ema, thres, **THRESHOLD)
