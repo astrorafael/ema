@@ -32,7 +32,7 @@ log = logging.getLogger('todtimer')
 
 def toTime(hhmm):
    '''Converts HH:MM strings into datetime.time objects'''
-        return datetime.time(hour=int(hhmm[0:2]), minute=int(hhmm[3:5]))
+   return datetime.time(hour=int(hhmm[0:2]), minute=int(hhmm[3:5]))
 
 
 # ================================
@@ -40,30 +40,30 @@ def toTime(hhmm):
 # ================================
 
 class ReversedInterval(Exception):
-        '''Signals a script has executed'''
+   '''Signals a script has executed'''
    def __init__(self, interval):
       self.interval = interval
    def __str__(self):
       '''Prints useful information'''
-                return "Exception: Reversed Interval %s" % self.interval
+      return "Exception: Reversed Interval %s" % self.interval
 
 class OverlappedIntervals(Exception):
-        '''Signals overlapped intervals'''
+   '''Signals overlapped intervals'''
    def __init__(self, w1, w2):
       self.w1 = w1
       self.w2 = w2
    def __str__(self):
       '''Prints useful information'''
-                return "Exception: Interval %s overlaps with %s" % (self.w1, self.w2)
+      return "Exception: Interval %s overlaps with %s" % (self.w1, self.w2)
 
 class TooShortInterval(Exception):
-        '''Signals overlapped intervals'''
+   '''Signals overlapped intervals'''
    def __init__(self, w1, min):
       self.w1  = w1
       self.min = min
    def __str__(self):
       '''Prints useful information'''
-                return "Exception: Interval %s duration %d < %d (minimun allowed)" % (self.w1, self.w1.duration(), self.min)
+      return "Exception: Interval %s duration %d < %d (minimun allowed)" % (self.w1, self.w1.duration(), self.min)
 
 # ==============
 # Interval Class

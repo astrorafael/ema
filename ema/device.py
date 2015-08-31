@@ -23,41 +23,41 @@
 
 class Device(object):
 
-	def __init__(self, publish_where=tuple(), publish_what=tuple()):
-		self.__publishable = [(where,what) for where in publish_where for what in publish_what]
-	
-	@property
-	def name(self):
-		'''Return object name'''
-		return self.__class__.__name__
+   def __init__(self, publish_where=tuple(), publish_what=tuple()):
+      self.__publishable = [(where,what) for where in publish_where for what in publish_what]
+   
+   @property
+   def name(self):
+      '''Return object name'''
+      return self.__class__.__name__
 
-	@property
-	def current(self):
-		'''Return dictionary with current measured values'''
-		return {}
-
-
-	@property
-	def average(self):
-		'''Return dictionary of averaged values over a period of N samples'''
-		return {}
+   @property
+   def current(self):
+      '''Return dictionary with current measured values'''
+      return {}
 
 
-	@property
-	def threshold(self):
-		'''Return dictionary with thresholds'''
-		return {}
+   @property
+   def average(self):
+      '''Return dictionary of averaged values over a period of N samples'''
+      return {}
 
 
-	@property
-	def parameter(self):
-		'''Return dictionary with calibration constants'''
-		return {}
+   @property
+   def threshold(self):
+      '''Return dictionary with thresholds'''
+      return {}
 
 
-	@property
-	def publishable(self):
-		'''Return list of tuples with publishable destinantions (i.e. "mqtt", "html", etc.)
-		and what things to bublish '''
-		return self.__publishable
+   @property
+   def parameter(self):
+      '''Return dictionary with calibration constants'''
+      return {}
+
+
+   @property
+   def publishable(self):
+      '''Return list of tuples with publishable destinantions (i.e. "mqtt", "html", etc.)
+      and what things to bublish '''
+      return self.__publishable
 

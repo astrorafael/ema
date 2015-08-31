@@ -159,24 +159,24 @@ class MQTTClient(Lazy):
 
    def on_connect(self, flags, rc):
      '''Send the initial event and set last will on unexpected diconnection'''
-     if rc == 0:
-       self.__state = CONNECTED
-       self.__mqtt.publish(MQTTClient.TOPIC_EVENTS,  payload="EMA Server connected", qos=2, retain=True)
-       self.__mqtt.will_set(MQTTClient.TOPIC_EVENTS, payload="EMA Server disconnected", qos=2, retain=True)
-       self.__mqtt.will_set(MQTTClient.TOPIC_TOPICS, payload=MQTTClient.TOPIC_EVENTS, qos=2, retain=True)
-       log.info("Conected successfully") 
-     else:
-       self.__state = FAILED
-       log.error("Connection failed, rc =%d" % rc)
+      if rc == 0:
+         self.__state = CONNECTED
+         self.__mqtt.publish(MQTTClient.TOPIC_EVENTS,  payload="EMA Server connected", qos=2, retain=True)
+         self.__mqtt.will_set(MQTTClient.TOPIC_EVENTS, payload="EMA Server disconnected", qos=2, retain=True)
+         self.__mqtt.will_set(MQTTClient.TOPIC_TOPICS, payload=MQTTClient.TOPIC_EVENTS, qos=2, retain=True)
+         log.info("Conected sucessfully") 
+      else:
+         self.__state = FAILED
+         log.error("Connection failed, rc =%d" % rc)
 
    def on_disconnect(self, rc):
-     log.warning("Unexpected disconnection, rc =%d" % rc)
-     self.__state  = NOT_CONNECTED
-     self.__topics = False
-     try:
-       self.ema.delReadable(self)
-     except ValueError as e:
-       log.warning("Recovered from mqtt library 'double disconnection' bug")
+      log.warning("Unexpected disconnection, rc =%d" % rc)
+      self.__state  = NOT_CONNECTED
+      self.__topics = False
+      try:
+         self.ema.delReadable(self)
+      except ValueError as e:
+         log.warning("Recovered from mqtt library 'double disconnection' bug")
 
    # ----------------------------------------
    # Implement the EMA Status Message calback
@@ -234,7 +234,7 @@ class MQTTClient(Lazy):
 	 
       if self.__state == NOT_CONNECTED:
          self.connect()
-      	 return
+      	return
 
       # Do this only once in server lifetime
       if self.__state == CONNECTED and not self.__topics:
@@ -258,9 +258,9 @@ class MQTTClient(Lazy):
       Partial bulk dump request command handler
       '''
       if len(message) == STATLEN:
-        self.bulkDump.append(transform(message))
+         self.bulkDump.append(transform(message))
       else:
-        self.bulkDump.append(message)
+         self.bulkDump.append(message)
      
 
    def onCommandComplete(self, message, userdata):
@@ -270,13 +270,13 @@ class MQTTClient(Lazy):
       log.debug("onCommandComplete => %s", message)
       self.bulkDump.append(message)
       if self.page < FLASH_END :
-        self.page += 1
-        self.requestPage(self.page)
+         self.page += 1
+         self.requestPage(self.page)
       else:
-        date = message[10:20]
-        log.info("Uploading (%s) hourly minmax history to %s", date, MQTTClient.TOPIC_HISTORY_MINMAX)
-        self.__mqtt.publish(topic=MQTTClient.TOPIC_HISTORY_MINMAX, payload='\n'.join(self.bulkDump), qos=2, retain=True)
-        log.info("Upload complete, processed %d lines", len(self.bulkDump))
+         date = message[10:20]
+         log.info("Uploading (%s) hourly minmax history to %s", date, MQTTClient.TOPIC_HISTORY_MINMAX)
+         self.__mqtt.publish(topic=MQTTClient.TOPIC_HISTORY_MINMAX, payload='\n'.join(self.bulkDump), qos=2, retain=True)
+         log.info("Upload complete, processed %d lines", len(self.bulkDump))
 
    # --------------
    # Helper methods
@@ -309,32 +309,32 @@ class MQTTClient(Lazy):
       '''
       # publish raw status line
       if self.__pubstat:
-        self.__mqtt.publish(topic=MQTTClient.TOPIC_CURRENT_STATUS, payload=self.__emastat)
-        self.__emastat = "()"
+         self.__mqtt.publish(topic=MQTTClient.TOPIC_CURRENT_STATUS, payload=self.__emastat)
+         self.__emastat = "()"
 
       # publish last current values
       for device in self.ema.currentList:
-        if ('mqtt','current') in device.publishable:
-          try:
-            for key, value in device.current.iteritems():
-              log.debug("%s publishing current %s => %s %s", device.name, key, value[0], value[1])
-	      topic   = "%s/current/%s/%s" % (self.__id, device.name, key)
-              payload = "%s %s" % value 
-              self.__mqtt.publish(topic=topic, payload=payload)
-          except IndexError as e:
-            log.error("publish(current) Exception: %s reading device=%s", e, device.name)
+         if ('mqtt','current') in device.publishable:
+            try:
+               for key, value in device.current.iteritems():
+                  log.debug("%s publishing current %s => %s %s", device.name, key, value[0], value[1])
+                  topic   = "%s/current/%s/%s" % (self.__id, device.name, key)
+                  payload = "%s %s" % value 
+                  self.__mqtt.publish(topic=topic, payload=payload)
+            except IndexError as e:
+               log.error("publish(current) Exception: %s reading device=%s", e, device.name)
       
       # Publish averages
       for device in self.ema.averageList:
-        if ('mqtt','average') in device.publishable:
-          try:
-            for key, value in device.average.iteritems():
-              log.debug("%s publishing average %s => %s %s", device.name, key, value[0], value[1])
-	      topic   = "%s/average/%s/%s" % (self.__id, device.name, key)
-              payload = "%s %s" % value 
-              self.__mqtt.publish(topic=topic, payload=payload)
-          except IndexError as e:
-            log.error("publish(average) Exception: %s reading device=%s", e, device.name)
+         if ('mqtt','average') in device.publishable:
+            try:
+               for key, value in device.average.iteritems():
+                  log.debug("%s publishing average %s => %s %s", device.name, key, value[0], value[1])
+                  topic   = "%s/average/%s/%s" % (self.__id, device.name, key)
+                  payload = "%s %s" % value 
+                  self.__mqtt.publish(topic=topic, payload=payload)
+            except IndexError as e:
+               log.error("publish(average) Exception: %s reading device=%s", e, device.name)
 
       if self.__stats % NPUBLISH == 0:
          log.info("Published %d measurements" % self.__stats)
@@ -347,27 +347,27 @@ class MQTTClient(Lazy):
       '''
       topics = [MQTTClient.TOPIC_EVENTS, MQTTClient.TOPIC_HISTORY_MINMAX]
       if self.__pubstat:
-        topics.append(MQTTClient.TOPIC_CURRENT_STATUS)
+         topics.append(MQTTClient.TOPIC_CURRENT_STATUS)
 
       for device in self.ema.currentList:
-        if ('mqtt','current') in device.publishable:
-          try:
-            for key in device.current.iterkeys():
-              topics.append('%s/current/%s/%s' % (self.__id, device.name, key))
-          except IndexError as e:
-            log.error("Exception: %s listing device key=%s", e, device.name)
-            continue
+         if ('mqtt','current') in device.publishable:
+            try:
+               for key in device.current.iterkeys():
+                  topics.append('%s/current/%s/%s' % (self.__id, device.name, key))
+            except IndexError as e:
+               log.error("Exception: %s listing device key=%s", e, device.name)
+               continue
 
       for device in self.ema.averageList:
-        if ('mqtt','average') in device.publishable:
-          try:
-            for key in device.average.iterkeys():
-              topics.append('%s/average/%s/%s' % (self.__id, device.name, key))
-          except IndexError as e:
-            log.error("Exception: %s listing device key=%s", e, device.name)
-            continue
-      self.__mqtt.publish(topic=MQTTClient.TOPIC_TOPICS, payload='\n'.join(topics), qos=2, retain=True)
+         if ('mqtt','average') in device.publishable:
+            try:
+               for key in device.average.iterkeys():
+                  topics.append('%s/average/%s/%s' % (self.__id, device.name, key))
+            except IndexError as e:
+               log.error("Exception: %s listing device key=%s", e, device.name)
+               continue
 
+      self.__mqtt.publish(topic=MQTTClient.TOPIC_TOPICS, payload='\n'.join(topics), qos=2, retain=True)
       log.info("Sent active topics to %s", MQTTClient.TOPIC_TOPICS)
       
 
@@ -379,8 +379,6 @@ class MQTTClient(Lazy):
       cmd = BulkDumpCommand(self.ema, retries=0, **COMMAND[-1])
       cmd.request("(@H%04d)" % page, page)
 
-
-   
 
    def publishBulkDump(self):
       '''

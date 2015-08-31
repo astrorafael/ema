@@ -67,9 +67,9 @@ HEADER = '''
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<meta http-equiv="refresh" content="60">
-	<title>Estacion Meteo-Astronomica EMA</title>
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <meta http-equiv="refresh" content="60">
+   <title>Estacion Meteo-Astronomica EMA</title>
 
 <style>
 table,th,td { border:1px solid black; }
@@ -121,195 +121,195 @@ TABLE_COLSPAN='''
 '''
 
 DEVICE = {
-	'RoofRelay' : 'Relé de techo',
-	'Voltmeter' : 'Voltímetro',
-	'Photometer' : 'Fotómetro' ,
-	'Barometer' : 'Barómetro' ,
-	'RainSensor' : 'Sensor de lluvia' ,
-	'CloudSensor' : 'Sensor de nubes' ,
-	'Pyranometer' : 'Medidor de radiación solar' ,
-	'Thermometer' : 'Termómetro' ,
-	'Anemometer' : 'Anemómetro' ,
-	'Pluviometer' : 'Pluviómetro' ,
-	'Thermopile' : 'Termopila' ,
-	'WatchDog' : 'Perro Guardian',
-	'AuxRelay' : 'Relé Auxiliar',
-	'Timer' : 'Temporizador Diario',
+   'RoofRelay' : 'Relé de techo',
+   'Voltmeter' : 'Voltímetro',
+   'Photometer' : 'Fotómetro' ,
+   'Barometer' : 'Barómetro' ,
+   'RainSensor' : 'Sensor de lluvia' ,
+   'CloudSensor' : 'Sensor de nubes' ,
+   'Pyranometer' : 'Medidor de radiación solar' ,
+   'Thermometer' : 'Termómetro' ,
+   'Anemometer' : 'Anemómetro' ,
+   'Pluviometer' : 'Pluviómetro' ,
+   'Thermopile' : 'Termopila' ,
+   'WatchDog' : 'Perro Guardian',
+   'AuxRelay' : 'Relé Auxiliar',
+   'Timer' : 'Temporizador Diario',
 }
 
 MEASUREMENT = {
-	'open' : '¿ Rele Abierto ?' ,
-	'voltage' : 'Voltaje de Batería' ,
-	'magnitude' : 'Magnitud de fondo de cielo' ,
-	'pressure' : 'Presion Atmosférica' ,
-	'rain' : 'Lluvia detectada' ,
-	'cloud':  'Nivel de nubes' ,
-	'irradiation': 'Nivel de radiacion solar',
-	'humidity' : 'Humedad',
-	'dewpoint' : 'Punto de rocío' ,
-	'ambient' : 'Temperatura Ambiente' ,
-	'speed' : 'Velocidad del viento' ,
-	'speed10' : 'Velocidad promedio en 10 min.' ,
-	'direction' :'Dirección del viento' ,
-	'current' : 'Lluvia medida actual' ,
-	'accumulated' : 'Lluvia acumulada' ,
-	'sky' : 'Temperatura del cielo' ,
-	'ambient' : 'Temperatura ambiente' ,
-	'interval'  : 'Ventana de tiempo',
+   'open' : '¿ Rele Abierto ?' ,
+   'voltage' : 'Voltaje de Batería' ,
+   'magnitude' : 'Magnitud de fondo de cielo' ,
+   'pressure' : 'Presion Atmosférica' ,
+   'rain' : 'Lluvia detectada' ,
+   'cloud':  'Nivel de nubes' ,
+   'irradiation': 'Nivel de radiacion solar',
+   'humidity' : 'Humedad',
+   'dewpoint' : 'Punto de rocío' ,
+   'ambient' : 'Temperatura Ambiente' ,
+   'speed' : 'Velocidad del viento' ,
+   'speed10' : 'Velocidad promedio en 10 min.' ,
+   'direction' :'Dirección del viento' ,
+   'current' : 'Lluvia medida actual' ,
+   'accumulated' : 'Lluvia acumulada' ,
+   'sky' : 'Temperatura del cielo' ,
+   'ambient' : 'Temperatura ambiente' ,
+   'interval'  : 'Ventana de tiempo',
 }
 
 PARAMETER = {
-	'Aux Relay mode' : 'Modo de operacion el rele auxiliar',
-	'Aux Relay Switch on Time' : 'Hora de enciendido del rele auxiliar',
-	'Aux Relay Switch off Time': 'Hora de apagado del rele auxiliar',
-	'Watchdog Period': 'Periodo de sondeo a la EMA',
-	'Voltmeter Offset': 'Offset del voltimetro de la EMA',
-	'Photometer Offset' : 'Offset del Fotometro',
-	'Barometer Offset': 'Offset del Barómetro',
-	'Barometer Height': 'Barometro: Altura sobe el Nivel del mar',
-	'Cloud Sensor Gain' : 'Ganancia del Sensor de Nubes',
-	'Pyranometer Offset' : 'Offset del Piranómetro',
-	'Pyranometer Gain' : 'Ganancia del Piranómetro' ,
-	'Anemometer Calibration Constant': 'Constante de calibración del anemómetro',
-	'Pluviometer Calibration constant': 'Constante de calibracion del Pluviometro',
-	'Timer Active Intervals' : 'Intervalos activos del temporizador',
+   'Aux Relay mode' : 'Modo de operacion el rele auxiliar',
+   'Aux Relay Switch on Time' : 'Hora de enciendido del rele auxiliar',
+   'Aux Relay Switch off Time': 'Hora de apagado del rele auxiliar',
+   'Watchdog Period': 'Periodo de sondeo a la EMA',
+   'Voltmeter Offset': 'Offset del voltimetro de la EMA',
+   'Photometer Offset' : 'Offset del Fotometro',
+   'Barometer Offset': 'Offset del Barómetro',
+   'Barometer Height': 'Barometro: Altura sobe el Nivel del mar',
+   'Cloud Sensor Gain' : 'Ganancia del Sensor de Nubes',
+   'Pyranometer Offset' : 'Offset del Piranómetro',
+   'Pyranometer Gain' : 'Ganancia del Piranómetro' ,
+   'Anemometer Calibration Constant': 'Constante de calibración del anemómetro',
+   'Pluviometer Calibration constant': 'Constante de calibracion del Pluviometro',
+   'Timer Active Intervals' : 'Intervalos activos del temporizador',
 } 
 
 
 
 class HTML(Lazy):
-	TEMPNAME = '.ema.html'
+   TEMPNAME = '.ema.html'
 
-	def __init__(self, ema, parser):
-                lvl      = parser.get("HTML", "html_log")
-		log.setLevel(lvl)
-		path     = parser.get("HTML", "html_file")
-                period   = parser.getfloat("HTML", "html_period")
-		Lazy.__init__(self, period)
-		self.path     = path
-		self.dirname  = os.path.dirname(path)
-		self.ema  = ema
-		ema.addLazy(self)
-		
+   def __init__(self, ema, parser):
+      lvl      = parser.get("HTML", "html_log")
+      log.setLevel(lvl)
+      path     = parser.get("HTML", "html_file")
+      period   = parser.getfloat("HTML", "html_period")
+      Lazy.__init__(self, period)
+      self.path     = path
+      self.dirname  = os.path.dirname(path)
+      self.ema  = ema
+      ema.addLazy(self)
+      
 
-	def generate(self):
-		'''Generates an HTML page on to prediefined path'''
-		tempfile = os.path.join(self.dirname, HTML.TEMPNAME) 
-		with open(tempfile, 'w') as page:
-			self.globalHeader(page)
-			self.instantTable(page)
-			self.parameterTable(page)
-			self.averagesTable(page)
-			t = datetime.datetime.now().replace(microsecond=0).isoformat(' ')
-			self.globalFooter(page, t)
-		# os.rename is atomic in Linux, not in Windows
-		os.rename(tempfile, self.path)
-		#log.debug("Generated HTML page")
+   def generate(self):
+      '''Generates an HTML page on to prediefined path'''
+      tempfile = os.path.join(self.dirname, HTML.TEMPNAME) 
+      with open(tempfile, 'w') as page:
+         self.globalHeader(page)
+         self.instantTable(page)
+         self.parameterTable(page)
+         self.averagesTable(page)
+         t = datetime.datetime.now().replace(microsecond=0).isoformat(' ')
+         self.globalFooter(page, t)
+      # os.rename is atomic in Linux, not in Windows
+      os.rename(tempfile, self.path)
+      #log.debug("Generated HTML page")
 
-	# --------------------------
-	# HTML page generation parts
-	# --------------------------
+   # --------------------------
+   # HTML page generation parts
+   # --------------------------
 
-	
+   
 
-	def instantTable(self, page):
-		self.tableHeader(page, 'Valores actuales')
-		self.tableRowsCurrent(page)
-		self.tableFooter(page)
-
-
-	def averagesTable(self, page):
-		self.tableHeader(page, 'Valores promedio')
-		self.tableRowsAverage(page)
-		self.tableFooter(page)
+   def instantTable(self, page):
+      self.tableHeader(page, 'Valores actuales')
+      self.tableRowsCurrent(page)
+      self.tableFooter(page)
 
 
-	def globalHeader(self, page):
-		page.write(HEADER)
+   def averagesTable(self, page):
+      self.tableHeader(page, 'Valores promedio')
+      self.tableRowsAverage(page)
+      self.tableFooter(page)
 
 
-	def globalFooter(self, page, timestamp):
-		page.write(FOOTER % timestamp)
+   def globalHeader(self, page):
+      page.write(HEADER)
 
 
-	def tableHeader(self, page, caption):
-		page.write(TABLE_HEADER % caption)
+   def globalFooter(self, page, timestamp):
+      page.write(FOOTER % timestamp)
 
 
-	def tableFooter(self,page):
-		page.write(TABLE_FOOTER)
+   def tableHeader(self, page, caption):
+      page.write(TABLE_HEADER % caption)
 
 
-	def tableRow(self, page, name, value, units, thres=None, unitthres=None):
-		page.write(TABLE_ROW % (MEASUREMENT[name], value, units, thres, unitthres) )
+   def tableFooter(self,page):
+      page.write(TABLE_FOOTER)
 
 
-	def tableDevice(self, page, device):
-		page.write(TABLE_COLSPAN % (3, DEVICE[device.name]))
+   def tableRow(self, page, name, value, units, thres=None, unitthres=None):
+      page.write(TABLE_ROW % (MEASUREMENT[name], value, units, thres, unitthres) )
 
 
-	def tableRowsCurrent(self, page):
-		for device in self.ema.currentList:
-			if not ('html','current') in device.publishable:
-				log.debug("(current) skipping publihing Device = %s", device.name)
-				continue
-			self.tableDevice(page, device)
-			try:
-				for key,value in device.current.iteritems():
-					val = value[0] ; unit=value[1]  
-					th, uth = device.threshold.get(key,('',''))
-					self.tableRow(page, key, val, unit, th, uth)
-			except IndexError as e:
-					log.warning("(current) Too early for HTML page generation, got %s", e)
-			
-
-	def tableRowsAverage(self, page):
-		for device in self.ema.averageList:
-			if not ('html','average') in device.publishable:
-                                log.debug("(average) skipping publihing Device = %s", device.name)
-                                continue
-			self.tableDevice(page, device)
-			try:
-				for key,value in device.average.iteritems():
-					val = value[0] ; unit=value[1]
-					th, uth = device.threshold.get(key,('',''))
-					self.tableRow(page, key, val, unit, th, uth)
-			except (IndexError, ZeroDivisionError) as e:
-				log.warning("(average) Too early for HTML page generation, got %s", e)
-					
-	def parameterTable(self, page):
-		self.tableHeader(page, 'Parametros de ajuste')
-		self.tableRowsParameter(page)
-		self.tableFooter(page)
+   def tableDevice(self, page, device):
+      page.write(TABLE_COLSPAN % (3, DEVICE[device.name]))
 
 
-	def tableRowsParameter(self, page):
-		for device in self.ema.parameterList:
-			self.tableDevice(page, device)
-			try:
-				for par in device.parameter:
-					value, unit = device.parameter[par]
-					self.tableRowParameter(page, par, value, unit)
-			except IndexError as e:
-					log.warning("(parameters) Too early for HTML page generation, got %s", e)
-			except KeyError as e:
-					log.debug("(parameters) Ignoring missing parameter for %s",e)
+   def tableRowsCurrent(self, page):
+      for device in self.ema.currentList:
+         if not ('html','current') in device.publishable:
+            log.debug("(current) skipping publihing Device = %s", device.name)
+            continue
+         self.tableDevice(page, device)
+         try:
+            for key,value in device.current.iteritems():
+               val = value[0] ; unit=value[1]  
+               th, uth = device.threshold.get(key,('',''))
+               self.tableRow(page, key, val, unit, th, uth)
+         except IndexError as e:
+               log.warning("(current) Too early for HTML page generation, got %s", e)
+         
 
-	def tableRowParameter(self, page, name, value, units):
-		page.write(TABLE_ROW % (PARAMETER[name], value, units, '', '') )
+   def tableRowsAverage(self, page):
+      for device in self.ema.averageList:
+         if not ('html','average') in device.publishable:
+            log.debug("(average) skipping publihing Device = %s", device.name)
+            continue
+         self.tableDevice(page, device)
+         try:
+            for key,value in device.average.iteritems():
+               val = value[0] ; unit=value[1]
+               th, uth = device.threshold.get(key,('',''))
+               self.tableRow(page, key, val, unit, th, uth)
+         except (IndexError, ZeroDivisionError) as e:
+            log.warning("(average) Too early for HTML page generation, got %s", e)
+               
+   def parameterTable(self, page):
+      self.tableHeader(page, 'Parametros de ajuste')
+      self.tableRowsParameter(page)
+      self.tableFooter(page)
+
+
+   def tableRowsParameter(self, page):
+      for device in self.ema.parameterList:
+         self.tableDevice(page, device)
+         try:
+            for par in device.parameter:
+               value, unit = device.parameter[par]
+               self.tableRowParameter(page, par, value, unit)
+         except IndexError as e:
+               log.warning("(parameters) Too early for HTML page generation, got %s", e)
+         except KeyError as e:
+               log.debug("(parameters) Ignoring missing parameter for %s",e)
+
+   def tableRowParameter(self, page, name, value, units):
+      page.write(TABLE_ROW % (PARAMETER[name], value, units, '', '') )
 
 
 
-	# -------------------------------
-	# Implemanting the Lazy interface
-	# -------------------------------
+   # -------------------------------
+   # Implemanting the Lazy interface
+   # -------------------------------
 
-	def work(self):
-		'''Periodically triggers an HTML page generation'''
-		if not self.ema.isSyncDone():
-			log.debug("Not ready yet to generate HTML")
-			return
-		self.generate()
+   def work(self):
+      '''Periodically triggers an HTML page generation'''
+      if not self.ema.isSyncDone():
+         log.debug("Not ready yet to generate HTML")
+         return
+      self.generate()
 
 if __name__ == '__main__':
-	HTML().generate()
+   HTML().generate()

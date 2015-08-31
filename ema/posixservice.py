@@ -24,7 +24,7 @@
 import cmdline
 
 from emaserver import EMAServer
-	
+   
 server = EMAServer(cmdline.parser().parse_args())
 server.run()    # Looping  until exception is caught
 server.stop()

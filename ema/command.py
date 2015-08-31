@@ -77,186 +77,186 @@ log = logging.getLogger('command')
 
 # List of allowed commands
 COMMAND = [
-	{
+   {
     'name'   : 'Roof Force Open',
     'reqPat' : '\(X007\)',            
     'resPat' : ['\(X007\)', '\(\d{2}:\d{2}:\d{2} Abrir Obs. FORZADO\)' ],
     'iterations'   : 1,
-	},
+   },
 
-	{
+   {
     'name'   : 'Roof Force Close',
     'reqPat' : '\(X000\)',            
-    'resPat' : ['\(X000\)', '\(\d{2}:\d{2}:\d{2} Cerrar Obs.\)' ],	
+    'resPat' : ['\(X000\)', '\(\d{2}:\d{2}:\d{2} Cerrar Obs.\)' ],   
     'iterations'   : 1,
-	},
+   },
 
-	{
+   {
     'name'   : 'Aux Relay Force Open',
     'reqPat' : '\(S005\)',            
     'resPat' : ['\(S005\)', '\(\d{2}:\d{2}:\d{2} Calentador on.\)' ],
     'iterations'   : 1,
-	},
+   },
 
-	{
+   {
     'name'   : 'Aux Relay Force Close',
     'reqPat' : '\(S004\)',            
     'resPat' : ['\(S004\)' , '\(\d{2}:\d{2}:\d{2} Calentador off.\)' ],
     'iterations'   : 1,
-	},
+   },
 
-	{
-	'name'   : 'Aux Relay Timer Mode On',
+   {
+   'name'   : 'Aux Relay Timer Mode On',
     'reqPat' : '\(S009\)',            
     'resPat' : ['\(S009\)', '\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4} Timer ON\)' ],
     'iterations'   : 1,
-	},
+   },
 
-	{
-	'name'   : 'Aux Relay Timer Mode Off',
+   {
+   'name'   : 'Aux Relay Timer Mode Off',
     'reqPat' : '\(S008\)',            
     'resPat' : ['\(S008\)', '\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4} Timer OFF\)' ],
     'iterations'   : 1,
-	},
+   },
 
-	{
-	'name'   : 'Aux Relay Timer On Hour Set',
+   {
+   'name'   : 'Aux Relay Timer On Hour Set',
     'reqPat' : '\(Son\d{4}\)',            
     'resPat' : ['\(Son\d{4}\)'],
     'iterations'   : 1,
-	},
+   },
 
-	{
-	'name'   : 'Aux Relay Timer Off Hour Set',
+   {
+   'name'   : 'Aux Relay Timer Off Hour Set',
     'reqPat' : '\(Sof\d{4}\)',            
     'resPat' : ['\(Sof\d{4}\)'],
     'iterations'   : 1,
-	},
+   },
 
-	{
-	'name'   : 'Aux Relay Status',
+   {
+   'name'   : 'Aux Relay Status',
     'reqPat' : '\(s\)',            
     'resPat' : ['\(S00\d\)', '\(Son\d{4}\)' , '\(Sof\d{4}\)'],
     'iterations'   : 1,
-	},
+   },
 
-	{
-	'name'   : '24h Bulk Dump Page',
+   {
+   'name'   : '24h Bulk Dump Page',
     'reqPat' : '\(@H\d{4}\)',            
     'resPat' : ['\(.{76}M\d{4}\)', '\(.{76}m\d{4}\)', '\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)'],
     'iterations'   : 24,
-	},
+   },
 ]
 
 REGEXP = [ re.compile(cmd['reqPat']) for cmd in COMMAND]
 
 def match(message):
-	'''Returns matched command descriptor or None'''
-	for regexp in REGEXP:
-		if regexp.search(message):
-			return COMMAND[REGEXP.index(regexp)]
-	return None
+   '''Returns matched command descriptor or None'''
+   for regexp in REGEXP:
+      if regexp.search(message):
+         return COMMAND[REGEXP.index(regexp)]
+   return None
 
 # Note that command inherits form Alarmable, which already has
 # ABMeta as its metaclass 
 class Command(Alarmable):
 
-	# Command retry
-	RETRIES = 2
-	TIMEOUT = 4
+   # Command retry
+   RETRIES = 2
+   TIMEOUT = 4
 
 
-	def __init__(self, ema, retries =RETRIES, **kargs):
-		Alarmable.__init__(self, Command.TIMEOUT)
-		self.ema      = ema
-		self.name     = kargs['name']
-		self.resPat   = [ re.compile(p) for p in kargs['resPat'] ]
-		self.indexRes        = 0
-		self.NRetries        = retries
-		self.NIterations     = kargs['iterations']
-		self.iteration       = 1
-		self.partialHandler  = None
-		self.completeHandler = None
+   def __init__(self, ema, retries =RETRIES, **kargs):
+      Alarmable.__init__(self, Command.TIMEOUT)
+      self.ema      = ema
+      self.name     = kargs['name']
+      self.resPat   = [ re.compile(p) for p in kargs['resPat'] ]
+      self.indexRes        = 0
+      self.NRetries        = retries
+      self.NIterations     = kargs['iterations']
+      self.iteration       = 1
+      self.partialHandler  = None
+      self.completeHandler = None
 
-	# --------------
-	# Helper methods
-	# --------------
+   # --------------
+   # Helper methods
+   # --------------
 
-	def sendMessage(self, message):
-		'''
-		Do the actual sending of message to EMA and associated 
-		timeout bookeeping
-		'''
-		t = self.ema.serdriver.queueDelay()*Server.TIMEOUT + Command.TIMEOUT*self.NIterations
-		self.setTimeout(t)
-		self.resetAlarm()
-		self.ema.addAlarmable(self)
-		self.ema.serdriver.write(message)
+   def sendMessage(self, message):
+      '''
+      Do the actual sending of message to EMA and associated 
+      timeout bookeeping
+      '''
+      t = self.ema.serdriver.queueDelay()*Server.TIMEOUT + Command.TIMEOUT*self.NIterations
+      self.setTimeout(t)
+      self.resetAlarm()
+      self.ema.addAlarmable(self)
+      self.ema.serdriver.write(message)
 
-	# --------------
-	# Main interface
-	# --------------
+   # --------------
+   # Main interface
+   # --------------
 
-	def request(self, message, userdata):
-		'''Send a request to EMA on behalf of external origin'''
-		log.debug("executing external command %s", self.name)
-		self.userdata  = userdata
-		self.message   = message
-		self.retries   = 0
-		self.indexRes  = 0
-		self.iteration = 1
-		self.resetAlarm()       
-		self.ema.addCommand(self)
-		self.sendMessage(message)
-		
-		
-	def onResponseDo(self, message):
-		'''Message event handler, handle response from EMA'''
-		log.debug("trying to match %s", message)
-		matched = self.resPat[self.indexRes].search(message)
-		if matched:
-			self.resetAlarm()
-			self.retries = 0
-			if (self.indexRes + 1) == len(self.resPat) and self.iteration == self.NIterations:
-				log.debug("Matched command response, command complete")
-				self.ema.delAlarmable(self)
-				self.ema.delCommand(self)
-				self.onCommandComplete(message, self.userdata)
-			elif (self.indexRes + 1) == len(self.resPat) and self.iteration < self.NIterations:
-				log.debug("Matched command response, iteration complete")
-				self.iteration += 1
-				self.indexRes = 0
-				self.onPartialCommand(message, self.userdata)
-			else:
-				log.debug("Matched command response (iteration %d), awaiting for more", self.iteration)
-				self.indexRes += 1
-				self.onPartialCommand(message, self.userdata)
-		return matched is not None
+   def request(self, message, userdata):
+      '''Send a request to EMA on behalf of external origin'''
+      log.debug("executing external command %s", self.name)
+      self.userdata  = userdata
+      self.message   = message
+      self.retries   = 0
+      self.indexRes  = 0
+      self.iteration = 1
+      self.resetAlarm()       
+      self.ema.addCommand(self)
+      self.sendMessage(message)
+      
+      
+   def onResponseDo(self, message):
+      '''Message event handler, handle response from EMA'''
+      log.debug("trying to match %s", message)
+      matched = self.resPat[self.indexRes].search(message)
+      if matched:
+         self.resetAlarm()
+         self.retries = 0
+         if (self.indexRes + 1) == len(self.resPat) and self.iteration == self.NIterations:
+            log.debug("Matched command response, command complete")
+            self.ema.delAlarmable(self)
+            self.ema.delCommand(self)
+            self.onCommandComplete(message, self.userdata)
+         elif (self.indexRes + 1) == len(self.resPat) and self.iteration < self.NIterations:
+            log.debug("Matched command response, iteration complete")
+            self.iteration += 1
+            self.indexRes = 0
+            self.onPartialCommand(message, self.userdata)
+         else:
+            log.debug("Matched command response (iteration %d), awaiting for more", self.iteration)
+            self.indexRes += 1
+            self.onPartialCommand(message, self.userdata)
+      return matched is not None
 
 
-	def onTimeoutDo(self):
-		'''Timeout event handler'''
-		if self.retries < self.NRetries:
-			self.retries += 1
-			self.sendMessage(self.message)
-			log.debug("Timeout waiting for command %s response, retrying", self.message)
-		else:	# to END state
-			self.ema.delCommand(self)
-			log.error("Timeout: EMA not responding to %s command", self.message)
-	
-	# ----------------------------------------------
-	# Abstract methods to be overriden in subclasses
-	# ----------------------------------------------
+   def onTimeoutDo(self):
+      '''Timeout event handler'''
+      if self.retries < self.NRetries:
+         self.retries += 1
+         self.sendMessage(self.message)
+         log.debug("Timeout waiting for command %s response, retrying", self.message)
+      else: # to END state
+         self.ema.delCommand(self)
+         log.error("Timeout: EMA not responding to %s command", self.message)
+   
+   # ----------------------------------------------
+   # Abstract methods to be overriden in subclasses
+   # ----------------------------------------------
 
-	@abstractmethod
-	def onPartialCommand(self, message, userdata):
-		'''To be subclassed and overriden'''
-		pass
+   @abstractmethod
+   def onPartialCommand(self, message, userdata):
+      '''To be subclassed and overriden'''
+      pass
 
-	@abstractmethod
-	def onCommandComplete(self, message, userdata):
-		'''To be subclassed and overriden'''
-		pass
+   @abstractmethod
+   def onCommandComplete(self, message, userdata):
+      '''To be subclassed and overriden'''
+      pass
 
 
 

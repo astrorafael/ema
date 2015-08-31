@@ -35,10 +35,10 @@ if os.name == "nt":
     print("ERROR: unsupported OS")
     sys.exit(1)
 
-#	if options.foreground:
-#		import posixservice
-#	else:
-#		import winservice
+#  if options.foreground:
+#     import posixservice
+#  else:
+#     import winservice
 elif os.name == "posix":
     import posixservice
 else:
