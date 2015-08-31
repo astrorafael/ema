@@ -406,7 +406,7 @@ thermop_publish_where = mqtt,html
 
 # What to publish: current, average or both
 # comma-separated list with no quotes or single quotes
-thermop_relay_publish_what = current,average        
+thermop_publish_what = current,average        
 
 # component log level (VERBOSE, DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 thermop_log = INFO
