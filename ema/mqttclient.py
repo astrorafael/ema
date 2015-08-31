@@ -158,7 +158,7 @@ class MQTTClient(Lazy):
    # -----------------------------------------
 
    def on_connect(self, flags, rc):
-     '''Send the initial event and set last will on unexpected diconnection'''
+      '''Send the initial event and set last will on unexpected diconnection'''
       if rc == 0:
          self.__state = CONNECTED
          self.__mqtt.publish(MQTTClient.TOPIC_EVENTS,  payload="EMA Server connected", qos=2, retain=True)
@@ -234,7 +234,7 @@ class MQTTClient(Lazy):
 	 
       if self.__state == NOT_CONNECTED:
          self.connect()
-      	return
+      	 return
 
       # Do this only once in server lifetime
       if self.__state == CONNECTED and not self.__topics:

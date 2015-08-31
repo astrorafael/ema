@@ -169,7 +169,7 @@ class Intervals(object):
    # Object represntation protocol
    def  __str__(self):
       '''Prints useful information'''
-                s = [ str(i) for i in self.windows ]
+      s = [ str(i) for i in self.windows ]
       return ' '.join(s)
 
    # Operators
