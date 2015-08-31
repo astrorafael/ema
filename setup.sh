@@ -60,7 +60,7 @@ fi
 
 for file in config
 do
-    if [ ! -f "/etc/emadb/$file" ]; then
+    if [ ! -f "/etc/emad/$file" ]; then
 	cp -vf config/$file /etc/emadb/
 	chmod 0644 /etc/emadb/$file
     else
