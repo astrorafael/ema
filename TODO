@@ -1,4 +1,3 @@
-* Integrar chop (modulo untils + modulos afectados + configfile)
 * Reload() para cada clase y nuevo server.py ??
 * Parameters sync as an option and reporting differences to logfile.
 
