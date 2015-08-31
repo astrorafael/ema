@@ -33,7 +33,17 @@ sync = True
 # EMA measurements are accumulated and averaged during this period
 upload_period = 60
 
-# component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
+# Log File settings
+log_to_file = yes
+log_file = /var/log/emadb.log
+
+# log file rotation policy, either 'time' or 'size'
+log_policy = time
+
+# File Max size in bytes when rotating by size
+log_max_size = 1000000
+
+# component log level (VERBOSE, DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 generic_log = INFO
 
 #------------------------------------------------------------------------#
@@ -43,7 +53,7 @@ generic_log = INFO
 serial_port = /dev/ttyAMA0
 serial_baud = 9600
 
-# component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
+# component log level (VERBOSE, DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 serial_log = INFO
 
 #------------------------------------------------------------------------#
@@ -62,7 +72,7 @@ mcast_enabled = False
 mcast_ip      = 225.100.20.15
 
 
-# component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NONSET)
+# component log level (VERBOSE, DEBUG, INFO, WARNING, ERROR, CRITICAL, NONSET)
 udp_log = INFO
 
 #------------------------------------------------------------------------#
@@ -89,7 +99,7 @@ mqtt_publish_history = yes
 # Publish Raw EMA status Line
 mqtt_publish_status = yes
 
-# component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NONSET)
+# component log level (VERBOSE, DEBUG, INFO, WARNING, ERROR, CRITICAL, NONSET)
 mqtt_log = INFO
 
 #------------------------------------------------------------------------#
@@ -101,7 +111,7 @@ html_file = /var/www/ema.html
 # Page generation period in seconds
 html_period = 60
 
-# component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
+# component log level (VERBOSE, DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 html_log = INFO
 
 #------------------------------------------------------------------------#
@@ -128,7 +138,7 @@ tod_poweroff = no
 # Time given in UTC Time.
 tod_intervals = 12:00-12:15,20:00-20:15
 
-# component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
+# component log level (VERBOSE, DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 tod_log = INFO
 
 
@@ -142,7 +152,7 @@ tod_log = INFO
 # The program sends a keepalive message every keepalive/2 seconds
 keepalive = 200
 
-# component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
+# component log level (VERBOSE, DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 wdog_log = INFO
 
 #------------------------------------------------------------------------#
@@ -157,7 +167,7 @@ rtc_delta  = 5
 # Recommended at least once per day        
 rtc_period = 12   
 
-# component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
+# component log level (VERBOSE, DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 rtc_log = INFO
 
 #------------------------------------------------------------------------#
@@ -205,7 +215,7 @@ volt_publish_where = mqtt,html
 # comma-separated list with no quotes or single quotes
 volt_publish_what = current,average
 
-# component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
+# component log level (VERBOSE, DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 volt_log = INFO
 
 #------------------------------------------------------------------------#
@@ -227,7 +237,7 @@ barom_publish_where = mqtt,html
 # comma-separated list with no quotes or single quotes
 barom_publish_what = current,average
 
-# component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
+# component log level (VERBOSE, DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 barom_log = INFO
 
 #------------------------------------------------------------------------#
@@ -247,7 +257,7 @@ rain_publish_where = mqtt,html
 # comma-separated list with no quotes or single quotes
 rain_publish_what = current,average
 
-# component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
+# component log level (VERBOSE, DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 rain_log = INFO
 
 #------------------------------------------------------------------------#
@@ -269,7 +279,7 @@ pelt_publish_where = mqtt,html
 # comma-separated list with no quotes or single quotes
 pelt_publish_what = current,average
 
-# component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
+# component log level (VERBOSE, DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 pelt_log = INFO
 
 #------------------------------------------------------------------------#
@@ -287,7 +297,7 @@ pyr_publish_where = mqtt,html
 # comma-separated list with no quotes or single quotes
 pyr_publish_what = current,average
 
-# component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
+# component log level (VERBOSE, DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 pyr_log = INFO
 
 #------------------------------------------------------------------------#
@@ -309,7 +319,7 @@ phot_publish_where = mqtt,html
 # comma-separated list with no quotes or single quotes
 phot_publish_what = current,average
 
-# component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
+# component log level (VERBOSE, DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 phot_log = INFO
 
 #------------------------------------------------------------------------#
@@ -331,7 +341,7 @@ thermo_publish_where = mqtt,html
 # comma-separated list with no quotes or single quotes
 thermo_publish_what = current,average
 
-# component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
+# component log level (VERBOSE, DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 thermo_log = INFO
 
 
@@ -362,7 +372,7 @@ anem_publish_where = mqtt,html
 # comma-separated list with no quotes or single quotes
 anem_publish_what = current,average
 
-# component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
+# component log level (VERBOSE, DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 anem_log = INFO
 
 
@@ -381,7 +391,7 @@ pluv_publish_where = mqtt,html
 # comma-separated list with no quotes or single quotes
 pluv_publish_what = current,average
 
-# component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
+# component log level (VERBOSE, DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 pluv_log = INFO
 
 
@@ -398,7 +408,7 @@ thermop_publish_where = mqtt,html
 # comma-separated list with no quotes or single quotes
 thermop_relay_publish_what = current,average        
 
-# component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
+# component log level (VERBOSE, DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 thermop_log = INFO
 
 #========================================================================#
@@ -460,6 +470,6 @@ aux_relay_publish_where = mqtt,html
 # comma-separated list with no quotes or single quotes
 aux_relay_publish_what = current
 
-# component log level (DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
+# component log level (VERBOSE, DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 # shared with roof_relay
 aux_relay_log = INFO

@@ -7,3 +7,5 @@ ema/dev/*.pyc
 ema/dev/*.pyo
 myconfig
 myemad.sh
+*~
+ema/*~

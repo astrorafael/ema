@@ -21,8 +21,5 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 # ----------------------------------------------------------------------
 
-# Log file path for the EMA service
-LOG_FILE="/var/log/emad.log"
-
 # Config file path for the EMA Service
 CONFIG_FILE="/etc/ema/config"

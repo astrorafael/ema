@@ -20,8 +20,6 @@ SCRIPTNAME=/etc/init.d/$NAME
 #HOME=/
 
 # Set default values before reading /etc/default/$NAME
-# LOG_FILE will be removed
-LOG_FILE=/var/log/$NAME.log
 CONFIG_FILE=/etc/ema/config
 
 
@@ -39,7 +37,7 @@ CONFIG_FILE=/etc/ema/config
 # and status_of_proc is working.
 . /lib/lsb/init-functions
 
-DAEMON_ARGS="-m ema -l $LOG_FILE --configc $CONFIG_FILE"
+DAEMON_ARGS="-m ema --config $CONFIG_FILE"
 
 
 #

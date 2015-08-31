@@ -41,6 +41,9 @@ import re
 import os
 
 
+from logger      import logToConsole, logToFile, sysLogInfo, sysLogError
+
+
 import logger
 import serdriver
 import udpdriver
@@ -68,13 +71,13 @@ import dev.relay       as relay
 import dev.todtimer    as todtimer
 
 # Only Python 2
-import ConfigParser as parser
+import ConfigParser
 
 log = logging.getLogger('emaserver')
 
 class EMAServer(server.Server):
-
-	PERIOD = 5
+        
+        PERIOD = 5
 
 	# Unsolicited Responses Patterns
 	URPAT = ( '\(\d{2}:\d{2}:\d{2} wait\)' ,            # Photometer 1
@@ -83,7 +86,8 @@ class EMAServer(server.Server):
 			  '\( \)',                                  # ping echo
 		   )
 
-	def __init__(self, configfile=None):
+	def __init__(self, options):
+                self.parseCmdLine(options)
 		server.Server.__init__(self)
 		self.pattern = [re.compile(p) for p in EMAServer.URPAT]
 		self.syncDone = False
@@ -95,21 +99,49 @@ class EMAServer(server.Server):
 		self.thresholdList      = []	# devices list containing thresholds
 		self.parameterList      = []	# devices lists containing calibraton constants
 		self.commandList        = []	# command list with active external commands
-		self.buildFrom(configfile)
+		self.build()
 		self.sync()						# start the synchronization process
 
+        def parseCmdLine(self, opts):
+                '''Parses the comand line looking for the config file path 
+                and optionally console output'''
+                sysLogInfo("argv[] array is %s" % str(sys.argv)) 
+                if opts.console:
+                        logToConsole()
+                self.__cfgfile = opts.config
+                if not (self.__cfgfile != None and os.path.exists(self.__cfgfile)):
+                        log.error("No configuration file found: %s", self.__cfgfile)
+                        raise IOError(errno.ENOENT,"No such file or directory",self.__cfgfile)
 
-	def buildFrom(self, configfile):
+
+        def parseConfigFile(self):
+                '''Parses the config file looking for its own options'''
+                log.setLevel(self.__parser.get("GENERIC", "generic_log"))
+                self.hold(self.__parser.getboolean("GENERIC", "on_hold"))
+                toFile = self.__parser.getboolean("GENERIC","log_to_file")
+                if(toFile):
+                        filename = self.__parser.get("GENERIC","log_file")
+                        policy = self.__parser.get("GENERIC","log_policy")
+                        max_size = self.__parser.getint("GENERIC","log_max_size")
+                        by_size = policy == "size" if True else False
+                        logToFile(filename, by_size, max_size)
+
+
+        def reload(self):
+                '''Support on-line service reloading'''
+                pass            # unimplemented for the time being
+
+
+	def build(self):
 		'''Buld children objects from configuration file'''
 
-		if not (configfile != None and os.path.exists(configfile)):
-			log.error("No configuration is given. Exiting ...")
-			return
+                self.__parser = ConfigParser.ConfigParser()
+                self.__parser.optionxform = str
+                self.__parser.read(self.__cfgfile)
+                log.info("Loading configuration from %s", self.__cfgfile)
+                self.parseConfigFile()
 
-		log.info("Loading configuration from %s" % configfile)
-		config = parser.ConfigParser()
-		config.optionxform = str
-		config.read(configfile)
+		config = self.__parser
 
 		self.syncNeeded = config.getboolean("GENERIC", "sync")
 		self.uploadPeriod = config.getfloat("GENERIC", "upload_period")

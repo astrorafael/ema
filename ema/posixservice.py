@@ -21,29 +21,16 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 # ----------------------------------------------------------------------
 
-
-
-import os
 import sys
+import logging
+import argparse
+import logger
 
+import default
+from emaserver import EMAServer
 import cmdline
-
-options = cmdline.parser().parse_args()
-
-if os.name == "nt":
-
-	print("ERROR: unsupported OS")
-	sys.exit(1)
-
-#	if options.foreground:
-#		import posixservice
-#	else:
-#		import winservice
-elif os.name == "posix":
-	import posixservice
-else:
-	print("ERROR: unsupported OS")
-	sys.exit(1)
-
-
-
+	
+logger.sysLogInfo("Starting %s" % default.VERSION_STRING)
+server = EMAServer(cmdline.parser().parse_args())
+server.run()    # Looping  until exception is caught
+server.stop()
