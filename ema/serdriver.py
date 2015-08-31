@@ -177,7 +177,8 @@ class SerialDriver(Lazy):
       '''print read/written message statistcs every NSTATs times'''
       n = max(self.__nreads, self.__nwrites) % SerialDriver.NSTATS
       if not n:
-         log.info("nreads = %d, nwrites = %d , queue = %d", self.__nreads, self.__nwrites, len(self.__outqueue))
+         log.info("nreads = %d, nwrites = %d , queue = %d", 
+                  self.__nreads, self.__nwrites, len(self.__outqueue))
 
 
    def onInput(self):
@@ -193,7 +194,7 @@ class SerialDriver(Lazy):
 
 
    def fileno(self):
-      '''Implement this interface to be added in select() system call'''
+      '''(UNIX only) Implement this interface to be added in select() system call'''
       return self.__serial.fileno()
 
 
