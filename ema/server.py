@@ -54,20 +54,26 @@
 # We use ABCMeta metaclass and @abstractmethod decorator, to enforce
 # enforcing some methods to be implemented in subclasses.
 #
-# In v2.0, we add a SIGALARM event handler to handle tiemout duration
-# of several hours with seconds precision. There is onle one SIGALARM
-# handler. ALarmable and Laazy classers are just fine for short timeouts.
+# In v2.0, we add a SIGHUP to perform on line reloading and reconfigure
 #
 # ======================================================================
 
+import os
 import errno
+import signal
 import select
 import logging
 import datetime
+import time
 from   abc import ABCMeta, abstractmethod
 
 log = logging.getLogger('server')
 
+def sighandler(signum, frame):
+    '''
+    Signal handler (SIGALARM only)
+    '''
+    Server.instance.sigflag = True
 
 class Server(object):
 
@@ -80,7 +86,11 @@ class Server(object):
         self.__writables  = []
         self.__alarmables = []
         self.__lazy       = []
+        self.sigflag      = True
         Server.instance   = self
+        self.winNT = os.name == "nt"
+        if not self.winNT:
+             signal.signal(signal.SIGHUP, sighandler)
 
     def SetTimeout(self, newT):
         '''Set the select() timeout'''
@@ -150,38 +160,82 @@ class Server(object):
         callable(getattr(obj,'mustWork'))
         self.__lazy.append(obj)
 
+    # ------------------------------------
+    # Reload interface, triggered by SIGHUP
+    # ------------------------------------
 
-    def step(self,timeout):
+    def reload(self, obj, T):
+        '''
+        reloadns configuration aand reconfigures on-line
+	'''
+        pass
+
+    # ---------
+    # main loop
+    # ---------
+
+    def step1(self, timeout):
+        '''Wait for activity. Return list of changed objects and
+        a next step flag (True = next step is needed)'''
+
+        # Catch SIGHUP signal suring select()
+	# and execute reload
+
+	try:
+            # This is a Windows specific quirk: It returns error
+            # if the select() sets are empty.
+            if self.winNT and len(self.__readables) == 0 and len(self.__writables) == 0:
+                time.sleep(timeout)
+                nreadables = []
+                nwritables = []
+            else:
+                nreadables, nwritables, _ = select.select(
+                    self.__readables, self.__writables, [], timeout)
+        except select.error as e:
+            if e[0] == errno.EINTR and self.sigflag:
+                self.reload()
+                self.sigflag = False
+                return [], [], False
+            raise
+	except Exception:
+            raise
+        return nreadables, nwritables, True
+
+
+    def step2( self, nreadables, nwritables, next_step_flag):
+        '''Invoke activity handlers'''
+        if next_step_flag:
+            io_activity = False 
+            if nreadables:
+                io_activity = True
+                for readable in nreadables:
+                    readable.onInput()
+			
+            if nwritables:
+                io_activity = True
+                for writable in nwritables:
+                    readable.onOutput()
+
+            if not io_activity:                   
+                # Execute alarms first
+                for alarm in self.__alarmables:
+                    if alarm.timeout():
+                        self.delAlarmable(alarm)
+                        alarm.onTimeoutDo()
+
+                # Executes recurring work procedures last
+                for lazy in self.__lazy:
+                    if lazy.mustWork():
+                        lazy.work()
+
+
+    def step(self, timeout):
         '''
         Single step run, invoking I/O handlers or timeout handlers
         '''
+        nr, nw, flag = self.step1(timeout)
+        self.step2(nr, nw, flag)
 
-        nreadables, nwritables, nexceptionals = select.select(
-              self.__readables, self.__writables, [], timeout)
-
-        io_activity = False
-        if nreadables:
-            io_activity = True
-            for readable in nreadables:
-                readable.onInput()
-        
-        if nwritables:
-            io_activity = True
-            for writable in nwritables:
-                readable.onOutput()
-
-        if not io_activity:                   
-            # Execute alarms first
-            for alarm in self.__alarmables:
-                if alarm.timeout():
-                    self.delAlarmable(alarm)
-                    alarm.onTimeoutDo()
-
-            # Executes recurring work procedures last
-            for lazy in self.__lazy:
-                if lazy.mustWork():
-                    lazy.work()
-    
 
     def run(self):
         '''
