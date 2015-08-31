@@ -53,18 +53,18 @@ echo "-------------------------"
 
 # python config file
 
-if [ ! -d "/etc/emad" ]; then
-    echo "creating /etc/emad as the default config directory"
+if [ ! -d "/etc/ema" ]; then
+    echo "creating /etc/ema as the default config directory"
     mkdir /etc/emad 2>/dev/null 1>/dev/null
 fi
 
 for file in config
 do
-    if [ ! -f "/etc/emad/$file" ]; then
-	cp -vf config/$file /etc/emad/
-	chmod 0644 /etc/emad/$file
+    if [ ! -f "/etc/ema/$file" ]; then
+	cp -vf config/$file /etc/ema/
+	chmod 0644 /etc/ema/$file
     else
-	echo "skipping /etc/emad/$file"
+	echo "skipping /etc/ema/$file"
     fi
 done
 
