@@ -71,9 +71,9 @@ done
 # service defaults file
 
 if [ ! -f "/etc/default/emad" ]; then
-    cp -vf default /etc/default/emad
+    cp -vf default /etc/default/ema
 else
-    echo "skipping /etc/default/emad"
+    echo "skipping /etc/default/ema"
 fi
 
 echo
