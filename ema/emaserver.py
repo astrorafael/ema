@@ -140,9 +140,9 @@ class EMAServer(server.Server):
                 self.__parser = ConfigParser.ConfigParser()
                 self.__parser.optionxform = str
                 self.__parser.read(self.__cfgfile)
-                log.info("Loading configuration from %s", self.__cfgfile)
                 self.parseConfigFile()
 		logging.getLogger().info("Starting %s",VERSION_STRING)
+                log.info("Loaded configuration from %s", self.__cfgfile)
 
 		config = self.__parser
 
