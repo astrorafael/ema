@@ -1,14 +1,5 @@
 * Integrar chop (modulo untils + modulos afectados + configfile)
 * backport el nuevo modulo server.py con reload()
-* backport logger module from emadb 
-  - add VERBPSE level to config file
-  - edit __main__.py to include more options to argparse
-* Revisar el layout del proyecto
-* Revisar el setup.sh
-* Revisar el emad.sh 
-* Revisar el servicio emad.init.sh (el do_reload en particular)
-* Revisra el defaults file para pasar extra argumentos
-  por defecto hay que rotar por tamaño
 * Reload() para cada clase y nuevo server.py ??
 * Parameters sync as an option and reporting differences to logfile.
 
