@@ -1,3 +1,3 @@
 #!/bin/sh
-python -OO -m ema -k -c /etc/emad/config $*
+python -OO -m ema -k -c /etc/ema/config $*
  
