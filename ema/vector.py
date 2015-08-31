@@ -51,77 +51,77 @@ import logging
 log = logging.getLogger('vector')
 
 class Vector(object):
-	"""
-	Vector implementing a sliding window protocolof size N.
-	to calculate moving average
-	"""
+   """
+   Vector implementing a sliding window protocolof size N.
+   to calculate moving average
+   """
 
 
-	def __init__(self, N):
-		'''Initializes a vector with max size N'''
-		self.N       = N
-		self.accum   = 0
-		self.samples = []
+   def __init__(self, N):
+      '''Initializes a vector with max size N'''
+      self.N       = N
+      self.accum   = 0
+      self.samples = []
 
 
-	def append(self, sample):
-		'''append a sample to the vector and move the window if necessary'''
-		self.samples.append(sample)
-		self.accum += sample
-		if len(self.samples) > self.N:
-			pop = self.samples[0]
-			self.accum -= self.samples.pop(0)
+   def append(self, sample):
+      '''append a sample to the vector and move the window if necessary'''
+      self.samples.append(sample)
+      self.accum += sample
+      if len(self.samples) > self.N:
+         pop = self.samples[0]
+         self.accum -= self.samples.pop(0)
 
 
-	def last(self):
-		'''Returns the newest sample added'''
-		return self.samples[-1]
+   def last(self):
+      '''Returns the newest sample added'''
+      return self.samples[-1]
 
 
-	def len(self):
-		'''Returns the vector length'''
-		return len(self.samples)
+   def len(self):
+      '''Returns the vector length'''
+      return len(self.samples)
 
 
-	def sum(self, N=None):
-		'''
-		Returns a tuple with the accumulated value of last N samples
-		and vector length. 
-		If N is supplied, returns min(N, vector size)
-		'''
-		if not N: 
-			return (self.accum, len(self.samples))
-		else:
-			return (sum(self.samples[-N:]), min(N,len(self.samples)))
+   def sum(self, N=None):
+      '''
+      Returns a tuple with the accumulated value of last N samples
+      and vector length. 
+      If N is supplied, returns min(N, vector size)
+      '''
+      if not N: 
+         return (self.accum, len(self.samples))
+      else:
+         return (sum(self.samples[-N:]), min(N,len(self.samples)))
 
 
 if __name__ == '__main__':
-	v =Vector(5)
-	print(v.sum())
-	v.append(7)
-	print(v.last())
-	print(v.sum())
-	v.append(1)
-	print(v.last())
-	print(v.sum())
-	v.append(3)
-	print(v.last())
-	print(v.sum())
-	v.append(5)
-	print(v.last())
-	print(v.sum())
-	v.append(9)
-	print(v.last())
-	print(v.sum())
-	v.append(2)
-	print(v.last())
-	print(v.sum())
-	v.append(4)
-	print(v.last())
-	print(v.sum())
-	v.append(6)
-	print(v.last())
-	print(v.sum())
-	print(v.sum(N=3))
+   v =Vector(5)
+   print(v.sum())
+   v.append(7)
+   print(v.last())
+   print(v.sum())
+   v.append(1)
+   print(v.last())
+   print(v.sum())
+   v.append(3)
+   print(v.last())
+   print(v.sum())
+   v.append(5)
+   print(v.last())
+   print(v.sum())
+   v.append(9)
+   print(v.last())
+   print(v.sum())
+   v.append(2)
+   print(v.last())
+   print(v.sum())
+   v.append(4)
+   print(v.last())
+   print(v.sum())
+   v.append(6)
+   print(v.last())
+   print(v.sum())
+   print(v.sum(N=3))
 
-		
+      
