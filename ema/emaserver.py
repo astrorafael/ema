@@ -39,7 +39,7 @@
 import logging
 import re
 import os
-
+import sys
 
 from logger      import logToConsole, logToFile, sysLogInfo, sysLogError
 
@@ -117,7 +117,6 @@ class EMAServer(server.Server):
         def parseConfigFile(self):
                 '''Parses the config file looking for its own options'''
                 log.setLevel(self.__parser.get("GENERIC", "generic_log"))
-                self.hold(self.__parser.getboolean("GENERIC", "on_hold"))
                 toFile = self.__parser.getboolean("GENERIC","log_to_file")
                 if(toFile):
                         filename = self.__parser.get("GENERIC","log_file")
