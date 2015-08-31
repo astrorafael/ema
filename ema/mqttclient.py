@@ -143,7 +143,8 @@ class MQTTClient(Lazy):
       self.__period   = period
       self.__pubstat  = publish_status
       self.__emastat  = "()"
-      self.__mqtt     =  mqtt.Client(client_id=id+'@'+socket.gethostname(), userdata=self)
+      self.__mqtt     =  mqtt.Client(client_id=id+'@'+socket.gethostname(), 
+                                     userdata=self, clean_session=False)
       self.__mqtt.on_connect    = on_connect
       self.__mqtt.on_disconnect = on_disconnect
       ema.addLazy(self)
