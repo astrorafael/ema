@@ -75,6 +75,10 @@ import ConfigParser
 
 log = logging.getLogger('emaserver')
 
+VERSION = '0.1.0'
+VERSION_STRING = "EMA/%s/Python %d.%d" % (VERSION, 
+                                         sys.version_info.major, 
+                                         sys.version_info.minor)
 class EMAServer(server.Server):
         
         PERIOD = 5
@@ -88,6 +92,7 @@ class EMAServer(server.Server):
 
 	def __init__(self, options):
                 self.parseCmdLine(options)
+		logging.getLogger().info("Starting %s",VERSION_STRING)
 		server.Server.__init__(self)
 		self.pattern = [re.compile(p) for p in EMAServer.URPAT]
 		self.syncDone = False
@@ -110,7 +115,6 @@ class EMAServer(server.Server):
                         logToConsole()
                 self.__cfgfile = opts.config
                 if not (self.__cfgfile != None and os.path.exists(self.__cfgfile)):
-                        log.error("No configuration file found: %s", self.__cfgfile)
                         raise IOError(errno.ENOENT,"No such file or directory",self.__cfgfile)
 
 
