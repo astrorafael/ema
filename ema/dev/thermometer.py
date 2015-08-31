@@ -35,77 +35,77 @@ log = logging.getLogger('thermomet')
 
 
 def setLogLevel(level):
-    log.setLevel(level)
+   log.setLevel(level)
 
 THRESHOLD = {
-    'name': 'Thermometer DeltaT Threshold',
-    'logger' : 'thermomet',
-    'mult' : 1.0,               # multiplier to internal value
-    'unit' : 'deg C',               # degrees Celsius
-    'get' : '(c)',              # string format for GET request
-    'set' : '(C%03d)',          # string format for SET request
-    'pat' : '\(C(\d{3})\)',     # pattern to recognize as response
-    'grp' : 1,                  # group to extract value and compare
+   'name': 'Thermometer DeltaT Threshold',
+   'logger' : 'thermomet',
+   'mult' : 1.0,               # multiplier to internal value
+   'unit' : 'deg C',               # degrees Celsius
+   'get' : '(c)',              # string format for GET request
+   'set' : '(C%03d)',          # string format for SET request
+   'pat' : '\(C(\d{3})\)',     # pattern to recognize as response
+   'grp' : 1,                  # group to extract value and compare
 }
 
 
 class Thermometer(Device):
 
-    AMBIENT  = 'ambient'
-    HUMIDITY = 'humidity'
-    DEWPOINT = 'dewpoint'
+   AMBIENT  = 'ambient'
+   HUMIDITY = 'humidity'
+   DEWPOINT = 'dewpoint'
 
-    def __init__(self, ema, parser, N):
-        lvl = parser.get("THERMOMETER", "thermo_log")
-        log.setLevel(lvl)
-        publish_where = parser.get("THERMOMETER","thermo_publish_where").split(',')
-        publish_what  = parser.get("THERMOMETER","thermo_publish_what").split(',')
-        thres   = parser.getfloat("THERMOMETER", "delta_thres")
-        Device.__init__(self, publish_where, publish_what)
-        self.thres    = Parameter(ema, thres, **THRESHOLD)
-        self.ambient  = Vector(N)
-        self.humidity = Vector(N)
-        self.dewpoint = Vector(N)
-        ema.addSync(self.thres)
-        ema.subscribeStatus(self)
-        ema.addCurrent(self)
-        ema.addAverage(self)
-        ema.addThreshold(self)
+   def __init__(self, ema, parser, N):
+      lvl = parser.get("THERMOMETER", "thermo_log")
+      log.setLevel(lvl)
+      publish_where = parser.get("THERMOMETER","thermo_publish_where").split(',')
+      publish_what  = parser.get("THERMOMETER","thermo_publish_what").split(',')
+      thres   = parser.getfloat("THERMOMETER", "delta_thres")
+      Device.__init__(self, publish_where, publish_what)
+      self.thres    = Parameter(ema, thres, **THRESHOLD)
+      self.ambient  = Vector(N)
+      self.humidity = Vector(N)
+      self.dewpoint = Vector(N)
+      ema.addSync(self.thres)
+      ema.subscribeStatus(self)
+      ema.addCurrent(self)
+      ema.addAverage(self)
+      ema.addThreshold(self)
 
 
-    def onStatus(self, message):
-        self.ambient.append(int(message[SATB:SATE]))
-        self.humidity.append(int(message[SRHB:SRHE]))
-        self.dewpoint.append(int(message[SDPB:SDPE]))
+   def onStatus(self, message):
+      self.ambient.append(int(message[SATB:SATE]))
+      self.humidity.append(int(message[SRHB:SRHE]))
+      self.dewpoint.append(int(message[SDPB:SDPE]))
 
-    @property
-    def current(self):
-        '''Return dictionary with current measured values'''
-        return { 
-            Thermometer.AMBIENT:  (self.ambient.last()  / 10.0 , 'deg C'),
-            Thermometer.HUMIDITY: (self.humidity.last() / 10.0 , '%'),
-            Thermometer.DEWPOINT: (self.dewpoint.last() / 10.0 , 'deg C')
-            }
+   @property
+   def current(self):
+      '''Return dictionary with current measured values'''
+      return { 
+         Thermometer.AMBIENT:  (self.ambient.last()  / 10.0 , 'deg C'),
+         Thermometer.HUMIDITY: (self.humidity.last() / 10.0 , '%'),
+         Thermometer.DEWPOINT: (self.dewpoint.last() / 10.0 , 'deg C')
+         }
 
-    @property
-    def average(self):
-        '''Return dictionary averaged values over a period of N samples'''
-        accum, n = self.ambient.sum()
-        av1 = (accum/(10.0*n), 'deg C')
-        accum, n = self.humidity.sum()
-        av2 = (accum/(10.0*n), '%')
-        accum, n = self.dewpoint.sum()
-        av3 = (accum/(10.0*n), 'deg C')
-        return { 
-            Thermometer.AMBIENT: av1, 
-            Thermometer.HUMIDITY: av2, 
-            Thermometer.DEWPOINT: av3
-            }
+   @property
+   def average(self):
+      '''Return dictionary averaged values over a period of N samples'''
+      accum, n = self.ambient.sum()
+      av1 = (accum/(10.0*n), 'deg C')
+      accum, n = self.humidity.sum()
+      av2 = (accum/(10.0*n), '%')
+      accum, n = self.dewpoint.sum()
+      av3 = (accum/(10.0*n), 'deg C')
+      return { 
+         Thermometer.AMBIENT: av1, 
+         Thermometer.HUMIDITY: av2, 
+         Thermometer.DEWPOINT: av3
+         }
 
-    @property
-    def threshold(self):
-        '''Return dictionary with thresholds'''
-        return {
-            Thermometer.AMBIENT: (self.thres.value / self.thres.mult, self.thres.unit)
-        }
-       
+   @property
+   def threshold(self):
+      '''Return dictionary with thresholds'''
+      return {
+         Thermometer.AMBIENT: (self.thres.value / self.thres.mult, self.thres.unit)
+      }
+      

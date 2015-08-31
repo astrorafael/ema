@@ -34,78 +34,78 @@ from ema.device    import Device
 log = logging.getLogger('pyranomet')
 
 def setLogLevel(level):
-    log.setLevel(level)
+   log.setLevel(level)
 
 GAIN = {
-    'name': 'Pyranometer Gain',
-    'logger' : 'pyranomet',
-    'mult' : 10.0,              # multiplier to internal value
-    'unit' : '',                # dimensonless
-    'get' : '(j)',              # string format for GET request
-    'set' : '(J%03d)',          # string format for SET request
-    'pat' : '\(J(\d{3})\)',     # pattern to recognize as response
-    'grp'  : 1,                 # match group to extract value and compare
+   'name': 'Pyranometer Gain',
+   'logger' : 'pyranomet',
+   'mult' : 10.0,              # multiplier to internal value
+   'unit' : '',                # dimensonless
+   'get' : '(j)',              # string format for GET request
+   'set' : '(J%03d)',          # string format for SET request
+   'pat' : '\(J(\d{3})\)',     # pattern to recognize as response
+   'grp'  : 1,                 # match group to extract value and compare
 }
 
 OFFSET = {
-    'name': 'Pyranometer Offset',
-    'logger' : 'pyranomet',
-    'mult' : 1.0,               # multiplier to internal value
-    'unit' : '?',               # unknown to me :-)
-    'get' : '(u)',              # string format for GET request
-    'set' : '(U%03d)',          # string format for SET request
-    'pat' : '\(U(\d{3})\)',     # pattern to recognize as response
-    'grp'  : 1,                 # match group to extract value and compare
+   'name': 'Pyranometer Offset',
+   'logger' : 'pyranomet',
+   'mult' : 1.0,               # multiplier to internal value
+   'unit' : '?',               # unknown to me :-)
+   'get' : '(u)',              # string format for GET request
+   'set' : '(U%03d)',          # string format for SET request
+   'pat' : '\(U(\d{3})\)',     # pattern to recognize as response
+   'grp'  : 1,                 # match group to extract value and compare
 }
 
 
 
 class Pyranometer(Device):
 
-    IRRADIATION = 'irradiation'
+   IRRADIATION = 'irradiation'
 
-    def __init__(self, ema, parser, N):
-        lvl = parser.get("PYRANOMETER", "pyr_log")
-        log.setLevel(lvl)
-        publish_where = parser.get("PYRANOMETER","pyr_publish_where").split(',')
-        publish_what = parser.get("PYRANOMETER","pyr_publish_what").split(',')
-        offset  = parser.getfloat("PYRANOMETER", "pyr_offset")
-        gain    = parser.getfloat("PYRANOMETER", "pyr_gain")
-        Device.__init__(self, publish_where, publish_what)
-        self.gain   = Parameter(ema, gain,   **GAIN)
-        self.offset = Parameter(ema, offset, **OFFSET)
-        self.led    = Vector(N)
-        ema.addSync(self.gain)
-        ema.addSync(self.offset)
-        ema.subscribeStatus(self)
-        ema.addCurrent(self)
-        ema.addAverage(self)
-        ema.addParameter(self)
-
-
-    def onStatus(self, message):
-        self.led.append(int(message[SPYB:SPYE]))
+   def __init__(self, ema, parser, N):
+      lvl = parser.get("PYRANOMETER", "pyr_log")
+      log.setLevel(lvl)
+      publish_where = parser.get("PYRANOMETER","pyr_publish_where").split(',')
+      publish_what = parser.get("PYRANOMETER","pyr_publish_what").split(',')
+      offset  = parser.getfloat("PYRANOMETER", "pyr_offset")
+      gain    = parser.getfloat("PYRANOMETER", "pyr_gain")
+      Device.__init__(self, publish_where, publish_what)
+      self.gain   = Parameter(ema, gain,   **GAIN)
+      self.offset = Parameter(ema, offset, **OFFSET)
+      self.led    = Vector(N)
+      ema.addSync(self.gain)
+      ema.addSync(self.offset)
+      ema.subscribeStatus(self)
+      ema.addCurrent(self)
+      ema.addAverage(self)
+      ema.addParameter(self)
 
 
-    @property
-    def current(self):
-        '''Return dictionary with current measured values'''
-        return { Pyranometer.IRRADIATION: (self.led.last() / 10.0 , '%') }
+   def onStatus(self, message):
+      self.led.append(int(message[SPYB:SPYE]))
 
 
-    @property
-    def average(self):
-        '''Return dictionary averaged values over a period of N samples'''
-        accum, n = self.led.sum()
-        return { Pyranometer.IRRADIATION: (accum/(10.0*n), '%') }
+   @property
+   def current(self):
+      '''Return dictionary with current measured values'''
+      return { Pyranometer.IRRADIATION: (self.led.last() / 10.0 , '%') }
 
 
-    @property
-    def parameter(self):
-        '''Return dictionary with calibration constants'''
-        ret = {}
-        for param in [self.gain, self.offset]:
-            ret[param.name] = (param.value / param.mult, param.unit)
-        return ret
+   @property
+   def average(self):
+      '''Return dictionary averaged values over a period of N samples'''
+      accum, n = self.led.sum()
+      return { Pyranometer.IRRADIATION: (accum/(10.0*n), '%') }
+
+
+   @property
+   def parameter(self):
+      '''Return dictionary with calibration constants'''
+      ret = {}
+      for param in [self.gain, self.offset]:
+         ret[param.name] = (param.value / param.mult, param.unit)
+      return ret
 
 

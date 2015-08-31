@@ -32,134 +32,134 @@ from ema.device    import Device
 log = logging.getLogger('anemomete')
 
 def setLogLevel(level):
-    log.setLevel(level)
+   log.setLevel(level)
 
 THRESHOLD_I = {
-    'name': 'Current Wind Speed Threshold',
-    'logger' : 'anemomete',
-    'mult' : 1.0,              # multiplier to internal value
-    'unit' : 'Km/h',            # 
-    'get' : '(w)',              # string format for GET request
-    'set' : '(W%03d)',          # string format for SET request
-    'pat' :  '\(W(\d{3})\)',    # pattern to recognize as response
-    'grp'  : 1,                 # match group to extract value and compare
+   'name': 'Current Wind Speed Threshold',
+   'logger' : 'anemomete',
+   'mult' : 1.0,              # multiplier to internal value
+   'unit' : 'Km/h',            # 
+   'get' : '(w)',              # string format for GET request
+   'set' : '(W%03d)',          # string format for SET request
+   'pat' :  '\(W(\d{3})\)',    # pattern to recognize as response
+   'grp'  : 1,                 # match group to extract value and compare
 }
 
 THRESHOLD_M = {
-    'name': 'Average (10m.) Wind Speed Threshold',
-    'logger' : 'anemomete',
-    'mult' : 1.0,              # multiplier to internal value
-    'unit' : 'Km/h',           # 
-    'get' : '(o)',             # string format for GET request
-    'set' : '(O%03d)',         # string format for SET request
-    'pat' : '\(O(\d{3})\)',    # pattern to recognize as response
-    'grp' : 1,                 # match group to extract value and compare
+   'name': 'Average (10m.) Wind Speed Threshold',
+   'logger' : 'anemomete',
+   'mult' : 1.0,              # multiplier to internal value
+   'unit' : 'Km/h',           # 
+   'get' : '(o)',             # string format for GET request
+   'set' : '(O%03d)',         # string format for SET request
+   'pat' : '\(O(\d{3})\)',    # pattern to recognize as response
+   'grp' : 1,                 # match group to extract value and compare
 }
 
 CALIBRATION = {
-    'name': 'Anemometer Calibration Constant',
-    'logger' : 'anemomete',
-    'mult' : 1.0,              # multiplier to internal value
-    'unit' : 'dependant',      # 
-    'get' : '(a)',             # string format for GET request
-    'set' : '(A%03d)',         # string format for SET request
-    'pat' : '\(A(\d{3})\)',    # pattern to recognize as response
-    'grp' : 1,                 # match group to extract value and compare
+   'name': 'Anemometer Calibration Constant',
+   'logger' : 'anemomete',
+   'mult' : 1.0,              # multiplier to internal value
+   'unit' : 'dependant',      # 
+   'get' : '(a)',             # string format for GET request
+   'set' : '(A%03d)',         # string format for SET request
+   'pat' : '\(A(\d{3})\)',    # pattern to recognize as response
+   'grp' : 1,                 # match group to extract value and compare
 }
 
 MODEL = {
-    'name': 'Anemometer Model',
-    'logger' : 'anemomete',
-    'mult': 1.0,               # multiplier to internal value
-    'unit': '',                # 
-    'get' : '(z)',             # string format for GET request
-    'set' : '(Z%03d)',         # string format for SET request
-    'pat' : '\(Z(\d{3})\)',    # pattern to recognize as response
-    'grp' : 1,                 # match group to extract value and compare
+   'name': 'Anemometer Model',
+   'logger' : 'anemomete',
+   'mult': 1.0,               # multiplier to internal value
+   'unit': '',                # 
+   'get' : '(z)',             # string format for GET request
+   'set' : '(Z%03d)',         # string format for SET request
+   'pat' : '\(Z(\d{3})\)',    # pattern to recognize as response
+   'grp' : 1,                 # match group to extract value and compare
 }
 
 
 
 class Anemometer(Device):
 
-    # current value keys in dictionary
-    SPEED     = 'speed'
-    SPEED10   = 'speed10'
-    DIRECTION = 'direction'
+   # current value keys in dictionary
+   SPEED     = 'speed'
+   SPEED10   = 'speed10'
+   DIRECTION = 'direction'
 
-    def __init__(self, ema, parser, N):
-        lvl         = parser.get("ANEMOMETER", "anem_log")
-        log.setLevel(lvl)
-        publish_where    = parser.get("ANEMOMETER","anem_publish_where").split(',')
-        publish_what     = parser.get("ANEMOMETER","anem_publish_what").split(',')
-        thres       = parser.getfloat("ANEMOMETER", "wind_thres")
-        aver_thres  = parser.getfloat("ANEMOMETER", "wind_thres10")
-        calibration = parser.getfloat("ANEMOMETER", "anem_calib")
-        model       = parser.get("ANEMOMETER", "anem_type")
-        model       = 1 if model == "TX20" else 0
-        Device.__init__(self, publish_where, publish_what)
-        self.windth    = Parameter(ema, thres, **THRESHOLD_I)
-        self.wind10th  = Parameter(ema, aver_thres, **THRESHOLD_M)
-        self.calib     = Parameter(ema, calibration, **CALIBRATION)
-        self.model     = Parameter(ema, model, **MODEL)
-        self.windSpeed   = Vector(N)
-        self.windSpeed10 = Vector(N)
-        self.windDir     = Vector(N)
-        ema.addSync(self.windth)
-        ema.addSync(self.wind10th)
-        ema.addSync(self.calib)
-        ema.addSync(self.model)
-        ema.subscribeStatus(self)
-        ema.addCurrent(self)
-        ema.addAverage(self)
-        ema.addThreshold(self)
-        ema.addParameter(self)
+   def __init__(self, ema, parser, N):
+      lvl         = parser.get("ANEMOMETER", "anem_log")
+      log.setLevel(lvl)
+      publish_where    = parser.get("ANEMOMETER","anem_publish_where").split(',')
+      publish_what     = parser.get("ANEMOMETER","anem_publish_what").split(',')
+      thres       = parser.getfloat("ANEMOMETER", "wind_thres")
+      aver_thres  = parser.getfloat("ANEMOMETER", "wind_thres10")
+      calibration = parser.getfloat("ANEMOMETER", "anem_calib")
+      model       = parser.get("ANEMOMETER", "anem_type")
+      model       = 1 if model == "TX20" else 0
+      Device.__init__(self, publish_where, publish_what)
+      self.windth    = Parameter(ema, thres, **THRESHOLD_I)
+      self.wind10th  = Parameter(ema, aver_thres, **THRESHOLD_M)
+      self.calib     = Parameter(ema, calibration, **CALIBRATION)
+      self.model     = Parameter(ema, model, **MODEL)
+      self.windSpeed   = Vector(N)
+      self.windSpeed10 = Vector(N)
+      self.windDir     = Vector(N)
+      ema.addSync(self.windth)
+      ema.addSync(self.wind10th)
+      ema.addSync(self.calib)
+      ema.addSync(self.model)
+      ema.subscribeStatus(self)
+      ema.addCurrent(self)
+      ema.addAverage(self)
+      ema.addThreshold(self)
+      ema.addParameter(self)
+      
+
+   def onStatus(self, message):
+      self.windSpeed.append(int(message[SACB:SACE]))
+      self.windSpeed10.append(int(message[SAAB:SAAE]))
+      self.windDir.append(int(message[SWDB:SWDE]))
+
+
+   @property
+   def current(self):
+      '''Return dictionary with current measured values'''
+      return {
+         Anemometer.SPEED:  (self.windSpeed.last() / 10.0 , "Km/h"),
+         Anemometer.SPEED10:   (float(self.windSpeed10.last()) , "Km/h"),
+         Anemometer.DIRECTION: (float(self.windDir.last()) , "degrees")
+      }
+
+
+   @property
+   def average(self):
+      '''Return dictionary averaged values over a period of N samples'''
+      accum, n = self.windSpeed.sum()
+      av1 = (accum/(10.0*n), "Km/h")
+      accum, n = self.windSpeed10.sum()
+      av2 = (float(accum) / n, "Km/h")
+      accum, n = self.windDir.sum()
+      av3 = (float(accum) / n, "degrees")
+      return { 
+         Anemometer.SPEED: av1, 
+         Anemometer.SPEED10: av2, 
+         Anemometer.DIRECTION: av3 
+         }
+   
+
+   @property
+   def threshold(self):
+       '''Return a dictionary with thresholds'''
+       return {
+         Anemometer.SPEED: (self.windth.value / self.windth.mult, self.windth.unit) ,
+         Anemometer.SPEED10: (self.wind10th.value / self.wind10th.mult, self.wind10th.unit)
+      }
        
-
-    def onStatus(self, message):
-        self.windSpeed.append(int(message[SACB:SACE]))
-        self.windSpeed10.append(int(message[SAAB:SAAE]))
-        self.windDir.append(int(message[SWDB:SWDE]))
-
-
-    @property
-    def current(self):
-        '''Return dictionary with current measured values'''
-        return {
-            Anemometer.SPEED:  (self.windSpeed.last() / 10.0 , "Km/h"),
-            Anemometer.SPEED10:   (float(self.windSpeed10.last()) , "Km/h"),
-            Anemometer.DIRECTION: (float(self.windDir.last()) , "degrees")
-        }
-
-
-    @property
-    def average(self):
-        '''Return dictionary averaged values over a period of N samples'''
-        accum, n = self.windSpeed.sum()
-        av1 = (accum/(10.0*n), "Km/h")
-        accum, n = self.windSpeed10.sum()
-        av2 = (float(accum) / n, "Km/h")
-        accum, n = self.windDir.sum()
-        av3 = (float(accum) / n, "degrees")
-        return { 
-            Anemometer.SPEED: av1, 
-            Anemometer.SPEED10: av2, 
-            Anemometer.DIRECTION: av3 
-            }
-    
-
-    @property
-    def threshold(self):
-         '''Return a dictionary with thresholds'''
-         return {
-            Anemometer.SPEED: (self.windth.value / self.windth.mult, self.windth.unit) ,
-            Anemometer.SPEED10: (self.wind10th.value / self.wind10th.mult, self.wind10th.unit)
-        }
-         
-    
-    @property
-    def parameter(self):
-        '''Return a dictionary with calibration constants'''
-        return {
-            self.calib.name: (self.calib.value / self.calib.mult, self.calib.unit)
-        }
+   
+   @property
+   def parameter(self):
+      '''Return a dictionary with calibration constants'''
+      return {
+         self.calib.name: (self.calib.value / self.calib.mult, self.calib.unit)
+      }

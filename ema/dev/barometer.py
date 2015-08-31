@@ -32,78 +32,78 @@ from ema.device    import Device
 log = logging.getLogger('barometer')
 
 def setLogLevel(level):
-    log.setLevel(level)
+   log.setLevel(level)
 
 HEIGHT = {
-    'name': 'Barometer Height',
-    'logger' : 'barometer' ,
-    'mult' : 1.0,              # multiplier to internal value
-    'unit' : 'm',              # meters
-    'get' : '(m)',              # string format for GET request
-    'set' : '(M%05d)',          # string format for SET request
-    'pat' :  '\(M(\d{5})\)',    # pattern to recognize as response
-    'grp'  : 1,                 # match group to extract value and compare
+   'name': 'Barometer Height',
+   'logger' : 'barometer' ,
+   'mult' : 1.0,              # multiplier to internal value
+   'unit' : 'm',              # meters
+   'get' : '(m)',              # string format for GET request
+   'set' : '(M%05d)',          # string format for SET request
+   'pat' :  '\(M(\d{5})\)',    # pattern to recognize as response
+   'grp'  : 1,                 # match group to extract value and compare
 }
 
 OFFSET = {
-    'name': 'Barometer Offset',
-    'logger' : 'barometer' ,
-    'mult' : 1.0,              # multiplier to internal value
-    'unit' : 'mBar',           # millibars
-    'get' : '(b)',             # string format for GET request
-    'set' : '(B%+03d)',        # string format for SET request
-    'pat' : '\(B([+-]\d{2})\)',    # pattern to recognize as response
-    'grp' : 1,                 # match group to extract value and compare
+   'name': 'Barometer Offset',
+   'logger' : 'barometer' ,
+   'mult' : 1.0,              # multiplier to internal value
+   'unit' : 'mBar',           # millibars
+   'get' : '(b)',             # string format for GET request
+   'set' : '(B%+03d)',        # string format for SET request
+   'pat' : '\(B([+-]\d{2})\)',    # pattern to recognize as response
+   'grp' : 1,                 # match group to extract value and compare
 }
 
 
 
 class Barometer(Device):
 
-    PRESSURE = 'pressure'
+   PRESSURE = 'pressure'
 
-    def __init__(self, ema, parser, N):
-        lvl = parser.get("BAROMETER", "barom_log")
-        log.setLevel(lvl)
-        publish_where = parser.get("BAROMETER","barom_publish_where").split(',')
-        publish_what = parser.get("BAROMETER","barom_publish_what").split(',')
-        height  = parser.getfloat("BAROMETER", "barom_height")
-        offset  = parser.getfloat("BAROMETER", "barom_offset")
-        Device.__init__(self, publish_where, publish_what)
-        self.height    = Parameter(ema, height, **HEIGHT)
-        self.offset    = Parameter(ema, offset, **OFFSET)
-        self.pressure  = Vector(N)
-        ema.addSync(self.height)
-        ema.addSync(self.offset)
-        ema.subscribeStatus(self)
-        ema.addCurrent(self)
-        ema.addAverage(self)
-        ema.addParameter(self)
-
-
-    def onStatus(self, message):
-        self.pressure.append(int(message[SABB:SABE]))
+   def __init__(self, ema, parser, N):
+      lvl = parser.get("BAROMETER", "barom_log")
+      log.setLevel(lvl)
+      publish_where = parser.get("BAROMETER","barom_publish_where").split(',')
+      publish_what = parser.get("BAROMETER","barom_publish_what").split(',')
+      height  = parser.getfloat("BAROMETER", "barom_height")
+      offset  = parser.getfloat("BAROMETER", "barom_offset")
+      Device.__init__(self, publish_where, publish_what)
+      self.height    = Parameter(ema, height, **HEIGHT)
+      self.offset    = Parameter(ema, offset, **OFFSET)
+      self.pressure  = Vector(N)
+      ema.addSync(self.height)
+      ema.addSync(self.offset)
+      ema.subscribeStatus(self)
+      ema.addCurrent(self)
+      ema.addAverage(self)
+      ema.addParameter(self)
 
 
-    @property
-    def current(self):
-        '''Return dictionary with current measured values'''
-        return {
-            Barometer.PRESSURE: (self.pressure.last() / 10.0 , "HPa"),
-        }
+   def onStatus(self, message):
+      self.pressure.append(int(message[SABB:SABE]))
 
 
-    @property
-    def average(self):
-        '''Return dictionary averaged values over a period of N samples'''
-        accum, n = self.pressure.sum()
-        return { Barometer.PRESSURE: (accum/(10.0*n), "HPa")}
+   @property
+   def current(self):
+      '''Return dictionary with current measured values'''
+      return {
+         Barometer.PRESSURE: (self.pressure.last() / 10.0 , "HPa"),
+      }
 
 
-    @property
-    def parameter(self):
-        '''Return dictionary with calibration constants'''
-        ret = {}
-        for param in [self.height, self.offset]:
-            ret[param.name] = (param.value / param.mult, param.unit)
-        return ret
+   @property
+   def average(self):
+      '''Return dictionary averaged values over a period of N samples'''
+      accum, n = self.pressure.sum()
+      return { Barometer.PRESSURE: (accum/(10.0*n), "HPa")}
+
+
+   @property
+   def parameter(self):
+      '''Return dictionary with calibration constants'''
+      ret = {}
+      for param in [self.height, self.offset]:
+         ret[param.name] = (param.value / param.mult, param.unit)
+      return ret

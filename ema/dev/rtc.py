@@ -33,104 +33,104 @@ log = logging.getLogger('rtc')
 
 
 class RTCParameter(AbstractParameter):
-    '''RTC sync parameter does not fit into the generic Parameter class
-    as the time value to syncronize is volatile in nature'''
+   '''RTC sync parameter does not fit into the generic Parameter class
+   as the time value to syncronize is volatile in nature'''
 
-    RETRIES   = 1
-    TIMEOUT   = 30
-    # Common pattern forn GET/SET message responses
-    PAT = '\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)' 
+   RETRIES   = 1
+   TIMEOUT   = 30
+   # Common pattern forn GET/SET message responses
+   PAT = '\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)' 
 
-    def __init__(self, ema, deltaT=60):
-        AbstractParameter.__init__(self, ema, RTCParameter.TIMEOUT, 
-                                       RTCParameter.PAT, 
-                                       RTCParameter.PAT, 
-                                       RTCParameter.RETRIES)
-        self.deltaT = datetime.timedelta(seconds=deltaT)
-        self.name = "EMA RTC Time Syncronization"
-
-
-    def sendDateTime(self):
-        t    = self.ema.serdriver.queueDelay()*Server.TIMEOUT
-        tadj = int(round(t))
-        self.now = (datetime.datetime.utcnow() + datetime.timedelta(seconds=tadj)).replace(microsecond=0)
-        msg = self.now.strftime('(Y%d%m%y%H%M%S)')
-        self.ema.serdriver.write(msg)
-        self.setTimeout(t+RTCParameter.TIMEOUT)      # adjusted for queue length
-        self.resetAlarm()        
-        log.debug("Tadj = %d seconds", tadj)
+   def __init__(self, ema, deltaT=60):
+      AbstractParameter.__init__(self, ema, RTCParameter.TIMEOUT, 
+                              RTCParameter.PAT, 
+                              RTCParameter.PAT, 
+                              RTCParameter.RETRIES)
+      self.deltaT = datetime.timedelta(seconds=deltaT)
+      self.name = "EMA RTC Time Syncronization"
 
 
-    def actionStart(self):
-        n = self.ema.serdriver.queueDelay()
-        n += RTCParameter.TIMEOUT
-        self.setTimeout(n)      # adjust for queue length
-        self.resetAlarm()        
-        self.ema.serdriver.write('(y)')
+   def sendDateTime(self):
+      t    = self.ema.serdriver.queueDelay()*Server.TIMEOUT
+      tadj = int(round(t))
+      self.now = (datetime.datetime.utcnow() + datetime.timedelta(seconds=tadj)).replace(microsecond=0)
+      msg = self.now.strftime('(Y%d%m%y%H%M%S)')
+      self.ema.serdriver.write(msg)
+      self.setTimeout(t+RTCParameter.TIMEOUT)      # adjusted for queue length
+      self.resetAlarm()        
+      log.debug("Tadj = %d seconds", tadj)
 
 
-    def actionGet(self, message, matchobj):
-        log.debug("matched GET message")
-        self.now = datetime.datetime.utcnow().replace(microsecond=0)
-        ema = datetime.datetime.strptime(message,'(%H:%M:%S %d/%m/%Y)')
-        deltaT = abs(ema - self.now)
-        if deltaT > self.deltaT:
-            self.sendDateTime()
-            log.warning("DeltaT (ema - now) = %s, max DeltaT = %s", deltaT, self.deltaT)
-            needsSync = True
-        else:
-            log.info("No need to sync RTC. DeltaT = %s", deltaT)
-            needsSync = False
-        return needsSync
+   def actionStart(self):
+      n = self.ema.serdriver.queueDelay()
+      n += RTCParameter.TIMEOUT
+      self.setTimeout(n)      # adjust for queue length
+      self.resetAlarm()        
+      self.ema.serdriver.write('(y)')
 
 
-    def actionSet(self, message, matchobj):
-        log.debug("matched SET message")
-        ema = datetime.datetime.strptime(message,'(%H:%M:%S %d/%m/%Y)')
-        if ema - self.now > self.deltaT or self.now - ema > self.deltaT :
-            log.warning("EMA RTC is still not synchronized")
-        else:
-            log.info("EMA RTC succesfully sincronized")
-
-    def actionEnd(self):
-        log.debug("EMA RTC sync process complete")
-
-
-    def retryGet(self):
-        log.debug("Retry a GET message (%d/%d)" % self.getRetries() )
-        self.actionStart()
+   def actionGet(self, message, matchobj):
+      log.debug("matched GET message")
+      self.now = datetime.datetime.utcnow().replace(microsecond=0)
+      ema = datetime.datetime.strptime(message,'(%H:%M:%S %d/%m/%Y)')
+      deltaT = abs(ema - self.now)
+      if deltaT > self.deltaT:
+         self.sendDateTime()
+         log.warning("DeltaT (ema - now) = %s, max DeltaT = %s", deltaT, self.deltaT)
+         needsSync = True
+      else:
+         log.info("No need to sync RTC. DeltaT = %s", deltaT)
+         needsSync = False
+      return needsSync
 
 
-    def retrySet(self):
-        log.debug("Retry a SET message (%d/%d)" % self.getRetries() )
-        self.sendDateTime()
+   def actionSet(self, message, matchobj):
+      log.debug("matched SET message")
+      ema = datetime.datetime.strptime(message,'(%H:%M:%S %d/%m/%Y)')
+      if ema - self.now > self.deltaT or self.now - ema > self.deltaT :
+         log.warning("EMA RTC is still not synchronized")
+      else:
+         log.info("EMA RTC succesfully sincronized")
+
+   def actionEnd(self):
+      log.debug("EMA RTC sync process complete")
 
 
-    def actionTimeout(self):
-        log.error("Timeout: EMA not responding to RTC sync request")
+   def retryGet(self):
+      log.debug("Retry a GET message (%d/%d)" % self.getRetries() )
+      self.actionStart()
+
+
+   def retrySet(self):
+      log.debug("Retry a SET message (%d/%d)" % self.getRetries() )
+      self.sendDateTime()
+
+
+   def actionTimeout(self):
+      log.error("Timeout: EMA not responding to RTC sync request")
 
 
 
 class RTC(Lazy):
 
-    def __init__(self, ema, parser):
-        lvl = parser.get("RTC", "rtc_log")
-        log.setLevel(lvl)
-        deltaT = parser.getint("RTC", "rtc_delta")
-        period = parser.getfloat("RTC", "rtc_period")
-        Lazy.__init__(self, 3600*period)
-        self.ema = ema
-        self.param = RTCParameter(ema, deltaT)
-        ema.addSync(self.param)
-        ema.addLazy(self)
+   def __init__(self, ema, parser):
+      lvl = parser.get("RTC", "rtc_log")
+      log.setLevel(lvl)
+      deltaT = parser.getint("RTC", "rtc_delta")
+      period = parser.getfloat("RTC", "rtc_period")
+      Lazy.__init__(self, 3600*period)
+      self.ema = ema
+      self.param = RTCParameter(ema, deltaT)
+      ema.addSync(self.param)
+      ema.addLazy(self)
 
 
-    def work(self):
-        '''
-        Periodic synchornization routine.
-        Should be once a day.
-        '''
-        self.ema.addSync(self.param)
-        self.param.sync()
-        
+   def work(self):
+      '''
+      Periodic synchornization routine.
+      Should be once a day.
+      '''
+      self.ema.addSync(self.param)
+      self.param.sync()
+      
 

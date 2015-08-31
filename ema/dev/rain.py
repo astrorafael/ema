@@ -32,60 +32,60 @@ from ema.device    import Device
 log = logging.getLogger('rainsenso')
 
 def setLogLevel(level):
-    log.setLevel(level)
+   log.setLevel(level)
 
 THRESHOLD = {
-    'name': 'Rain Sensor Threshold',
-    'logger' : 'rainsenso',
-    'mult' : 1.0,               # multiplier to internal value
-    'unit' : 'mm',
-    'get' : '(l)',              # string format for GET request
-    'set' : '(L%03d)',          # string format for SET request
-    'pat' :  '\(L(\d{3})\)',    # pattern to recognize as response
-    'grp'  : 1,                 # group to extract value and compare
+   'name': 'Rain Sensor Threshold',
+   'logger' : 'rainsenso',
+   'mult' : 1.0,               # multiplier to internal value
+   'unit' : 'mm',
+   'get' : '(l)',              # string format for GET request
+   'set' : '(L%03d)',          # string format for SET request
+   'pat' :  '\(L(\d{3})\)',    # pattern to recognize as response
+   'grp'  : 1,                 # group to extract value and compare
 }
 
 
 class RainSensor(Device):
 
-    RAIN = 'rain'
+   RAIN = 'rain'
 
-    def __init__(self, ema, parser, N):
-        lvl     = parser.get("RAIN", "rain_log")
-        log.setLevel(lvl)
-        publish_where = parser.get("RAIN","rain_publish_where").split(',')
-        publish_what = parser.get("RAIN","rain_publish_what").split(',')
-        thres   = parser.getfloat("RAIN", "rain_thres")
-	Device.__init__(self, publish_where, publish_what)
-        self.thres     = Parameter(ema, thres, **THRESHOLD)
-        self.rain      = Vector(N)
-        ema.addSync(self.thres)
-        ema.subscribeStatus(self)
-        ema.addCurrent(self)
-        ema.addAverage(self)
-        ema.addThreshold(self)
-
-
-
-    def onStatus(self, message):
-        self.rain.append(int(message[SRAB:SRAE]))
+   def __init__(self, ema, parser, N):
+      lvl     = parser.get("RAIN", "rain_log")
+      log.setLevel(lvl)
+      publish_where = parser.get("RAIN","rain_publish_where").split(',')
+      publish_what = parser.get("RAIN","rain_publish_what").split(',')
+      thres   = parser.getfloat("RAIN", "rain_thres")
+      Device.__init__(self, publish_where, publish_what)
+      self.thres     = Parameter(ema, thres, **THRESHOLD)
+      self.rain      = Vector(N)
+      ema.addSync(self.thres)
+      ema.subscribeStatus(self)
+      ema.addCurrent(self)
+      ema.addAverage(self)
+      ema.addThreshold(self)
 
 
-    @property
-    def current(self):
-        '''Return dictionary with current measured values'''
-        return { RainSensor.RAIN: (self.rain.last() / 10.0 , 'mm') }
+
+   def onStatus(self, message):
+      self.rain.append(int(message[SRAB:SRAE]))
 
 
-    @property
-    def average(self):
-        '''Return dictionary averaged values over a period of N samples'''
-        accum, n = self.rain.sum()
-        return { RainSensor.RAIN: (accum/(10.0*n), 'mm') }
+   @property
+   def current(self):
+      '''Return dictionary with current measured values'''
+      return { RainSensor.RAIN: (self.rain.last() / 10.0 , 'mm') }
 
-    @property
-    def threshold(self):
-        '''Return dictionary with thresholds'''
-        return {
-            RainSensor.RAIN: (self.thres.value / self.thres.mult, self.thres.unit)
-        }
+
+   @property
+   def average(self):
+      '''Return dictionary averaged values over a period of N samples'''
+      accum, n = self.rain.sum()
+      return { RainSensor.RAIN: (accum/(10.0*n), 'mm') }
+
+   @property
+   def threshold(self):
+      '''Return dictionary with thresholds'''
+      return {
+         RainSensor.RAIN: (self.thres.value / self.thres.mult, self.thres.unit)
+      }

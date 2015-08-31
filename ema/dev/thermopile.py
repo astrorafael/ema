@@ -32,7 +32,7 @@ from ema.device    import Device
 log = logging.getLogger('thermopil')
 
 def setLogLevel(level):
-	log.setLevel(level)
+   log.setLevel(level)
 
 
 # Thermopile values (in magnitudes) do not come in status messages
@@ -40,44 +40,44 @@ def setLogLevel(level):
 
 class Thermopile(Device):
 
-	SKY     = 'sky'
-	AMBIENT = 'ambient'
+   SKY     = 'sky'
+   AMBIENT = 'ambient'
 
-	def __init__(self, ema, parser, N):
-		lvl = parser.get("THERMOPILE", "thermop_log")
-		log.setLevel(lvl)
-		publish_where = parser.get("THERMOPILE","thermop_publish_where").split(',')
-		publish_what = parser.get("THERMOPILE","thermop_publish_what").split(',')
-		Device.__init__(self, publish_where, publish_what)
-		self.infrared = Vector(N)
-		self.capsule  = Vector(N)
-		ema.addCurrent(self)
-		ema.addAverage(self)
+   def __init__(self, ema, parser, N):
+      lvl = parser.get("THERMOPILE", "thermop_log")
+      log.setLevel(lvl)
+      publish_where = parser.get("THERMOPILE","thermop_publish_where").split(',')
+      publish_what = parser.get("THERMOPILE","thermop_publish_what").split(',')
+      Device.__init__(self, publish_where, publish_what)
+      self.infrared = Vector(N)
+      self.capsule  = Vector(N)
+      ema.addCurrent(self)
+      ema.addAverage(self)
 
 
-	def add(self, message, matchobj):
-		log.debug("themopile.add(%s)", message)
-		temp = float(matchobj.group(1))
-		if message[THERMOINF] == '0':
-			self.infrared.append(temp)	
-		else:
-			self.capsule.append(temp)
+   def add(self, message, matchobj):
+      log.debug("themopile.add(%s)", message)
+      temp = float(matchobj.group(1))
+      if message[THERMOINF] == '0':
+         self.infrared.append(temp) 
+      else:
+         self.capsule.append(temp)
 
-	@property
-	def current(self):
-		'''Return dictionary with current measured values'''
-		return { 
-			Thermopile.SKY:     (self.infrared.last() , ' deg C'),
-			Thermopile.AMBIENT: (self.capsule.last()  , ' deg C')
-			}
+   @property
+   def current(self):
+      '''Return dictionary with current measured values'''
+      return { 
+         Thermopile.SKY:     (self.infrared.last() , ' deg C'),
+         Thermopile.AMBIENT: (self.capsule.last()  , ' deg C')
+         }
 
-	@property
-	def average(self):
-		'''Return dictionary of averaged values over a period of N samples'''
-		accum, n = self.infrared.sum()
-		av1  = (accum / n, ' deg C')
-		accum, n = self.capsule.sum()
-		av2 = (accum / n, ' deg C')
-		return {  Thermopile.SKY: av1 , Thermopile.AMBIENT: av2 }
+   @property
+   def average(self):
+      '''Return dictionary of averaged values over a period of N samples'''
+      accum, n = self.infrared.sum()
+      av1  = (accum / n, ' deg C')
+      accum, n = self.capsule.sum()
+      av2 = (accum / n, ' deg C')
+      return {  Thermopile.SKY: av1 , Thermopile.AMBIENT: av2 }
 
-	
+   
