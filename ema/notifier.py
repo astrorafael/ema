@@ -80,117 +80,117 @@ log = logging.getLogger('notifier')
 
 
 class ExecutedScript(Exception):
-	'''Signals a script has executed'''
-	def __init__(self, name, *args):
-		self.name = name
-		self.args = args
+   '''Signals a script has executed'''
+   def __init__(self, name, *args):
+      self.name = name
+      self.args = args
 
-	def  __str__(self):
-		'''Prints useful information'''
-		tmp = ''
-		for arg in self.args:
-			tmp += ' ' + arg
-		return self.name + ' ' + tmp
+   def  __str__(self):
+      '''Prints useful information'''
+      tmp = ''
+      for arg in self.args:
+         tmp += ' ' + arg
+      return self.name + ' ' + tmp
 
 
 
 class Script(object):
-	'''Notifier creates Script wrapper objects, representing
-	scripts to be launched'''
+   '''Notifier creates Script wrapper objects, representing
+   scripts to be launched'''
 
-	# modes as constants
-	NEVER = 0
-	ONCE  = 1
-	MANY  = 2
+   # modes as constants
+   NEVER = 0
+   ONCE  = 1
+   MANY  = 2
 
-	# mappping from strings to numbers
-	MODES = { 'Never' : NEVER, 'Once' : ONCE, 'Many' : MANY }
+   # mappping from strings to numbers
+   MODES = { 'Never' : NEVER, 'Once' : ONCE, 'Many' : MANY }
 
-	def __init__(self,  cfg):
-		self.mode  = Script.MODES[cfg[1]]
-		self.path  = cfg[0]
-		self.name  = os.path.basename(self.path)
-		self.child = None
-		self.executed  = False
-
-
-	def runOnce(self, *args):
-		'''run only once in the whole server lifetime'''
-		# skip if already run
-		# otherwise, spawn it
-		if self.executed:
-			return False
-		# If not running, spawn it
-		try:
-			self.child = subprocess.Popen((self.path,) + args)
-		except (OSError, ValueError) as e:
-			log.error("runOnce(%s): %s", self.path, e)
-		else:
-			self.executed = True
-			raise ExecutedScript(self.name, *args)
+   def __init__(self,  cfg):
+      self.mode  = Script.MODES[cfg[1]]
+      self.path  = cfg[0]
+      self.name  = os.path.basename(self.path)
+      self.child = None
+      self.executed  = False
 
 
-	def runMany(self, *args):
-		'''Run one more time, if previous run completed'''
-		# Check existing script already running
-		# If running we don't go any further and return.
-		# otherwise, spawn it.
-		if self.child:
-			self.child.poll()
-			if self.child.returncode is None:
-				log.warning("script %s has not finished. Can't launch it again", self.name)
-				return
-		try:
-			self.child = subprocess.Popen((self.path,) + args)
-		except (OSError, ValueError) as e:
-			log.error("runMany(%s): %s", self.path, e)
-		else:
-			raise ExecutedScript(self.name, *args)
-		return
+   def runOnce(self, *args):
+      '''run only once in the whole server lifetime'''
+      # skip if already run
+      # otherwise, spawn it
+      if self.executed:
+         return False
+      # If not running, spawn it
+      try:
+         self.child = subprocess.Popen((self.path,) + args)
+      except (OSError, ValueError) as e:
+         log.error("runOnce(%s): %s", self.path, e)
+      else:
+         self.executed = True
+         raise ExecutedScript(self.name, *args)
 
 
-	def run(self, *args):
-		'''Launch a script, depending on the launch mode'''
-		# Skip if no script is configured
-		if not self.path:
-			return
-		if self.mode == Script.ONCE:
-			self.runOnce(*args)
-		elif self.mode == Script.MANY:
-			self.runMany(*args)
+   def runMany(self, *args):
+      '''Run one more time, if previous run completed'''
+      # Check existing script already running
+      # If running we don't go any further and return.
+      # otherwise, spawn it.
+      if self.child:
+         self.child.poll()
+         if self.child.returncode is None:
+            log.warning("script %s has not finished. Can't launch it again", self.name)
+            return
+      try:
+         self.child = subprocess.Popen((self.path,) + args)
+      except (OSError, ValueError) as e:
+         log.error("runMany(%s): %s", self.path, e)
+      else:
+         raise ExecutedScript(self.name, *args)
+      return
 
-		
+
+   def run(self, *args):
+      '''Launch a script, depending on the launch mode'''
+      # Skip if no script is configured
+      if not self.path:
+         return
+      if self.mode == Script.ONCE:
+         self.runOnce(*args)
+      elif self.mode == Script.MANY:
+         self.runMany(*args)
+
+      
 
 
 
 class Notifier(object):
-	'''Notifies EMA events to third parties by executing scripts'''
+   '''Notifies EMA events to third parties by executing scripts'''
 
-	# Modes as a set text strings to be used in config file
-	MODES = {'Never', 'Once', 'Many'}
+   # Modes as a set text strings to be used in config file
+   MODES = {'Never', 'Once', 'Many'}
 
-	def __init__(self):
-		pass
-		self.scripts   = {}
+   def __init__(self):
+      pass
+      self.scripts   = {}
 
-	# ---------------------------								
-	# Adding scripts to notifier
-	# ---------------------------
+   # ---------------------------                      
+   # Adding scripts to notifier
+   # ---------------------------
 
-	def addScript(self, event, mode, path):
-		''' *_script are tuples of (path, mode)'''
-		aList = self.scripts.get(event,[])
-		aList.append(Script((path, mode)))
-		self.scripts[event] = aList
+   def addScript(self, event, mode, path):
+      ''' *_script are tuples of (path, mode)'''
+      aList = self.scripts.get(event,[])
+      aList.append(Script((path, mode)))
+      self.scripts[event] = aList
 
-	# ---------------------------
-	# Event handler from Devices
-	# ---------------------------
+   # ---------------------------
+   # Event handler from Devices
+   # ---------------------------
 
-	def onEventExecute(self, event, *args):
-		try:
-			for script in self.scripts[event]:
-				script.run(*args)
-		except ExecutedScript as e:
-			log.warning("On event %s executed script => %s ", event, e)
+   def onEventExecute(self, event, *args):
+      try:
+         for script in self.scripts[event]:
+            script.run(*args)
+      except ExecutedScript as e:
+         log.warning("On event %s executed script => %s ", event, e)
 
