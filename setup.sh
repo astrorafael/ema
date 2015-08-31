@@ -61,8 +61,8 @@ fi
 for file in config
 do
     if [ ! -f "/etc/emad/$file" ]; then
-	cp -vf config/$file /etc/emadb/
-	chmod 0644 /etc/emadb/$file
+	cp -vf config/$file /etc/emad/
+	chmod 0644 /etc/emad/$file
     else
 	echo "skipping /etc/emad/$file"
     fi
