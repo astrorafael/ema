@@ -28,6 +28,7 @@ from ema.emaproto  import SAAB, SAAE, SACB, SACE, SWDB, SWDE
 from ema.parameter import Parameter
 from ema.vector    import Vector
 from ema.device    import Device
+from ema.utils     import chop
 
 log = logging.getLogger('anemomete')
 
@@ -90,8 +91,8 @@ class Anemometer(Device):
    def __init__(self, ema, parser, N):
       lvl         = parser.get("ANEMOMETER", "anem_log")
       log.setLevel(lvl)
-      publish_where    = parser.get("ANEMOMETER","anem_publish_where").split(',')
-      publish_what     = parser.get("ANEMOMETER","anem_publish_what").split(',')
+      publish_where    = chop(parser.get("ANEMOMETER","anem_publish_where"),','))
+      publish_what     = chop(parser.get("ANEMOMETER","anem_publish_what"),','))
       thres       = parser.getfloat("ANEMOMETER", "wind_thres")
       aver_thres  = parser.getfloat("ANEMOMETER", "wind_thres10")
       calibration = parser.getfloat("ANEMOMETER", "anem_calib")
