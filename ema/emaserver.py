@@ -92,7 +92,6 @@ class EMAServer(server.Server):
 
 	def __init__(self, options):
                 self.parseCmdLine(options)
-		logging.getLogger().info("Starting %s",VERSION_STRING)
 		server.Server.__init__(self)
 		self.pattern = [re.compile(p) for p in EMAServer.URPAT]
 		self.syncDone = False
@@ -143,6 +142,7 @@ class EMAServer(server.Server):
                 self.__parser.read(self.__cfgfile)
                 log.info("Loading configuration from %s", self.__cfgfile)
                 self.parseConfigFile()
+		logging.getLogger().info("Starting %s",VERSION_STRING)
 
 		config = self.__parser
 
