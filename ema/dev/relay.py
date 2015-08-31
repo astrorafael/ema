@@ -59,7 +59,7 @@ class RoofRelay(Device):
       publish_what  = parser.get("ROOF_RELAY","roof_relay_publish_what").split(',')
       scripts       = parser.get("ROOF_RELAY","roof_relay_script").split(',')
       relay_mode    = parser.get("ROOF_RELAY","roof_relay_mode")
-                Device.__init__(self, publish_where, publish_what)
+      Device.__init__(self, publish_where, publish_what)
       self.relay = Vector(N)
       self.ema   = ema
       ema.subscribeStatus(self)
@@ -199,7 +199,7 @@ class AuxRelay(Device):
       script_mode   = parser.get("AUX_RELAY","aux_relay_mode")
       publish_where = parser.get("AUX_RELAY","aux_relay_publish_where").split(',')
       publish_what  = parser.get("AUX_RELAY","aux_relay_publish_what").split(',')
-                Device.__init__(self, publish_where, publish_what)
+      Device.__init__(self, publish_where, publish_what)
       self.ema      = ema
       self.mode     = Parameter(ema, AuxRelay.MAPPING[mode], **MODE) 
       self.ton      = None

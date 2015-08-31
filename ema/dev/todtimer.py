@@ -103,13 +103,13 @@ class Timer(Device, Alarmable2):
          '''Adds a object implementing the following methods:
          onNewInterval()
          '''
-           callable(getattr(obj,'onNewInterval'))
+         callable(getattr(obj,'onNewInterval'))
          self.subscribedList.append(obj)
 
 
-      def delSubscriber(self, obj):
-         '''Removes subscribed object from the list.'''
-         self.subscribedList.pop(self.subscribedList.index(obj))
+   def delSubscriber(self, obj):
+      '''Removes subscribed object from the list.'''
+      self.subscribedList.pop(self.subscribedList.index(obj))
 
    # ----------------------------------
    # Implements the Alarmable interface
@@ -210,9 +210,9 @@ class Timer(Device, Alarmable2):
 
    def findCurrentInterval(self):
       '''Find the current interval'''     
-         tNow = now()
+      tNow = now()
       log.debug("checking active intervals %s", self.windows)
-         found, i = self.windows.find(tNow)
+      found, i = self.windows.find(tNow)
       if found:
          self.where = Timer.ACTIVE
          self.i    = i
