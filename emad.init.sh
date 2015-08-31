@@ -20,6 +20,7 @@ SCRIPTNAME=/etc/init.d/$NAME
 #HOME=/
 
 # Set default values before reading /etc/default/$NAME
+# LOG_FILE will be removed
 LOG_FILE=/var/log/$NAME.log
 CONFIG_FILE=/etc/ema/config
 
@@ -38,7 +39,7 @@ CONFIG_FILE=/etc/ema/config
 # and status_of_proc is working.
 . /lib/lsb/init-functions
 
-DAEMON_ARGS="-m ema -l $LOG_FILE -c $CONFIG_FILE"
+DAEMON_ARGS="-m ema -l $LOG_FILE --configc $CONFIG_FILE"
 
 
 #
@@ -70,17 +71,9 @@ do_stop()
 	#   1 if daemon was already stopped
 	#   2 if daemon could not be stopped
 	#   other if a failure occurred
-	start-stop-daemon --stop --quiet --pidfile $PIDFILE --name $NAME
+	start-stop-daemon --stop --quiet --pidfile $PIDFILE --exec "$DAEMON"
 	RETVAL="$?"
 	[ "$RETVAL" = 2 ] && return 2
-	# Wait for children to finish too if this is a daemon that forks
-	# and if the daemon is only ever run from this initscript.
-	# If the above conditions are not satisfied then add some other code
-	# that waits for the process to drop all resources that could be
-	# needed by services started subsequently.  A last resort is to
-	# sleep for some time.
-	start-stop-daemon --stop --quiet --exec $DAEMON
-	[ "$?" = 2 ] && return 2
 	# Many daemons don't delete their pidfiles when they exit.
 	rm -f $PIDFILE
 	return "$RETVAL"
@@ -95,7 +88,7 @@ do_reload() {
 	# restarting (for example, when it is sent a SIGHUP),
 	# then implement that here.
 	#
-	start-stop-daemon --stop --signal 1 --quiet --pidfile $PIDFILE --name $NAME
+	start-stop-daemon --stop --signal 1 --quiet --pidfile $PIDFILE --exec $DAEMON
 	return 0
 }
 
@@ -124,10 +117,10 @@ case "$1" in
 	# If do_reload() is not implemented then leave this commented out
 	# and leave 'force-reload' as an alias for 'restart'.
 	#
-	#log_daemon_msg "Reloading $DESC" "$NAME"
-	#do_reload
-	#log_end_msg $?
-	#;;
+	log_daemon_msg "Reloading $DESC" "$NAME"
+	do_reload
+	log_end_msg $?
+	;;
   restart|force-reload)
 	#
 	# If the "reload" option is implemented then remove the
