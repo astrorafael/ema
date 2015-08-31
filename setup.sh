@@ -25,8 +25,8 @@ echo "Copying scripts"
 echo "---------------"
 
 # daemon in foreground utility
-cp -vf scripts/emad.sh  /usr/local/bin/ema
-chmod 0755 /usr/local/bin/ema
+cp -vf scripts/emad.sh  /usr/local/bin/emad
+chmod 0755 /usr/local/bin/emad
 
 # init.d service script
 cp -vf emad.init.sh /etc/init.d/emad
