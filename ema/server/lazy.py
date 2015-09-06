@@ -21,20 +21,51 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 # ----------------------------------------------------------------------
 
-import os
-import sys
+# ========================== DESIGN NOTES ==============================
+# The Lazy class is meant to be subclassed and contains all the logic
+# to handle a cyclic counter. When this counter reaches 0 it triggers
+# a callback.
 
-import cmdline
 
-options = cmdline.parser().parse_args()
+from   abc import ABCMeta, abstractmethod
 
-if os.name == "nt":
-	if not options.interactive:
-		import winservice
-	else:
-		import posixservice
-elif os.name == "posix":
-	import posixservice
-else:
-	print("ERROR: unsupported OS")
-	sys.exit(1)
+from . import Server 
+
+class Lazy(object):
+   '''
+   Abstract class for all objects implementing a work() method
+   to be used within the select() system call 
+   when this system call times out.
+   '''
+
+   __metaclass__ = ABCMeta     # Only Python 2.7
+
+   def __init__(self, period=1.0):
+      self.__count = 0
+      self.__limit = int(round(period/Server.TIMEOUT))
+
+
+   def reset(self):
+      self.__count = 0
+
+
+   def setPeriod(self, period):
+      self.__limit = int(round(period/Server.TIMEOUT))
+
+
+   def mustWork(self):
+      '''
+      Increments counter modulo N.
+      Returns True if counter wraps around.
+      '''
+      self.__count = (self.__count + 1) % self.__limit
+      return  (self.__count == 0)
+
+   @abstractmethod
+   def work(self):
+      '''
+      Work procedure for lazy objects.
+      To be subclassed and overriden
+      '''
+      pass
+

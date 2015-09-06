@@ -41,10 +41,9 @@ import re
 import os
 import sys
 
-from logger      import logToConsole, logToFile, sysLogInfo, sysLogError
+from server.logger      import logToConsole, logToFile, sysLogInfo, sysLogError
 
 
-import logger
 import serdriver
 import udpdriver
 import mqttclient

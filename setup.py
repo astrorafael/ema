@@ -22,5 +22,5 @@ setup(name             = 'EMA',
       keywords         = 'EMA Astronomy Python RaspberryPi',
       url              = 'http://github.com/astrorafael/ema/',
       classifiers      = classifiers,
-      packages         = ["ema", "ema.dev",],
+      packages         = ["ema", "ema.dev", "ema.server"],
       )

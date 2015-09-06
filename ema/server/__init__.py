@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------
-# Copyright (c) 2014 Rafael Gonzalez.
+# Copyright (c) 2015 Rafael Gonzalez.
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -24,17 +24,17 @@
 import os
 import sys
 
-import cmdline
-
-options = cmdline.parser().parse_args()
+from logger    import VERBOSE, logToConsole, logToFile, sysLogInfo, sysLogError
 
 if os.name == "nt":
-	if not options.interactive:
-		import winservice
-	else:
-		import posixservice
+    from winserver import Server
 elif os.name == "posix":
-	import posixservice
+    from  posixserver import Server
 else:
-	print("ERROR: unsupported OS")
-	sys.exit(1)
+    print("ERROR: unsupported OS")
+    sys.exit(1)
+    
+from alarmable import Alarmable, Alarmable2
+from lazy      import Lazy
+
+

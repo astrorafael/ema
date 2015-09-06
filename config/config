@@ -50,7 +50,7 @@ generic_log = INFO
 
 [SERIAL]
 # Serial Port Settings. Baud rate supported only 9600 & 57600
-serial_port = /dev/ttyAMA0
+serial_port = /dev/ttyUSB0
 serial_baud = 9600
 
 # component log level (VERBOSE, DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
@@ -78,7 +78,7 @@ udp_log = INFO
 #------------------------------------------------------------------------#
 
 # MQTT Client config
-
+[MQTT]
 # The unique id string used as the station id in topics (i.e EMA/<mqtt_id>/#)
 # and also as part of the client_id when connecting to the broker.
 mqtt_id = foo

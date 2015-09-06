@@ -77,10 +77,16 @@ def udpsocket(rx_port, mcast_ip=None):
    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
    sock.bind(('', rx_port))   # In any network interface
    if mcast_ip:
-      mreq = struct.pack("4sl", socket.inet_aton(mcast_ip), socket.INADDR_ANY)
-      sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq) 
-      sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 1)
-   return sock       
+      try:
+         mreq = struct.pack("4sl", socket.inet_aton(mcast_ip), 
+                            socket.INADDR_ANY)
+         sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq) 
+         sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 1)
+      except IOError as e:	
+         log.error("%s",e)
+         log.warn("could no join to a multicast group")
+   return sock
+         
 
 class UDPDriver(object):
 
