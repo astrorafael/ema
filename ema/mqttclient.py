@@ -165,7 +165,7 @@ class MQTTClient(MQTTPublisher):
       if self.__pubstat:
          payload = '\n'.join(self.__emastat)
          self.mqtt.publish(topic=MQTTClient.TOPIC_CURRENT_STATUS, 
-                           payload=self.__emastat)
+                           payload=payload)
          self.__emastat = []
 
       # publish last current values
