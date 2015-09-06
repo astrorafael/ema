@@ -4,12 +4,12 @@
 # Only needed for standalone deployment
 # I use Ansible, instead
 
-# Preresuisites python2.7 and setuptools
+# Prerequisites python2.7 and setuptools
 
 echo
-echo "------------------------"
-echo "Installing EMADB Package"
-echo "------------------------"
+echo "----------------------"
+echo "Installing EMA Package"
+echo "----------------------"
 
 python setup.py install
 
@@ -24,16 +24,18 @@ echo "---------------"
 echo "Copying scripts"
 echo "---------------"
 
+NAME=ema
+
 # daemon in foreground utility
-cp -vf scripts/emad.sh  /usr/local/bin/emad
-chmod 0755 /usr/local/bin/emad
+cp -vf scripts/$NAME.sh  /usr/local/bin/$NAME
+chmod 0755 /usr/local/bin/$NAME
 
 # init.d service script
-cp -vf emad.init.sh /etc/init.d/emad
-chmod 0755 /etc/init.d/emad
+cp -vf $NAME.init.sh /etc/init.d/$NAME
+chmod 0755 /etc/init.d/$NAME
 
 # Add auxiliar event scripts and command line utility
-for script in ema low-volt-sms+shutdown roof-script  volt-script 
+for script in emacli low-volt-sms+shutdown roof-script  volt-script 
 do
   echo "Installing auxiliar event script $script ..."
   cp -vf scripts/$script /usr/local/bin/$script
@@ -48,40 +50,36 @@ done
 
 echo
 echo "-------------------------"
-echo "Copying emad config files"
+echo "Copying $NAME config files"
 echo "-------------------------"
 
 # python config file
 
-if [ ! -d "/etc/ema" ]; then
-    echo "creating /etc/ema as the default config directory"
-    mkdir /etc/emad 2>/dev/null 1>/dev/null
+if [ ! -d "/etc/$NAME" ]; then
+    echo "creating /etc/$NAME as the default config directory"
+    mkdir /etc/$NAME 2>/dev/null 1>/dev/null
 fi
 
 for file in config
 do
-    if [ ! -f "/etc/ema/$file" ]; then
-	cp -vf config/$file /etc/ema/
-	chmod 0644 /etc/ema/$file
+    if [ ! -f "/etc/$NAME/$file" ]; then
+	cp -vf config/$file /etc/$NAME/
+	chmod 0644 /etc/$NAME/$file
     else
-	echo "skipping /etc/ema/$file"
+	echo "skipping /etc/$NAME/$file"
     fi
 done
 
 # service defaults file
 
-if [ ! -f "/etc/default/emad" ]; then
-    cp -vf default /etc/default/emad
+if [ ! -f "/etc/default/$NAME" ]; then
+    cp -vf default /etc/default/$NAME
 else
-    echo "skipping /etc/default/emad"
+    echo "skipping /etc/default/$NAME"
 fi
 
 echo
-echo "=================================================================="
-echo "EMAD successfully installed"
-echo "* To start EMAD daemon in the foreground\t: sudo emad"
-echo
-echo "* To start EMAD Daemon background\t: sudo service emad start"
-echo "* To start EMAD Daemon at boot\t: sudo update-rc.d emad defaults"
-echo "=================================================================="
+echo "================================="
+echo "EMA daemon successfully installed"
+echo "================================="
 

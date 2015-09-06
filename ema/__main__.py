@@ -21,8 +21,6 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 # ----------------------------------------------------------------------
 
-
-
 import os
 import sys
 
@@ -31,19 +29,12 @@ import cmdline
 options = cmdline.parser().parse_args()
 
 if os.name == "nt":
-
-    print("ERROR: unsupported OS")
-    sys.exit(1)
-
-#  if options.foreground:
-#     import posixservice
-#  else:
-#     import winservice
+	if not options.interactive:
+		import winservice
+	else:
+		import posixservice
 elif os.name == "posix":
-    import posixservice
+	import posixservice
 else:
-    print("ERROR: unsupported OS")
-    sys.exit(1)
-
-
-
+	print("ERROR: unsupported OS")
+	sys.exit(1)

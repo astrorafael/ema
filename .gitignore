@@ -7,8 +7,7 @@ ema/dev/*.pyc
 ema/dev/*.pyo
 ema/server/*.pyo
 ema/server/*.pyc
-myconfig
-myemad.sh
+my*
 *~
 ema/*~
 ema/dev/*~
