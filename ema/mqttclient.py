@@ -189,7 +189,7 @@ class MQTTClient(MQTTPublisher):
                   log.debug("%s publishing average %s => %s %s", device.name, key, value[0], value[1])
                   topic   = "%s/average/%s/%s" % (self.id, device.name, key)
                   payload = "%s %s" % value 
-                  self.__mqtt.publish(topic=topic, payload=payload)
+                  self.mqtt.publish(topic=topic, payload=payload)
             except IndexError as e:
                log.error("publish(average) Exception: %s reading device=%s", e, device.name)
 
