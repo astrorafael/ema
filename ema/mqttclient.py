@@ -175,7 +175,7 @@ class MQTTClient(MQTTPublisher):
                for key, value in device.current.iteritems():
                   log.debug("%s publishing current %s => %s %s", 
                             device.name, key, value[0], value[1])
-                  topic   = "%s/current/%s/%s" % (self.__id, device.name, key)
+                  topic   = "%s/current/%s/%s" % (self.id, device.name, key)
                   payload = "%s %s" % value 
                   self.mqtt.publish(topic=topic, payload=payload)
             except IndexError as e:
@@ -187,7 +187,7 @@ class MQTTClient(MQTTPublisher):
             try:
                for key, value in device.average.iteritems():
                   log.debug("%s publishing average %s => %s %s", device.name, key, value[0], value[1])
-                  topic   = "%s/average/%s/%s" % (self.__id, device.name, key)
+                  topic   = "%s/average/%s/%s" % (self.id, device.name, key)
                   payload = "%s %s" % value 
                   self.__mqtt.publish(topic=topic, payload=payload)
             except IndexError as e:
