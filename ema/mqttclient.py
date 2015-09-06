@@ -163,7 +163,7 @@ class MQTTClient(MQTTPublisher):
       '''
       # publish raw status line
       if self.__pubstat:
-         payload = self.__emastat.join('\n')
+         payload = '\n'.join(self.__emastat)
          self.mqtt.publish(topic=MQTTClient.TOPIC_CURRENT_STATUS, 
                            payload=self.__emastat)
          self.__emastat = []
