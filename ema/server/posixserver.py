@@ -30,13 +30,15 @@
 # select() timeout vaule is 1 second by default,a value not to coarse
 # nor too fine.
 #
+# For EMA, this only works for *NIX like O.S. Windows doesn't handle I/O on
+# devices other than sockets when using select(), so we can't read
+# RS232 ports from here.
+#
 # I could have made this framework more generic by registering callback 
 # functions instead of object instances. Bound methods would work as 
 # well, but I have not have the need to use isolated functions.
 #
-# The Lazy class is meant to be subclassed and contains all the logic
-# to handle a cyclic counter. When this counter reaches 0 it triggers
-# a callback.
+
 #
 # The Alarmable class is meant to be subclassed and contains all the 
 # logic to handle a counter and triigering a callback when the counter 
@@ -50,42 +52,63 @@
 # We use ABCMeta metaclass and @abstractmethod decorator, to enforce
 # enforcing some methods to be implemented in subclasses.
 #
-# In v2.0, we add a reload method, TBD how to call it from Windows
+# In v2.0, we add a SIGHUP to perform on line reloading and reconfigure
 #
 # ======================================================================
 
 import os
 import errno
+import signal
 import select
 import logging
-import datetime
-import time
-from   abc import ABCMeta, abstractmethod
 
-import win32api
-import win32con
-import win32event
+import logger
 
 
 log = logging.getLogger('server')
 
+def sigreload(signum, frame):
+   '''
+   Signal handler (SGUHUP only)
+   '''
+   Server.instance.sigreload = True
+   
+def sigpause(signum, frame):
+   '''
+   Signal handler (SIGUSR1 only)
+   '''
+   Server.instance.sigpause = True
 
-class Server(object, stopEvent=None):
+def sigresume(signum, frame):
+   '''
+   Signal handler (SIGUSR2 only)
+   '''
+   Server.instance.sigresume = True
 
-   TIMEOUT = 1   # seconds timeout in select()
+class Server(object):
+   TIMEOUT = 1
+   FLAVOUR = "POSIX server"
 
    instance = None
 
-   def __init__(self):
-      self.__readables  = []
-      self.__writables  = []
-      self.__alarmables = []
-      self.__lazy       = []
-      self.__hWaitStop = stopEvent if StopEvent else win32event.CreateEvent(None, 0, 0, None)
+   def __init__(self, *args):
+      self.__paused   = False  
+      self.__robj     = []
+      self.__wobj     = []
+      self.__alobj    = []
+      self.__lazy     = []
+      self.sigreload  = False
+      self.sigpause   = False
+      self.sigresume  = False
+      Server.instance = self
+      signal.signal(signal.SIGHUP, sigreload)
+      signal.signal(signal.SIGUSR1, sigpause)
+      signal.signal(signal.SIGUSR2, sigresume)
 
-   def SetTimeout(self, newT):
-      '''Set the select() timeout'''
-      Server.TIMEOUT = newT
+
+   # -------------------------------
+   # Event I/O registering interface
+   # -------------------------------
 
    def addReadable(self, obj):
       '''
@@ -96,13 +119,13 @@ class Server(object, stopEvent=None):
       # Returns AttributeError exception if not
       callable(getattr(obj,'fileno'))
       callable(getattr(obj,'onInput'))
-      self.__readables.append(obj)
+      self.__robj.append(obj)
 
 
    def delReadable(self, obj):
       '''Removes readable object from the list, 
       thus avoiding onInput() callback'''
-      self.__readables.pop(self.__readables.index(obj))
+      self.__robj.pop(self.__robj.index(obj))
 
 
    def addWritable(self, obj):
@@ -114,14 +137,17 @@ class Server(object, stopEvent=None):
       # Returns AttributeError exception if not
       callable(getattr(obj,'fileno'))
       callable(getattr(obj,'onOutput'))
-      self.__readables.append(obj)
+      self.__robj.append(obj)
 
 
    def delWritable(self, obj):
       '''Removes writable object from the list, 
       thus avoiding onOutput() callback'''
-      self.__writables.pop(self.__writables.index(obj))
+      self.__wobj.pop(self.__wobj.index(obj))
 
+   # -------------------------------
+   # Alarmable registering interface
+   # -------------------------------
 
    def addAlarmable(self, obj):
       '''
@@ -132,14 +158,18 @@ class Server(object, stopEvent=None):
       # Returns AttributeError exception if not
       callable(getattr(obj,'timeout'))
       callable(getattr(obj,'onTimeoutDo'))
-      self.__alarmables.append(obj)
+      self.__alobj.append(obj)
 
 
    def delAlarmable(self, obj):
       '''Removes alarmable object from the list, 
       thus avoiding onTimeoutDo() callback'''
-      self.__alarmables.pop(self.__alarmables.index(obj))
+      self.__alobj.pop(self.__alobj.index(obj))
 
+
+   # --------------------------
+   # Lazy registering interface
+   # --------------------------
 
    def addLazy(self, obj):
       '''
@@ -151,50 +181,83 @@ class Server(object, stopEvent=None):
       callable(getattr(obj,'mustWork'))
       self.__lazy.append(obj)
 
-   # ------------------------------------
+   # -------------------------------------
    # Reload interface, triggered by SIGHUP
-   # ------------------------------------
+   # -------------------------------------
 
-   def reload(self, obj, T):
+   def reload(self):
       '''
-      reloadns configuration aand reconfigures on-line
+      reload configuration aand reconfigures on-line. To be overriden
       '''
       pass
+
+   # --------------------------------------------------------
+   # Pause /resume interface, triggered by SIGUSR1, SUGUSR2
+   # --------------------------------------------------------
+
+   @property
+   def paused(self):
+      return self.__paused
+
+
+   def pause(self):
+      '''
+      Pause server activity. To be overriden by child classes
+      '''
+      pass
+
+
+   def resume(self):
+      '''
+      Continue server activity. To be overriden by child classes.
+      '''
+      pass
+
+   def handlePause(self):
+      if self.__paused:
+         return
+      self.__paused = True
+      self.pause()
+
+   def handleResume(self):
+      if not self.__paused:
+         return
+      self.__paused = False
+      self.resume()
 
    # ---------
    # main loop
    # ---------
 
+   def SetTimeout(self, newT):
+      '''Set the select() timeout'''
+      Server.TIMEOUT = newT
+
+
    def waitForActivity(self, timeout):
       '''Wait for activity. Return list of changed objects and
       a next step flag (True = next step is needed)'''
 
-      # Catch "simulated signals and windows events" during this cyclo
-      # and execute reload
+      # Catch SIGHUP, SIGUSR1, SUGUSR2 signals during select()
 
       try:
-         # This is a Windows specific quirk: It returns error
-         # if the select() sets are empty.
-         if len(self.__readables) == 0 and len(self.__writables) == 0:
-            rc = win32event.WaitForSingleObject(self.hWaitStop, 1000*timeout)
-            if rc == win32event.WAIT_OBJECT_0:
-               raise KeyboardInterrupt()
-            nreadables = []
-            nwritables = []
-         else:
-            rc = win32event.WaitForSingleObject(self.hWaitStop, timeout*250)
-            if rc == win32event.WAIT_OBJECT_0:
-               raise KeyboardInterrupt()
-            nreadables, nwritables, _ = select.select(
-               self.__readables, self.__writables, [], timeout*0.75)
+         nread, nwrite, _ = select.select(self.__robj, self.__wobj, [], timeout)
+         return nread, nwrite, True
       except select.error as e:
          if e[0] == errno.EINTR:
-            self.reload()
-            return [], [], False
+            if self.sigreload:
+               self.reload()
+               self.sigreload = False
+               return [], [], False
+            if self.sigpause:
+               self.handlePause()
+               self.sigpause = False
+               return [], [], False
+            if self.sigresume:
+               self.handleResume()
+               self.sigresume = False
+               return [], [], False
          raise
-      except Exception:
-         raise
-      return nreadables, nwritables, True
 
 
    def processHandlers( self, nreadables, nwritables):
@@ -204,7 +267,7 @@ class Server(object, stopEvent=None):
          io_activity = True
          for readable in nreadables:
             readable.onInput()
-            
+         
       if nwritables:
          io_activity = True
          for writable in nwritables:
@@ -212,7 +275,7 @@ class Server(object, stopEvent=None):
 
       if not io_activity:                   
          # Execute alarms first
-         for alarm in self.__alarmables:
+         for alarm in self.__alobj:
             if alarm.timeout():
                self.delAlarmable(alarm)
                alarm.onTimeoutDo()
@@ -243,6 +306,7 @@ class Server(object, stopEvent=None):
             log.warning("Server.run() aborted by user request")
             break
          except Exception as e:
+            logger.sysLogError(str(e))
             log.exception(e)
             break
          
@@ -255,125 +319,4 @@ class Server(object, stopEvent=None):
       pass
 
 
-# ==========================================================
 
-class Lazy(object):
-   '''
-   Abstract class for all objects implementing a work() method
-   to be used within the select() system call 
-   when this system call times out.
-   '''
-
-   __metaclass__ = ABCMeta     # Only Python 2.7
-
-   def __init__(self, period=1.0):
-      self.__count = 0
-      self.__limit = int(round(period/Server.TIMEOUT))
-
-
-   def reset(self):
-      self.__count = 0
-
-
-   def setPeriod(self, period):
-      self.__limit = int(round(period/Server.TIMEOUT))
-
-
-   def mustWork(self):
-      '''
-      Increments counter modulo N.
-      Returns True if counter wraps around.
-      '''
-      self.__count = (self.__count + 1) % self.__limit
-      return  (self.__count == 0)
-
-   @abstractmethod
-   def work(self):
-      '''
-      Work procedure for lazy objects.
-      To be subclassed and overriden
-      '''
-      pass
-
-# ==========================================================
-
-class Alarmable(object):
-   '''
-   Superclass for all objects implementing a OnTimeoutDo() method
-   to be used within the select() system call when this system call times out.
-   Efficient but not accurate implememtation valid for a few seconds 
-   '''
-
-   __metaclass__ = ABCMeta     # Only Python 2.7
-
-   def __init__(self, timeout=1.0):
-      self.__count = 0
-      self.__limit = int(round(timeout/Server.TIMEOUT))
-
-
-   def resetAlarm(self):
-      self.__count = 0
-
-
-   def setTimeout(self, timeout):
-      self.__limit = int(round(timeout/Server.TIMEOUT))
-
-
-   def timeout(self):
-      '''
-      Increments counter modulo N.
-      Returns True if counter wraps around.
-      '''
-      self.__count = (self.__count + 1) % self.__limit
-      return  (self.__count == 0)
-
-
-   @abstractmethod
-   def onTimeoutDo(self):
-      '''
-      To be subclassed and overriden
-      '''
-      pass
-
-# ==========================================================
-
-class Alarmable2(object):
-   '''
-   Abstract class for all objects implementing a OnTimeoutDo() method
-   to be used within the select() system call when this system call times out.
-   Accurate implememtation valid for sevtral hours using timestamps. 
-   '''
-
-   __metaclass__ = ABCMeta     # Only Python 2.7
-
-   def __init__(self, timeout=1):
-      self.__delta   = datetime.timedelta(seconds=timeout)
-      self.__tsFinal = datetime.datetime.utcnow() + self.__delta
-
-   def resetAlarm(self):
-      self.__tsFinal    = datetime.datetime.utcnow() + self.__delta
-
-   def setTimeout(self, timeout):
-      self.__delta = datetime.timedelta(seconds=timeout)
-
-
-   def timeout(self):
-      '''
-      Returns True if timeout elapsed.
-      '''
-      return datetime.datetime.utcnow() >= self.__tsFinal   
-
-
-   @abstractmethod
-   def onTimeoutDo(self):
-      '''
-      To be subclassed and overriden
-      '''
-      pass
-
-
-if __name__ == "__main__":
-   utils.setDebug()
-   server = Server()
-   server.run()
-   server.stop()

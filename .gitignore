@@ -5,7 +5,11 @@ ema/*.pyc
 ema/*.pyo
 ema/dev/*.pyc
 ema/dev/*.pyo
+ema/server/*.pyo
+ema/server/*.pyc
 myconfig
 myemad.sh
 *~
 ema/*~
+ema/dev/*~
+ema/server/*~

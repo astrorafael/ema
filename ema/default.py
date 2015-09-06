@@ -22,12 +22,28 @@
 # ----------------------------------------------------------------------
 
 import os
+import os.path
 import sys
 
+# Default config constants for the EMA Client (command line interface)
+# and Server
+VERSION = '0.1.0'
+VERSION_STRING = "emadb/%s/Python %d.%d" % (VERSION, 
+                                         sys.version_info.major, 
+                                         sys.version_info.minor)
+
+
+# Default config file path
 if os.name == "nt":
-        from winserver import *
-elif os.name == "posix":
-        from posixserver import *
+    CONFIG_FILE=os.path.join("C:\\", "emadb", "config", "config.ini")
 else:
-        print("ERROR: unsupported OS")
-	sys.exit(1)
+    CONFIG_FILE="/etc/emadb/config"
+
+
+# Global Log Level for the Root Logger in EMA Client.
+# Note that individual module log levels are handled in config file 
+# Allowed Values => ("CRITICAL", ERROR", "WARN", "INFO", "DEBUG")
+LOGLEVEL="ERROR"
+
+
+
