@@ -46,7 +46,7 @@ class Alarmable(object):
    def setTimeout(self, timeout):
       self.__limit = int(round(timeout/Server.TIMEOUT))
 
-   def timeout(self):
+   def timeout(self, utcnow):
       '''
       Increments counter modulo N.
       Returns True if counter wraps around.
@@ -67,10 +67,12 @@ class Alarmable2(object):
    '''
    Abstract class for all objects implementing a OnTimeoutDo() method
    to be used within the select() system call when this system call times out.
-   Accurate implememtation valid for sevtral hours using timestamps. 
+   Accurate implememtation valid for several hours using timestamps. 
    '''
 
    __metaclass__ = ABCMeta     # Only Python 2.7
+
+   # Class attribte caches timestamp for all objects
 
    def __init__(self, timeout=1):
       self.__delta   = datetime.timedelta(seconds=timeout)
@@ -82,11 +84,11 @@ class Alarmable2(object):
    def setTimeout(self, timeout):
       self.__delta = datetime.timedelta(seconds=timeout)
 
-   def timeout(self):
+   def timeout(self, utcnow):
       '''
       Returns True if timeout elapsed.
       '''
-      return datetime.datetime.utcnow() >= self.__tsFinal   
+      return utcnow >= self.__tsFinal   
 
    @abstractmethod
    def onTimeoutDo(self):
