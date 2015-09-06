@@ -35,7 +35,7 @@ upload_period = 60
 
 # Log File settings
 log_to_file = yes
-log_file = /var/log/emadb.log
+log_file = /var/log/ema.log
 
 # log file rotation policy, either 'time' or 'size'
 log_policy = time
@@ -106,7 +106,7 @@ mqtt_log = INFO
 
 [HTML]
 # Dynamic HTML page generated with current readings
-html_file = /var/www/ema.html
+html_file = /tmp/ema.html
 
 # Page generation period in seconds
 html_period = 60
