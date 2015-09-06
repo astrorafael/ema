@@ -127,7 +127,7 @@ class MQTTPublisher(Lazy):
       '''Send the initial event and set last will on unexpected diconnection'''
       if rc == 0:
          self.__period = self.__initial_T
-         self.setPeriod(self.__initialT)
+         self.setPeriod(self.__initial_T)
          self.__state = CONNECTED
          self.onConnect()
          log.info("Conected sucessfully") 
