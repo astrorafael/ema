@@ -1,12 +1,8 @@
-* introducir de nuevo el default.py
-* refactorizar el inicio d ela clase para que sea como emadb
 * Mandar el TON de la EMA siempre antes que el TOFF !!!!
 * Reload() para cada clase ???
 * Parameters sync as an option and reporting differences to logfile.
 * add versioneer al proyecto https://github.com/warner/python-versioneer
 * Vectores de muestras con timestamps integrados. 
-  - OnStatusMessage() de ema server deberia incluir un tiemstamp en el agrumento
-  - Vectores de tuplas (valor, tiemstamp)
   - El anamomentro 10m no hacemos media sino que cohgemos siempre 
     la muestra mas recviente
   - Empaquetear todas las medidas promediadas en un nuevo EMA status message

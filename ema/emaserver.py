@@ -42,7 +42,8 @@ import os
 import sys
 import datetime
 
-from server.logger      import logToConsole, logToFile, sysLogInfo, sysLogError
+from server.logger import logToConsole, logToFile, sysLogInfo, sysLogError
+from server import Server
 
 
 import serdriver
@@ -75,11 +76,9 @@ import ConfigParser
 
 log = logging.getLogger('emaserver')
 
-VERSION = '0.1.0'
-VERSION_STRING = "EMA/%s/Python %d.%d" % (VERSION, 
-                                         sys.version_info.major, 
-                                         sys.version_info.minor)
-class EMAServer(server.Server):
+from default import VERSION, VERSION_STRING
+
+class EMAServer(Server):
         
    PERIOD = 5
 
@@ -141,7 +140,7 @@ class EMAServer(server.Server):
       self.__parser.optionxform = str
       self.__parser.read(self.__cfgfile)
       self.parseConfigFile()
-      logging.getLogger().info("Starting %s",VERSION_STRING)
+      logging.getLogger().info("Starting %s, %s",VERSION_STRING, Server.FLAVOUR)
       log.info("Loaded configuration from %s", self.__cfgfile)
 
       config = self.__parser

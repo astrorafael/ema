@@ -25,19 +25,21 @@ import os
 import os.path
 import sys
 
+from . import __version__
+
 # Default config constants for the EMA Client (command line interface)
 # and Server
-VERSION = '0.1.0'
-VERSION_STRING = "emadb/%s/Python %d.%d" % (VERSION, 
+VERSION = __version__
+VERSION_STRING = "ema/%s/Python %d.%d" % (VERSION, 
                                          sys.version_info.major, 
                                          sys.version_info.minor)
 
 
 # Default config file path
 if os.name == "nt":
-    CONFIG_FILE=os.path.join("C:\\", "emadb", "config", "config.ini")
+    CONFIG_FILE=os.path.join("C:\\", "emaserver", "config", "config.ini")
 else:
-    CONFIG_FILE="/etc/emadb/config"
+    CONFIG_FILE="/etc/ema/config"
 
 
 # Global Log Level for the Root Logger in EMA Client.

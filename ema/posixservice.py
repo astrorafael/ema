@@ -21,10 +21,15 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 # ----------------------------------------------------------------------
 
+
+import default
 import cmdline
 
+from server    import logger
 from emaserver import EMAServer
-   
-server = EMAServer(cmdline.parser().parse_args())
-server.run()    # Looping  until exception is caught
-server.stop()
+
+logger.sysLogInfo("Starting %s" % default.VERSION_STRING)  
+srv = EMAServer(cmdline.parser().parse_args())
+srv.run()    # Looping  until exception is caught
+srv.stop()
+logger.sysLogInfo("Stopped %s" % default.VERSION_STRING)
