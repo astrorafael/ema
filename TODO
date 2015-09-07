@@ -4,4 +4,13 @@
 * Reload() para cada clase ???
 * Parameters sync as an option and reporting differences to logfile.
 * add versioneer al proyecto https://github.com/warner/python-versioneer
-
+* Vectores de muestras con timestamps integrados. 
+  - OnStatusMessage() de ema server deberia incluir un tiemstamp en el agrumento
+  - Vectores de tuplas (valor, tiemstamp)
+  - El anamomentro 10m no hacemos media sino que cohgemos siempre 
+    la muestra mas recviente
+  - Empaquetear todas las medidas promediadas en un nuevo EMA status message
+    tipo = 'a' o quizas un nuevoi tipo llamado 'x'
+  - publicar a EMA/+/current/status_averaged con 2 tmestamps (comienzo-fin) 
+    y numero de muestras
+  
