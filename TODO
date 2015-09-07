@@ -1,6 +1,5 @@
 * Reload() para cada clase ???
 * Parameters sync as an option and reporting differences to logfile.
-* add versioneer al proyecto https://github.com/warner/python-versioneer
 * Vectores de muestras con timestamps integrados. 
   - El anamomentro 10m no hacemos media sino que cohgemos siempre 
     la muestra mas recviente
