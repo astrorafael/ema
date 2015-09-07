@@ -77,26 +77,26 @@ class RoofRelay(Device):
 
       # Handle initial feed
       if self.relay.len() == 0:
-         self.relay.append(openFlag)
+         self.relay.append(openFlag, timestamp)
          return
 
       # Detects Open -> Close transitions and notify
-      if self.relay.last() and not openFlag:
-         self.relay.append(openFlag)
+      if self.relay.last()[0] and not openFlag:
+         self.relay.append(openFlag, timestamp)
          self.ema.notifier.onEventExecute('RoofRelaySwitch', "--status" , OFF, "--reason", c)
 
       # Detects Close-> Open transitions and notify
-      elif not self.relay.last() and openFlag:
-         self.relay.append(openFlag)
+      elif not self.relay.last()[0] and openFlag:
+         self.relay.append(openFlag, timestamp)
          self.ema.notifier.onEventExecute('RoofRelaySwitch', "--status" , ON, "--reason", c)
       else:
-         self.relay.append(openFlag)
+         self.relay.append(openFlag, timestamp)
 
 
    @property
    def current(self):
       '''Return dictionary with current measured values'''
-      return { RoofRelay.OPEN: (self.relay.last() , '') }
+      return { RoofRelay.OPEN: (self.relay.last()[0] , '') }
 
 
    @property

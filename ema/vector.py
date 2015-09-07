@@ -95,7 +95,8 @@ class Vector(object):
       if not N: 
          return (self.accum, len(self.samples))
       else:
-         return (sum(self.samples[-N:][0]), min(N,len(self.samples)))
+         samples = [ sample[0] for sample in self.samples ]
+         return (sum(samples[-N:]), min(N,len(samples)))
 
 
 if __name__ == '__main__':
