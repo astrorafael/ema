@@ -1,3 +1,5 @@
+* introducir de nuevo el default.py
+* refactorizar el inicio d ela clase para que sea como emadb
 * Mandar el TON de la EMA siempre antes que el TOFF !!!!
 * Reload() para cada clase ???
 * Parameters sync as an option and reporting differences to logfile.
