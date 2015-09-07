@@ -84,7 +84,7 @@ class CloudSensor(Device):
       ema.addParameter(self)
 
 
-   def onStatus(self, message):
+   def onStatus(self, message, timestamp):
       self.cloud.append(int(message[SCLB:SCLE]))
 
 

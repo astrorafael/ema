@@ -69,7 +69,7 @@ class Pluviometer(Device):
       ema.addParameter(self)
 
 
-   def onStatus(self, message):
+   def onStatus(self, message, status):
       self.instant.append(int(message[SPCB:SPCE]))
       self.accumulated.append(int(message[SPAB:SPAE]))
 

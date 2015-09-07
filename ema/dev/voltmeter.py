@@ -90,7 +90,7 @@ class Voltmeter(Device):
 		ema.notifier.addScript('VoltageLow',mode,script)
        
 
-    def onStatus(self, message):
+    def onStatus(self, message, timestamp):
         self.voltage.append(ord(message[SPSB]))
         accum, n = self.voltage.sum(self.averlen)
         average = accum / (n * 10.0)

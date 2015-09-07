@@ -84,7 +84,7 @@ class Pyranometer(Device):
       ema.addParameter(self)
 
 
-   def onStatus(self, message):
+   def onStatus(self, message, timestamp):
       self.led.append(int(message[SPYB:SPYE]))
 
 

@@ -40,6 +40,7 @@ import logging
 import re
 import os
 import sys
+import datetime
 
 from server.logger      import logToConsole, logToFile, sysLogInfo, sysLogError
 
@@ -319,13 +320,14 @@ class EMAServer(server.Server):
 
    def handleStatus(self,message):
       '''Handle EMA periodic status messages'''
+      timestamp = datetime.datetime.utcnow() + datetime.timedelta(seconds=0.5)
       flag = False
       # Only handles current value messages (type 'a')
       # if and only if al paramters are syncronized
       if len(message) == STATLEN and message[SMTB] == MTCUR and self.isSyncDone():
          # Loop to distribute to interested parties
          for obj in self.statusList:
-            obj.onStatus(message)
+            obj.onStatus(message, timestamp)
          self.broadcastUDP(message)
          flag = True
       return flag

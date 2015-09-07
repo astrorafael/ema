@@ -117,10 +117,10 @@ class MQTTClient(MQTTPublisher):
    # Implement the EMA Status Message calback
    # -----------------------------------------
 
-   def onStatus(self, message):
+   def onStatus(self, message, timestamp):
       '''Pick up status message and transform it into pure ASCII string'''
-      tstamp = (datetime.datetime.utcnow() + datetime.timedelta(seconds=0.5)).strftime("(%H:%M:%S %d/%m/%Y)")
-      self.__emastat = [transform(message), tstamp]
+      self.__emastat = [transform(message), 
+                        timestamp.strftime("(%H:%M:%S %d/%m/%Y)")]
 
 
    # -----------------------------------------------

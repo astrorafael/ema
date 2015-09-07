@@ -74,7 +74,7 @@ class Thermometer(Device):
       ema.addThreshold(self)
 
 
-   def onStatus(self, message):
+   def onStatus(self, message, timestamp):
       self.ambient.append(int(message[SATB:SATE]))
       self.humidity.append(int(message[SRHB:SRHE]))
       self.dewpoint.append(int(message[SDPB:SDPE]))

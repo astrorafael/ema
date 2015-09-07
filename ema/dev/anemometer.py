@@ -117,7 +117,7 @@ class Anemometer(Device):
       ema.addParameter(self)
       
 
-   def onStatus(self, message):
+   def onStatus(self, message, timestamp):
       self.windSpeed.append(int(message[SACB:SACE]))
       self.windSpeed10.append(int(message[SAAB:SAAE]))
       self.windDir.append(int(message[SWDB:SWDE]))

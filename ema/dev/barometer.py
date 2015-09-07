@@ -82,7 +82,7 @@ class Barometer(Device):
       ema.addParameter(self)
 
 
-   def onStatus(self, message):
+   def onStatus(self, message, timestamp):
       self.pressure.append(int(message[SABB:SABE]))
 
 

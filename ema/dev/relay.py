@@ -70,7 +70,7 @@ class RoofRelay(Device):
          ema.notifier.addScript('RoofRelaySwitch', relay_mode, script)
       
 
-   def onStatus(self, message):
+   def onStatus(self, message, timestamp):
       '''Roof Relay, accumulate open (True) /close (False) readings'''
       c = message[SRRB]
       openFlag = False if c == 'C' else True
@@ -218,7 +218,7 @@ class AuxRelay(Device):
    # Implements the EMA status message interface
    # -------------------------------------------
 
-   def onStatus(self, message):
+   def onStatus(self, message, timestamp):
       '''Aux Relay, accumulate open/close readings'''
       c = message[SARB]
       openFlag = True if c == 'E' or c == 'e' else False

@@ -68,7 +68,7 @@ class RainSensor(Device):
 
 
 
-   def onStatus(self, message):
+   def onStatus(self, message, timestamp):
       self.rain.append(int(message[SRAB:SRAE]))
 
 

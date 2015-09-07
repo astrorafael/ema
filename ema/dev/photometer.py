@@ -78,11 +78,15 @@ class Photometer(Device):
       self.thres       = Parameter(ema, thres,  self.offset, **THRESHOLD)
       self.photom      = Vector(N)
       ema.addSync(self.thres)
+      ema.subscribeStatus(self)
       ema.addCurrent(self)
       ema.addAverage(self)
       ema.addThreshold(self)
       ema.addParameter(self)
 
+   def onStatus(self, message, status):
+      '''Dummy onStatus() implementation'''
+      pass
 
    def add(self, message, matchobj):
       self.photom.append(int(message[MVI:MVI+2])*100 + int(message[MVD:MVD+2]))
