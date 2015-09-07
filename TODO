@@ -3,4 +3,5 @@
 * Mandar el TON de la EMA siempre antes que el TOFF !!!!
 * Reload() para cada clase ???
 * Parameters sync as an option and reporting differences to logfile.
+* add versioneer al proyecto https://github.com/warner/python-versioneer
 
