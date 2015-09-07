@@ -29,8 +29,7 @@ from . import __version__
 
 # Default config constants for the EMA Client (command line interface)
 # and Server
-VERSION = __version__
-VERSION_STRING = "ema/%s/Python %d.%d" % (VERSION, 
+VERSION_STRING = "ema/%s/Python %d.%d" % (__version__, 
                                          sys.version_info.major, 
                                          sys.version_info.minor)
 
