@@ -85,7 +85,7 @@ class Pyranometer(Device):
 
 
    def onStatus(self, message, timestamp):
-      self.led.append(int(message[SPYB:SPYE]))
+      self.led.append(int(message[SPYB:SPYE]), timestamp)
 
 
    @property

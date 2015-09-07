@@ -75,17 +75,17 @@ class Thermometer(Device):
 
 
    def onStatus(self, message, timestamp):
-      self.ambient.append(int(message[SATB:SATE]))
-      self.humidity.append(int(message[SRHB:SRHE]))
-      self.dewpoint.append(int(message[SDPB:SDPE]))
+      self.ambient.append(int(message[SATB:SATE]),  timestamp)
+      self.humidity.append(int(message[SRHB:SRHE]), timestamp)
+      self.dewpoint.append(int(message[SDPB:SDPE]), timestamp)
 
    @property
    def current(self):
       '''Return dictionary with current measured values'''
       return { 
-         Thermometer.AMBIENT:  (self.ambient.last()  / 10.0 , 'deg C'),
-         Thermometer.HUMIDITY: (self.humidity.last() / 10.0 , '%'),
-         Thermometer.DEWPOINT: (self.dewpoint.last() / 10.0 , 'deg C')
+         Thermometer.AMBIENT:  (self.ambient.last()[0]  / 10.0 , 'deg C'),
+         Thermometer.HUMIDITY: (self.humidity.last()[0] / 10.0 , '%'),
+         Thermometer.DEWPOINT: (self.dewpoint.last()[0] / 10.0 , 'deg C')
          }
 
    @property

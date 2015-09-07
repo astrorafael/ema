@@ -83,14 +83,14 @@ class Barometer(Device):
 
 
    def onStatus(self, message, timestamp):
-      self.pressure.append(int(message[SABB:SABE]))
+      self.pressure.append(int(message[SABB:SABE]), timestamp)
 
 
    @property
    def current(self):
       '''Return dictionary with current measured values'''
       return {
-         Barometer.PRESSURE: (self.pressure.last() / 10.0 , "HPa"),
+         Barometer.PRESSURE: (self.pressure.last()[0] / 10.0 , "HPa"),
       }
 
 

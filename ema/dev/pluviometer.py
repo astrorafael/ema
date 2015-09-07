@@ -69,17 +69,17 @@ class Pluviometer(Device):
       ema.addParameter(self)
 
 
-   def onStatus(self, message, status):
-      self.instant.append(int(message[SPCB:SPCE]))
-      self.accumulated.append(int(message[SPAB:SPAE]))
+   def onStatus(self, message, timestamp):
+      self.instant.append(int(message[SPCB:SPCE]), timestamp)
+      self.accumulated.append(int(message[SPAB:SPAE]), timestamp)
 
 
    @property
    def current(self):
       '''Return dictionary with current measured values'''
       return {
-         Pluviometer.CURRENT:     (self.instant.last() / 10.0  , "mm"),
-         Pluviometer.ACCUMULATED: (float(self.accumulated.last())  , "mm"),
+         Pluviometer.CURRENT:     (self.instant.last()[0] / 10.0  , "mm"),
+         Pluviometer.ACCUMULATED: (float(self.accumulated.last()[0])  , "mm"),
       }
 
 

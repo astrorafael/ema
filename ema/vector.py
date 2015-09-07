@@ -40,9 +40,7 @@
 # 3) Compute the sum of the entire array or a given slice.
 # 4) inform about the actual sum and vector length 
 #
-# In a future we could add a vector of timestamps alongside 
-# with the samples, if this is necessary to identifysamples in a
-# bulk dump.
+# Keep a timestamp of current sample to inform interested parties
 #
 # ======================================================================
 
@@ -52,7 +50,7 @@ log = logging.getLogger('vector')
 
 class Vector(object):
    """
-   Vector implementing a sliding window protocolof size N.
+   Vector implementing a sliding window protocol of size N.
    to calculate moving average
    """
 
@@ -64,18 +62,23 @@ class Vector(object):
       self.samples = []
 
 
-   def append(self, sample):
-      '''append a sample to the vector and move the window if necessary'''
-      self.samples.append(sample)
+   def append(self, sample, timestamp):
+      '''append a sample tuple (value, Time) to the vector 
+      and move the window if necessary'''
+      self.samples.append( (sample, timestamp) )
       self.accum += sample
       if len(self.samples) > self.N:
          pop = self.samples[0]
-         self.accum -= self.samples.pop(0)
+         self.accum -= self.samples.pop(0)[0]
 
 
    def last(self):
-      '''Returns the newest sample added'''
+      '''Returns the newest sample tuple added'''
       return self.samples[-1]
+
+   def first(self):
+      '''Returns the oldest sample tuple added'''
+      return self.samples[0]
 
 
    def len(self):
@@ -92,34 +95,35 @@ class Vector(object):
       if not N: 
          return (self.accum, len(self.samples))
       else:
-         return (sum(self.samples[-N:]), min(N,len(self.samples)))
+         return (sum(self.samples[-N:][0]), min(N,len(self.samples)))
 
 
 if __name__ == '__main__':
+   from datetime import datetime
    v =Vector(5)
    print(v.sum())
-   v.append(7)
+   v.append(7,datetime.utcnow())
    print(v.last())
    print(v.sum())
-   v.append(1)
+   v.append(1, datetime.utcnow())
+   print(v.last()[0])
+   print(v.sum())
+   v.append(3, datetime.utcnow())
+   print(v.last()[0])
+   print(v.sum())
+   v.append(5, datetime.utcnow())
    print(v.last())
    print(v.sum())
-   v.append(3)
+   v.append(9, datetime.utcnow())
    print(v.last())
    print(v.sum())
-   v.append(5)
+   v.append(2, datetime.utcnow())
    print(v.last())
    print(v.sum())
-   v.append(9)
+   v.append(4, datetime.utcnow())
    print(v.last())
    print(v.sum())
-   v.append(2)
-   print(v.last())
-   print(v.sum())
-   v.append(4)
-   print(v.last())
-   print(v.sum())
-   v.append(6)
+   v.append(6, datetime.utcnow())
    print(v.last())
    print(v.sum())
    print(v.sum(N=3))

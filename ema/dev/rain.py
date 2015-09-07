@@ -69,13 +69,13 @@ class RainSensor(Device):
 
 
    def onStatus(self, message, timestamp):
-      self.rain.append(int(message[SRAB:SRAE]))
+      self.rain.append(int(message[SRAB:SRAE]), timestamp)
 
 
    @property
    def current(self):
       '''Return dictionary with current measured values'''
-      return { RainSensor.RAIN: (self.rain.last() / 10.0 , 'mm') }
+      return { RainSensor.RAIN: (self.rain.last()[0] / 10.0 , 'mm') }
 
 
    @property

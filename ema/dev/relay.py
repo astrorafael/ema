@@ -225,21 +225,21 @@ class AuxRelay(Device):
 
       # Handle initial feed
       if self.relay.len() == 0:
-         self.relay.append(openFlag)
+         self.relay.append(openFlag, timestamp)
          return
 
       # Detects Open -> Close transitions and notify
-      if self.relay.last() and not openFlag:
+      if self.relay.last()[0] and not openFlag:
          log.warning("Aux Relay Switch Off: %s", AuxRelay.REASON[c])
-         self.relay.append(openFlag)
+         self.relay.append(openFlag, timestamp)
          self.ema.notifier.onEventExecute('AuxRelaySwitch', "--status" , OFF, "--reason", c)
       # Detects Close-> Open transitions and notify
-      elif not self.relay.last() and openFlag:
+      elif not self.relay.last()[0] and openFlag:
          log.warning("Aux Relay Switch On: %s", AuxRelay.REASON[c])
-         self.relay.append(openFlag)
+         self.relay.append(openFlag, timestamp)
          self.ema.notifier.onEventExecute('AuxRelaySwitch', "--status" , ON, "--reason", c)
       else:
-         self.relay.append(openFlag)
+         self.relay.append(openFlag, timestamp)
 
    # ----------
    # Properties
@@ -248,7 +248,7 @@ class AuxRelay(Device):
    @property
    def current(self):
       '''Return dictionary with current measured values'''
-      return { AuxRelay.OPEN: (self.relay.last() , '') }
+      return { AuxRelay.OPEN: (self.relay.last()[0] , '') }
 
    @property
    def average(self):

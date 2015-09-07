@@ -118,18 +118,18 @@ class Anemometer(Device):
       
 
    def onStatus(self, message, timestamp):
-      self.windSpeed.append(int(message[SACB:SACE]))
-      self.windSpeed10.append(int(message[SAAB:SAAE]))
-      self.windDir.append(int(message[SWDB:SWDE]))
+      self.windSpeed.append(int(message[SACB:SACE]), timestamp)
+      self.windSpeed10.append(int(message[SAAB:SAAE]), timestamp)
+      self.windDir.append(int(message[SWDB:SWDE]), timestamp)
 
 
    @property
    def current(self):
       '''Return dictionary with current measured values'''
       return {
-         Anemometer.SPEED:  (self.windSpeed.last() / 10.0 , "Km/h"),
-         Anemometer.SPEED10:   (float(self.windSpeed10.last()) , "Km/h"),
-         Anemometer.DIRECTION: (float(self.windDir.last()) , "degrees")
+         Anemometer.SPEED:  (self.windSpeed.last()[0] / 10.0 , "Km/h"),
+         Anemometer.SPEED10:   (float(self.windSpeed10.last()[0]) , "Km/h"),
+         Anemometer.DIRECTION: (float(self.windDir.last()[0]) , "degrees")
       }
 
 

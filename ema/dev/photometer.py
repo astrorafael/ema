@@ -62,6 +62,9 @@ OFFSET = {
 # Photometer values (in magnitudes) do not come in status messages
 # but in an independent message so there is no onStatus() method
 
+# This is a hack. It should go away
+from datetime import datetime
+
 class Photometer(Device):
 
    MAGNITUDE = 'magnitude'
@@ -84,18 +87,19 @@ class Photometer(Device):
       ema.addThreshold(self)
       ema.addParameter(self)
 
-   def onStatus(self, message, status):
+   def onStatus(self, message, timestamp):
       '''Dummy onStatus() implementation'''
       pass
 
    def add(self, message, matchobj):
-      self.photom.append(int(message[MVI:MVI+2])*100 + int(message[MVD:MVD+2]))
+      self.photom.append(int(message[MVI:MVI+2])*100 + int(message[MVD:MVD+2]),
+                         datetime.utcnow())
       
 
    @property
    def current(self):
       '''Return dictionary with current measured values'''
-      return {  Photometer.MAGNITUDE: (self.photom.last() / 100.0 , 'Mv/arcsec^2') }
+      return {  Photometer.MAGNITUDE: (self.photom.last()[0] / 100.0 , 'Mv/arcsec^2') }
 
 
    @property

@@ -85,13 +85,13 @@ class CloudSensor(Device):
 
 
    def onStatus(self, message, timestamp):
-      self.cloud.append(int(message[SCLB:SCLE]))
+      self.cloud.append(int(message[SCLB:SCLE]), timestamp)
 
 
    @property
    def current(self):
       '''Return dictionary with current measured values'''
-      return { CloudSensor.CLOUD: (self.cloud.last() / 10.0 , '%') }
+      return { CloudSensor.CLOUD: (self.cloud.last()[0] / 10.0 , '%') }
 
 
    @property

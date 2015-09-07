@@ -39,6 +39,9 @@ def setLogLevel(level):
 # Thermopile values (in magnitudes) do not come in status messages
 # but in an independent message so there is no onStatus() method
 
+# This should go away
+from datetime import datetime
+
 class Thermopile(Device):
 
    SKY     = 'sky'
@@ -57,19 +60,20 @@ class Thermopile(Device):
 
 
    def add(self, message, matchobj):
+      T = datetime.utcnow()
       log.debug("themopile.add(%s)", message)
       temp = float(matchobj.group(1))
       if message[THERMOINF] == '0':
-         self.infrared.append(temp) 
+         self.infrared.append(temp, T) 
       else:
-         self.capsule.append(temp)
+         self.capsule.append(temp, T)
 
    @property
    def current(self):
       '''Return dictionary with current measured values'''
       return { 
-         Thermopile.SKY:     (self.infrared.last() , ' deg C'),
-         Thermopile.AMBIENT: (self.capsule.last()  , ' deg C')
+         Thermopile.SKY:     (self.infrared.last()[0] , ' deg C'),
+         Thermopile.AMBIENT: (self.capsule.last()[0]  , ' deg C')
          }
 
    @property

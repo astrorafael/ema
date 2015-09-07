@@ -91,7 +91,7 @@ class Voltmeter(Device):
        
 
     def onStatus(self, message, timestamp):
-        self.voltage.append(ord(message[SPSB]))
+        self.voltage.append(ord(message[SPSB]), timestamp)
         accum, n = self.voltage.sum(self.averlen)
         average = accum / (n * 10.0)
         if average < self.lowvolt:
@@ -100,7 +100,7 @@ class Voltmeter(Device):
     @property
     def current(self):
         '''Return dictionary with current measured values'''
-        return { Voltmeter.VOLTAGE: (self.voltage.last() / 10.0 , "V") }
+        return { Voltmeter.VOLTAGE: (self.voltage.last()[0] / 10.0 , "V") }
 
 
     @property
