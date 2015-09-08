@@ -279,7 +279,7 @@ class AuxRelay(Device):
    @property
    def raw_current(self):
       '''Return dictionary with current measured values'''
-      return { AuxRelay.OPEN: chr(self.rawrelay.newest()[0]) }
+      return { AuxRelay.OPEN: self.rawrelay.newest()[0] }
 
    @property
    def average(self):

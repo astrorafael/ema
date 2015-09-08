@@ -54,7 +54,7 @@ import notifier
 import genpage
 import command
 
-from emaproto import STATLEN, MTCUR, SMTB
+from emaproto import STATLEN, MTCUR, SMTB, encodeFreq
 
 import dev.rtc         as rtc
 import dev.watchdog    as wdog
@@ -247,7 +247,7 @@ class EMAServer(Server):
       self.todtimer.onNewInterval()
 
    # ----------------------------------
-   # Synchroniztaion at startup process
+   # Synchronization at startup process
    # ----------------------------------
 
    def sync(self):
@@ -444,7 +444,72 @@ class EMAServer(Server):
       logging.shutdown()
 
 
+   # -------------------------------------
+   # EMA Average Status Message Formatting
+   # -------------------------------------
 
+   # This is a long, tedious method
+   def formatAverageStatus(self):
+      '''Formats a similar status message but with averages'''
+
+      # Que no se nos olvide ver que hacer con esto
+      tNew, tOld, N =  self.voltmeter.timespan()
+
+      mydict = self.roofRelay.raw_current()
+      roof   = mydict[RoofRelay.OPEN]
+      mydict = self.auxfRelay.raw_current()
+      aux    = mydict[AuxRelay.OPEN]
+      mydict = self.voltmeter.raw_average()
+      volt   = mydict[Voltmeter.VOLTAGE]
+      mydict = self.rainsensor.raw_average()
+      wet    = mydict[RainSensor.RAIN]
+      mydict = self.barometer.raw_average()
+      calp   = mydict[Barometer.CAL_PRESSURE]
+      absp   = mydict[Barometer.PRESSURE]
+      mydict = self.pluviometer.raw_average()
+      plu    = mydict[Pluviometer.CURRENT]
+      mydict = self.pluviometer.raw_current()
+      pluAcc = mydict[Pluviometer.ACCUMULATED] 
+      mydict = self.pyranometer.raw_average()
+      led    = mydict[Pyranometer.IRRADIATION]
+      mydict = self.photometer.raw_average()
+      freq   =  mydict[Photometer.FREQUENCY], 
+      freq   = emaproto.encodeFreq(freq)
+      mydyc  = self.thermometer.raw_average()
+      tamb   = mydict[Thermometer.AMBIENT]
+      hum    = mydic[Thermometer.HUMIDITY]
+      dew    = mydict[Thermometer.DEWPOINT]
+      mydict = self.anemometer.raw_current()
+      ane10  = mydict[Anemometer.SPEED10]
+      mydict = self.anemometer.raw_average()
+      ane    = mydict[Anemometer.SPEED]
+      wind   = mydict[Anemometer.DIRECTION]
+
+      values = {
+         'roof':  roof,
+         'aux':   aux,
+         'volt':  volt,
+         'wet':   wet,
+         'calp':  calp,
+         'absp':  absp,
+         'plu':   plu,
+         'pluAc': pluAc,
+         'led':   led,
+         'freq':  freq,
+         'tamb':  tamb,
+         'hum':   hum,
+         'dew':   dew,
+         'ane10': ane10,
+         'ane':   ane,
+         'wind':  wind
+         }
+
+      fmt = "(%(roof)c %(aux)c %(volt)03d %(wet)03d %(calp)05d %(absp)05d %(plu)04d %(pluAc)04d %(led)03d %(freq)s %(tamb)04d %(hum)03d %(dew)04d %(ane10)03d %(ane)04d %(wind)03d p0000)"
+      return fmt % values
+
+# ===========================================================================
+# COMMAND CLASS FOR FORWARDING SERIAL => UDP
+# ===========================================================================
 
 
 class ExternalCommand(command.Command):

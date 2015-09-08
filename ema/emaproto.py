@@ -106,3 +106,24 @@ THERMOINF = 4     # Thermopile digit string offset ('0' = infrared ; '1' = ambie
 MVI = 13 # Integer part
 MVD = 16 # decimal part
 
+
+import math
+
+def encodeFreq(hertz):
+    '''Encode frequency in Hertz into EMA format field'''
+    hertz *= 1000               # to milihertz
+    exp = 0
+    while hertz > 9999:
+        hertz /= 10
+        exp += 1
+    return "%d%04d" % (exp, hertz)
+        
+def decodeFreq(enc):
+    '''
+    Decode a EMMMM frequency EMA format fragment. 
+    Returns frequency in Hertz
+    '''
+    exp = int(enc[0])-3
+    mant = int(enc[1:5])
+    return mant*math.pow(10, exp)
+        

@@ -161,37 +161,9 @@ class MQTTClient(MQTTPublisher):
       '''
       Publish real time individual readings to MQTT Broker
       '''
-      # publish raw status line
-      if self.__pubstat:
-         payload = '\n'.join(self.__emastat)
-         self.mqtt.publish(topic=MQTTClient.TOPIC_CURRENT_STATUS, 
-                           payload=payload)
-         self.__emastat = []
-
-      # publish last current values
-      for device in self.srv.currentList:
-         if ('mqtt','current') in device.publishable:
-            try:
-               for key, value in device.current.iteritems():
-                  log.debug("%s publishing current %s => %s %s", 
-                            device.name, key, value[0], value[1])
-                  topic   = "%s/current/%s/%s" % (self.id, device.name, key)
-                  payload = "%s %s" % value 
-                  self.mqtt.publish(topic=topic, payload=payload)
-            except IndexError as e:
-               log.error("publish(current) Exception: %s reading device=%s", e, device.name)
-      
-      # Publish averages
-      for device in self.srv.averageList:
-         if ('mqtt','average') in device.publishable:
-            try:
-               for key, value in device.average.iteritems():
-                  log.debug("%s publishing average %s => %s %s", device.name, key, value[0], value[1])
-                  topic   = "%s/average/%s/%s" % (self.id, device.name, key)
-                  payload = "%s %s" % value 
-                  self.mqtt.publish(topic=topic, payload=payload)
-            except IndexError as e:
-               log.error("publish(average) Exception: %s reading device=%s", e, device.name)
+         
+      self.publishCurrent()
+      self.publishAverages()
 
       if self.__stats % NPUBLISH == 0:
          log.info("Published %d measurements" % self.__stats)
@@ -234,6 +206,36 @@ class MQTTClient(MQTTPublisher):
    # --------------
 
 
+   def publishCurrent(self):
+      '''Publish current individual readings'''
+      for device in self.srv.currentList:
+         if ('mqtt','current') in device.publishable:
+            try:
+               for key, value in device.current.iteritems():
+                  log.debug("%s publishing current %s => %s %s", 
+                                 device.name, key, value[0], value[1])
+                  topic  = "%s/current/%s/%s" % (self.id, device.name, key)
+                  payload = "%s %s" % value 
+                  self.mqtt.publish(topic=topic, payload=payload)
+            except IndexError as e:
+               log.error("publish(current) Exception: %s reading device=%s", e, device.name)
+
+   def publishAverages(self):
+      '''Publish averages individual readings'''      
+      # Publish averages
+      for device in self.srv.averageList:
+         if ('mqtt','average') in device.publishable:
+            try:
+               for key, value in device.average.iteritems():
+                  log.debug("%s publishing average %s => %s %s", 
+                                  device.name, key, value[0], value[1])
+                  topic = "%s/average/%s/%s" % (self.id, device.name, key)
+                  payload = "%s %s" % value 
+                  self.mqtt.publish(topic=topic, payload=payload)
+            except IndexError as e:
+               log.error("publish(average) Exception: %s reading device=%s", e, device.name)
+
+
    def publishTopics(self):
       '''
       Publish active topics
@@ -264,6 +266,16 @@ class MQTTClient(MQTTPublisher):
                         payload='\n'.join(topics), qos=2, retain=True)
       log.info("Sent active topics to %s", MQTTClient.TOPIC_TOPICS)
       
+
+   def publishStatus(self):
+      # publish raw status line
+      if self.__pubstat:
+         payload = '\n'.join(self.__emastat)
+         self.mqtt.publish(topic=MQTTClient.TOPIC_CURRENT_STATUS, 
+                           payload=payload)
+         self.__emastat = []
+         payload = self.ema.formatAverageStatus
+         self.mqtt.publish(topic="EMA/%s/average/status" %  self.id , payload=payload)
 
    def requestPage(self, page):
       '''

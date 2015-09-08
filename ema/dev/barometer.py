@@ -61,7 +61,8 @@ OFFSET = {
 
 class Barometer(Device):
 
-   PRESSURE = 'pressure'
+   PRESSURE     = 'abs_pressure'
+   CAL_PRESSURE = 'cal_pressure'
 
    def __init__(self, ema, parser, N):
       lvl = parser.get("BAROMETER", "barom_log")
@@ -73,7 +74,8 @@ class Barometer(Device):
       Device.__init__(self, publish_where, publish_what)
       self.height    = Parameter(ema, height, **HEIGHT)
       self.offset    = Parameter(ema, offset, **OFFSET)
-      self.pressure  = Vector(N)
+      self.abspress  = Vector(N)
+      self.calpress  = Vector(N)
       ema.addSync(self.height)
       ema.addSync(self.offset)
       ema.subscribeStatus(self)
@@ -83,14 +85,15 @@ class Barometer(Device):
 
 
    def onStatus(self, message, timestamp):
-      self.pressure.append(int(message[SABB:SABE]), timestamp)
-
+      self.abspress.append(int(message[SABB:SABE]), timestamp)
+      self.abspress.append(int(message[SCBB:SCBE]), timestamp)
 
    @property
    def current(self):
       '''Return dictionary with current measured values'''
       return {
-         Barometer.PRESSURE: (self.pressure.newest()[0] / 10.0 , "HPa"),
+         Barometer.PRESSURE: (self.abspress.newest()[0] / 10.0 , "HPa"),
+         Barometer.CAL_PRESSURE: (self.calpress.newest()[0] / 10.0 , "HPa"),
       }
 
    
@@ -98,22 +101,35 @@ class Barometer(Device):
    def raw_current(self):
       '''Return dictionary with current measured values'''
       return {
-         Barometer.PRESSURE: self.pressure.newest()[0],
+         Barometer.PRESSURE: self.abspress.newest()[0],
+         Barometer.CAL_PRESSURE: self.calpress.newest()[0],
       }
 
 
    @property
    def average(self):
       '''Return dictionary averaged values over a period of N samples'''
-      accum, n = self.pressure.sum()
-      return { Barometer.PRESSURE: (accum/(10.0*n), "HPa")}
+      accum, n = self.abspress.sum()
+      abspres  = ( accum/(10.0*n), "HPa" )
+      accum, n = self.calpress.sum()
+      calpres  = ( accum/(10.0*n), "HPa" )
+      return { 
+         Barometer.PRESSURE:     abspres,
+         Barometer.CAL_PRESSURE: calpres,
+      }
 
 
    @property
    def raw_average(self):
       '''Return dictionary averaged values over a period of N samples'''
-      accum, n = self.pressure.sum()
-      return { Barometer.PRESSURE: float(accum)/n }
+      accum, n = self.abspress.sum()
+      abspres  = float(accum)/n
+      accum, n = self.calpress.sum()
+      calpres  = float(accum)/n
+      return { 
+         Barometer.PRESSURE:     abspres,
+         Barometer.CAL_PRESSURE: calpres, 
+      }
 
 
    @property
