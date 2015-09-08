@@ -92,6 +92,11 @@ class CloudSensor(Device):
    def current(self):
       '''Return dictionary with current measured values'''
       return { CloudSensor.CLOUD: (self.cloud.newest()[0] / 10.0 , '%') }
+   
+   @property
+   def raw_current(self):
+      '''Return dictionary with current measured values'''
+      return { CloudSensor.CLOUD: self.cloud.newest()[0] }
 
 
    @property
@@ -99,6 +104,12 @@ class CloudSensor(Device):
       '''Return dictionary averaged values over a period of N samples'''
       accum, n = self.cloud.sum()
       return { CloudSensor.CLOUD: (accum/(10.0*n), '%') }
+
+   @property
+   def raw_average(self):
+      '''Return dictionary averaged values over a period of N samples'''
+      accum, n = self.cloud.sum()
+      return { CloudSensor.CLOUD: float(accum)/n }
 
 
    @property

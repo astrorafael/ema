@@ -91,7 +91,12 @@ class Pyranometer(Device):
    @property
    def current(self):
       '''Return dictionary with current measured values'''
-      return { Pyranometer.IRRADIATION: (self.led.newest() / 10.0 , '%') }
+      return { Pyranometer.IRRADIATION: (self.led.newest()[0] / 10.0 , '%') }
+
+   @property
+   def raw_current(self):
+      '''Return dictionary with current measured values'''
+      return { Pyranometer.IRRADIATION: self.led.newest()[0]  }
 
 
    @property
@@ -99,6 +104,12 @@ class Pyranometer(Device):
       '''Return dictionary averaged values over a period of N samples'''
       accum, n = self.led.sum()
       return { Pyranometer.IRRADIATION: (accum/(10.0*n), '%') }
+
+   @property
+   def raw_average(self):
+      '''Return dictionary averaged values over a period of N samples'''
+      accum, n = self.led.sum()
+      return { Pyranometer.IRRADIATION: float(accum)/n }
 
 
    @property

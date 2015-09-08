@@ -77,12 +77,22 @@ class RainSensor(Device):
       '''Return dictionary with current measured values'''
       return { RainSensor.RAIN: (self.rain.newest()[0] / 10.0 , 'mm') }
 
+   @property
+   def raw_current(self):
+      '''Return dictionary with current measured values'''
+      return { RainSensor.RAIN: self.rain.newest()[0]  }
 
    @property
    def average(self):
       '''Return dictionary averaged values over a period of N samples'''
       accum, n = self.rain.sum()
       return { RainSensor.RAIN: (accum/(10.0*n), 'mm') }
+
+   @property
+   def raw_average(self):
+      '''Return dictionary averaged values over a period of N samples'''
+      accum, n = self.rain.sum()
+      return { RainSensor.RAIN: float(accum)/n }
 
    @property
    def threshold(self):

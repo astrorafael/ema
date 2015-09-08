@@ -82,6 +82,14 @@ class Pluviometer(Device):
          Pluviometer.ACCUMULATED: (float(self.accumulated.newest()[0])  , "mm"),
       }
 
+   @property
+   def raw_current(self):
+      '''Return dictionary with current measured values'''
+      return {
+         Pluviometer.CURRENT:     self.instant.newest()[0],
+         Pluviometer.ACCUMULATED: self.accumulated.newest()[0],
+      }
+
 
    @property
    def average(self):
@@ -90,7 +98,23 @@ class Pluviometer(Device):
       av1 = (accum/(10.0*n), "mm")
       accum, n = self.accumulated.sum()
       av2 = (float(accum)/n, "mm")
-      return { Pluviometer.CURRENT: av1, 'accumulated': av2 }
+      return { 
+         Pluviometer.CURRENT:     av1, 
+         Pluviometer.ACCUMULATED: av2, 
+      }
+
+
+   @property
+   def raw_average(self):
+      '''Return dictionary averaged values over a period of N samples'''
+      accum, n = self.instant.sum()
+      av1 = float(accum)/n
+      accum, n = self.accumulated.sum()
+      av2 = float(accum)/n
+      return { 
+         Pluviometer.CURRENT:     av1, 
+         Pluviometer.ACCUMULATED: av2,
+      }
 
 
    @property

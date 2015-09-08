@@ -33,26 +33,36 @@ class Device(object):
 
    @property
    def current(self):
-      '''Return dictionary with current measured values'''
-      return {}
+      '''Return dictionary with current measured, normalized values'''
+      raise NotImplementedError
+
+   @property
+   def raw_current(self):
+      '''Return dictionary with current measured, raw values'''
+      raise NotImplementedError
 
 
    @property
    def average(self):
       '''Return dictionary of averaged values over a period of N samples'''
-      return {}
+      raise NotImplementedError
+
+   @property
+   def raw_average(self):
+      '''Return dictionary of averaged raw value over a period of N samples'''
+      raise NotImplementedError
 
 
    @property
    def threshold(self):
       '''Return dictionary with thresholds'''
-      return {}
+      raise NotImplementedError
 
 
    @property
    def parameter(self):
       '''Return dictionary with calibration constants'''
-      return {}
+      raise NotImplementedError
 
 
    @property

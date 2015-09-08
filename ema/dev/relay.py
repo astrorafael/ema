@@ -61,7 +61,8 @@ class RoofRelay(Device):
       scripts       = chop(parser.get("ROOF_RELAY","roof_relay_script"), ',')
       relay_mode    = parser.get("ROOF_RELAY","roof_relay_mode")
       Device.__init__(self, publish_where, publish_what)
-      self.relay = Vector(N)
+      self.relay    = Vector(N)
+      self.rawrelay = Vector(N)
       self.ema   = ema
       ema.subscribeStatus(self)
       ema.addCurrent(self)
@@ -70,27 +71,35 @@ class RoofRelay(Device):
          ema.notifier.addScript('RoofRelaySwitch', relay_mode, script)
       
 
+   def toBoolean(self, c):
+      return False if c == 'C' else True
+
    def onStatus(self, message, timestamp):
       '''Roof Relay, accumulate open (True) /close (False) readings'''
       c = message[SRRB]
-      openFlag = False if c == 'C' else True
+      openFlag = toBoolean(c)
+      val = ord(c)
 
       # Handle initial feed
       if self.relay.len() == 0:
          self.relay.append(openFlag, timestamp)
+         self.rawrelay.append(val, timestamp)
          return
 
       # Detects Open -> Close transitions and notify
       if self.relay.newest()[0] and not openFlag:
          self.relay.append(openFlag, timestamp)
+         self.rawrelay.append(val, timestamp)
          self.ema.notifier.onEventExecute('RoofRelaySwitch', "--status" , OFF, "--reason", c)
 
       # Detects Close-> Open transitions and notify
       elif not self.relay.newest()[0] and openFlag:
          self.relay.append(openFlag, timestamp)
+         self.rawrelay.append(val, timestamp)
          self.ema.notifier.onEventExecute('RoofRelaySwitch', "--status" , ON, "--reason", c)
       else:
          self.relay.append(openFlag, timestamp)
+         self.rawrelay.append(val, timestamp)
 
 
    @property
@@ -98,12 +107,20 @@ class RoofRelay(Device):
       '''Return dictionary with current measured values'''
       return { RoofRelay.OPEN: (self.relay.newest()[0] , '') }
 
+   @property
+   def raw_current(self):
+      '''Return dictionary with current measured values'''
+      return { RoofRelay.OPEN: chr(self.rawrelay.newest()[0]) }
+
 
    @property
    def average(self):
       '''Return dictionary averaged values over a period of N samples'''
       accum, n = self.relay.sum()
       return { RoofRelay.OPEN: ((accum*100.0)/n, '%') }
+
+   #@property
+   #def raw_average(self):
 
 
 # =======================================
@@ -206,6 +223,7 @@ class AuxRelay(Device):
       self.ton      = None
       self.toff     = None
       self.relay    = Vector(N)
+      self.rawrelay = Vector(N)
       ema.addSync(self.mode)
       ema.subscribeStatus(self)
       ema.addParameter(self)
@@ -214,6 +232,9 @@ class AuxRelay(Device):
       if AuxRelay.MAPPING[mode] == AuxRelay.TIMED:
          ema.todtimer.addSubscriber(self)
 
+   def toBoolean(self, c):
+      return True if c == 'E' or c == 'e' else False
+
    # -------------------------------------------
    # Implements the EMA status message interface
    # -------------------------------------------
@@ -221,25 +242,30 @@ class AuxRelay(Device):
    def onStatus(self, message, timestamp):
       '''Aux Relay, accumulate open/close readings'''
       c = message[SARB]
-      openFlag = True if c == 'E' or c == 'e' else False
+      openFlag = toBoolean(c)
+      val = ord(c)                # convert to an integer
 
       # Handle initial feed
       if self.relay.len() == 0:
          self.relay.append(openFlag, timestamp)
+         self.rawrelay.append(val, timestamp)
          return
 
       # Detects Open -> Close transitions and notify
       if self.relay.newest()[0] and not openFlag:
          log.warning("Aux Relay Switch Off: %s", AuxRelay.REASON[c])
          self.relay.append(openFlag, timestamp)
+         self.rawrelay.append(val, timestamp)
          self.ema.notifier.onEventExecute('AuxRelaySwitch', "--status" , OFF, "--reason", c)
       # Detects Close-> Open transitions and notify
       elif not self.relay.newest()[0] and openFlag:
          log.warning("Aux Relay Switch On: %s", AuxRelay.REASON[c])
          self.relay.append(openFlag, timestamp)
+         self.rawrelay.append(val, timestamp)
          self.ema.notifier.onEventExecute('AuxRelaySwitch', "--status" , ON, "--reason", c)
       else:
          self.relay.append(openFlag, timestamp)
+         self.rawrelay.append(val, timestamp)
 
    # ----------
    # Properties
@@ -248,7 +274,12 @@ class AuxRelay(Device):
    @property
    def current(self):
       '''Return dictionary with current measured values'''
-      return { AuxRelay.OPEN: (self.relay.newest()[0] , '') }
+      return { AuxRelay.OPEN: (self.relay.newest()[0], '') }
+
+   @property
+   def raw_current(self):
+      '''Return dictionary with current measured values'''
+      return { AuxRelay.OPEN: chr(self.rawrelay.newest()[0]) }
 
    @property
    def average(self):
@@ -256,6 +287,8 @@ class AuxRelay(Device):
       accum, n = self.relay.sum()
       return { AuxRelay.OPEN: ((accum*100.0)/n, '%') }
 
+   #@property
+   #def raw_average(self):
 
    @property
    def parameter(self):

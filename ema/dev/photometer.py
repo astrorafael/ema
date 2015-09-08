@@ -65,9 +65,17 @@ OFFSET = {
 # This is a hack. It should go away
 from datetime import datetime
 
+def xtFrequency(message):
+   '''Extract and Transform into Instrumental Magnitude in Hz'''
+   exp  = int(message[SPHB]) - 3      
+   mant = int(message[SPHB+1:SPHE])
+   return mant*pow(10, exp)
+
+
 class Photometer(Device):
 
    MAGNITUDE = 'magnitude'
+   FREQUENCY = 'frequency'
 
    def __init__(self, ema, parser, N):
       lvl     = parser.get("PHOTOMETER", "phot_log")
@@ -80,6 +88,7 @@ class Photometer(Device):
       self.offset      = Parameter(ema, offset, **OFFSET)
       self.thres       = Parameter(ema, thres,  self.offset, **THRESHOLD)
       self.photom      = Vector(N)
+      self.freq        = Vector(N)
       ema.addSync(self.thres)
       ema.subscribeStatus(self)
       ema.addCurrent(self)
@@ -89,7 +98,8 @@ class Photometer(Device):
 
    def onStatus(self, message, timestamp):
       '''Dummy onStatus() implementation'''
-      pass
+      self.freq.append( (xtFrequency(message) ,timestamp) )
+
 
    def add(self, message, matchobj):
       self.photom.append(int(message[MVI:MVI+2])*100 + int(message[MVD:MVD+2]),
@@ -99,14 +109,44 @@ class Photometer(Device):
    @property
    def current(self):
       '''Return dictionary with current measured values'''
-      return {  Photometer.MAGNITUDE: (self.photom.newest()[0] / 100.0 , 'Mv/arcsec^2') }
+      return {  
+         Photometer.MAGNITUDE: (self.photom.newest()[0]/100.0 , 'Mv/arcsec^2'),
+         Photometer.FREQUENCY:  (self.freq.newest()[0], 'Hz'),
+      }
+
+   @property
+   def raw_current(self):
+      '''Return dictionary with current measured values'''
+      return {  
+         Photometer.MAGNITUDE:  self.photom.newest()[0],
+         Photometer.FREQUENCY:  self.freq.newest()[0],
+      }
 
 
    @property
    def average(self):
       '''Return dictionary of averaged values over a period of N samples'''
       accum, n = self.photom.sum()
-      return { Photometer.MAGNITUDE: (accum/(100.0*n), 'Mv/arcsec^2' ) }
+      mv = accum/(100.0*n)
+      accum, n = self.freq.sum()
+      freq = float(accum)/n
+
+      return { 
+         Photometer.MAGNITUDE: (mv, 'Mv/arcsec^2' ), 
+         Photometer.FREQUENCY: (freq, 'Hz' ), 
+      }
+
+   @property
+   def raw_average(self):
+      '''Return dictionary of averaged values over a period of N samples'''
+      accum, n = self.photom.sum()
+      mv = float(accum)/n  
+      accum, n = self.freq.sum()
+      freq = float(accum)/n
+      return { 
+         Photometer.MAGNITUDE: mv,  
+         Photometer.FREQUENCY: freq, 
+      }
 
 
    @property

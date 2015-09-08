@@ -97,10 +97,20 @@ class Voltmeter(Device):
         if average < self.lowvolt:
             self.ema.notifier.onEventExecute('VoltageLow', '--voltage', "%.1f" % average, '--threshold', "%.1f" % self.lowvolt, '--size' , str(n))
 
+
+    def timespan(self):
+        '''Return the bounding timespan objects and sample length'''
+        return self.voltage.newest()[1],  self.voltage.oldest()[1],  self.voltage.len()
+
     @property
     def current(self):
         '''Return dictionary with current measured values'''
         return { Voltmeter.VOLTAGE: (self.voltage.newest()[0] / 10.0 , "V") }
+
+    @property
+    def raw_current(self):
+        '''Return dictionary with current measured values'''
+        return { Voltmeter.VOLTAGE: self.voltage.newest()[0] }
 
 
     @property
@@ -108,6 +118,12 @@ class Voltmeter(Device):
         '''Return dictionary of averaged values over a period of N samples'''
         accum, n = self.voltage.sum()
         return { Voltmeter.VOLTAGE: (accum/(10.0*n), "V") }
+
+    @property
+    def raw_average(self):
+        '''Return dictionary of averaged values over a period of N samples'''
+        accum, n = self.voltage.sum()
+        return { Voltmeter.VOLTAGE: float(accum)/n }
 
 
     @property

@@ -93,12 +93,27 @@ class Barometer(Device):
          Barometer.PRESSURE: (self.pressure.newest()[0] / 10.0 , "HPa"),
       }
 
+   
+   @property
+   def raw_current(self):
+      '''Return dictionary with current measured values'''
+      return {
+         Barometer.PRESSURE: self.pressure.newest()[0],
+      }
+
 
    @property
    def average(self):
       '''Return dictionary averaged values over a period of N samples'''
       accum, n = self.pressure.sum()
       return { Barometer.PRESSURE: (accum/(10.0*n), "HPa")}
+
+
+   @property
+   def raw_average(self):
+      '''Return dictionary averaged values over a period of N samples'''
+      accum, n = self.pressure.sum()
+      return { Barometer.PRESSURE: float(accum)/n }
 
 
    @property

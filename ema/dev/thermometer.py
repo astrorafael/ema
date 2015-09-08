@@ -89,6 +89,16 @@ class Thermometer(Device):
          }
 
    @property
+   def raw_current(self):
+      '''Return dictionary with current measured values'''
+      return { 
+         Thermometer.AMBIENT:  self.ambient.newest()[0],
+         Thermometer.HUMIDITY: self.humidity.newest()[0],
+         Thermometer.DEWPOINT: self.dewpoint.newest()[0],
+         }
+
+
+   @property
    def average(self):
       '''Return dictionary averaged values over a period of N samples'''
       accum, n = self.ambient.sum()
@@ -98,7 +108,23 @@ class Thermometer(Device):
       accum, n = self.dewpoint.sum()
       av3 = (accum/(10.0*n), 'deg C')
       return { 
-         Thermometer.AMBIENT: av1, 
+         Thermometer.AMBIENT:  av1, 
+         Thermometer.HUMIDITY: av2, 
+         Thermometer.DEWPOINT: av3
+         }
+
+
+   @property
+   def raw_average(self):
+      '''Return dictionary averaged values over a period of N samples'''
+      accum, n = self.ambient.sum()
+      av1 = float(accum)/n
+      accum, n = self.humidity.sum()
+      av2 = float(accum)/n
+      accum, n = self.dewpoint.sum()
+      av3 = float(accum)/n
+      return { 
+         Thermometer.AMBIENT:  av1, 
          Thermometer.HUMIDITY: av2, 
          Thermometer.DEWPOINT: av3
          }

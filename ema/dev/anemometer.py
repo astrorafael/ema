@@ -132,6 +132,15 @@ class Anemometer(Device):
          Anemometer.DIRECTION: (float(self.windDir.newest()[0]) , "degrees")
       }
 
+   @property
+   def raw_current(self):
+      '''Return dictionary with current measured values'''
+      return {
+         Anemometer.SPEED:     self.windSpeed.newest()[0],
+         Anemometer.SPEED10:   self.windSpeed10.newest()[0],
+         Anemometer.DIRECTION: self.windDir.newest()[0],
+      }
+
 
    @property
    def average(self):
@@ -143,11 +152,25 @@ class Anemometer(Device):
       accum, n = self.windDir.sum()
       av3 = (float(accum) / n, "degrees")
       return { 
-         Anemometer.SPEED: av1, 
-         Anemometer.SPEED10: av2, 
+         Anemometer.SPEED:     av1, 
+         Anemometer.SPEED10:   av2, 
          Anemometer.DIRECTION: av3 
          }
    
+   @property
+   def raw_average(self):
+      '''Return dictionary averaged values over a period of N samples'''
+      accum, n = self.windSpeed.sum()
+      av1 = float(accum)/n
+      accum, n = self.windSpeed10.sum()
+      av2 = float(accum) / n
+      accum, n = self.windDir.sum()
+      av3 = float(accum) / n
+      return { 
+         Anemometer.SPEED:     av1, 
+         Anemometer.SPEED10:   av2, 
+         Anemometer.DIRECTION: av3, 
+         }
 
    @property
    def threshold(self):
