@@ -72,11 +72,11 @@ class Vector(object):
          self.accum -= self.samples.pop(0)[0]
 
 
-   def last(self):
+   def newest(self):
       '''Returns the newest sample tuple added'''
       return self.samples[-1]
 
-   def first(self):
+   def oldest(self):
       '''Returns the oldest sample tuple added'''
       return self.samples[0]
 
@@ -104,28 +104,28 @@ if __name__ == '__main__':
    v =Vector(5)
    print(v.sum())
    v.append(7,datetime.utcnow())
-   print(v.last())
+   print(v.newest())
    print(v.sum())
    v.append(1, datetime.utcnow())
-   print(v.last()[0])
+   print(v.newest()[0])
    print(v.sum())
    v.append(3, datetime.utcnow())
-   print(v.last()[0])
+   print(v.newest()[0])
    print(v.sum())
    v.append(5, datetime.utcnow())
-   print(v.last())
+   print(v.newest())
    print(v.sum())
    v.append(9, datetime.utcnow())
-   print(v.last())
+   print(v.newest())
    print(v.sum())
    v.append(2, datetime.utcnow())
-   print(v.last())
+   print(v.newest())
    print(v.sum())
    v.append(4, datetime.utcnow())
-   print(v.last())
+   print(v.newest())
    print(v.sum())
    v.append(6, datetime.utcnow())
-   print(v.last())
+   print(v.newest())
    print(v.sum())
    print(v.sum(N=3))
 

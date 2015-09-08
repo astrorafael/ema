@@ -100,7 +100,7 @@ class Voltmeter(Device):
     @property
     def current(self):
         '''Return dictionary with current measured values'''
-        return { Voltmeter.VOLTAGE: (self.voltage.last()[0] / 10.0 , "V") }
+        return { Voltmeter.VOLTAGE: (self.voltage.newest()[0] / 10.0 , "V") }
 
 
     @property

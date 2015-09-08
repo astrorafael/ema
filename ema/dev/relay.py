@@ -81,12 +81,12 @@ class RoofRelay(Device):
          return
 
       # Detects Open -> Close transitions and notify
-      if self.relay.last()[0] and not openFlag:
+      if self.relay.newest()[0] and not openFlag:
          self.relay.append(openFlag, timestamp)
          self.ema.notifier.onEventExecute('RoofRelaySwitch', "--status" , OFF, "--reason", c)
 
       # Detects Close-> Open transitions and notify
-      elif not self.relay.last()[0] and openFlag:
+      elif not self.relay.newest()[0] and openFlag:
          self.relay.append(openFlag, timestamp)
          self.ema.notifier.onEventExecute('RoofRelaySwitch', "--status" , ON, "--reason", c)
       else:
@@ -96,7 +96,7 @@ class RoofRelay(Device):
    @property
    def current(self):
       '''Return dictionary with current measured values'''
-      return { RoofRelay.OPEN: (self.relay.last()[0] , '') }
+      return { RoofRelay.OPEN: (self.relay.newest()[0] , '') }
 
 
    @property
@@ -229,12 +229,12 @@ class AuxRelay(Device):
          return
 
       # Detects Open -> Close transitions and notify
-      if self.relay.last()[0] and not openFlag:
+      if self.relay.newest()[0] and not openFlag:
          log.warning("Aux Relay Switch Off: %s", AuxRelay.REASON[c])
          self.relay.append(openFlag, timestamp)
          self.ema.notifier.onEventExecute('AuxRelaySwitch', "--status" , OFF, "--reason", c)
       # Detects Close-> Open transitions and notify
-      elif not self.relay.last()[0] and openFlag:
+      elif not self.relay.newest()[0] and openFlag:
          log.warning("Aux Relay Switch On: %s", AuxRelay.REASON[c])
          self.relay.append(openFlag, timestamp)
          self.ema.notifier.onEventExecute('AuxRelaySwitch', "--status" , ON, "--reason", c)
@@ -248,7 +248,7 @@ class AuxRelay(Device):
    @property
    def current(self):
       '''Return dictionary with current measured values'''
-      return { AuxRelay.OPEN: (self.relay.last()[0] , '') }
+      return { AuxRelay.OPEN: (self.relay.newest()[0] , '') }
 
    @property
    def average(self):

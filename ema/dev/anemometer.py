@@ -127,9 +127,9 @@ class Anemometer(Device):
    def current(self):
       '''Return dictionary with current measured values'''
       return {
-         Anemometer.SPEED:  (self.windSpeed.last()[0] / 10.0 , "Km/h"),
-         Anemometer.SPEED10:   (float(self.windSpeed10.last()[0]) , "Km/h"),
-         Anemometer.DIRECTION: (float(self.windDir.last()[0]) , "degrees")
+         Anemometer.SPEED:  (self.windSpeed.newest()[0] / 10.0 , "Km/h"),
+         Anemometer.SPEED10:   (float(self.windSpeed10.newest()[0]) , "Km/h"),
+         Anemometer.DIRECTION: (float(self.windDir.newest()[0]) , "degrees")
       }
 
 

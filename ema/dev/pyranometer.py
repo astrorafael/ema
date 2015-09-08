@@ -91,7 +91,7 @@ class Pyranometer(Device):
    @property
    def current(self):
       '''Return dictionary with current measured values'''
-      return { Pyranometer.IRRADIATION: (self.led.last() / 10.0 , '%') }
+      return { Pyranometer.IRRADIATION: (self.led.newest() / 10.0 , '%') }
 
 
    @property

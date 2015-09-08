@@ -75,7 +75,7 @@ class RainSensor(Device):
    @property
    def current(self):
       '''Return dictionary with current measured values'''
-      return { RainSensor.RAIN: (self.rain.last()[0] / 10.0 , 'mm') }
+      return { RainSensor.RAIN: (self.rain.newest()[0] / 10.0 , 'mm') }
 
 
    @property

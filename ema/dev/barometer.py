@@ -90,7 +90,7 @@ class Barometer(Device):
    def current(self):
       '''Return dictionary with current measured values'''
       return {
-         Barometer.PRESSURE: (self.pressure.last()[0] / 10.0 , "HPa"),
+         Barometer.PRESSURE: (self.pressure.newest()[0] / 10.0 , "HPa"),
       }
 
 

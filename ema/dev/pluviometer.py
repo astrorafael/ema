@@ -78,8 +78,8 @@ class Pluviometer(Device):
    def current(self):
       '''Return dictionary with current measured values'''
       return {
-         Pluviometer.CURRENT:     (self.instant.last()[0] / 10.0  , "mm"),
-         Pluviometer.ACCUMULATED: (float(self.accumulated.last()[0])  , "mm"),
+         Pluviometer.CURRENT:     (self.instant.newest()[0] / 10.0  , "mm"),
+         Pluviometer.ACCUMULATED: (float(self.accumulated.newest()[0])  , "mm"),
       }
 
 

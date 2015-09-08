@@ -72,8 +72,8 @@ class Thermopile(Device):
    def current(self):
       '''Return dictionary with current measured values'''
       return { 
-         Thermopile.SKY:     (self.infrared.last()[0] , ' deg C'),
-         Thermopile.AMBIENT: (self.capsule.last()[0]  , ' deg C')
+         Thermopile.SKY:     (self.infrared.newest()[0] , ' deg C'),
+         Thermopile.AMBIENT: (self.capsule.newest()[0]  , ' deg C')
          }
 
    @property

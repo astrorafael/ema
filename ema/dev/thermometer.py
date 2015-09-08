@@ -83,9 +83,9 @@ class Thermometer(Device):
    def current(self):
       '''Return dictionary with current measured values'''
       return { 
-         Thermometer.AMBIENT:  (self.ambient.last()[0]  / 10.0 , 'deg C'),
-         Thermometer.HUMIDITY: (self.humidity.last()[0] / 10.0 , '%'),
-         Thermometer.DEWPOINT: (self.dewpoint.last()[0] / 10.0 , 'deg C')
+         Thermometer.AMBIENT:  (self.ambient.newest()[0]  / 10.0 , 'deg C'),
+         Thermometer.HUMIDITY: (self.humidity.newest()[0] / 10.0 , '%'),
+         Thermometer.DEWPOINT: (self.dewpoint.newest()[0] / 10.0 , 'deg C')
          }
 
    @property

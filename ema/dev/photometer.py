@@ -99,7 +99,7 @@ class Photometer(Device):
    @property
    def current(self):
       '''Return dictionary with current measured values'''
-      return {  Photometer.MAGNITUDE: (self.photom.last()[0] / 100.0 , 'Mv/arcsec^2') }
+      return {  Photometer.MAGNITUDE: (self.photom.newest()[0] / 100.0 , 'Mv/arcsec^2') }
 
 
    @property

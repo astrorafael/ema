@@ -91,7 +91,7 @@ class CloudSensor(Device):
    @property
    def current(self):
       '''Return dictionary with current measured values'''
-      return { CloudSensor.CLOUD: (self.cloud.last()[0] / 10.0 , '%') }
+      return { CloudSensor.CLOUD: (self.cloud.newest()[0] / 10.0 , '%') }
 
 
    @property
