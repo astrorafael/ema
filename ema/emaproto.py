@@ -106,6 +106,8 @@ THERMOINF = 4     # Thermopile digit string offset ('0' = infrared ; '1' = ambie
 MVI = 13 # Integer part
 MVD = 16 # decimal part
 
+# Timestamp format, the EMA way
+STRFTIME = "(%H:%M:%S %d/%m/%Y)"
 
 import math
 

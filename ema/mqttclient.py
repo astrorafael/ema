@@ -36,10 +36,11 @@
 import datetime
 import logging
 
-from emaproto  import SPSB, STATLEN
+from emaproto  import SPSB, STATLEN, STRFTIME
 from command import Command, COMMAND
 from dev.todtimer import Timer
 
+from utils import chop
 from mqttpublisher import MQTTPublisher
 
 # FLASH Pages where History data re stored
@@ -91,16 +92,19 @@ class MQTTClient(MQTTPublisher):
    TOPIC_TOPICS         = "EMA/topics"
    TOPIC_HISTORY_MINMAX = "EMA/history/minmax"
    TOPIC_CURRENT_STATUS = "EMA/current/status"
+   TOPIC_AVERAGE_STATUS = "EMA/average/status"
 
    def __init__(self, ema, parser, **kargs):
       lvl      = parser.get("MQTT", "mqtt_log")
       log.setLevel(lvl)
       histflag = parser.getboolean("MQTT", "mqtt_publish_history")
       publish_status = parser.getboolean("MQTT", "mqtt_publish_status")
+      publish_what   = chop(parser.get("MQTT", "mqtt_publish_what"), ',')
       MQTTPublisher.__init__(self, ema, parser, **kargs)
       self.ema        = ema
       self.__histflag = histflag
       self.__pubstat  = publish_status
+      self.__pubwhat  = publish_what
       self.__emastat  = "()"
       self.__stats    = 0
       ema.todtimer.addSubscriber(self)
@@ -110,6 +114,7 @@ class MQTTClient(MQTTPublisher):
       MQTTClient.TOPIC_TOPICS         = "EMA/%s/topics"  % self.id
       MQTTClient.TOPIC_HISTORY_MINMAX = "EMA/%s/history/minmax" % self.id
       MQTTClient.TOPIC_CURRENT_STATUS = "EMA/%s/current/status" % self.id
+      MQTTClient.TOPIC_AVERAGE_STATUS = "EMA/%s/average/status" % self.id
       log.info("MQTT client created")
 
 
@@ -120,7 +125,7 @@ class MQTTClient(MQTTPublisher):
    def onStatus(self, message, timestamp):
       '''Pick up status message and transform it into pure ASCII string'''
       self.__emastat = [transform(message), 
-                        timestamp.strftime("(%H:%M:%S %d/%m/%Y)")]
+                        timestamp.strftime(STRFTIME)]
 
 
    # -----------------------------------------------
@@ -159,9 +164,11 @@ class MQTTClient(MQTTPublisher):
 
    def publish(self):
       '''
-      Publish real time individual readings to MQTT Broker
+      Publish readings to MQTT Broker
       '''
          
+      self.publishCurrentStatus()
+      self.publishAverageStatus()
       self.publishCurrent()
       self.publishAverages()
 
@@ -220,6 +227,7 @@ class MQTTClient(MQTTPublisher):
             except IndexError as e:
                log.error("publish(current) Exception: %s reading device=%s", e, device.name)
 
+
    def publishAverages(self):
       '''Publish averages individual readings'''      
       # Publish averages
@@ -234,6 +242,7 @@ class MQTTClient(MQTTPublisher):
                   self.mqtt.publish(topic=topic, payload=payload)
             except IndexError as e:
                log.error("publish(average) Exception: %s reading device=%s", e, device.name)
+
 
 
    def publishTopics(self):
@@ -267,15 +276,33 @@ class MQTTClient(MQTTPublisher):
       log.info("Sent active topics to %s", MQTTClient.TOPIC_TOPICS)
       
 
-   def publishStatus(self):
-      # publish raw status line
-      if self.__pubstat:
+   def publishCurrentStatus(self):
+      # publish current raw status line
+      if self.__pubstat and 'current' in self.__pubwhat:
          payload = '\n'.join(self.__emastat)
          self.mqtt.publish(topic=MQTTClient.TOPIC_CURRENT_STATUS, 
                            payload=payload)
          self.__emastat = []
-         payload = self.ema.formatAverageStatus
-         self.mqtt.publish(topic="EMA/%s/average/status" %  self.id , payload=payload)
+
+
+   def publishAverageStatus(self):
+      # publish average raw status line
+      if self.__pubstat and 'average' in self.__pubwhat:
+         # Choose a timespan from any device (should be the same across all)
+         tNew, tOld, N =  self.srv.voltmeter.timespan()
+         payload = [
+             self.srv.formatAverageStatus(),
+             tNew,strftime(STRFTIME),
+             tOld.strftime(STRFTIME),
+             N,
+         ]
+         payload = '\n'.join(payload)
+         self.mqtt.publish(topic=MQTTClient.TOPIC_AVERAGE_STATUS, 
+                           payload=payload)
+
+
+
+
 
    def requestPage(self, page):
       '''

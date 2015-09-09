@@ -452,9 +452,6 @@ class EMAServer(Server):
    def formatAverageStatus(self):
       '''Formats a similar status message but with averages'''
 
-      # Que no se nos olvide ver que hacer con esto
-      tNew, tOld, N =  self.voltmeter.timespan()
-
       mydict = self.roofRelay.raw_current()
       roof   = mydict[RoofRelay.OPEN]
       mydict = self.auxfRelay.raw_current()
