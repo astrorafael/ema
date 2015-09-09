@@ -448,37 +448,35 @@ class EMAServer(Server):
    # EMA Average Status Message Formatting
    # -------------------------------------
 
-   # This is a long, tedious method
+   # It makes no sense to pick averages from:
+   # - Relay open/close state
+   # - Accumulated rain
+   # - Already averaged wind speed over 10m
+   # In these cases, we pick up the newest sample
+
    def formatAverageStatus(self):
       '''Formats a similar status message but with averages'''
 
-      mydict = self.roofRelay.raw_current
-      roof   = mydict[relay.RoofRelay.OPEN]
-      mydict = self.auxRelay.raw_current
-      aux    = mydict[relay.AuxRelay.OPEN]
-      mydict = self.voltmeter.raw_average
-      volti  = round( mydict[volt.Voltmeter.VOLTAGE])
-      mydict = self.rainsensor.raw_average
-      wet    = round(mydict[rain.RainSensor.RAIN])
-      mydict = self.clouds.raw_average
-      clou   = round(mydict[cloud.CloudSensor.CLOUD])
+      roof  = self.roofRelay.raw_current[relay.RoofRelay.OPEN]
+      aux   = self.auxRelay.raw_current[relay.AuxRelay.OPEN]
+      pluAc = self.pluviometer.raw_current[pluviom.Pluviometer.ACCUMULATED]
+      ane10 = self.anemometer.raw_current[anemom.Anemometer.SPEED10]
+
+      volti = round(self.voltmeter.raw_average[volt.Voltmeter.VOLTAGE])
+      wet   = round(self.rainsensor.raw_average[rain.RainSensor.RAIN])
+      clou  = round(self.clouds.raw_average[cloud.CloudSensor.CLOUD])
+      plu   = round(self.pluviometer.raw_average[pluviom.Pluviometer.CURRENT])
+      led   = round(self.pyranometer.raw_average[pyran.Pyranometer.IRRADIATION])
+      freq = encodeFreq(self.photometer.raw_average[photom.Photometer.FREQUENCY])
       mydict = self.barometer.raw_average
       calp   = round(mydict[barom.Barometer.CAL_PRESSURE])
       absp   = round(mydict[barom.Barometer.PRESSURE])
-      mydict = self.pluviometer.raw_average
-      plu    = round(mydict[pluviom.Pluviometer.CURRENT])
-      mydict = self.pluviometer.raw_current
-      pluAc  = mydict[pluviom.Pluviometer.ACCUMULATED] 
-      mydict = self.pyranometer.raw_average
-      led    = round(mydict[pyran.Pyranometer.IRRADIATION])
-      mydict = self.photometer.raw_average
-      freq   = encodeFreq(mydict[photom.Photometer.FREQUENCY])
+
       mydict = self.thermometer.raw_average
       tamb   = round(mydict[thermom.Thermometer.AMBIENT])
       hum    = round(mydict[thermom.Thermometer.HUMIDITY])
       dew    = round(mydict[thermom.Thermometer.DEWPOINT])
-      mydict = self.anemometer.raw_current
-      ane10  = mydict[anemom.Anemometer.SPEED10]
+
       mydict = self.anemometer.raw_average
       ane    = round(mydict[anemom.Anemometer.SPEED])
       wind   = round(mydict[anemom.Anemometer.DIRECTION])
