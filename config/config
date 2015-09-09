@@ -99,9 +99,9 @@ mqtt_publish_history = yes
 # Publish Raw EMA status Line
 mqtt_publish_status = yes
 
-# What to publish: current, average or both status lines
+# What status line to publish: current, average or both status lines
 # comma-separated list 
-mqtt_publish_what = current , average
+mqtt_publish_what = current,average
 
 # component log level (VERBOSE, DEBUG, INFO, WARNING, ERROR, CRITICAL, NONSET)
 mqtt_log = INFO
