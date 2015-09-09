@@ -503,7 +503,7 @@ class EMAServer(Server):
          'wind':  wind
          }
 
-      fmt = "(%(roof)c%(aux)c%(volt)03d %(wet)03d %(clou)03d %(calp)05d %(absp)05d %(plu)04d %(pluAc)04d %(led)03d %(freq)s %(tamb)+03d %(hum)03d %(dew)+03d +000 %(ane10)03d %(ane)04d %(wind)03d p0000)"
+      fmt = "(%(roof)c%(aux)c%(volt)03d %(wet)03d %(clou)03d %(calp)05d %(absp)05d %(plu)04d %(pluAc)04d %(led)03d %(freq)s %(tamb)+04d %(hum)03d %(dew)+04d +000 %(ane10)03d %(ane)04d %(wind)03d p0000)"
       return fmt % values
 
 # ===========================================================================
