@@ -1,15 +1,4 @@
-* property raw_average que devuelva (media en crudo, N samples, units?)
-* metdo interval() que devuelva el par de timestamps(newest, oldest)
-* renombrar .latest() a .newest() en Vector
-* Casos especiales
-  - Relays:  retornar la newest sample tanto en crudo como normalizada
-  - Anem10m: retornar la newest sample tanto en crudo como normalizada
-
 * Reload() para cada clase ???
 * Parameters sync as an option and reporting differences to logfile.
-* Vectores de muestras con timestamps integrados. 
-  - Empaquetear todas las medidas promediadas en un nuevo EMA status message
-    tipo = 'a' o quizas un nuevoi tipo llamado 'x'
-  - publicar a EMA/+/average/status con 2 tmestamps (newest-oldest)(Nmuestras) 
     
   
