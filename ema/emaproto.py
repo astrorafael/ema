@@ -156,11 +156,10 @@ MAG_CLIP_VALUE = 24
 
 def magnitude(frequency):
    '''Extract and Transform into Visual maginitued per arcsec 2'''
-   freq = xtFrequency(message)
-   mv = freq * K_INV_230 * 1.0e-6
+   mv = frequency * K_INV_230 * 1.0e-6
    if mv > 0.0:
       mv = -1.0 * math.log10(mv) * K_INV_LOG10_2_5
       mv = MAG_CLIP_VALUE if mv < 0.0 else mv
    else:
       mv = MAG_CLIP_VALUE
-   return round(mv,2)
+   return round(mv,1)
