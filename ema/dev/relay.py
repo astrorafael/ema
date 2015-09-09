@@ -77,7 +77,7 @@ class RoofRelay(Device):
    def onStatus(self, message, timestamp):
       '''Roof Relay, accumulate open (True) /close (False) readings'''
       c = message[SRRB]
-      openFlag = toBoolean(c)
+      openFlag = self.toBoolean(c)
       val = ord(c)
 
       # Handle initial feed
@@ -242,7 +242,7 @@ class AuxRelay(Device):
    def onStatus(self, message, timestamp):
       '''Aux Relay, accumulate open/close readings'''
       c = message[SARB]
-      openFlag = toBoolean(c)
+      openFlag = self.toBoolean(c)
       val = ord(c)                # convert to an integer
 
       # Handle initial feed

@@ -452,40 +452,43 @@ class EMAServer(Server):
    def formatAverageStatus(self):
       '''Formats a similar status message but with averages'''
 
-      mydict = self.roofRelay.raw_current()
-      roof   = mydict[RoofRelay.OPEN]
-      mydict = self.auxfRelay.raw_current()
-      aux    = mydict[AuxRelay.OPEN]
-      mydict = self.voltmeter.raw_average()
-      volt   = round( mydict[Voltmeter.VOLTAGE])
-      mydict = self.rainsensor.raw_average()
-      wet    = round(mydict[RainSensor.RAIN])
-      mydict = self.barometer.raw_average()
-      calp   = round(mydict[Barometer.CAL_PRESSURE])
-      absp   = round(mydict[Barometer.PRESSURE])
-      mydict = self.pluviometer.raw_average()
-      plu    = round(mydict[Pluviometer.CURRENT])
-      mydict = self.pluviometer.raw_current()
-      pluAcc = mydict[Pluviometer.ACCUMULATED] 
-      mydict = self.pyranometer.raw_average()
-      led    = round(mydict[Pyranometer.IRRADIATION])
-      mydict = self.photometer.raw_average()
-      freq   = emaproto.encodeFreq(mydict[Photometer.FREQUENCY]),
-      mydyc  = self.thermometer.raw_average()
-      tamb   = round(mydict[Thermometer.AMBIENT])
-      hum    = round(mydic[Thermometer.HUMIDITY])
-      dew    = round(mydict[Thermometer.DEWPOINT])
-      mydict = self.anemometer.raw_current()
-      ane10  = mydict[Anemometer.SPEED10]
-      mydict = self.anemometer.raw_average()
-      ane    = round(mydict[Anemometer.SPEED])
-      wind   = round(mydict[Anemometer.DIRECTION])
+      mydict = self.roofRelay.raw_current
+      roof   = mydict[relay.RoofRelay.OPEN]
+      mydict = self.auxRelay.raw_current
+      aux    = mydict[relay.AuxRelay.OPEN]
+      mydict = self.voltmeter.raw_average
+      volti  = round( mydict[volt.Voltmeter.VOLTAGE])
+      mydict = self.rainsensor.raw_average
+      wet    = round(mydict[rain.RainSensor.RAIN])
+      mydict = self.clouds.raw_average
+      clou   = round(mydict[cloud.CloudSensor.CLOUD])
+      mydict = self.barometer.raw_average
+      calp   = round(mydict[barom.Barometer.CAL_PRESSURE])
+      absp   = round(mydict[barom.Barometer.PRESSURE])
+      mydict = self.pluviometer.raw_average
+      plu    = round(mydict[pluviom.Pluviometer.CURRENT])
+      mydict = self.pluviometer.raw_current
+      pluAc  = mydict[pluviom.Pluviometer.ACCUMULATED] 
+      mydict = self.pyranometer.raw_average
+      led    = round(mydict[pyran.Pyranometer.IRRADIATION])
+      mydict = self.photometer.raw_average
+      freq   = encodeFreq(mydict[photom.Photometer.FREQUENCY])
+      mydict = self.thermometer.raw_average
+      tamb   = round(mydict[thermom.Thermometer.AMBIENT])
+      hum    = round(mydict[thermom.Thermometer.HUMIDITY])
+      dew    = round(mydict[thermom.Thermometer.DEWPOINT])
+      mydict = self.anemometer.raw_current
+      ane10  = mydict[anemom.Anemometer.SPEED10]
+      mydict = self.anemometer.raw_average
+      ane    = round(mydict[anemom.Anemometer.SPEED])
+      wind   = round(mydict[anemom.Anemometer.DIRECTION])
 
       values = {
          'roof':  roof,
          'aux':   aux,
-         'volt':  volt,
+         'volt':  volti,
          'wet':   wet,
+         'clou':  clou,
          'calp':  calp,
          'absp':  absp,
          'plu':   plu,
@@ -500,7 +503,7 @@ class EMAServer(Server):
          'wind':  wind
          }
 
-      fmt = "(%(roof)c %(aux)c %(volt)03d %(wet)03d %(calp)05d %(absp)05d %(plu)04d %(pluAc)04d %(led)03d %(freq)s %(tamb)04d %(hum)03d %(dew)04d %(ane10)03d %(ane)04d %(wind)03d p0000)"
+      fmt = "(%(roof)c%(aux)c%(volt)03d %(wet)03d %(clou)03d %(calp)05d %(absp)05d %(plu)04d %(pluAc)04d %(led)03d %(freq)s %(tamb)+03d %(hum)03d %(dew)+03d +000 %(ane10)03d %(ane)04d %(wind)03d p0000)"
       return fmt % values
 
 # ===========================================================================

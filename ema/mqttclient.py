@@ -250,8 +250,11 @@ class MQTTClient(MQTTPublisher):
       Publish active topics
       '''
       topics = [MQTTClient.TOPIC_EVENTS, MQTTClient.TOPIC_HISTORY_MINMAX]
-      if self.__pubstat:
+      if self.__pubstat and 'current' in self.__pubwhat:
          topics.append(MQTTClient.TOPIC_CURRENT_STATUS)
+      if self.__pubstat and 'average' in self.__pubwhat:
+         topics.append(MQTTClient.TOPIC_AVERAGE_STATUS)
+
 
       for device in self.srv.currentList:
          if ('mqtt','current') in device.publishable:
@@ -292,9 +295,9 @@ class MQTTClient(MQTTPublisher):
          tNew, tOld, N =  self.srv.voltmeter.timespan()
          payload = [
              self.srv.formatAverageStatus(),
-             tNew,strftime(STRFTIME),
+             tNew.strftime(STRFTIME),
              tOld.strftime(STRFTIME),
-             N,
+             "(%d)" % N,
          ]
          payload = '\n'.join(payload)
          self.mqtt.publish(topic=MQTTClient.TOPIC_AVERAGE_STATUS, 

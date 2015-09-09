@@ -130,7 +130,7 @@ class MQTTPublisher(Lazy):
          self.setPeriod(self.__initial_T)
          self.__state = CONNECTED
          self.onConnect()
-         log.info("Conected sucessfully") 
+         log.info("Connected sucessfully") 
       else:
          self.handleConnErrors()
 

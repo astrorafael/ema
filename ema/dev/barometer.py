@@ -24,7 +24,7 @@
 import logging
 import re
 
-from ema.emaproto  import SABB, SABE
+from ema.emaproto  import SABB, SABE, SCBB, SCBE
 from ema.parameter import Parameter
 from ema.vector    import Vector
 from ema.device    import Device
@@ -86,7 +86,7 @@ class Barometer(Device):
 
    def onStatus(self, message, timestamp):
       self.abspress.append(int(message[SABB:SABE]), timestamp)
-      self.abspress.append(int(message[SCBB:SCBE]), timestamp)
+      self.calpress.append(int(message[SCBB:SCBE]), timestamp)
 
    @property
    def current(self):

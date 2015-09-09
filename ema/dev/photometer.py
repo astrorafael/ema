@@ -25,7 +25,7 @@ import logging
 import re
 
 
-from ema.emaproto  import MVI, MVD
+from ema.emaproto  import MVI, MVD, SPHB, SPHE
 from ema.parameter import Parameter
 from ema.vector    import Vector
 from ema.device    import Device
@@ -98,7 +98,7 @@ class Photometer(Device):
 
    def onStatus(self, message, timestamp):
       '''Dummy onStatus() implementation'''
-      self.freq.append( (xtFrequency(message) ,timestamp) )
+      self.freq.append(xtFrequency(message), timestamp)
 
 
    def add(self, message, matchobj):
