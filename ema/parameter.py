@@ -287,7 +287,7 @@ class Parameter(AbstractParameter):
       t += self.ema.serdriver.queueDelay()*Server.TIMEOUT
       self.setTimeout(t)      # adjusted for queue length
       value = self.set % self.value
-      self.log.debug("Parameter %s: sending new value", self.name)
+      self.log.debug("Parameter %s: sending new value %s", self.name, self.value)
       self.ema.serdriver.write(value)
 
 
@@ -300,8 +300,9 @@ class Parameter(AbstractParameter):
       
 
    def actionGet(self, message, matchobj):
-      self.log.debug("Parameter %s: matched GET response message", self.name)
       value = int(matchobj.group(self.grp))
+      self.log.debug("Parameter %s: matched GET response message", self.name)
+      self.log.debug("Parameter %s: got value from EMA = %d", self.name, value)
       if value != self.value:
          if not self.syncAllowed:
             self.log.warn("Parameter %s mismatch: [EMA] = %d, [Expected] = %d, [File] = %s",
