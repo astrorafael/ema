@@ -249,7 +249,7 @@ class MQTTClient(MQTTPublisher):
          log.info("Upload complete, processed %d lines", len(self.minmaxBulkDump))
 
 
-    def onAveragesPartial(self, message, userdata):
+   def onAveragesPartial(self, message, userdata):
       '''
       Partial 5 min bulk dump request command handler
       '''
@@ -380,13 +380,13 @@ class MQTTClient(MQTTPublisher):
       log.debug("Request to publish 24h Bulk data")
 
 
-    def publish5minAverages(self):
+   def publish5minAverages(self):
       '''
       Publish last 24h min max
       '''
       self.averBulkDump = []
       self.page = FLASH_5MINAVE_START
-      self.request5minAverPagePage(self.page)
+      self.request5minAverPage(self.page)
       log.debug("Request to publish 5 min averages Bulk data")
 
    # --------------
@@ -401,7 +401,7 @@ class MQTTClient(MQTTPublisher):
       cmd = MinMaxCommand(self.srv, retries=0, **COMMAND[-2])
       cmd.request("(@H%04d)" % page, page)
 
-    def request5minAverPage(self, page):
+   def request5minAverPage(self, page):
       '''
       Request current flash page to EMA
       '''
