@@ -44,8 +44,11 @@ from utils import chop
 from mqttpublisher import MQTTPublisher
 
 # FLASH Pages where History data re stored
-FLASH_START = 300
-FLASH_END   = 300
+FLASH_MINMAX_START = 300
+FLASH_MINMAX_END   = 300
+
+FLASH_5MINAVE_START = 000
+FLASH_5MINAVE_END   = 000
 
 # tog info every NPLUBLIS times (ticks) 
 NPUBLISH = 60
@@ -57,33 +60,68 @@ log = logging.getLogger('mqtt')
 
 # Utility function 
 def transform(message):
-    '''Transform EMA status message into a pure ASCII string'''
+    '''
+    Transform EMA status message into a pure ASCII string
+    Voltage is not ASCII and it is formatted to a 3-digit value
+    '''
     return "%s%03d%s" % (message[:SPSB], ord(message[SPSB]), message[SPSB+1:])
 
+# =======================================
+# HOURLY MINMAX BULK DUMP REQUEST COMMAND
+# =======================================
 
-class BulkDumpCommand(Command):
+class MinMaxCommand(Command):
    '''
    Commad subclass to handle bulk dump request and responses via callbacks
    '''
 
    def __init__(self, ema, retries, **kargs):
-      Command.__init__(self,ema,retries,**kargs)
+      Command.__init__(self,ema, retries, **kargs)
 
    # delegate to MQTT client object as it has all the needed context
    def onPartialCommand(self, message, userdata):
       '''
       Partial bulk dump handler
       '''
-      self.ema.mqttclient.onPartialCommand(message,userdata)
+      self.ema.mqttclient.onMinMaxPartial(message,userdata)
 
    # delegate to MQTT client object as it has all he needed context
    def onCommandComplete(self, message, userdata):
       '''
       Bulk dump Command complete handler
       '''
-      self.ema.mqttclient.onCommandComplete(message,userdata)
+      self.ema.mqttclient.onMinMaxComplete(message,userdata)
 
 
+# =====================================
+# AVERAGES 5m BULK DUMP REQUEST COMMAND
+# ======================================
+
+class AveragesCommand(Command):
+   '''
+   Commad subclass to handle bulk dump request and responses via callbacks
+   '''
+
+   def __init__(self, ema, retries, **kargs):
+      Command.__init__(self,ema, retries, **kargs)
+
+   # delegate to MQTT client object as it has all the needed context
+   def onPartialCommand(self, message, userdata):
+      '''
+      Partial bulk dump handler
+      '''
+      self.ema.mqttclient.onAveragesPartial(message, userdata)
+
+   # delegate to MQTT client object as it has all he needed context
+   def onCommandComplete(self, message, userdata):
+      '''
+      Bulk dump Command complete handler
+      '''
+      self.ema.mqttclient.onAveragesComplete(message, userdata)
+
+# =========================
+# MQTT CLIENT CLASS FOR EMA
+# =========================
 
 class MQTTClient(MQTTPublisher):
 
@@ -136,6 +174,7 @@ class MQTTClient(MQTTPublisher):
       if self.connected():
          if self.__histflag:
             self.publishMinMax24h()
+            self.pubish5MinAver()
       else:
          log.warn("Not connected to broker: can't publish minmax history")
 	
@@ -159,7 +198,8 @@ class MQTTClient(MQTTPublisher):
    def publishOnce(self):
       self.publishTopics()
       if self.__histflag:
-         self.publishMinMax24h()
+         #self.publishMinMax24h()
+         self.publish5minAverages()
 
 
    def publish(self):
@@ -182,36 +222,62 @@ class MQTTClient(MQTTPublisher):
    # Implement Command callbacks
    # -----------------------------------------
 
-   def onPartialCommand(self, message, userdata):
+   def onMinMaxPartial(self, message, userdata):
       '''
-      Partial bulk dump request command handler
+      Partial minmax bulk dump request command handler
       '''
       if len(message) == STATLEN:
-         self.bulkDump.append(transform(message))
+         self.minmaxBulkDump.append(transform(message))
       else:
-         self.bulkDump.append(message)
+         self.minmaxBulkDump.append(message)
      
 
-   def onCommandComplete(self, message, userdata):
+   def onMinMaxComplete(self, message, userdata):
       '''
-      Bulk dump request command complete handler
+      Minmax bulk dump request command complete handler
       '''
-      log.debug("onCommandComplete => %s", message)
-      self.bulkDump.append(message)
-      if self.page < FLASH_END :
+      log.debug("onMinMaxComplete => %s", message)
+      self.minmaxBulkDump.append(message)
+      if self.page < FLASH_MINMAX_END :
          self.page += 1
-         self.requestPage(self.page)
+         self.requestMinMaxPage(self.page)
       else:
          date = message[10:20]
          log.info("Uploading (%s) hourly minmax history to %s", date, MQTTClient.TOPIC_HISTORY_MINMAX)
          self.mqtt.publish(topic=MQTTClient.TOPIC_HISTORY_MINMAX, 
-                           payload='\n'.join(self.bulkDump), qos=2, retain=True)
-         log.info("Upload complete, processed %d lines", len(self.bulkDump))
+                           payload='\n'.join(self.minmaxBulkDump), qos=2, retain=True)
+         log.info("Upload complete, processed %d lines", len(self.minmaxBulkDump))
+
+
+    def onAveragesPartial(self, message, userdata):
+      '''
+      Partial 5 min bulk dump request command handler
+      '''
+      log.debug("onAveragesPartial => %s")
+      self.averBulkDump.append(transform(message))
+           
+
+   def onAveragesComplete(self, message, userdata):
+      '''
+      % min bulk dump request command complete handler
+      '''
+      log.debug("onAveragesComplete => %s")
+      self.averBulkDump.append(message)
+      if self.page < FLASH_5MINAVER_END :
+         self.page += 1
+         self.request5minAverPage(self.page)
+      else:
+         log.info("Uploading 5min averages history to %s", 
+                  "EMA/emapi/history/average")
+         #self.mqtt.publish(topic=MQTTClient.TOPIC_HISTORY_MINMAX, payload='\n'.join(self.averBulkDump), qos=2, retain=True)
+         log.info("Upload complete, processed %d lines", len(self.averBulkDump))
+
+
+
 
    # --------------
-   # Helper methods
+   # Publishing API
    # --------------
-
 
    def publishCurrent(self):
       '''Publish current individual readings'''
@@ -304,24 +370,45 @@ class MQTTClient(MQTTPublisher):
                            payload=payload)
 
 
+   def publishMinMax24h(self):
+      '''
+      Publish last 24h min max
+      '''
+      self.minmaxBulkDump = []
+      self.page = FLASH_MINMAX_START
+      self.requestMinMaxPage(self.page)
+      log.debug("Request to publish 24h Bulk data")
 
 
+    def publish5minAverages(self):
+      '''
+      Publish last 24h min max
+      '''
+      self.averBulkDump = []
+      self.page = FLASH_5MINAVE_START
+      self.request5minAverPagePage(self.page)
+      log.debug("Request to publish 5 min averages Bulk data")
 
-   def requestPage(self, page):
+   # --------------
+   # Helper methods
+   # --------------
+
+   def requestMinMaxPage(self, page):
       '''
       Request current flash page to EMA
       '''
-      log.debug("requesting page %d", page)
-      cmd = BulkDumpCommand(self.srv, retries=0, **COMMAND[-1])
+      log.debug("requesting minmax page %d", page)
+      cmd = MinMaxCommand(self.srv, retries=0, **COMMAND[-2])
       cmd.request("(@H%04d)" % page, page)
 
+    def request5minAverPage(self, page):
+      '''
+      Request current flash page to EMA
+      '''
+      log.debug("requesting 5 min page %d", page)
+      cmd = MinMaxCommand(self.srv, retries=0, **COMMAND[-1])
+      cmd.request("(@t%04d)" % page, page)
 
-   def publishMinMax24h(self):
-      '''
-      Publish last 24h bulk dump
-      '''
-      self.bulkDump = []
-      self.page = FLASH_START
-      self.requestPage(self.page)
-      log.debug("Request to publish 24h Bulk data")
+
+
 

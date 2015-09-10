@@ -141,11 +141,19 @@ COMMAND = [
    },
 
    {
-   'name'   : '24h Bulk Dump Page',
+   'name'   : '24h Hourly MinMax Bulk Dump',
     'reqPat' : '\(@H\d{4}\)',            
     'resPat' : ['\(.{76}M\d{4}\)', '\(.{76}m\d{4}\)', '\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)'],
     'iterations'   : 24,
    },
+
+   {
+   'name'   : '24h 5m Averages Bulk Dump',
+    'reqPat' : '\(@H\d{4}\)',            
+    'resPat' : ['\(.{76}t\d{4}\)'],
+    'iterations'   : 288,
+   },
+
 ]
 
 REGEXP = [ re.compile(cmd['reqPat']) for cmd in COMMAND]
