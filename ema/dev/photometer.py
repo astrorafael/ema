@@ -25,7 +25,7 @@ import logging
 import re
 
 
-from ema.emaproto  import MVI, MVD, SPHB, SPHE, frequency
+from ema.emaproto  import MVI, MVD, SPHB, SPHE, decodeFreq
 from ema.parameter import Parameter
 from ema.vector    import Vector
 from ema.device    import Device
@@ -67,7 +67,7 @@ from datetime import datetime
 
 def xtFrequency(message):
    '''Extract and Transform into Instrumental Magnitude in Hz'''
-   return frequency((message[SPHB:SPHE])
+   return decodeFreq(message[SPHB:SPHE])
 
 
 class Photometer(Device):
