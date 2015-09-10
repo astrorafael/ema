@@ -47,9 +47,10 @@ class WatchDog(Lazy, Device):
         lvl = parser.get("WATCHDOG", "wdog_log")
         log.setLevel(lvl)
         period = parser.getint("WATCHDOG", "keepalive")
+        sync    = parser.getboolean("GENERIC","sync")
         Lazy.__init__(self)
         self.ema = ema
-        self.period = Parameter(ema, period, **PERIOD)
+        self.period = Parameter(ema, period, sync=sync, **PERIOD)
         self.setPeriod(int(self.period.value / (2*Server.TIMEOUT)))
         ema.addLazy(self)
         ema.addSync(self.period)

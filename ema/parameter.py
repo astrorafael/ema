@@ -76,14 +76,14 @@ class AbstractParameter(Alarmable):
    SET   = 2
    END   = 3
 
-   def __init__(self, ema, T, getPat, setPat, nretries = 0):
+   def __init__(self, ema, T, getPat, setPat, sync, nretries = 0):
       Alarmable.__init__(self,T)
       self.ema    = ema
       self.getPat = re.compile(getPat)
       self.setPat = re.compile(setPat)
       self.state  = AbstractParameter.BEGIN
       self.NRetries = nretries
-
+      self.syncAllowed = sync
 
    def sync(self):
       '''First Event'''
@@ -103,7 +103,8 @@ class AbstractParameter(Alarmable):
             self.resetAlarm()
             self.retries = 0
             syncNeeded = self.actionGet(message, matched) # overriden in subclass
-            if syncNeeded:
+            if syncNeeded and self.syncAllowed:
+               self.sendValue()                   # overiden in subclass
                self.state = AbstractParameter.SET # transition to next state
             else:
                self.state = AbstractParameter.END # or to END state
@@ -172,11 +173,20 @@ class AbstractParameter(Alarmable):
       1) Parse the GET response message and extract appropriate values, 
       using matchobj if needed. 
       2) Detect if a sync is needed
-      3) Send SET message to EMA if needs sync. 
       Returns:
       True if needs sync, False otherwise.
       '''
       return False
+
+   @abstractmethod
+   def sendValue(self):
+      '''
+      To be subclassed. Delegated responsibilites.
+      1) Send SET message to EMA
+      Returns:
+      Nothing
+      '''
+      pass
 
    @abstractmethod
    def actionSet(self, message, matchobj):
@@ -252,12 +262,13 @@ Sample Descriptor
 
 class Parameter(AbstractParameter):
 
-   def __init__(self, ema, value, parameter=None, **kargs):
+   def __init__(self, ema, value, parameter=None, sync=False, **kargs):
       AbstractParameter.__init__(self, ema, 
-                              AbstractParameter.TIMEOUT, 
-                              kargs['pat'], 
-                              kargs['pat'], 
-                              AbstractParameter.RETRIES)
+                                 AbstractParameter.TIMEOUT, 
+                                 kargs['pat'], 
+                                 kargs['pat'],
+                                 sync,
+                                 AbstractParameter.RETRIES)
       self.name = kargs['name']
       self.log  = logging.getLogger(kargs['logger'])
       self.mult = kargs['mult']
@@ -268,7 +279,7 @@ class Parameter(AbstractParameter):
       self.grp  = kargs['grp']
       self.value = int(round(value * self.mult))
       self.next = parameter
-      self.log.debug("created Parameter %s = %d", self.name, self.value)
+      self.log.debug("created Parameter %s = %d (sync=%s)", self.name, self.value, self.sync)
 
 
    def sendValue(self):
@@ -276,7 +287,7 @@ class Parameter(AbstractParameter):
       t += self.ema.serdriver.queueDelay()*Server.TIMEOUT
       self.setTimeout(t)      # adjusted for queue length
       value = self.set % self.value
-      self.log.debug("Parameter %s: sending new value", self.name)
+      self.log.debug("Parameter %s: sending new value %s", self.name, self.value)
       self.ema.serdriver.write(value)
 
 
@@ -289,10 +300,13 @@ class Parameter(AbstractParameter):
       
 
    def actionGet(self, message, matchobj):
-      self.log.debug("Parameter %s: matched GET response message", self.name)
       value = int(matchobj.group(self.grp))
+      self.log.debug("Parameter %s: matched GET response message", self.name)
+      self.log.debug("Parameter %s: got value from EMA = %d", self.name, value)
       if value != self.value:
-         self.sendValue()
+         if not self.syncAllowed:
+            self.log.warn("Parameter %s mismatch: [EMA] = %d, [Expected] = %d, [File] = %s",
+                          self.name, value, self.value, (self.value/self.mult))
          needsSync = True
       else:
          self.log.debug("Parameter %s: No need to sync value", self.name)

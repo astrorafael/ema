@@ -43,14 +43,16 @@ class RTCParameter(AbstractParameter):
 
    def __init__(self, ema, deltaT=60):
       AbstractParameter.__init__(self, ema, RTCParameter.TIMEOUT, 
-                              RTCParameter.PAT, 
-                              RTCParameter.PAT, 
-                              RTCParameter.RETRIES)
+                                 RTCParameter.PAT, 
+                                 RTCParameter.PAT, 
+                                 True,
+                                 RTCParameter.RETRIES)
       self.deltaT = datetime.timedelta(seconds=deltaT)
       self.name = "EMA RTC Time Syncronization"
 
 
-   def sendDateTime(self):
+   def sendValue(self):
+      '''Send new RTC value to EMA'''
       t    = self.ema.serdriver.queueDelay()*Server.TIMEOUT
       tadj = int(round(t))
       self.now = (datetime.datetime.utcnow() + datetime.timedelta(seconds=tadj)).replace(microsecond=0)
@@ -75,7 +77,6 @@ class RTCParameter(AbstractParameter):
       ema = datetime.datetime.strptime(message,'(%H:%M:%S %d/%m/%Y)')
       deltaT = abs(ema - self.now)
       if deltaT > self.deltaT:
-         self.sendDateTime()
          log.warning("DeltaT (ema - now) = %s, max DeltaT = %s", deltaT, self.deltaT)
          needsSync = True
       else:

@@ -196,48 +196,37 @@ class EMAServer(Server):
       self.watchdog = wdog.WatchDog(self, config)
 
       # Build Auxiliar Relay Object
-      if config.has_section("AUX_RELAY"):
-         self.auxRelay = relay.AuxRelay(self, config, VECLEN)
+      self.auxRelay = relay.AuxRelay(self, config, VECLEN)
 
       # Build RoofRelay Object
-      if config.has_section("ROOF_RELAY"):
-         self.roofRelay  = relay.RoofRelay(self, config, VECLEN)
+      self.roofRelay  = relay.RoofRelay(self, config, VECLEN)
 
       # Builds Voltmeter object
       self.voltmeter = volt.Voltmeter(self, config, VECLEN)
    
-      # Builds (optional) Photometer Sensor object
-      # Photometer is updated every 60 seconds
-      if config.has_section("PHOTOMETER"):
-         self.photometer = photom.Photometer(self, config, int(round(self.uploadPeriod / 60))) 
+      # Builds Photometer Sensor object
+      self.photometer = photom.Photometer(self, config, int(round(self.uploadPeriod / 60))) 
 
-      # Builds (optional) Barometer object
-      if config.has_section("BAROMETER"):
-         self.barometer = barom.Barometer(self, config, VECLEN) 
+      # Builds Barometer object
+      self.barometer = barom.Barometer(self, config, VECLEN) 
       
-      # Builds (optional) Rain Detector Object
-      if config.has_section("RAIN"):
-         self.rainsensor = rain.RainSensor(self, config, VECLEN)
+      # Builds  Rain Detector Object
+      self.rainsensor = rain.RainSensor(self, config, VECLEN)
 
-      # Builds (optional) Cloud Sensor object
-      if config.has_section("CLOUD"):
-         self.clouds = cloud.CloudSensor(self, config, VECLEN)
+      # Builds Cloud Sensor object
+      self.clouds = cloud.CloudSensor(self, config, VECLEN)
 
-      # Builds (optional) Pyranometer Sensor object
-      if config.has_section("PYRANOMETER"):
-         self.pyranometer = pyran.Pyranometer(self, config, VECLEN)
+      # Builds Pyranometer Sensor object
+      self.pyranometer = pyran.Pyranometer(self, config, VECLEN)
 
-      # Builds (optional) Thermometer Object
-      if config.has_section("THERMOMETER"):
-         self.thermometer = thermom.Thermometer(self, config, VECLEN)
+      # Builds Thermometer Object
+      self.thermometer = thermom.Thermometer(self, config, VECLEN)
 
-      # Builds (optional) Anemometer Object
-      if config.has_section("ANEMOMETER"):
-         self.anemometer = anemom.Anemometer(self, config, VECLEN)
+      # Builds Anemometer Object
+      self.anemometer = anemom.Anemometer(self, config, VECLEN)
 
-      # Builds (optional) Pluviometer Object
-      if config.has_section("PLUVIOMETER"):
-         self.pluviometer = pluviom.Pluviometer(self, config, VECLEN)
+      # Builds Pluviometer Object
+      self.pluviometer = pluviom.Pluviometer(self, config, VECLEN)
 
       # Build objects without configuration values
       self.thermopile = thermop.Thermopile(self, config, VECLEN)
@@ -252,9 +241,8 @@ class EMAServer(Server):
 
    def sync(self):
       '''Trigger configurable parameter syncronization with EMA hardware'''
-      if self.syncNeeded:
-         for obj in self.syncList:
-            obj.sync()      
+      for obj in self.syncList:
+         obj.sync()      
 
 
    def addRequest(self, obj):
