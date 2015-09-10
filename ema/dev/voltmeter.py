@@ -73,10 +73,11 @@ class Voltmeter(Device):
         publish_what  = chop(parser.get("VOLTMETER","volt_publish_what"), ',')
         scripts = chop(parser.get("VOLTMETER","low_volt_script"), ',')
         mode    = parser.get("VOLTMETER","low_volt_mode")
+        sync    = parser.getboolean("GENERIC","sync")
 	Device.__init__(self, publish_where, publish_what)
         self.ema         = ema
-        self.offset      = Parameter(ema, offset, **OFFSET)
-        self.thres       = Parameter(ema, thres, self.offset, **THRESHOLD)
+        self.offset      = Parameter(ema, offset, sync=sync, **OFFSET)
+        self.thres       = Parameter(ema, thres, self.offset, sync=sync, **THRESHOLD)
         self.voltage     = Vector(N)
         self.averlen     = int(round(time / PERIOD))
         self.lowvolt     = delta + thres

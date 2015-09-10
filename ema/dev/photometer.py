@@ -25,7 +25,7 @@ import logging
 import re
 
 
-from ema.emaproto  import MVI, MVD, SPHB, SPHE
+from ema.emaproto  import MVI, MVD, SPHB, SPHE, frequency
 from ema.parameter import Parameter
 from ema.vector    import Vector
 from ema.device    import Device
@@ -67,9 +67,7 @@ from datetime import datetime
 
 def xtFrequency(message):
    '''Extract and Transform into Instrumental Magnitude in Hz'''
-   exp  = int(message[SPHB]) - 3      
-   mant = int(message[SPHB+1:SPHE])
-   return mant*pow(10, exp)
+   return frequency((message[SPHB:SPHE])
 
 
 class Photometer(Device):
@@ -84,9 +82,10 @@ class Photometer(Device):
       publish_what = chop(parser.get("PHOTOMETER","phot_publish_what"), ',')
       offset  = parser.getfloat("PHOTOMETER", "phot_offset")
       thres   = parser.getfloat("PHOTOMETER", "phot_thres")
+      sync    = parser.getboolean("GENERIC","sync")
       Device.__init__(self,publish_where,publish_what)
-      self.offset      = Parameter(ema, offset, **OFFSET)
-      self.thres       = Parameter(ema, thres,  self.offset, **THRESHOLD)
+      self.offset      = Parameter(ema, offset, sync=sync, **OFFSET)
+      self.thres       = Parameter(ema, thres,  self.offset, sync=sync, **THRESHOLD)
       self.photom      = Vector(N)
       self.freq        = Vector(N)
       ema.addSync(self.thres)

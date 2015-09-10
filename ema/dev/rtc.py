@@ -43,9 +43,10 @@ class RTCParameter(AbstractParameter):
 
    def __init__(self, ema, deltaT=60):
       AbstractParameter.__init__(self, ema, RTCParameter.TIMEOUT, 
-                              RTCParameter.PAT, 
-                              RTCParameter.PAT, 
-                              RTCParameter.RETRIES)
+                                 RTCParameter.PAT, 
+                                 RTCParameter.PAT, 
+                                 True,
+                                 RTCParameter.RETRIES)
       self.deltaT = datetime.timedelta(seconds=deltaT)
       self.name = "EMA RTC Time Syncronization"
 
