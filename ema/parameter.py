@@ -304,7 +304,7 @@ class Parameter(AbstractParameter):
       value = int(matchobj.group(self.grp))
       if value != self.value:
          if not self.syncAllowed:
-            self.log.warn("Parameter %s mistatch: [EMA] = %d, [Expected] = %d, [File] = %s",
+            self.log.warn("Parameter %s mismatch: [EMA] = %d, [Expected] = %d, [File] = %s",
                           self.name, value, self.value, (self.value/self.mult))
          needsSync = True
       else:
