@@ -106,50 +106,50 @@ COMMAND = [
    },
 
    {
-   'name'   : 'Aux Relay Timer Mode On',
+    'name'   : 'Aux Relay Timer Mode On',
     'reqPat' : '\(S009\)',            
     'resPat' : ['\(S009\)', '\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4} Timer ON\)' ],
     'iterations'   : 1,
    },
 
    {
-   'name'   : 'Aux Relay Timer Mode Off',
+    'name'   : 'Aux Relay Timer Mode Off',
     'reqPat' : '\(S008\)',            
     'resPat' : ['\(S008\)', '\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4} Timer OFF\)' ],
     'iterations'   : 1,
    },
 
    {
-   'name'   : 'Aux Relay Timer On Hour Set',
+    'name'   : 'Aux Relay Timer On Hour Set',
     'reqPat' : '\(Son\d{4}\)',            
     'resPat' : ['\(Son\d{4}\)'],
     'iterations'   : 1,
    },
 
    {
-   'name'   : 'Aux Relay Timer Off Hour Set',
+    'name'   : 'Aux Relay Timer Off Hour Set',
     'reqPat' : '\(Sof\d{4}\)',            
     'resPat' : ['\(Sof\d{4}\)'],
     'iterations'   : 1,
    },
 
    {
-   'name'   : 'Aux Relay Status',
+    'name'   : 'Aux Relay Status',
     'reqPat' : '\(s\)',            
     'resPat' : ['\(S00\d\)', '\(Son\d{4}\)' , '\(Sof\d{4}\)'],
     'iterations'   : 1,
    },
 
    {
-   'name'   : '24h Hourly MinMax Bulk Dump',
+    'name'   : '24h Hourly MinMax Bulk Dump',
     'reqPat' : '\(@H\d{4}\)',            
     'resPat' : ['\(.{76}M\d{4}\)', '\(.{76}m\d{4}\)', '\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)'],
     'iterations'   : 24,
    },
 
    {
-   'name'   : '24h 5m Averages Bulk Dump',
-    'reqPat' : '\(@H\d{4}\)',            
+    'name'   : '24h 5m Averages Bulk Dump',
+    'reqPat' : '\(@t\d{4}\)',            
     'resPat' : ['\(.{76}t\d{4}\)'],
     'iterations'   : 288,
    },
