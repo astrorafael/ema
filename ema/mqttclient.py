@@ -75,10 +75,6 @@ class MinMaxCommand(Command):
    Commad subclass to handle bulk dump request and responses via callbacks
    '''
 
-   def __init__(self, ema, retries, **kargs):
-      Command.__init__(self,ema, retries, **kargs)
-      self.msgCount = 0
-
    # delegate to MQTT client object as it has all the needed context
    def onPartialCommand(self, message, userdata):
       '''
@@ -102,9 +98,6 @@ class AveragesCommand(Command):
    '''
    Commad subclass to handle bulk dump request and responses via callbacks
    '''
-
-   def __init__(self, ema, retries, **kargs):
-      Command.__init__(self,ema, retries, **kargs)
 
    # delegate to MQTT client object as it has all the needed context
    def onPartialCommand(self, message, userdata):
@@ -401,8 +394,8 @@ class MQTTClient(MQTTPublisher):
       Request current flash page to EMA
       '''
       log.debug("requesting minmax page %d", page)
-      cmd = MinMaxCommand(self.srv, retries=0, **COMMAND[-2])
-      cmd.request("(@H%04d)" % page, page)
+      cmd = MinMaxCommand(self.srv, "(@H%04d)" % page, retries=0, **COMMAND[-2])
+      cmd.request(userdata=page)
 
    def request5minAverPage(self, page):
       '''
@@ -410,8 +403,8 @@ class MQTTClient(MQTTPublisher):
       '''
       self.aver5min = 0
       log.debug("requesting 5 min page %d", page)
-      cmd = AveragesCommand(self.srv, retries=0, **COMMAND[-1])
-      cmd.request("(@t%04d)" % page, page)
+      cmd = AveragesCommand(self.srv, "(@t%04d)" % page, retries=0, **COMMAND[-1])
+      cmd.request(userdata=page)
 
 
 

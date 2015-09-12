@@ -418,8 +418,8 @@ class EMAServer(Server):
       '''
       cmddesc = command.match(message)
       if cmddesc:
-         cmd = ExternalCommand(self, **cmddesc)
-         cmd.request(message, origin)
+         cmd = ExternalCommand(self, message, **cmddesc)
+         cmd.request(usedata = origin)
       else:
          self.serdriver.write(message)
       
@@ -499,8 +499,6 @@ class EMAServer(Server):
 
 class ExternalCommand(command.Command):
    '''Handles external commands comming from UDP messages'''
-   def __init__(self, ema, retries=command.Command.RETRIES, **kargs):
-      command.Command.__init__(self,ema,retries,**kargs)
 
    def onPartialCommand(self, message, userdata):
       '''Forward it to UDP driver'''

@@ -174,7 +174,7 @@ class Command(Alarmable):
    TIMEOUT = 4
 
 
-   def __init__(self, ema, retries =RETRIES, **kargs):
+   def __init__(self, ema, req, next = None, retries =RETRIES, **kargs):
       Alarmable.__init__(self, Command.TIMEOUT)
       self.ema      = ema
       self.name     = kargs['name']
@@ -185,6 +185,8 @@ class Command(Alarmable):
       self.iteration       = 1
       self.partialHandler  = None
       self.completeHandler = None
+      self.req             = req
+      self.next            = next
 
    # --------------
    # Helper methods
@@ -205,17 +207,16 @@ class Command(Alarmable):
    # Main interface
    # --------------
 
-   def request(self, message, userdata):
+   def request(self, userdata = None):
       '''Send a request to EMA on behalf of external origin'''
       log.debug("executing external command %s", self.name)
       self.userdata  = userdata
-      self.message   = message
       self.retries   = 0
       self.indexRes  = 0
       self.iteration = 1
       self.resetAlarm()       
       self.ema.addCommand(self)
-      self.sendMessage(message)
+      self.sendMessage(self.req)
       
       
    def onResponseDo(self, message):
