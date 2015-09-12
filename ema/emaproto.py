@@ -89,7 +89,10 @@ SWDB = 73         # Status Wind Direction Begin
 SWDE = SWDB + 3   # Status Wind direction End
 
 SMTB = 77         # Status Message Type Begin
-SMTE = SMTB + 1     # Status Message Type End
+SMTE = SMTB + 1   # Status Message Type End
+
+SMFB = 78         # Status Message Flash Page Begin
+SMFE = SMFB + 4   # Status Message Flash Page End 
 
 # Status Message Types
 MTCUR = 'a'       # Current values status message type

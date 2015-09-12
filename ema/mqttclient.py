@@ -36,7 +36,7 @@
 import datetime
 import logging
 
-from emaproto  import SPSB, STATLEN, STRFTIME
+from emaproto  import SPSB, SMFB, SMFE, STATLEN, STRFTIME
 from command import Command, COMMAND
 from dev.todtimer import Timer
 
@@ -246,19 +246,23 @@ class MQTTClient(MQTTPublisher):
       if self.aver5min % 18 == 0:
          log.debug("onAveragesPartial(%d)", self.aver5min + 1)
       self.aver5min += 1
-      self.averBulkDump.append(transform(message))
+      minutes = int(message[SMFB:SMFE])*5
+      hour = minutes // 60
+      min  = minutes % 60
+      ts = datetime.datetime.combine(datetime.date.today(), datetime.time(hour=hour, minute=min))
+      self.averBulkDump.append( (transform(message), ts) )
            
 
    def onAveragesComplete(self, message, userdata):
       '''
       % min bulk dump request command complete handler
       '''
-      self.averBulkDump.append(transform(message))
-      log.info("Uploading 5min averages history to %s", 
-                  "EMA/emapi/history/average")
-      self.mqtt.publish(topic=MQTTClient.TOPIC_HISTORY_AVERAG, payload='\n'.join(self.averBulkDump), qos=2, retain=True)
-      log.info("Upload complete, processed %d lines", len(self.averBulkDump))
-
+      minutes = int(message[SMFB:SMFE])*5
+      hour = minutes // 60
+      min  = minutes % 60
+      ts = datetime.datetime.combine(datetime.date.today(), datetime.time(hour=hour, minute=min))
+      self.averBulkDump.append( (transform(message), ts) )
+      self.smartDump5min()
 
    # --------------
    # Publishing API
@@ -374,4 +378,11 @@ class MQTTClient(MQTTPublisher):
    # Helper methods
    # --------------
 
+   def smartDump5min(self):
+      payload = [ msg[0] for msg in self.averBulkDump ]
+      log.info("Uploading 5min averages history to %s", 
+                  "EMA/emapi/history/average")
+      self.mqtt.publish(topic=MQTTClient.TOPIC_HISTORY_AVERAG, payload='\n'.join(payload), qos=2, retain=True)
+      log.info("Upload complete, processed %d lines", len(self.averBulkDump))
+      
 
