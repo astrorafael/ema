@@ -43,12 +43,9 @@ from dev.todtimer import Timer
 from utils import chop
 from mqttpublisher import MQTTPublisher
 
-# FLASH Pages where History data re stored
-FLASH_MINMAX_START = 300
-FLASH_MINMAX_END   = 300
-
-FLASH_5MINAVER_START = 000
-FLASH_5MINAVER_END   = 000
+# FLASH start Pages where historic data are stored
+FLASH_MINMAX   = 300
+FLASH_5MINAVER = 000
 
 # tog info every NPLUBLIS times (ticks) 
 NPUBLISH = 60
@@ -125,6 +122,7 @@ class MQTTClient(MQTTPublisher):
    TOPIC_HISTORY_MINMAX = "EMA/history/minmax"
    TOPIC_CURRENT_STATUS = "EMA/current/status"
    TOPIC_AVERAGE_STATUS = "EMA/average/status"
+   TOPIC_HISTORY_AVERAG = "EMA/history/average"
 
    def __init__(self, ema, parser, **kargs):
       lvl      = parser.get("MQTT", "mqtt_log")
@@ -139,14 +137,16 @@ class MQTTClient(MQTTPublisher):
       self.__pubwhat  = publish_what
       self.__emastat  = "()"
       self.__stats    = 0
+      self.__5m_tstamp = None
       ema.todtimer.addSubscriber(self)
       if publish_status:
          ema.subscribeStatus(self)
-      MQTTClient.TOPIC_EVENTS         = "EMA/%s/events"  % self.id
-      MQTTClient.TOPIC_TOPICS         = "EMA/%s/topics"  % self.id
-      MQTTClient.TOPIC_HISTORY_MINMAX = "EMA/%s/history/minmax" % self.id
-      MQTTClient.TOPIC_CURRENT_STATUS = "EMA/%s/current/status" % self.id
-      MQTTClient.TOPIC_AVERAGE_STATUS = "EMA/%s/average/status" % self.id
+      MQTTClient.TOPIC_EVENTS         = "EMA/%s/events"          % self.id
+      MQTTClient.TOPIC_TOPICS         = "EMA/%s/topics"          % self.id
+      MQTTClient.TOPIC_HISTORY_MINMAX = "EMA/%s/history/minmax"  % self.id
+      MQTTClient.TOPIC_HISTORY_AVERAG = "EMA/%s/history/average" % self.id
+      MQTTClient.TOPIC_CURRENT_STATUS = "EMA/%s/current/status"  % self.id
+      MQTTClient.TOPIC_AVERAGE_STATUS = "EMA/%s/average/status"  % self.id
       log.info("MQTT client created")
 
 
@@ -192,9 +192,7 @@ class MQTTClient(MQTTPublisher):
    def publishOnce(self):
       self.publishTopics()
       if self.__histflag:
-         self.publishMinMax24h()
-         self.publish5minAverages()
-
+         self.publishAllBulkDumps()
 
    def publish(self):
       '''
@@ -220,6 +218,9 @@ class MQTTClient(MQTTPublisher):
       '''
       Partial minmax bulk dump request command handler
       '''
+      if self.minmax % 18 == 0:
+         log.debug("onMinMaxPartial(%d)", self.minmax + 1)
+      self.minmax += 1
       if len(message) == STATLEN:
          self.minmaxBulkDump.append(transform(message))
       else:
@@ -230,17 +231,12 @@ class MQTTClient(MQTTPublisher):
       '''
       Minmax bulk dump request command complete handler
       '''
-      log.debug("onMinMaxComplete => %s", message)
       self.minmaxBulkDump.append(message)
-      if self.page < FLASH_MINMAX_END :
-         self.page += 1
-         self.requestMinMaxPage(self.page)
-      else:
-         date = message[10:20]
-         log.info("Uploading (%s) hourly minmax history to %s", date, MQTTClient.TOPIC_HISTORY_MINMAX)
-         self.mqtt.publish(topic=MQTTClient.TOPIC_HISTORY_MINMAX, 
+      date = message[10:20]
+      log.info("Uploading (%s) hourly minmax history to %s", date, MQTTClient.TOPIC_HISTORY_MINMAX)
+      self.mqtt.publish(topic=MQTTClient.TOPIC_HISTORY_MINMAX, 
                            payload='\n'.join(self.minmaxBulkDump), qos=2, retain=True)
-         log.info("Upload complete, processed %d lines", len(self.minmaxBulkDump))
+      log.info("Upload complete, processed %d lines", len(self.minmaxBulkDump))
 
 
    def onAveragesPartial(self, message, userdata):
@@ -257,18 +253,11 @@ class MQTTClient(MQTTPublisher):
       '''
       % min bulk dump request command complete handler
       '''
-      log.debug("onAveragesComplete(%d)", self.aver5min+1)
       self.averBulkDump.append(transform(message))
-      if self.page < FLASH_5MINAVER_END :
-         self.page += 1
-         self.request5minAverPage(self.page)
-      else:
-         log.info("Uploading 5min averages history to %s", 
+      log.info("Uploading 5min averages history to %s", 
                   "EMA/emapi/history/average")
-         self.mqtt.publish(topic=MQTTClient.TOPIC_HISTORY_MINMAX, payload='\n'.join(self.averBulkDump), qos=2, retain=True)
-         log.info("Upload complete, processed %d lines", len(self.averBulkDump))
-
-
+      self.mqtt.publish(topic=MQTTClient.TOPIC_HISTORY_AVERAG, payload='\n'.join(self.averBulkDump), qos=2, retain=True)
+      log.info("Upload complete, processed %d lines", len(self.averBulkDump))
 
 
    # --------------
@@ -366,46 +355,23 @@ class MQTTClient(MQTTPublisher):
                            payload=payload)
 
 
-   def publishMinMax24h(self):
-      '''
-      Publish last 24h min max
-      '''
-      self.minmaxBulkDump = []
-      self.page = FLASH_MINMAX_START
-      self.requestMinMaxPage(self.page)
-      log.debug("Request to publish 24h minmax Bulk data")
-
-
-   def publish5minAverages(self):
+   def publishAllBulkDumps(self):
       '''
       Publish last 24h min max
       '''
       self.averBulkDump = []
-      self.page = FLASH_5MINAVER_START
-      self.request5minAverPage(self.page)
-      log.debug("Request to publish 5 min averages Bulk data")
+      self.minmaxBulkDump = []
+      self.aver5min = 0
+      self.minmax   = 0
+      log.debug("Request to publish Bulk data")
+      # Chain 2 commands.
+      cmd1 = AveragesCommand(self.srv, "(@t%04d)" % FLASH_5MINAVER, retries=0, **COMMAND[-1])
+      cmd2 = MinMaxCommand(self.srv, "(@H%04d)" % FLASH_MINMAX, next=cmd1, retries=0, **COMMAND[-2])
+      cmd2.request()
+
 
    # --------------
    # Helper methods
    # --------------
-
-   def requestMinMaxPage(self, page):
-      '''
-      Request current flash page to EMA
-      '''
-      log.debug("requesting minmax page %d", page)
-      cmd = MinMaxCommand(self.srv, "(@H%04d)" % page, retries=0, **COMMAND[-2])
-      cmd.request(userdata=page)
-
-   def request5minAverPage(self, page):
-      '''
-      Request current flash page to EMA
-      '''
-      self.aver5min = 0
-      log.debug("requesting 5 min page %d", page)
-      cmd = AveragesCommand(self.srv, "(@t%04d)" % page, retries=0, **COMMAND[-1])
-      cmd.request(userdata=page)
-
-
 
 

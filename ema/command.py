@@ -231,6 +231,7 @@ class Command(Alarmable):
             self.ema.delAlarmable(self)
             self.ema.delCommand(self)
             self.onCommandComplete(message, self.userdata)
+            if self.next: self.next.request(userdata=self.userdata)
          elif (self.indexRes + 1) == len(self.resPat) and self.iteration < self.NIterations:
             log.debug("Matched command response, iteration complete")
             self.iteration += 1
