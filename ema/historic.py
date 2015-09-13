@@ -32,7 +32,7 @@ import os.path
 
 from emaproto import SMFB, SMFE, STRFTIME, STATLEN, transform
 
-log = logging.getLogger('historic')
+log = logging.getLogger('mqtt')
 
 class Averages5Min(object):
 
@@ -55,11 +55,11 @@ class Averages5Min(object):
       self.todayPage = self.toPage(self.today.time())
       self.lastDay   = None
 
-      if of.path.isfile(self.PATH):
+      if os.path.isfile(self.PATH):
          with open(self.PATH,'r') as f:
-            self.lastDay  = datetime.strptime(f.readline(),STRFTIME)
+            self.lastDay  = datetime.datetime.strptime(f.readline()[:-1],STRFTIME)
 
-      if not self.lastDay or (self.now - self.lastDay) >= self.oneDay:
+      if not self.lastDay or (self.today - self.lastDay) >= self.oneDay:
          self.lastPage = 0 
       else:
          self.lastPage = self.toPage(self.lastDay.time())
@@ -69,11 +69,13 @@ class Averages5Min(object):
       page = int(message[SMFB:SMFE])
 
       if  self.todayPage < page:
+         log.verbose("Timestamping with today's day")
          ts = datetime.datetime.combine(self.today.date(), self.toTime(page))
       else:
+         log.verbose("Timestamping with yesterday's day")
          ts = datetime.datetime.combine(self.yesterday.date(), 
                                         self.toTime(page))
-      ts = st.strftime(STRFITME)
+      ts = ts.strftime(STRFTIME)
       self.data.append('\n'.join( (transform(message), ts) ))      
 
    def getResult(self):
@@ -81,8 +83,10 @@ class Averages5Min(object):
       self.updateCache()
       lastPage = (self.lastPage - self.overlap ) % self.NPAGES
       if self.todayPage > lastPage:
+         log.debug("Adding results of today only")
          return self.data[lastPage:self.todayPage]
       else:
+         log.debug("Adding yesterday's and today's results")
          subset1 = self.data[0:self.todayPage]
          subset2 = self.data[self.lastPage:]
          return subset1 + subset2
@@ -98,7 +102,8 @@ class Averages5Min(object):
    def toTime(self, page):
       '''Compues the end time coresponding to a given page'''
       minutes = page*5 + 5
-      return datetime.time(hour=minutes//60, minute=minutes%60)
+      hour = (minutes//60) % 24
+      return datetime.time(hour=hour, minute=minutes%60)
    
    def updateCache(self):
       with open(self.PATH,'w') as f:
@@ -131,11 +136,11 @@ class MinMax1h(object):
       self.todayPage = self.toPage(self.today.time())
       self.lastDay   = None
 
-      if of.path.isfile(self.PATH):
+      if os.path.isfile(self.PATH):
          with open(self.PATH,'r') as f:
-            self.lastDay  = datetime.strptime(f.readline(),STRFTIME)
+            self.lastDay  = datetime.datetime.strptime(f.readline()[:-1],STRFTIME)
 
-      if not self.lastDay or (self.now - self.lastDay) >= self.oneDay:
+      if not self.lastDay or (self.today - self.lastDay) >= self.oneDay:
          self.lastPage = 0 
       else:
          self.lastPage = self.toPage(self.lastDay.time())
@@ -143,9 +148,9 @@ class MinMax1h(object):
    def append(self, message):
       '''Accumulate and timestamp oner of the 24x3 samples'''
       if len(message) == STATLEN:
-         self.minmaxBulkDump.append(transform(message))
+         self.data.append(transform(message))
       else:
-         self.minmaxBulkDump.append(message)
+         self.data.append(message)
 
    def getResult(self):
       '''Get the result array, taking into account an overlap factor'''

@@ -222,12 +222,13 @@ class MQTTClient(MQTTPublisher):
       '''
       Minmax bulk dump request command complete handler
       '''
+      log.debug("onMinMaxComplete(%d)", self.minmax + 1)
       self.his1h.append(message)
-      payload = self.his51h.getResult()
+      payload = self.his1h.getResult()
       log.info("Uploading hourly minmax history to %s", 
                MQTTClient.TOPIC_HISTORY_MINMAX)
       self.mqtt.publish(topic=MQTTClient.TOPIC_HISTORY_MINMAX, 
-                           payload='\n'.join(self.minmaxBulkDump), qos=2, retain=True)
+                           payload='\n'.join(payload), qos=2, retain=True)
       log.info("Upload complete, processed %d lines", len(payload))
 
 
@@ -244,6 +245,7 @@ class MQTTClient(MQTTPublisher):
       '''
       % min bulk dump request command complete handler
       '''
+      log.debug("onAveragesComplete(%d)", self.aver5min + 1)
       self.his5min.append(message)
       payload = self.his5min.getResult()
       log.info("Uploading 5min averages history to %s", 

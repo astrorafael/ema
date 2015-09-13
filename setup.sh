@@ -43,6 +43,14 @@ do
 done
 
 
+# ------------------------
+# Make the cache directory
+# ------------------------
+
+if [ ! -d "/var/cache/$NAME" ]; then
+    echo "creating /var/cache/$NAME directory"
+    mkdir /etc/$NAME 2>/dev/null 1>/dev/null
+fi
 # --------------------------------------------------
 # Copy config files only once
 # (be polite with with your existing configurations)
