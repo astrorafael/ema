@@ -96,10 +96,14 @@ mqtt_period = 60
 # in each active interval defined in TOD_Timer section
 mqtt_publish_history = yes
 
+# Overlap factor (9%) for redundant historic data dumps
+# 0% = no overlap, 100%=full dayly historic data each time
+mqtt_history_overlap = 10
+
 # Publish Raw EMA status Line
 mqtt_publish_status = yes
 
-# What status line to publish: current, average or both status lines
+# What raw EMA status line to publish: current, average or both status lines
 # comma-separated list 
 mqtt_publish_what = current,average
 

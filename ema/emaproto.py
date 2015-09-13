@@ -89,7 +89,10 @@ SWDB = 73         # Status Wind Direction Begin
 SWDE = SWDB + 3   # Status Wind direction End
 
 SMTB = 77         # Status Message Type Begin
-SMTE = SMTB + 1     # Status Message Type End
+SMTE = SMTB + 1   # Status Message Type End
+
+SMFB = 78         # Status Message Flash Page Begin
+SMFE = SMFB + 4   # Status Message Flash Page End 
 
 # Status Message Types
 MTCUR = 'a'       # Current values status message type
@@ -163,3 +166,13 @@ def magnitude(frequency):
    else:
       mv = MAG_CLIP_VALUE
    return round(mv,1)
+
+# Utility function 
+def transform(message):
+    '''
+    Transform EMA status message into a pure ASCII string.
+    Voltage is not ASCII and it is formatted to a 3-digit value.
+    This is needed for the Paho-MQTT library
+    '''
+    return "%s%03d%s" % (message[:SPSB], ord(message[SPSB]), message[SPSB+1:])
+

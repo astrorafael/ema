@@ -106,46 +106,54 @@ COMMAND = [
    },
 
    {
-   'name'   : 'Aux Relay Timer Mode On',
+    'name'   : 'Aux Relay Timer Mode On',
     'reqPat' : '\(S009\)',            
     'resPat' : ['\(S009\)', '\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4} Timer ON\)' ],
     'iterations'   : 1,
    },
 
    {
-   'name'   : 'Aux Relay Timer Mode Off',
+    'name'   : 'Aux Relay Timer Mode Off',
     'reqPat' : '\(S008\)',            
     'resPat' : ['\(S008\)', '\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4} Timer OFF\)' ],
     'iterations'   : 1,
    },
 
    {
-   'name'   : 'Aux Relay Timer On Hour Set',
+    'name'   : 'Aux Relay Timer On Hour Set',
     'reqPat' : '\(Son\d{4}\)',            
     'resPat' : ['\(Son\d{4}\)'],
     'iterations'   : 1,
    },
 
    {
-   'name'   : 'Aux Relay Timer Off Hour Set',
+    'name'   : 'Aux Relay Timer Off Hour Set',
     'reqPat' : '\(Sof\d{4}\)',            
     'resPat' : ['\(Sof\d{4}\)'],
     'iterations'   : 1,
    },
 
    {
-   'name'   : 'Aux Relay Status',
+    'name'   : 'Aux Relay Status',
     'reqPat' : '\(s\)',            
     'resPat' : ['\(S00\d\)', '\(Son\d{4}\)' , '\(Sof\d{4}\)'],
     'iterations'   : 1,
    },
 
    {
-   'name'   : '24h Bulk Dump Page',
+    'name'   : '24h Hourly MinMax Bulk Dump',
     'reqPat' : '\(@H\d{4}\)',            
     'resPat' : ['\(.{76}M\d{4}\)', '\(.{76}m\d{4}\)', '\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)'],
     'iterations'   : 24,
    },
+
+   {
+    'name'   : '24h 5m Averages Bulk Dump',
+    'reqPat' : '\(@t\d{4}\)',            
+    'resPat' : ['\(.{76}t\d{4}\)'],
+    'iterations'   : 288,
+   },
+
 ]
 
 REGEXP = [ re.compile(cmd['reqPat']) for cmd in COMMAND]
@@ -166,7 +174,7 @@ class Command(Alarmable):
    TIMEOUT = 4
 
 
-   def __init__(self, ema, retries =RETRIES, **kargs):
+   def __init__(self, ema, req, next = None, retries =RETRIES, **kargs):
       Alarmable.__init__(self, Command.TIMEOUT)
       self.ema      = ema
       self.name     = kargs['name']
@@ -177,6 +185,8 @@ class Command(Alarmable):
       self.iteration       = 1
       self.partialHandler  = None
       self.completeHandler = None
+      self.req             = req
+      self.next            = next
 
    # --------------
    # Helper methods
@@ -197,17 +207,16 @@ class Command(Alarmable):
    # Main interface
    # --------------
 
-   def request(self, message, userdata):
+   def request(self, userdata = None):
       '''Send a request to EMA on behalf of external origin'''
       log.debug("executing external command %s", self.name)
       self.userdata  = userdata
-      self.message   = message
       self.retries   = 0
       self.indexRes  = 0
       self.iteration = 1
       self.resetAlarm()       
       self.ema.addCommand(self)
-      self.sendMessage(message)
+      self.sendMessage(self.req)
       
       
    def onResponseDo(self, message):
@@ -222,6 +231,7 @@ class Command(Alarmable):
             self.ema.delAlarmable(self)
             self.ema.delCommand(self)
             self.onCommandComplete(message, self.userdata)
+            if self.next: self.next.request(userdata=self.userdata)
          elif (self.indexRes + 1) == len(self.resPat) and self.iteration < self.NIterations:
             log.debug("Matched command response, iteration complete")
             self.iteration += 1
