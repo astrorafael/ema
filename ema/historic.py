@@ -44,9 +44,10 @@ class HistoricBase(object):
    # Public API
    # ----------
 
-   def __init__(self, path):
+   def __init__(self, path, overlap, npages):
       self.oneDay  = datetime.timedelta(days=1)
       self.path    = path
+      self.overlap = int(round(npages * overlap*0.01)) # in pages
 
    def begin(self):
       '''Invoke just before isssuing the (@t0000) command to EMA'''
@@ -65,8 +66,11 @@ class HistoricBase(object):
       # possible page so that we do a full dump
       if not self.lastDay or (self.today - self.lastDay) >= self.oneDay:
          self.lastPage = self.todayPage
+         log.debug("lastPage is unknown or very old, setting to %s", self.todayPage)
       else:
          self.lastPage = self.toPage(self.lastDay.time())
+         log.debug("lastPage = %s computed from timestamp in file", self.todayPage)
+
 
    def append(self, message):
       '''Accumulate and timestamp a sample'''
@@ -108,8 +112,7 @@ class Averages5Min(HistoricBase):
    # ----------
 
    def __init__(self, overlap=0):
-      HistoricBase.__init(self, self.PATH)
-      self.overlap = int(round(NPAGES * overlap*0.01)) # in pages
+      HistoricBase.__init__(self, self.PATH, overlap, self.NPAGES)
       log.debug("Average5Min: Overlapping by %s pages", self.overlap)
 
    def append(self, message):
@@ -130,13 +133,17 @@ class Averages5Min(HistoricBase):
       '''Get the result array, taking into account an overlap factor'''
       self.updateCache()
       lastPage = (self.lastPage - self.overlap ) % self.NPAGES
+      log.debug("last page[before]=%s, [after]=%d today=%d",self.lastPage, lastPage, self.todayPage)
+      i, j = lastPage, self.todayPage
       if self.todayPage > lastPage:
          log.debug("Adding results of today only")
-         return self.data[lastPage:self.todayPage]
+         log.debug("Trimminng data to [%d:%d] section", i, j)
+         return self.data[i:j]
       else:
          log.debug("Adding yesterday's and today's results")
-         subset1 = self.data[0:self.todayPage]
-         subset2 = self.data[self.lastPage:]
+         log.debug("Trimminng data to [0:%d] and [%d:-] section", j, i)
+         subset1 = self.data[0:j]
+         subset2 = self.data[i:]
          return subset1 + subset2
 
    # --------------
@@ -148,7 +155,7 @@ class Averages5Min(HistoricBase):
       return (time.hour*60 + time.minute)//5
 
    def toTime(self, page):
-      '''Compues the end time coresponding to a given page'''
+      '''Computes the end time coresponding to a given page'''
       minutes = page*5 + 5
       hour = (minutes//60) % 24
       return datetime.time(hour=hour, minute=minutes%60)
@@ -170,8 +177,7 @@ class MinMax1h(HistoricBase):
    # ----------
 
    def __init__(self, overlap=0):
-      HistoricBase.__init(self, self.PATH, overlap)
-      self.overlap = int(round(NPAGES * overlap*0.01)) # in pages
+      HistoricBase.__init__(self, self.PATH, overlap, self.NPAGES)
       log.debug("MinMax1h: Overlapping by %s pages", self.overlap)
 
    def append(self, message):
@@ -185,13 +191,17 @@ class MinMax1h(HistoricBase):
       '''Get the result array, taking into account an overlap factor'''
       self.updateCache()
       lastPage = (self.lastPage - self.overlap ) % self.NPAGES
+      log.debug("last page[before]=%s, [after]=%d today=%d",self.lastPage, lastPage, self.todayPage)
+      i, j = 3*(lastPage), 3*(self.todayPage)
       if self.todayPage > lastPage:
          log.debug("Adding results of today only")
-         return self.data[3*lastPage:3*self.todayPage]
+         log.debug("Trimminng data to [%d:%d] section", i, j)
+         return self.data[i:j]
       else:
          log.debug("Adding yesterday's and today's results")
-         subset1 = self.data[0:3*self.todayPage]
-         subset2 = self.data[3*self.lastPage:]
+         log.debug("Trimminng data to [0:%d] and [%d:-] section", j, i)
+         subset1 = self.data[0:j]
+         subset2 = self.data[i:]
          return subset1 + subset2
       return self.data
 
@@ -201,10 +211,10 @@ class MinMax1h(HistoricBase):
 
    def toPage(self, time):
       '''Computes the flash page corresponding to a given time'''
-      return time.hour + self.START
+      return time.hour
 
    def toTime(self, page):
       '''Compues the end time coresponding to a given page'''
-      hour = page - self.START
+      hour = page
       return datetime.time(hour=hour)
    
