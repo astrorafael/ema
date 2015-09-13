@@ -1,5 +1,2 @@
-* Quitar las peticiones de lecturas de pagina individual, se lee todo en bloque
-* Pensar una politica de envio de las medidas de 5 minutos que sea inteligente.
-* Enviar nesajes de avergae de 5 minutos.
  
   
