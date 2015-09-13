@@ -121,6 +121,7 @@ class MQTTClient(MQTTPublisher):
       lvl      = parser.get("MQTT", "mqtt_log")
       log.setLevel(lvl)
       histflag = parser.getboolean("MQTT", "mqtt_publish_history")
+      overlap  = parser.getint("MQTT", "mqtt_history_overlap")
       publish_status = parser.getboolean("MQTT", "mqtt_publish_status")
       publish_what   = chop(parser.get("MQTT", "mqtt_publish_what"), ',')
       MQTTPublisher.__init__(self, ema, parser, **kargs)
@@ -130,8 +131,8 @@ class MQTTClient(MQTTPublisher):
       self.__pubwhat  = publish_what
       self.__emastat  = "()"
       self.__stats    = 0
-      self.his5min    = Averages5Min()
-      self.his1h      = MinMax1h()
+      self.his5min    = Averages5Min(overlap)
+      self.his1h      = MinMax1h(overlap)
       ema.todtimer.addSubscriber(self)
       if publish_status:
          ema.subscribeStatus(self)

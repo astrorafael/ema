@@ -34,18 +34,19 @@ from emaproto import SMFB, SMFE, STRFTIME, STATLEN, transform
 
 log = logging.getLogger('mqtt')
 
-class Averages5Min(object):
+# =============================================================================
+# Base class
+# =============================================================================
 
-   PATH = '/var/cache/ema/his5min.txt'
-   NPAGES = 288
+class HistoricBase(object):
 
    # ----------
    # Public API
    # ----------
 
-   def __init__(self, overlap=0):
+   def __init__(self, path):
       self.oneDay  = datetime.timedelta(days=1)
-      self.overlap = overlap
+      self.path    = path
 
    def begin(self):
       '''Invoke just before isssuing the (@t0000) command to EMA'''
@@ -55,14 +56,61 @@ class Averages5Min(object):
       self.todayPage = self.toPage(self.today.time())
       self.lastDay   = None
 
-      if os.path.isfile(self.PATH):
-         with open(self.PATH,'r') as f:
-            self.lastDay  = datetime.datetime.strptime(f.readline()[:-1],STRFTIME)
+      if os.path.isfile(self.path):
+         with open(self.path,'r') as f:
+            self.lastDay  = datetime.datetime.strptime(f.readline()[:-1],
+                                                       STRFTIME)
 
+      # If unknown of a long time ago, set the last page to the oldest
+      # possible page so that we do a full dump
       if not self.lastDay or (self.today - self.lastDay) >= self.oneDay:
-         self.lastPage = 0 
+         self.lastPage = self.todayPage
       else:
          self.lastPage = self.toPage(self.lastDay.time())
+
+   def append(self, message):
+      '''Accumulate and timestamp a sample'''
+      pass
+
+   def getResult(self):
+      '''Get the result array, taking into account an overlap factor'''
+      pass
+
+
+   # --------------
+   # Helper Methods
+   # --------------
+
+   def toPage(self, time):
+      '''Computes the flash page corresponding to a given time'''
+      pass
+
+   def toTime(self, page):
+      '''Computes the end time coresponding to a given page'''
+      pass
+   
+   def updateCache(self):
+      with open(self.path,'w') as f:
+         f.write(self.today.strftime(STRFTIME) + '\n')
+
+
+# =============================================================================
+# Daily 5m average class
+# =============================================================================
+
+class Averages5Min(HistoricBase):
+
+   PATH = '/var/cache/ema/his5min.txt'
+   NPAGES = 288
+
+   # ----------
+   # Public API
+   # ----------
+
+   def __init__(self, overlap=0):
+      HistoricBase.__init(self, self.PATH)
+      self.overlap = int(round(NPAGES * overlap*0.01)) # in pages
+      log.debug("Average5Min: Overlapping by %s pages", self.overlap)
 
    def append(self, message):
       '''Accumulate and timestamp oner of the 288 samples'''
@@ -105,56 +153,46 @@ class Averages5Min(object):
       hour = (minutes//60) % 24
       return datetime.time(hour=hour, minute=minutes%60)
    
-   def updateCache(self):
-      with open(self.PATH,'w') as f:
-         f.write(self.today.strftime(STRFTIME) + '\n')
 
 # =============================================================================
-#
+# MinMax hourly dump class
 # =============================================================================
 
-class MinMax1h(object):
+class MinMax1h(HistoricBase):
 
    PATH   = '/var/cache/ema/his1h.txt'
    NPAGES = 24
    START  = 300
+
 
    # ----------
    # Public API
    # ----------
 
    def __init__(self, overlap=0):
-      self.oneDay  = datetime.timedelta(days=1)
-      self.overlap = overlap
-
-
-   def begin(self):
-      '''Invoke just before isssuing the (@H0300) command to EMA'''
-      self.data      = []
-      self.today     = datetime.datetime.utcnow()
-      self.yesterday = self.today - self.oneDay
-      self.todayPage = self.toPage(self.today.time())
-      self.lastDay   = None
-
-      if os.path.isfile(self.PATH):
-         with open(self.PATH,'r') as f:
-            self.lastDay  = datetime.datetime.strptime(f.readline()[:-1],STRFTIME)
-
-      if not self.lastDay or (self.today - self.lastDay) >= self.oneDay:
-         self.lastPage = 0 
-      else:
-         self.lastPage = self.toPage(self.lastDay.time())
+      HistoricBase.__init(self, self.PATH, overlap)
+      self.overlap = int(round(NPAGES * overlap*0.01)) # in pages
+      log.debug("MinMax1h: Overlapping by %s pages", self.overlap)
 
    def append(self, message):
-      '''Accumulate and timestamp oner of the 24x3 samples'''
+      '''Accumulate one of the of the 24x3 samples'''
       if len(message) == STATLEN:
          self.data.append(transform(message))
-      else:
+      else:                     # this is the timestamp comming
          self.data.append(message)
 
    def getResult(self):
       '''Get the result array, taking into account an overlap factor'''
       self.updateCache()
+      lastPage = (self.lastPage - self.overlap ) % self.NPAGES
+      if self.todayPage > lastPage:
+         log.debug("Adding results of today only")
+         return self.data[3*lastPage:3*self.todayPage]
+      else:
+         log.debug("Adding yesterday's and today's results")
+         subset1 = self.data[0:3*self.todayPage]
+         subset2 = self.data[3*self.lastPage:]
+         return subset1 + subset2
       return self.data
 
    # --------------
@@ -170,6 +208,3 @@ class MinMax1h(object):
       hour = page - self.START
       return datetime.time(hour=hour)
    
-   def updateCache(self):
-      with open(self.PATH,'w') as f:
-         f.write(self.today.strftime(STRFTIME) + '\n')
