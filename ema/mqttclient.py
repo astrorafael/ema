@@ -36,12 +36,14 @@
 import datetime
 import logging
 
-from emaproto  import SPSB, SMFB, SMFE, STATLEN, STRFTIME
+from emaproto  import SPSB, SMFB, SMFE, STATLEN, STRFTIME, transform
 from command import Command, COMMAND
 from dev.todtimer import Timer
 
 from utils import chop
 from mqttpublisher import MQTTPublisher
+
+from historic import Averages5Min, MinMax1h
 
 # FLASH start Pages where historic data are stored
 FLASH_MINMAX   = 300
@@ -53,15 +55,6 @@ NPUBLISH = 60
 
 log = logging.getLogger('mqtt')
 
-
-
-# Utility function 
-def transform(message):
-    '''
-    Transform EMA status message into a pure ASCII string
-    Voltage is not ASCII and it is formatted to a 3-digit value
-    '''
-    return "%s%03d%s" % (message[:SPSB], ord(message[SPSB]), message[SPSB+1:])
 
 # =======================================
 # HOURLY MINMAX BULK DUMP REQUEST COMMAND
@@ -137,7 +130,8 @@ class MQTTClient(MQTTPublisher):
       self.__pubwhat  = publish_what
       self.__emastat  = "()"
       self.__stats    = 0
-      self.__5m_tstamp = None
+      self.his5min    = Averages5Min()
+      self.his1h      = MinMax1h()
       ema.todtimer.addSubscriber(self)
       if publish_status:
          ema.subscribeStatus(self)
@@ -221,22 +215,20 @@ class MQTTClient(MQTTPublisher):
       if self.minmax % 18 == 0:
          log.debug("onMinMaxPartial(%d)", self.minmax + 1)
       self.minmax += 1
-      if len(message) == STATLEN:
-         self.minmaxBulkDump.append(transform(message))
-      else:
-         self.minmaxBulkDump.append(message)
+      self.his1h.append(message)
      
 
    def onMinMaxComplete(self, message, userdata):
       '''
       Minmax bulk dump request command complete handler
       '''
-      self.minmaxBulkDump.append(message)
-      date = message[10:20]
-      log.info("Uploading (%s) hourly minmax history to %s", date, MQTTClient.TOPIC_HISTORY_MINMAX)
+      self.his1h.append(message)
+      payload = self.his51h.getResult()
+      log.info("Uploading hourly minmax history to %s", 
+               MQTTClient.TOPIC_HISTORY_MINMAX)
       self.mqtt.publish(topic=MQTTClient.TOPIC_HISTORY_MINMAX, 
                            payload='\n'.join(self.minmaxBulkDump), qos=2, retain=True)
-      log.info("Upload complete, processed %d lines", len(self.minmaxBulkDump))
+      log.info("Upload complete, processed %d lines", len(payload))
 
 
    def onAveragesPartial(self, message, userdata):
@@ -246,23 +238,19 @@ class MQTTClient(MQTTPublisher):
       if self.aver5min % 18 == 0:
          log.debug("onAveragesPartial(%d)", self.aver5min + 1)
       self.aver5min += 1
-      minutes = int(message[SMFB:SMFE])*5
-      hour = minutes // 60
-      min  = minutes % 60
-      ts = datetime.datetime.combine(datetime.date.today(), datetime.time(hour=hour, minute=min))
-      self.averBulkDump.append( (transform(message), ts) )
-           
+      self.his5min.append(message)
 
    def onAveragesComplete(self, message, userdata):
       '''
       % min bulk dump request command complete handler
       '''
-      minutes = int(message[SMFB:SMFE])*5
-      hour = minutes // 60
-      min  = minutes % 60
-      ts = datetime.datetime.combine(datetime.date.today(), datetime.time(hour=hour, minute=min))
-      self.averBulkDump.append( (transform(message), ts) )
-      self.smartDump5min()
+      self.his5min.append(message)
+      payload = self.his5min.getResult()
+      log.info("Uploading 5min averages history to %s", 
+                  "EMA/emapi/history/average")
+      self.mqtt.publish(topic=MQTTClient.TOPIC_HISTORY_AVERAG, 
+                        payload='\n'.join(payload), qos=2, retain=True)
+      log.info("Upload complete, processed %d lines", len(payload))
 
    # --------------
    # Publishing API
@@ -363,10 +351,10 @@ class MQTTClient(MQTTPublisher):
       '''
       Publish last 24h min max
       '''
-      self.averBulkDump = []
-      self.minmaxBulkDump = []
       self.aver5min = 0
       self.minmax   = 0
+      self.his1h.begin()
+      self.his5min.begin()
       log.debug("Request to publish Bulk data")
       # Chain 2 commands.
       cmd1 = AveragesCommand(self.srv, "(@t%04d)" % FLASH_5MINAVER, retries=0, **COMMAND[-1])
@@ -378,11 +366,5 @@ class MQTTClient(MQTTPublisher):
    # Helper methods
    # --------------
 
-   def smartDump5min(self):
-      payload = [ msg[0] for msg in self.averBulkDump ]
-      log.info("Uploading 5min averages history to %s", 
-                  "EMA/emapi/history/average")
-      self.mqtt.publish(topic=MQTTClient.TOPIC_HISTORY_AVERAG, payload='\n'.join(payload), qos=2, retain=True)
-      log.info("Upload complete, processed %d lines", len(self.averBulkDump))
-      
 
+      

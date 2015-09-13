@@ -166,3 +166,13 @@ def magnitude(frequency):
    else:
       mv = MAG_CLIP_VALUE
    return round(mv,1)
+
+# Utility function 
+def transform(message):
+    '''
+    Transform EMA status message into a pure ASCII string.
+    Voltage is not ASCII and it is formatted to a 3-digit value.
+    This is needed for the Paho-MQTT library
+    '''
+    return "%s%03d%s" % (message[:SPSB], ord(message[SPSB]), message[SPSB+1:])
+
