@@ -162,8 +162,7 @@ class MQTTClient(MQTTPublisher):
    def onNewInterval(self, where, i):
       if self.connected():
          if self.__histflag:
-            self.publishMinMax24h()
-            self.pubish5MinAver()
+            self.publishAllBulkDumps()
       else:
          log.warn("Not connected to broker: can't publish minmax history")
 	
