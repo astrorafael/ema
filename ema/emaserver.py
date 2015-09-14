@@ -447,8 +447,7 @@ class EMAServer(Server):
 
       roof  = self.roofRelay.raw_current[relay.RoofRelay.OPEN]
       aux   = self.auxRelay.raw_current[relay.AuxRelay.OPEN]
-      pluAc = self.pluviometer.raw_current[pluviom.Pluviometer.ACCUMULATED]
-      ane10 = self.anemometer.raw_current[anemom.Anemometer.SPEED10]
+      pluAc = round(self.pluviometer.raw_current[pluviom.Pluviometer.ACCUMULATED])
 
       volti = round(self.voltmeter.raw_average[volt.Voltmeter.VOLTAGE])
       wet   = round(self.rainsensor.raw_average[rain.RainSensor.RAIN])
@@ -465,9 +464,10 @@ class EMAServer(Server):
       hum    = round(mydict[thermom.Thermometer.HUMIDITY])
       dew    = round(mydict[thermom.Thermometer.DEWPOINT])
 
-      mydict = self.anemometer.raw_average
+      mydict = self.anemometer.raw_current
       ane    = round(mydict[anemom.Anemometer.SPEED])
-      wind   = round(mydict[anemom.Anemometer.DIRECTION])
+      ane10  = round(mydict[anemom.Anemometer.SPEED10])
+      wind   = round(self.anemometer.raw_average[anemom.Anemometer.DIRECTION])
 
       values = {
          'roof':  roof,
