@@ -96,7 +96,7 @@ mqtt_period = 60
 # in each active interval defined in TOD_Timer section
 mqtt_publish_history = yes
 
-# Overlap factor (9%) for redundant historic data dumps
+# Overlap factor (%) for redundant historic data dumps
 # 0% = no overlap, 100%=full dayly historic data each time
 mqtt_history_overlap = 10
 
