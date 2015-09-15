@@ -319,6 +319,9 @@ class Server(object):
       while True:
          try:
             self.step(Server.TIMEOUT)
+         except SystemExit as e:
+            log.warning("Server.run() exit %s",e)
+            break
          except KeyboardInterrupt:
             log.warning("Server.run() aborted by user request")
             break

@@ -57,6 +57,16 @@ def durationFromNow(time):
       tstime += datetime.timedelta(hours=24)
    return tstime - tsnow
 
+
+# ================================
+# Helper class for the class below
+# ================================
+
+class TinyTimer(Alarmable2):
+
+   def onTimeoutDo(self):
+      raise SystemExit("by programmed shutdown")
+
 # =======================
 # Time of Day Timer Class
 # =======================
@@ -202,10 +212,12 @@ class Timer(Device, Alarmable2):
             tSHUstr = tSHU.strftime("%H:%M")
             log.warning("Calling shutdown at %s",tSHUstr)
             subprocess.Popen(['sudo','shutdown','-h', tSHUstr])
+            t = durationFromNow(adjust(tSHU,-0.25)).total_seconds()
+            self.ema.addAlarmable(TinyTimer(t))
+            log.info("Programmed shutdown at %s",tSHU.strftime("%H:%M:%S"))
          else:                
-            log.warning("Calling shutdown now")
-            subprocess.Popen(['sudo','shutdown','-h', 'now'])
-         log.info("Programmed shutdown at %s",tSHU.strftime("%H:%M:%S"))
+            log.warning("THIS COMPUTER SHOULD BE ALREADY POWERED OFF ACCORDING TO THE SCHEDULE AND START UP OPTIONS !!!")
+
 
 
    def findCurrentInterval(self):
