@@ -21,7 +21,7 @@ SCRIPTNAME=/etc/init.d/$NAME
 
 # Set default values before reading /etc/default/$NAME
 CONFIG_FILE=/etc/$NAME/config
-
+POWEROFF=""
 
 # Exit if the package is not installed
 [ -x "$DAEMON" ] || exit 0
@@ -44,6 +44,12 @@ DAEMON_ARGS="-m $NAME --config $CONFIG_FILE"
 #
 do_start()
 {
+    local poweroff=$1
+    if [ "$poweroff" = "poweroff" ]
+    then
+	DAEMON_ARGS="$DAEMON_ARGS --poweroff"
+    fi
+
 	# Return
 	#   0 if daemon has been started
 	#   1 if daemon was already running
@@ -119,7 +125,7 @@ do_resume() {
 case "$1" in
     start)
 	[ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC" "$NAME"
-	do_start
+	do_start "$2"
 	case "$?" in
 	    0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
 	    2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
@@ -167,7 +173,7 @@ case "$1" in
 	do_stop
 	case "$?" in
 	    0|1)
-		do_start
+		do_start "$2"
 		case "$?" in
 		    0) log_end_msg 0 ;;
 		    1) log_end_msg 1 ;; # Old process is still running
@@ -181,7 +187,7 @@ case "$1" in
 	esac
 	;;
     *)
-	echo "Usage: $SCRIPTNAME {start|stop|restart|reload|force-reload|pause|resume}" >&2
+	echo "Usage: $SCRIPTNAME {start [poweroff]|stop|restart [poweroff]|reload|force-reload|pause|resume}" >&2
 	exit 3
 	;;
 esac
