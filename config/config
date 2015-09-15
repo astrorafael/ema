@@ -138,11 +138,12 @@ tod_publish_what = current
 # Comma list separated values with no single or double quotes
 tod_publish_where = mqtt
 
-# Set to true to shutdown the host computer
-# a couple of minites before the aux relay actualy switch off
-tod_poweroff = no
-
 # List of comma-separated intervals hh1:mm1-hh2:mm2
+# Historic data is dumed at the interval midpoint
+# Host computer powers off at interval end 
+# if and only if the service is started in poweroff mode:
+#    sudo service ema start poweroff | sudo service ema restart poweroff
+#
 # Time given in UTC Time.
 tod_intervals = 12:00-12:15,20:00-20:15
 

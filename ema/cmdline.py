@@ -56,6 +56,8 @@ def parser():
     _parser.add_argument('-i' , '--interactive', action='store_true', help='run in foreground (Windows only)')
     _parser.add_argument('-c' , '--config', type=str, action='store', metavar='<config file>', help='detailed configuration file')
     _parser.add_argument('-s' , '--startup', type=str, action='store', metavar='<auto|manual>', help='Windows service starup mode')
+    _parser.add_argument('-p' , '--poweroff', action='store_true', help='poweroff on active time window end')
+
     group = _parser.add_mutually_exclusive_group()
     group.add_argument(' install',  type=str, nargs='?', help='install windows service')
     group.add_argument(' start',  type=str, nargs='?', help='start windows service')

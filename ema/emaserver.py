@@ -106,31 +106,32 @@ class EMAServer(Server):
       self.sync()                # start the synchronization process
 
    def parseCmdLine(self, opts):
-                '''Parses the comand line looking for the config file path 
-                and optionally console output'''
-                sysLogInfo("argv[] array is %s" % str(sys.argv)) 
-                if opts.console:
-                        logToConsole()
-                self.__cfgfile = opts.config or CONFIG_FILE
-                if not (self.__cfgfile != None and os.path.exists(self.__cfgfile)):
-                        raise IOError(errno.ENOENT,"No such file or directory",self.__cfgfile)
+      '''Parses the comand line looking for the config file path 
+      and optionally console output'''
+      sysLogInfo("argv[] array is %s" % str(sys.argv)) 
+      if opts.console:
+         logToConsole()
+      self.__poweroff = opts.poweroff
+      self.__cfgfile = opts.config or CONFIG_FILE
+      if not (self.__cfgfile != None and os.path.exists(self.__cfgfile)):
+         raise IOError(errno.ENOENT,"No such file or directory",self.__cfgfile)
 
 
    def parseConfigFile(self):
-                '''Parses the config file looking for its own options'''
-                log.setLevel(self.__parser.get("GENERIC", "generic_log"))
-                toFile = self.__parser.getboolean("GENERIC","log_to_file")
-                if(toFile):
-                        filename = self.__parser.get("GENERIC","log_file")
-                        policy = self.__parser.get("GENERIC","log_policy")
-                        max_size = self.__parser.getint("GENERIC","log_max_size")
-                        by_size = policy == "size" if True else False
-                        logToFile(filename, by_size, max_size)
+      '''Parses the config file looking for its own options'''
+      log.setLevel(self.__parser.get("GENERIC", "generic_log"))
+      toFile = self.__parser.getboolean("GENERIC","log_to_file")
+      if(toFile):
+         filename = self.__parser.get("GENERIC","log_file")
+         policy = self.__parser.get("GENERIC","log_policy")
+         max_size = self.__parser.getint("GENERIC","log_max_size")
+         by_size = policy == "size" if True else False
+         logToFile(filename, by_size, max_size)
 
 
    def reload(self):
-                '''Support on-line service reloading'''
-                pass            # unimplemented for the time being
+      '''Support on-line service reloading'''
+      pass            # unimplemented for the time being
 
 
    def build(self):
@@ -141,6 +142,7 @@ class EMAServer(Server):
       self.__parser.read(self.__cfgfile)
       self.parseConfigFile()
       logging.getLogger().info("Starting %s, %s",VERSION_STRING, Server.FLAVOUR)
+      log.info("Self power-off = %s", self.__poweroff)
       log.info("Loaded configuration from %s", self.__cfgfile)
 
       config = self.__parser
@@ -184,7 +186,7 @@ class EMAServer(Server):
       self.genpage = genpage.HTML(self, config)
 
       # Time of Day Timer object 
-      self.todtimer = todtimer.Timer(self, config)
+      self.todtimer = todtimer.Timer(self, config, self.__poweroff)
 
       # MQTT Driver object 
       self.mqttclient = mqttclient.MQTTClient(self, config, **opts)

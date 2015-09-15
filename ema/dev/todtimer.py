@@ -72,13 +72,12 @@ class Timer(Device, Alarmable2):
    ACTIVE    = "active"
    INACTIVE  = "inactive"
 
-   def __init__(self, ema, parser):
+   def __init__(self, ema, parser, poweroff):
       lvl = parser.get("TOD_TIMER", "tod_log")
       log.setLevel(lvl)
       publish_where = chop(parser.get("TOD_TIMER","tod_publish_where"), ',')
       publish_what  = chop(parser.get("TOD_TIMER","tod_publish_what"), ',')
       intervals     = parser.get("TOD_TIMER","tod_intervals")
-      poweroff      = parser.getboolean("TOD_TIMER","tod_poweroff")
       Device.__init__(self, publish_where, publish_what)
       Alarmable2.__init__(self)
       self.ema      = ema
