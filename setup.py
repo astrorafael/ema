@@ -8,7 +8,7 @@ classifiers = [
     'License :: OSI Approved :: MIT License',
     'Operating System :: POSIX :: Linux',
     'Programming Language :: Python :: 2.7',
-    'Topic :: Scientific/Engineering :: Astronomy'
+    'Topic :: Scientific/Engineering :: Astronomy',
     'Topic :: Scientific/Engineering :: Atmospheric Science',
     'Topic :: Communications',
     'Topic :: Internet',
@@ -17,7 +17,7 @@ classifiers = [
 
 
 setup(name             = 'ema',
-      version          = versioneer.get_version(),
+      version          = versioneer.get_version().split('+')[0],
       cmdclass         = versioneer.get_cmdclass(),
       author           = 'Rafael Gonzalez',
       author_email     = 'astrorafael@yahoo.es',
