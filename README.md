@@ -38,16 +38,15 @@ Enjoy !
 
 Instalation
 -----------
-Simply type:
 
-  `sudo ./setup.sh`
+  `sudo pip install ema`
 
 All executables and custom scripts are copied to /usr/local/bin
 
-Type `emad -k` to start the service on foreground with console output
+Type `ema` to start the service on foreground with console output
 
 An available startup service script for debian-based systems is provided. 
-Type `sudo service emad start` to start it
+Type `sudo service ema start` to start it
 Type `sudo update-rc.d emad defaults` to install it at boot time
 
 ### EMA Server Configuation ###
@@ -57,13 +56,12 @@ This file is self explanatory.
 
 ### Logging ###
 
-Log file is placed under `/var/log/emad.log`. 
+Log file is placed under `/var/log/ema.log`. 
 Default log level is INFO. It generates very litte logging at this level
-File is rotated by a logrotate policy installed under `/etc/logrotate.d`.
 
 ### EMA command line utility ###
 
-**ema** is a command line utility that ends commands to the emad service. 
+**emacli** is a command line utility that ends commands to the emad service. 
 It only works in the same LAN, not through Internet.
 
 Commands implemented so far are:
@@ -75,5 +73,5 @@ Commands implemented so far are:
 * aux relay, set switch off time to a given HH:MM
 * auxrelay, extends switch time by N minutes
 
-Type `ema -h` or `ema --help` to see actual command line options.
+Type `emacli -h` or `emacli --help` to see actual command line options.
 
