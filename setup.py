@@ -1,4 +1,4 @@
-from setuptools import setup, Extension
+from setuptools import setup, Extension, find_packages
 import versioneer
 
 classifiers = [
@@ -25,7 +25,7 @@ setup(name             = 'ema',
       keywords         = 'EMA Astronomy Python RaspberryPi',
       url              = 'http://github.com/astrorafael/ema/',
       classifiers      = classifiers,
-      packages         = ["ema", "ema.dev", "ema.server"],
+      packages         = find_packages(exclude=[]),
       install_requires = ['paho-mqtt'],
       data_files       = [ 
           ('/etc/init.d' ,   ['init.d/ema']),
