@@ -3,4 +3,5 @@ include ema/_version.py
 include README.md
 include init.d/ema
 include default/ema
+include config/*
 include scripts/*

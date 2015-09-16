@@ -32,6 +32,7 @@ setup(name             = 'ema',
       data_files       = [ 
           ('/etc/init.d' ,   ['init.d/ema']),
           ('/etc/default',   ['default/ema']),
+          ('/etc/ema',       ['config/config']),
           ('/usr/local/bin', ['scripts/emacli', 
                               'scripts/ema',
                               'scripts/emacli',
