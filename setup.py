@@ -17,7 +17,7 @@ classifiers = [
 
 
 setup(name             = 'ema',
-      version          = versioneer.get_version()
+      version          = versioneer.get_version(),
       cmdclass         = versioneer.get_cmdclass(),
       author           = 'Rafael Gonzalez',
       author_email     = 'astrorafael@yahoo.es',
