@@ -1,3 +1,6 @@
-include README.md
 include versioneer.py
 include ema/_version.py
+include README.md
+include init.d/ema
+include defaults/ema
+include scripts/*
