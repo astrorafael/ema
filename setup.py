@@ -26,7 +26,7 @@ setup(name             = 'ema',
       url              = 'http://github.com/astrorafael/ema/',
       classifiers      = classifiers,
       packages         = find_packages(exclude=[]),
-      install_requires = ['paho-mqtt'],
+      install_requires = ['paho-mqtt','pyserial'],
       data_files       = [ 
           ('/etc/init.d' ,   ['init.d/ema']),
           ('/etc/default',   ['default/ema']),
