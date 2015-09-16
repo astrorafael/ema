@@ -1,0 +1,3 @@
+#!/bin/sh
+python -m ema -k -c /etc/ema/config $*
+ 
