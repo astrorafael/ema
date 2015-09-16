@@ -9,7 +9,9 @@ classifiers = [
     'Operating System :: POSIX :: Linux',
     'Programming Language :: Python :: 2.7',
     'Topic :: Scientific/Engineering :: Astronomy'
-'    Topic :: Scientific/Engineering :: Atmospheric Science'
+    'Topic :: Scientific/Engineering :: Atmospheric Science',
+    'Topic :: Communications',
+    'Topic :: Internet',
     'Development Status :: 4 - Beta',
 ]
 
