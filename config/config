@@ -176,6 +176,12 @@ rtc_delta  = 5
 # Recommended at least once per day        
 rtc_period = 12   
 
+# Allows the host comuter to set EMA clock
+# This is rcommended if the host computer has a battery backed RTC
+# A stock Raspberry Pi does not have an RTC 
+# so for RPis without RTC, you'd better not to syn clocks.
+rtc_sync = no
+
 # component log level (VERBOSE, DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 rtc_log = INFO
 

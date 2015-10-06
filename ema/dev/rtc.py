@@ -41,11 +41,11 @@ class RTCParameter(AbstractParameter):
    # Common pattern forn GET/SET message responses
    PAT = '\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)' 
 
-   def __init__(self, ema, deltaT=60):
+   def __init__(self, ema, syncAllowed, deltaT=60):
       AbstractParameter.__init__(self, ema, RTCParameter.TIMEOUT, 
                                  RTCParameter.PAT, 
                                  RTCParameter.PAT, 
-                                 sync=True,
+                                 sync=syncAllowed,
                                  nretries=RTCParameter.RETRIES)
       self.deltaT = datetime.timedelta(seconds=deltaT)
       self.name = "EMA RTC Time Syncronization"
@@ -119,9 +119,10 @@ class RTC(Lazy):
       log.setLevel(lvl)
       deltaT = parser.getint("RTC", "rtc_delta")
       period = parser.getfloat("RTC", "rtc_period")
+      syncAllowed = garser.getbool("RTC", "rtc_sync")
       Lazy.__init__(self, 3600*period)
       self.ema = ema
-      self.param = RTCParameter(ema, deltaT)
+      self.param = RTCParameter(ema, syncALlowed, deltaT)
       ema.addSync(self.param)
       ema.addLazy(self)
 
