@@ -119,10 +119,10 @@ class RTC(Lazy):
       log.setLevel(lvl)
       deltaT = parser.getint("RTC", "rtc_delta")
       period = parser.getfloat("RTC", "rtc_period")
-      syncAllowed = garser.getbool("RTC", "rtc_sync")
+      syncAllowed = parser.getboolean("RTC", "rtc_sync")
       Lazy.__init__(self, 3600*period)
       self.ema = ema
-      self.param = RTCParameter(ema, syncALlowed, deltaT)
+      self.param = RTCParameter(ema, syncAllowed, deltaT)
       ema.addSync(self.param)
       ema.addLazy(self)
 
