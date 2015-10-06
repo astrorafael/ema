@@ -98,7 +98,7 @@ mqtt_publish_history = yes
 
 # Overlap factor (%) for redundant historic data dumps
 # 0% = no overlap, 100%=full dayly historic data each time
-mqtt_history_overlap = 10
+mqtt_history_overlap = 25
 
 # Publish Raw EMA status Line
 mqtt_publish_status = yes
