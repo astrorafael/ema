@@ -84,7 +84,7 @@ class MQTTPublisher(Lazy):
       self.__initial_T = self.__keepalive / 2
       self.__period    = self.__initial_T
       self.__paho      =  paho.Client(client_id=ident+'@'+socket.gethostname(), 
-                                     userdata=self, clean_session=False)
+                                     userdata=self, clean_session=True)
       self.__paho.on_connect    = on_connect
       self.__paho.on_disconnect = on_disconnect
       Lazy.__init__(self, self.__initial_T )
