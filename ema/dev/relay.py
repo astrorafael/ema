@@ -217,7 +217,7 @@ class AuxRelay(Device):
       script_mode   = parser.get("AUX_RELAY","aux_relay_mode")
       publish_where = chop(parser.get("AUX_RELAY","aux_relay_publish_where"), ',')
       publish_what  = chop(parser.get("AUX_RELAY","aux_relay_publish_what"), ',')
-      sync    = parser.getboolean("GENERIC","sync")
+      sync          = parser.getboolean("AUX_RELAY","aux_sync")
       Device.__init__(self, publish_where, publish_what)
       self.ema      = ema
       self.mode     = Parameter(ema, AuxRelay.MAPPING[mode], sync=sync, **MODE) 

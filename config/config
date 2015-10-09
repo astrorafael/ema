@@ -27,6 +27,7 @@
 [GENERIC]
 
 # Perform syncronization of calibration constants at startup
+# (except RTC and Aux Relay)
 sync = True
 
 # Upload period (in seconds).
@@ -462,6 +463,9 @@ roof_relay_publish_what = current
 # 'Manual' = manual, by explicit commands
 # 'Timed'  = Timed, with On/Off hour:minute
 aux_mode = Timed
+
+# Synchronize aux relay parameters
+aux_sync = yes
 
 # List of comma separated scripts to execute  
 # on change of aux relay switch 
