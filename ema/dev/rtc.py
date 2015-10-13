@@ -112,27 +112,27 @@ class RTCParameter(AbstractParameter):
 
 
 
-class RTC(Lazy):
+class RTC(object):
 
    def __init__(self, ema, parser):
       lvl = parser.get("RTC", "rtc_log")
       log.setLevel(lvl)
-      deltaT = parser.getint("RTC", "rtc_delta")
-      period = parser.getfloat("RTC", "rtc_period")
-      syncAllowed = parser.getboolean("RTC", "rtc_sync")
-      Lazy.__init__(self, 3600*period)
-      self.ema = ema
-      self.param = RTCParameter(ema, syncAllowed, deltaT)
-      ema.addSync(self.param)
-      ema.addLazy(self)
+      self.deltaT = parser.getint("RTC",    "rtc_delta")
+      self.ema    = ema
+      self.param  = RTCParameter(ema, False, self.deltaT)
+      ema.addSync(self.param) # Useful to see the current deltaT in the log
 
 
-   def work(self):
+   def sync(self):
       '''
-      Periodic synchornization routine.
-      Should be once a day.
+      Forces EMA RTC synchronization
+      Must only be used when:
+      1) the host computer has an RTC or
+      2) there is an Internet connection available.
+         and NTP has already synchronized the host internal clock. 
+      Otherwise, this will result in a disaster.
       '''
-      self.ema.addSync(self.param)
+      self.param  = RTCParameter(self.ema, True, self.deltaT)
       self.param.sync()
       
 

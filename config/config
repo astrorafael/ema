@@ -44,6 +44,7 @@ log_policy = time
 # File Max size in bytes when rotating by size
 log_max_size = 1000000
 
+probe_sites = http://www.google.es , http://www.lua.org , https://www.oasis-open.org
 # component log level (VERBOSE, DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 generic_log = INFO
 
@@ -173,15 +174,6 @@ wdog_log = INFO
 # prevents to have seconds accuarcy
 rtc_delta  = 5
 
-# Synchronization period [hours]
-# Recommended at least once per day        
-rtc_period = 12   
-
-# Allows the host comuter to set EMA clock
-# This is rcommended if the host computer has a battery backed RTC
-# A stock Raspberry Pi does not have an RTC 
-# so for RPis without RTC, you'd better not to syn clocks.
-rtc_sync = no
 
 # component log level (VERBOSE, DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 rtc_log = INFO
