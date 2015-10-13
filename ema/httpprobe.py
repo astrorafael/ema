@@ -75,7 +75,7 @@ class HTTPProbe(object):
 
    def onNewInterval(self, where, i):
       # skips inactive intervals
-      if self.where == Timer.INACTIVE:
+      if where == Timer.INACTIVE:
          return
       votes = []
       for site in self.probes:

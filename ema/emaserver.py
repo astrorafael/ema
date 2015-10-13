@@ -55,6 +55,8 @@ import notifier
 import genpage
 import command
 
+import httpprobe
+
 from emaproto import STATLEN, MTCUR, SMTB, encodeFreq
 
 import dev.rtc         as rtc
@@ -233,6 +235,9 @@ class EMAServer(Server):
 
       # Build objects without configuration values
       self.thermopile = thermop.Thermopile(self, config, VECLEN)
+
+      # Build the HTTP Internet Probe
+      self.httpprobe = httpprobe.HTTPProbe(self, config)
       
       # Run an interval search process once all the clients
       # has subscribed to TOD Timer
