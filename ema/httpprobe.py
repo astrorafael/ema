@@ -67,7 +67,7 @@ class HTTPProbe(object):
    def __init__(self, ema, parser):
       self.ema = ema
       ema.todtimer.addSubscriber(self)
-      self.probes = chop(parser.get("GENERIC", "probe_sites"), ',')
+      self.sites = chop(parser.get("GENERIC", "probe_sites"), ',')
 
    # -----------------------------------------------
    # Implement the TOD Timer onNewInterval interface
@@ -78,7 +78,7 @@ class HTTPProbe(object):
       if where == Timer.INACTIVE:
          return
       votes = []
-      for site in self.probes:
+      for site in self.sites:
          try:
             r = requests.head(site)
             r.raise_for_status()
@@ -87,8 +87,8 @@ class HTTPProbe(object):
          else:
             votes.append(True)
 
-      success = voting3(votes)
-      if success:
+      quorum = voting3(votes)
+      if quorum:
          self.ema.rtc.sync()
 
 
