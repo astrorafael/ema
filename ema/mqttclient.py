@@ -164,7 +164,7 @@ class MQTTClient(MQTTPublisher):
          if self.__histflag:
             self.publishAllBulkDumps()
       else:
-         log.warn("Not connected to broker: can't publish minmax history")
+         log.warn("Not connected to broker: can't publish history data")
 	
    # --------------------------------
    # Implement the MQTT Publisher API
