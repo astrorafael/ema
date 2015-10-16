@@ -24,6 +24,8 @@
 import logging
 import re
 import datetime
+import requests
+
 
 from ema.server    import Server, Lazy
 from ema.parameter import AbstractParameter
@@ -117,11 +119,40 @@ class RTC(object):
    def __init__(self, ema, parser):
       lvl = parser.get("RTC", "rtc_log")
       log.setLevel(lvl)
-      self.deltaT = parser.getint("RTC",    "rtc_delta")
+      self.deltaT = parser.getint("RTC",   "rtc_delta")
+      self.sites  = chop(parser.get("RTC", "rtc_probe_sites"), ',')
       self.ema    = ema
       self.param  = RTCParameter(ema, False, self.deltaT)
       ema.addSync(self.param) # Useful to see the current deltaT in the log
+      ema.todtimer.addSubscriber(self)
 
+   # -----------------------------------------------
+   # Implement the TOD Timer onNewInterval interface
+   # -----------------------------------------------
+
+   def onNewInterval(self, where, i):
+      # skips inactive intervals
+      if where == Timer.INACTIVE:
+         return
+      votes = 0
+      for site in self.sites:
+         try:
+            r = requests.head(site)
+            r.raise_for_status()
+         except Exception as e:
+            pass
+         else:
+            votes += 1
+
+      quorum = (votes >= (len(self.sites) // 2) + 1)
+      if quorum:
+         self.sync()
+      else:
+         log.warning("No Internet connectivity.")
+
+   # ----------------------------
+   # Resynchronizes the RTC again
+   # ----------------------------
 
    def sync(self):
       '''
@@ -132,6 +163,7 @@ class RTC(object):
          and NTP has already synchronized the host internal clock. 
       Otherwise, this will result in a disaster.
       '''
+      log.info("Synchronizing EMA clock")
       self.param  = RTCParameter(self.ema, True, self.deltaT)
       self.param.sync()
       

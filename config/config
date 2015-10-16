@@ -44,7 +44,6 @@ log_policy = time
 # File Max size in bytes when rotating by size
 log_max_size = 1000000
 
-probe_sites = http://www.google.es , http://www.lua.org , https://www.oasis-open.org
 # component log level (VERBOSE, DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 generic_log = INFO
 
@@ -174,6 +173,8 @@ wdog_log = INFO
 # prevents to have seconds accuarcy
 rtc_delta  = 5
 
+# Sites to probe for Internet connectivity
+rtc_probe_sites = http://www.google.es,http://www.lua.org,https://www.python.org
 
 # component log level (VERBOSE, DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 rtc_log = INFO
