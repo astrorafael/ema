@@ -30,6 +30,9 @@ import requests
 from ema.server    import Server, Lazy
 from ema.parameter import AbstractParameter
 from ema.emaproto  import PERIOD
+from ema.utils     import chop
+
+from todtimer      import Timer
 
 log = logging.getLogger('rtc')
 
@@ -143,7 +146,6 @@ class RTC(object):
             pass
          else:
             votes += 1
-
       quorum = (votes >= (len(self.sites) // 2) + 1) and len(self.sites)
       if quorum:
          self.sync()
