@@ -146,7 +146,7 @@ class RTC(object):
             pass
          else:
             votes += 1
-      quorum = (votes >= (len(self.sites) // 2) + 1)
+      quorum = (votes >= (len(self.sites) // 2) + 1) and len(self.sites)
       if quorum:
          self.sync()
       else:

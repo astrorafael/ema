@@ -174,7 +174,7 @@ wdog_log = INFO
 rtc_delta  = 5
 
 # Sites to probe for Internet connectivity
-rtc_probe_sites = http://www.google.es,http://www.lua.org,https://www.python.org
+rtc_probe_sites = http://www.google.es,http://www.lua.org,http://www.python.org
 
 # component log level (VERBOSE, DEBUG, INFO, WARNING, ERROR, CRITICAL, NOTSET)
 rtc_log = INFO
