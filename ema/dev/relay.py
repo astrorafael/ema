@@ -220,13 +220,13 @@ class AuxRelay(Device):
       sync          = parser.getboolean("AUX_RELAY","aux_sync")
       Device.__init__(self, publish_where, publish_what)
       self.ema      = ema
-      self.mode     = Parameter(ema, AuxRelay.MAPPING[mode], sync=sync, **MODE) 
+      self.mode     = None
       self.ton      = None
       self.toff     = None
       self.relay    = Vector(N)
       self.rawrelay = Vector(N)
       self.sync     = sync
-      ema.addSync(self.mode)
+      #ema.addSync(self.mode)
       ema.subscribeStatus(self)
       ema.addParameter(self)
       for script in scripts:
@@ -322,6 +322,7 @@ class AuxRelay(Device):
          tOFF      = int(interval.t0.strftime("%H%M"))
          tON       = int(interval.t1.strftime("%H%M"))
          log.info("Programming next inactive window (tOFF-tON) to %s", interval)
-      self.toff = Parameter(self.ema, tOFF, sync=True, **TOFF)
-      self.ton  = Parameter(self.ema, tON, self.toff, sync=True, **TON)
+      self.toff = Parameter(self.ema, tOFF, sync=self.sync, **TOFF)
+      self.ton  = Parameter(self.ema, tON, self.toff, sync=self.sync, **TON)
+      self.mode = Parameter(ema, AuxRelay.MAPPING[mode], self.ton, sync=self.sync, **MODE) 
       self.ton.sync()
