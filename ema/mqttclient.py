@@ -318,6 +318,9 @@ class MQTTClient(MQTTPublisher):
             except IndexError as e:
                log.error("Exception: %s listing device key=%s", e, device.name)
                continue
+            except ZeroDivisionError as e:
+               log.error("Not data available for averages in = %s",device.name)
+               continue
 
       self.mqtt.publish(topic=MQTTClient.TOPIC_TOPICS, 
                         payload='\n'.join(topics), qos=2, retain=True)
