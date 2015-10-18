@@ -259,7 +259,7 @@ class HTML(Lazy):
                val = value[0] ; unit=value[1]  
                th, uth = device.threshold.get(key,('',''))
                self.tableRow(page, key, val, unit, th, uth)
-         except (IndexError, NotImplementedError) as e:
+         except (IndexError) as e:
                log.warning("(current) Too early for HTML page generation, got %s", e)
          
 
@@ -274,7 +274,7 @@ class HTML(Lazy):
                val = value[0] ; unit=value[1]
                th, uth = device.threshold.get(key,('',''))
                self.tableRow(page, key, val, unit, th, uth)
-         except (IndexError, ZeroDivisionError,  NotImplementedError) as e:
+         except (IndexError, ZeroDivisionError) as e:
             log.warning("(average) Too early for HTML page generation, got %s", e)
                
    def parameterTable(self, page):

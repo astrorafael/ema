@@ -184,7 +184,7 @@ class EMAServer(Server):
       self.notifier = notifier.Notifier()
 
       # Build EMA HTML Page Generator object
-      self.genpage = genpage.HTML(self, config)
+      #self.genpage = genpage.HTML(self, config)
 
       # Time of Day Timer object 
       self.todtimer = todtimer.Timer(self, config, self.__poweroff)
