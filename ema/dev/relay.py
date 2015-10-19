@@ -220,7 +220,6 @@ class AuxRelay(Device):
       sync          = parser.getboolean("AUX_RELAY","aux_sync")
       Device.__init__(self, publish_where, publish_what)
       self.ema      = ema
-      self.mode     = None
       self.ton      = None
       self.toff     = None
       self.relay    = Vector(N)
