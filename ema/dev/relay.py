@@ -324,5 +324,5 @@ class AuxRelay(Device):
          log.info("Programming next inactive window (tOFF-tON) to %s", interval)
       self.toff = Parameter(self.ema, tOFF, sync=self.sync, **TOFF)
       self.ton  = Parameter(self.ema, tON, self.toff, sync=self.sync, **TON)
-      self.mode = Parameter(ema, AuxRelay.MAPPING[mode], self.ton, sync=self.sync, **MODE) 
+      self.mode = Parameter(self.ema, AuxRelay.MAPPING[mode], self.ton, sync=self.sync, **MODE) 
       self.ton.sync()
