@@ -455,7 +455,7 @@ roof_relay_publish_what = current
 # 'Auto'   = automatic based on dew point
 # 'Manual' = manual, by explicit commands
 # 'Timed'  = Timed, with On/Off hour:minute
-aux_mode = Timed
+aux_mode = Manual
 
 # Synchronize aux relay parameters
 aux_sync = yes
