@@ -212,7 +212,7 @@ class AuxRelay(Device):
    def __init__(self, ema, parser, N):
       lvl = parser.get("AUX_RELAY", "aux_relay_log")
       log.setLevel(lvl)
-      mode          = parser.get("AUX_RELAY", "aux_mode")
+      self.mode     = parser.get("AUX_RELAY", "aux_mode")
       scripts       = chop(parser.get("AUX_RELAY","aux_relay_script"), ',')
       script_mode   = parser.get("AUX_RELAY","aux_relay_mode")
       publish_where = chop(parser.get("AUX_RELAY","aux_relay_publish_where"), ',')
@@ -231,7 +231,7 @@ class AuxRelay(Device):
       ema.addParameter(self)
       for script in scripts:
          ema.notifier.addScript('AuxRelaySwitch', script_mode, script)
-      if AuxRelay.MAPPING[mode] == AuxRelay.TIMED:
+      if AuxRelay.MAPPING[self.mode] == AuxRelay.TIMED:
          ema.todtimer.addSubscriber(self)
 
    def toBoolean(self, c):
@@ -324,5 +324,5 @@ class AuxRelay(Device):
          log.info("Programming next inactive window (tOFF-tON) to %s", interval)
       self.toff = Parameter(self.ema, tOFF, sync=self.sync, **TOFF)
       self.ton  = Parameter(self.ema, tON, self.toff, sync=self.sync, **TON)
-      self.mode = Parameter(self.ema, AuxRelay.MAPPING[mode], self.ton, sync=self.sync, **MODE) 
+      self.mode = Parameter(self.ema, AuxRelay.MAPPING[self.mode], self.ton, sync=self.sync, **MODE) 
       self.ton.sync()
