@@ -231,7 +231,7 @@ class AuxRelay(Device):
       ema.addParameter(self)
       for script in scripts:
          ema.notifier.addScript('AuxRelaySwitch', script_mode, script)
-      if AuxRelay.MAPPING[self.mode] == AuxRelay.TIMED:
+      if AuxRelay.MAPPING[self.aux_mode] == AuxRelay.TIMED:
          ema.todtimer.addSubscriber(self)
 
    def toBoolean(self, c):
