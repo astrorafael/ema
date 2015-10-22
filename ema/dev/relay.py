@@ -212,7 +212,7 @@ class AuxRelay(Device):
    def __init__(self, ema, parser, N):
       lvl = parser.get("AUX_RELAY", "aux_relay_log")
       log.setLevel(lvl)
-      self.aux_mode = parser.get("AUX_RELAY", "aux_mode")
+      self.int_mode = parser.get("AUX_RELAY", "aux_mode")
       scripts       = chop(parser.get("AUX_RELAY","aux_relay_script"), ',')
       script_mode   = parser.get("AUX_RELAY","aux_relay_mode")
       publish_where = chop(parser.get("AUX_RELAY","aux_relay_publish_where"), ',')
@@ -231,7 +231,7 @@ class AuxRelay(Device):
       ema.addParameter(self)
       for script in scripts:
          ema.notifier.addScript('AuxRelaySwitch', script_mode, script)
-      if AuxRelay.MAPPING[self.aux_mode] == AuxRelay.TIMED:
+      if AuxRelay.MAPPING[self.int_mode] == AuxRelay.TIMED:
          ema.todtimer.addSubscriber(self)
 
    def toBoolean(self, c):
@@ -297,9 +297,9 @@ class AuxRelay(Device):
       '''Return dictionary with calibration constants'''
       if self.ton is not None:
          return {
-            self.mode.name : (AuxRelay.MAPPING[self.mode.value] , self.mode.unit) ,
-            self.ton.name  : ( timeToString(self.ton.value), self.ton.unit) ,
-            self.toff.name : ( timeToString(self.toff.value), self.toff.unit) ,
+            self.mode.name : ( AuxRelay.MAPPING[self.mode.value], self.mode.unit) ,
+            self.ton.name  : ( timeToString(self.ton.value),      self.ton.unit)  ,
+            self.toff.name : ( timeToString(self.toff.value),     self.toff.unit) ,
             }
       else:
          return {
@@ -322,7 +322,8 @@ class AuxRelay(Device):
          tOFF      = int(interval.t0.strftime("%H%M"))
          tON       = int(interval.t1.strftime("%H%M"))
          log.info("Programming next inactive window (tOFF-tON) to %s", interval)
-      self.toff = Parameter(self.ema, tOFF, sync=self.sync, **TOFF)
-      self.ton  = Parameter(self.ema, tON, self.toff, sync=self.sync, **TON)
-      self.mode = Parameter(self.ema, AuxRelay.MAPPING[self.aux_mode], self.ton, sync=self.sync, **MODE) 
+      mode = AuxRelay.MAPPING[self.int_mode]
+      self.mode = Parameter(self.ema, mode,            sync=self.sync, **MODE) 
+      self.toff = Parameter(self.ema, tOFF, self.mode, sync=self.sync, **TOFF)
+      self.ton  = Parameter(self.ema, tON,  self.toff, sync=self.sync, **TON)
       self.ton.sync()
