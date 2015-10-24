@@ -234,9 +234,6 @@ class EMAServer(Server):
       # Build objects without configuration values
       self.thermopile = thermop.Thermopile(self, config, VECLEN)
       
-      # Run an interval search process once all the clients
-      # has subscribed to TOD Timer
-      #self.todtimer.onNewInterval()
 
    # ----------------------------------
    # Synchronization at startup process

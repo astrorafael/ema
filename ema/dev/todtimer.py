@@ -101,7 +101,7 @@ class Timer(Device, Alarmable2):
       ema.addCurrent(self)
       ema.addAverage(self)
       log.debug("processed %d active intervals and %d inactive intervals", len(self.windows), len(self.gaps))
-
+      self.findCurrentInterval()
 
    # --------------------------------
    # Offer the subscription Interface
@@ -238,8 +238,7 @@ class Timer(Device, Alarmable2):
          i         = self.nextActiveIndex(i)
          tSHU      = adjust(self.windows[i].t1, minutes=-2)
          tMID      = self.windows[i].midpoint()
-
-      # anyway sets an for the next self-check
+      # anyway sets alarm for the next self-check
       self.nextAlarm(tMID) 
       # Programs power off time     
       self.shutdown(tSHU)
