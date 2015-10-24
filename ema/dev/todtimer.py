@@ -96,7 +96,10 @@ class Timer(Device, Alarmable2):
       self.gaps     = ~ self.windows
       self.where    = None
       self.i        = None
+      self.tSHU     = None 
+      self.tMID     = None
       self.subscribedList = []
+      self.addSubscriber(self)
       ema.addParameter(self)
       ema.addCurrent(self)
       ema.addAverage(self)
@@ -124,7 +127,17 @@ class Timer(Device, Alarmable2):
    # -----------------------------------
 
    def onTimeoutDo(self):
-      self.onNewInterval()
+      self.findCurrentInterval()
+      for o in self.subscribedList:
+         o.onNewInterval(self.where, self.i)
+
+   # -----------------------------------------------
+   # Implement the TOD Timer onNewInterval interface
+   # -----------------------------------------------
+
+   def onNewInterval(self, where, i):   
+      self.nextAlarm() 
+      self.shutdown()
 
    # ----------
    # Properties
@@ -178,10 +191,10 @@ class Timer(Device, Alarmable2):
          o.onNewInterval(self.where, self.i)
 
    
-   def nextAlarm(self, tMID):
+   def nextAlarm(self):
       '''Program next alarm'''
-      t = int(durationFromNow(tMID).total_seconds())
-      log.info("Next check at %s, %d seconds from now",tMID.strftime("%H:%M:%S"), t)
+      t = int(durationFromNow(self.tMID).total_seconds())
+      log.info("Next check at %s, %d seconds from now",self.tMID.strftime("%H:%M:%S"), t)
       self.setTimeout(t)
       self.resetAlarm()
       self.ema.addAlarmable(self)
@@ -200,19 +213,19 @@ class Timer(Device, Alarmable2):
          log.debug("No previous Shutdown under way")
          return False
 
-   def shutdown(self, tSHU):
+   def shutdown(self):
       '''Manages a possible shutdow request'''
       # WARNING !!!!! tSHU IS GIVEN AS UTC !!!!!!
       # AND SHUTDOWN REQUIRES LOCAL TIME !!!!!
       # This will only work if local time is UTC as well
       if self.poweroff and not self.isShuttingDown():
-         if tSHU > now():
-            tSHUstr = tSHU.strftime("%H:%M")
+         if self.tSHU > now():
+            tSHUstr = self.tSHU.strftime("%H:%M")
             log.warning("Calling shutdown at %s",tSHUstr)
             subprocess.Popen(['sudo','shutdown','-h', tSHUstr])
-            t = durationFromNow(adjust(tSHU,-0.25)).total_seconds()
+            t = durationFromNow(adjust(self.tSHU,-0.25)).total_seconds()
             self.ema.addAlarmable(TinyTimer(t))
-            log.info("Programmed shutdown at %s",tSHU.strftime("%H:%M:%S"))
+            log.info("Programmed shutdown at %s",self.tSHU.strftime("%H:%M:%S"))
          else:                
             log.warning("THIS COMPUTER SHOULD BE ALREADY POWERED OFF ACCORDING TO THE SCHEDULE AND START UP OPTIONS !!!")
 
@@ -227,8 +240,8 @@ class Timer(Device, Alarmable2):
          self.where = Timer.ACTIVE
          self.i    = i
          log.info("now (%s) we are in the active window %s", tNow.strftime("%H:%M:%S"), self.windows[i])
-         tSHU      = adjust(self.windows[i].t1, minutes=-2)
-         tMID      = self.gaps[i].midpoint()
+         self.tSHU      = adjust(self.windows[i].t1, minutes=-2)
+         self.tMID      = self.gaps[i].midpoint()
       else:
          self.where = Timer.INACTIVE
          log.debug("checking inactive intervals %s", self.gaps)
@@ -236,12 +249,10 @@ class Timer(Device, Alarmable2):
          log.info("now (%s) we are in the inactive window %s", tNow.strftime("%H:%M:%S"), self.gaps[i])
          self.i    = i
          i         = self.nextActiveIndex(i)
-         tSHU      = adjust(self.windows[i].t1, minutes=-2)
-         tMID      = self.windows[i].midpoint()
-      # anyway sets alarm for the next self-check
-      self.nextAlarm(tMID) 
-      # Programs power off time     
-      self.shutdown(tSHU)
+         self.tSHU      = adjust(self.windows[i].t1, minutes=-2)
+         self.tMID      = self.windows[i].midpoint()
+   
+   
 
 
      
