@@ -171,7 +171,7 @@ class Command(Alarmable):
 
    # Command retry
    RETRIES = 2
-   TIMEOUT = 4
+   TIMEOUT = 5
 
 
    def __init__(self, ema, req, next = None, retries =RETRIES, **kargs):
@@ -201,7 +201,6 @@ class Command(Alarmable):
       self.setTimeout(t)
       self.resetAlarm()
       self.ema.addAlarmable(self)
-      self.message = message
       self.ema.serdriver.write(message)
 
    # --------------
@@ -249,11 +248,11 @@ class Command(Alarmable):
       '''Timeout event handler'''
       if self.retries < self.NRetries:
          self.retries += 1
-         self.sendMessage(self.message)
-         log.debug("Timeout waiting for command %s response, retrying", self.message)
+         self.sendMessage(self.req)
+         log.warning("Timeout waiting for command %s response, retrying", self.req)
       else: # to END state
          self.ema.delCommand(self)
-         log.error("Timeout: EMA not responding to %s command", self.message)
+         log.error("Timeout: EMA not responding to %s command", self.req)
    
    # ----------------------------------------------
    # Abstract methods to be overriden in subclasses
