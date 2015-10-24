@@ -103,6 +103,7 @@ class Timer(Device, Alarmable2):
       ema.addParameter(self)
       ema.addCurrent(self)
       ema.addAverage(self)
+      ema.addAlarmable(self)
       log.debug("processed %d active intervals and %d inactive intervals", len(self.windows), len(self.gaps))
       self.findCurrentInterval()
 
