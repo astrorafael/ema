@@ -201,6 +201,7 @@ class Command(Alarmable):
       self.setTimeout(t)
       self.resetAlarm()
       self.ema.addAlarmable(self)
+      self.message = message
       self.ema.serdriver.write(message)
 
    # --------------
@@ -226,7 +227,6 @@ class Command(Alarmable):
       if matched:
          self.resetAlarm()
          self.retries = 0
-         self.message = message
          if (self.indexRes + 1) == len(self.resPat) and self.iteration == self.NIterations:
             log.debug("Matched command response, command complete")
             self.ema.delAlarmable(self)
