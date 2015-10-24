@@ -236,7 +236,7 @@ class EMAServer(Server):
       
       # Run an interval search process once all the clients
       # has subscribed to TOD Timer
-      self.todtimer.onNewInterval()
+      #self.todtimer.onNewInterval()
 
    # ----------------------------------
    # Synchronization at startup process

@@ -89,7 +89,7 @@ class Timer(Device, Alarmable2):
       publish_what  = chop(parser.get("TOD_TIMER","tod_publish_what"), ',')
       intervals     = parser.get("TOD_TIMER","tod_intervals")
       Device.__init__(self, publish_where, publish_what)
-      Alarmable2.__init__(self)
+      Alarmable2.__init__(self, timeout=30)
       self.ema      = ema
       self.poweroff = poweroff
       self.windows  = Intervals.parse(intervals, Timer.MIN_DUR)
@@ -101,9 +101,7 @@ class Timer(Device, Alarmable2):
       ema.addCurrent(self)
       ema.addAverage(self)
       log.debug("processed %d active intervals and %d inactive intervals", len(self.windows), len(self.gaps))
-      # Better in EMA, so the subscribers subscribe first before 
-      # running a time window search process
-      ## self.onNewInterval()
+
 
    # --------------------------------
    # Offer the subscription Interface
