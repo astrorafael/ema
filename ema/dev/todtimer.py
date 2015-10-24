@@ -184,13 +184,6 @@ class Timer(Device, Alarmable2):
    def getActiveInterval(self, i):
       return self.windows[i]
 
-
-   def onNewInterval(self):
-      '''Executes the callbacks, triggered by alarms'''
-      self.findCurrentInterval()
-      for o in self.subscribedList:
-         o.onNewInterval(self.where, self.i)
-
    
    def nextAlarm(self):
       '''Program next alarm'''
