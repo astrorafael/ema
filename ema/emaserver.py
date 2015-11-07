@@ -398,15 +398,19 @@ class EMAServer(Server):
       if self.handleStatus(message):
          log.debug("handled as ordinary Status Message")
          return
+      # Commands should be handled before parameter syncs
+      # as they are more short-lived and there is an overlap
+      # between RTC parameter sync and MinMax command (@H0300)
+      if self.handleCommand(message):
+         log.debug("handled as Command")
+         return
       if self.handleRequest(message):
          log.debug("handled as parameter sync request")
          return
       if self.handleUnsolicited(message):
          log.debug("handled as ordinary Status Message")
          return
-      if self.handleCommand(message):
-         log.debug("handled as Command")
-         return
+      
       log.debug("unhandled message from EMA")
 
 
