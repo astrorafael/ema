@@ -362,8 +362,8 @@ class MQTTClient(MQTTPublisher):
       self.his5min.begin()
       log.debug("Request to publish Bulk data")
       # Chain 2 commands.
-      cmd1 = AveragesCommand(self.srv, "(@t%04d)" % FLASH_5MINAVER, retries=0, **COMMAND[-1])
-      cmd2 = MinMaxCommand(self.srv, "(@H%04d)" % FLASH_MINMAX, next=cmd1, retries=0, **COMMAND[-2])
+      cmd1 = AveragesCommand(self.srv, "(@t%04d)" % FLASH_5MINAVER, retries=2, **COMMAND[-1])
+      cmd2 = MinMaxCommand(self.srv, "(@H%04d)" % FLASH_MINMAX, next=cmd1, retries=2, **COMMAND[-2])
       cmd2.request()
 
 
