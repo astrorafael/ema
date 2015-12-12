@@ -79,7 +79,9 @@ udp_log = INFO
 #------------------------------------------------------------------------#
 
 # MQTT Client config
+
 [MQTT]
+
 # The unique id string used as the station id in topics (i.e EMA/<mqtt_id>/#)
 # and also as part of the client_id when connecting to the broker.
 mqtt_id = foo
@@ -126,8 +128,8 @@ html_log = INFO
 #------------------------------------------------------------------------#
 
 [TOD_TIMER]
-# Time of day timer keeps a list of active window to
-# do thins like sending historic 24 data and programming the aux relay for
+# Time of day timer keeps a list of active window to do things like
+# sending historic 24 data and programming the aux relay for
 # powering on/off
 # At minimun, one active interval should be defined and should be at least 
 # 15 minutes long
@@ -140,10 +142,11 @@ tod_publish_what = current
 tod_publish_where = mqtt
 
 # List of comma-separated intervals hh1:mm1-hh2:mm2
-# Historic data is dumed at the interval midpoint
+# Historic data is dumped at the interval midpoint
 # Host computer powers off at interval end 
-# if and only if the service is started in poweroff mode:
-#    sudo service ema start poweroff | sudo service ema restart poweroff
+# if and only if the service is started in poweroff mode either by :
+#    sudo service ema start poweroff 
+#    sudo service ema restart poweroff
 #
 # Time given in UTC Time.
 tod_intervals = 12:00-12:15,20:00-20:15
@@ -194,7 +197,7 @@ volt_thres = 11.8
 
 # The EMA service will execute a script if the average voltage
 # value reported by EMA in status messages during 'volt_time' 
-# secconds falls below 'volt_thres' + 'volt_delta'
+# seconds falls below 'volt_thres' + 'volt_delta'
 
 # Low voltage thrshold delta [V]
 # Volts above vlot_threshold to allow a safety marging for
@@ -467,9 +470,7 @@ aux_sync = yes
 aux_relay_script = /path/to/my/script
 
 # Script mode: (Never, Once, Many)
-# When launched# Publish Raw EMA status Line
-mqtt_publish_where_status = yes
- mutiple times, EMA server does not lauch a script
+# When launched mutiple times, EMA server does not lauch a script
 # till the previous run is over
 aux_relay_mode = Never
 
