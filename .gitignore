@@ -9,8 +9,10 @@ ema/*.pyo
 ema/*~
 ema/dev/*.pyc
 ema/dev/*.pyo
-emadb/dev/*~
+ema/dev/*~
 ema/server/*.pyo
 ema/server/*.pyc
-emadb/server/*~
+ema/server/*~
 my*
+sftp-config.json
+ema/trastero/*

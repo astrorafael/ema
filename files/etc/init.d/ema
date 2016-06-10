@@ -23,7 +23,7 @@ SCRIPTNAME=/etc/init.d/$NAME
 CONFIG_FILE=/etc/$NAME/config
 
 # Exit if the package is not installed
-[ -x "$DAEMON" ] || exit 0
+[ ! -x "$DAEMON" ] && echo "$DAEMON does not exists" && exit 5
 
 # Read configuration variable file if it is present
 [ -r /etc/default/$NAME ] && . /etc/default/$NAME
@@ -46,9 +46,9 @@ do_start()
     local poweroff=$1
     if [ "$poweroff" = "alive" ]
     then
-	POWEROFF=""
+		POWEROFF=""
     else
-	POWEROFF=" --poweroff"
+		POWEROFF=" --poweroff"
     fi
     DAEMON_ARGS="${DAEMON_ARGS}${POWEROFF}"
 	# Return
