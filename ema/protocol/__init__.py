@@ -10,8 +10,6 @@ from __future__ import division
 # System wide imports
 # -------------------
 
-import sys
-
 # ---------------
 # Twisted imports
 # ---------------
@@ -20,20 +18,15 @@ import sys
 # local imports
 # -------------
 
-from ._version import get_versions
+from .base import EMAProtocol
 
 # ----------------
 # Module constants
 # ----------------
 
-PY2 = sys.version_info[0] == 2
-
 # -----------------------
 # Module global variables
 # -----------------------
 
-__version__ = get_versions()['version']
 
-
-
-del get_versions
+__all__ = [EMAProtocol]

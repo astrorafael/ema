@@ -62,6 +62,7 @@ class EMAApplication(object):
         
         EMAApplication.instance = self
         self.cfgFilePath = cfgFilePath
+        self.queue  = { 'status':  deque() , 'ave5min':   deque(), 'ave1h': deque() }
         self.sigreload  = False
         self.sigpause   = False
         self.sigresume  = False

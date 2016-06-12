@@ -24,15 +24,14 @@ from twisted.internet            import reactor, task
 from twisted.internet.defer      import inlineCallbacks
 from twisted.internet.serialport import SerialPort
 from twisted.application.service import Service
-from twisted.protocols.basic     import LineReceiver, LineOnlyReceiver
-
 
 #--------------
 # local imports
 # -------------
 
-from .logger import setLogLevel
-from .utils  import chop
+from .logger   import setLogLevel
+from .utils    import chop
+from .protocol import EMAProtocol
 
 # ----------------
 # Module constants
@@ -44,36 +43,6 @@ from .utils  import chop
 # -----------------------
 
 log = Logger(namespace='serial')
-
-class EMAProtocol(LineOnlyReceiver):
-
-    # -------------------------
-    # Twisted Line Receiver API
-    # -------------------------
-
-    def __init__(self):
-        '''Sets the delimiter to the closihg parenthesis'''
-        LineOnlyReceiver.delimiter = b')'
-
-    def connectionMade(self):
-        log.debug("connectionMade()")
-
-
-    def lineReceived(self, line):
-        now = datetime.datetime.utcnow()
-        line = line.lstrip() + b')'
-        log.debug("<== EMA {line}", line=line)
-
-
-    def sendLine(self, line):
-        """
-        Sends a line to the other end of the connection.
-        @param line: The line to send, including the delimiter.
-        @type line: C{bytes}
-        """
-        log.debug("==> EMA {line}", line=line)
-        return self.transport.write(line)
-        
 
 
 
@@ -89,6 +58,7 @@ class SerialService(Service):
         self.port      = None
 
         self.resetCounters()
+        self.pingTask   = task.LoopingCall(self.ping)
         Service.__init__(self)
 
     
@@ -96,6 +66,7 @@ class SerialService(Service):
         log.info("starting Serial Service")
         if self.port is None:
             self.port      = SerialPort(self.protocol, self.options['port'], reactor, baudrate=self.options['baud'])
+        self.pingTask.start(20, now=False)
         Service.startService(self)
 
 
@@ -122,6 +93,15 @@ class SerialService(Service):
 
     def resumeService(self):
         pass
+
+    # -------------
+    # EMA API
+    # -------------
+
+  
+    def ping(self):
+        d = self.protocol.ping()
+        log.debug("PINGED. Result ={result}", result=d)
 
     # -------------
     # log stats API
