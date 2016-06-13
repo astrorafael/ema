@@ -130,8 +130,17 @@ class SerialService(Service):
             log.debug("GET ANEMOMETER MODEL. Result = {result}", result=res)
             res = yield self.protocol.getBarometerHeight()
             log.debug("GET BAROMETER HEIGHT. Result = {result}", result=res)
-            res = yield self.protocol.getBarometerHeight()
+            res = yield self.protocol.getBarometerOffset()
             log.debug("GET BAROMETER OFFSET. Result = {result}", result=res)
+            res = yield self.protocol.getCloudSensorThreshold()
+            log.debug("GET CLOUD SENSOR THRESHOLD. Result = {result}", result=res)
+            res = yield self.protocol.getCloudSensorGain()
+            log.debug("GET CLOUD SENSOR GAIN. Result = {result}", result=res)
+            res = yield self.protocol.getPhotometerThreshold()
+            log.debug("GET PHOTOMETER THRESHOLD. Result = {result}", result=res)
+            res = yield self.protocol.getPhotometerOffset()
+            log.debug("GET PHOTOMETER OFFSET. Result = {result}", result=res)
+
 
         except EMATimeoutError as e:
             log.error("{excp!s}", excp=e)

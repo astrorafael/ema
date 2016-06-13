@@ -42,7 +42,9 @@ from .commands import (
     Ping, GetRTC, 
     GetCurrentWindSpeedThreshold, GetAverageWindSpeedThreshold, 
     GetAnemometerCalibrationConstant, GetAnemometerModel,
-    GetBarometerHeight, GetBarometerOffset
+    GetBarometerHeight, GetBarometerOffset,
+    GetCloudSensorThreshold, GetCloudSensorGain,
+    GetPhotometerThreshold, GetPhotometerOffset
 )
 
 # ----------------
@@ -186,7 +188,7 @@ class EMAProtocol(LineOnlyReceiver):
     # EMA RTC
     # -------
 
-    def getTime(self, nretries=0):
+    def getTime(self, nretries=3):
         '''
         Get EMA current RTC time
         Retuns a deferred. 
@@ -209,27 +211,47 @@ class EMAProtocol(LineOnlyReceiver):
     # EMA Anemometer
     # --------------
 
-    def getCurrentWindSpeedThreshold(self, nretries=0):
+    def getCurrentWindSpeedThreshold(self, nretries=3):
         return self._enqueue(GetCurrentWindSpeedThreshold(), nretries)
 
-    def getAverageWindSpeedThreshold(self, nretries=0):
+    def getAverageWindSpeedThreshold(self, nretries=3):
         return self._enqueue(GetAverageWindSpeedThreshold(), nretries)
 
-    def getAnemometerCalibrationConstant(self, nretries=0):
+    def getAnemometerCalibrationConstant(self, nretries=3):
         return self._enqueue(GetAnemometerCalibrationConstant(), nretries)
 
-    def getAnemometerModel(self, nretries=0):
+    def getAnemometerModel(self, nretries=3):
         return self._enqueue(GetAnemometerModel(), nretries)
 
     # -------------
     # EMA Barometer
     # -------------
 
-    def getBarometerHeight(self, nretries=0):
+    def getBarometerHeight(self, nretries=3):
         return self._enqueue(GetBarometerHeight(), nretries)
 
-    def getBarometerOffset(self, nretries=0):
+    def getBarometerOffset(self, nretries=3):
         return self._enqueue(GetBarometerOffset(), nretries)
+
+    # ------------------
+    # EMA Cloud Detector
+    # ------------------
+
+    def getCloudSensorThreshold(self, nretries=3):
+        return self._enqueue(GetCloudSensorThreshold(), nretries)
+
+    def getCloudSensorGain(self, nretries=3):
+        return self._enqueue(GetCloudSensorGain(), nretries)
+
+    # --------------
+    # EMA Photometer
+    # --------------
+
+    def getPhotometerThreshold(self, nretries=3):
+        return self._enqueue(GetPhotometerThreshold(), nretries)
+
+    def getPhotometerOffset(self, nretries=3):
+        return self._enqueue(GetPhotometerOffset(), nretries)
 
 
     def getVoltageOffset(self, nretries=0):

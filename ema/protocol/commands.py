@@ -37,8 +37,6 @@ class Command(object):
     Get Real Time Clock time Command
     '''
 
-    name = 'Abstract command'
-
     def __init__(self, ack_patterns, fmt=None, Niters=1):
         # Request format
         self.ackPat   = [ re.compile(pat) for pat in ack_patterns ]
@@ -46,6 +44,7 @@ class Command(object):
         self.NIters   = Niters
         self.fmt      = fmt
         self.encoded  = None
+        self.name     = self.__doc__
         self.reset()
 
     def reset(self):
@@ -58,7 +57,8 @@ class Command(object):
         return self.encoded
     
     def extractValues(self, line, matchobj):
-        raise NotImplementedError
+        '''Default implementation, maybe overriden'''
+        self.response = int(matchobj.group(1))
 
     def collectData(self, line, matchobj):
         '''To be subclassed if necessary'''
@@ -95,16 +95,24 @@ class Command(object):
             log.debug("Matched {command.name} echo response, awaiting data", command=self)
         return finished
 
+class GetCommand(Command):
+    '''Abstract Get Command'''
+ 
+    def __init__(self):
+        # Request format
+        Command.__init__(self, ack_patterns=self.ACK_PATTERNS, fmt=self.FMT)
+
+
+# ------------------------------------------------------------------------------
+#                               PING COMMAND
 # ------------------------------------------------------------------------------
 
-class Ping(Command):
+class Ping(GetCommand):
+    '''Ping'''
 
-    name = 'Ping'
     ACK_PATTERNS = [ '^\( \)' ]
     FMT = '( )'
 
-    def __init__(self):
-        Command.__init__(self, ack_patterns=self.ACK_PATTERNS, fmt=self.FMT)
 
     def extractValues(self, line, matchobj):
         self.response = line
@@ -114,18 +122,12 @@ class Ping(Command):
 #                               REAL TIME CLOCK COMMANDS
 # ------------------------------------------------------------------------------
 
-class GetRTC(Command):
-    '''
-    Get Real Time Clock time Command
-    '''
-    name = 'Get Real Time Clock time'
+class GetRTC(GetCommand):
+    '''Get Real Time Clock time Command'''
     ACK_PATTERNS = [ '^\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)' ]
     FMT = '(y)'
     EMA_TIME_FORMAT = '(%H:%M:%S %d/%m/%Y)'
 
-    def __init__(self):
-        # Request format
-        Command.__init__(self, ack_patterns=self.ACK_PATTERNS, fmt=self.FMT)
 
     def extractValues(self, line, matchobj):
         self.response = datetime.datetime.strptime(line, self.EMA_TIME_FORMAT)
@@ -133,8 +135,8 @@ class GetRTC(Command):
 # ------------------------------------------------------------------------------
 
 class SetRTC(Command):
+    '''Set Real Time Clock time Command'''
 
-    name = 'Set Real Time Clock time'
     ACK_PATTERNS = [ '(Y\d{2}\d{2}\d{4}\d{2}\d{2}\d{2})','\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)']
     FMT = '(Y%d%m%y%H%M%S)'
     EMA_TIME_FORMAT = '(%H:%M:%S %d/%m/%Y)'
@@ -164,102 +166,112 @@ class SetRTC(Command):
 #                               ANEMOMETER COMMANDS
 # ------------------------------------------------------------------------------
 
-class GetAnemometerParameter(Command):
-    '''
-    Get Current Wind Speed Threshold Command
-    '''
- 
-    def __init__(self):
-        # Request format
-        Command.__init__(self, ack_patterns=self.ACK_PATTERNS, fmt=self.FMT)
         
 
-    def extractValues(self, line, matchobj):
-        '''Return threshold in Km/h'''
-        self.response = int(line[2:-1])
+class GetCurrentWindSpeedThreshold(GetCommand):
+    '''Get Current Wind Speed Threshold Command'''
 
-# ------------------------------------------------------------------------------
-
-class GetCurrentWindSpeedThreshold(GetAnemometerParameter):
-    '''
-    Get Current Wind Speed Threshold Command
-    '''
-    name = 'Get Current Wind Speed Threshold'
     ACK_PATTERNS = [ '^\(W(\d{3})\)' ]
     FMT = '(w)'
     
 
 # ------------------------------------------------------------------------------
 
-class GetAverageWindSpeedThreshold(GetAnemometerParameter):
-    '''
-    Get Average Wind Speed Threshold Command, over an interval of 10 min.
-    '''
-    name = 'Get Average Wind Speed Threshold'
+class GetAverageWindSpeedThreshold(GetCommand):
+    '''Get 10min Average Wind Speed Threshold Command'''
+
     ACK_PATTERNS = [ '^\(O(\d{3})\)' ]
     FMT = '(o)'
  
 
+# ------------------------------------------------------------------------------
 
-class GetAnemometerCalibrationConstant(GetAnemometerParameter):
-    '''
-    Get Anemometer Calibration Constant.
-    '''
-    name = 'Get Anemometer Calibration Constant'
+class GetAnemometerCalibrationConstant(GetCommand):
+    '''Get Anemometer Calibration Constant'''
+
     ACK_PATTERNS = [ '^\(A(\d{3})\)' ]
     FMT = '(a)'
  
    
+# ------------------------------------------------------------------------------
 
-class GetAnemometerModel(GetAnemometerParameter):
-    '''
-    Get Anemometer Model.
-    '''
-    name = 'Get Anemometer Model'
+class GetAnemometerModel(GetCommand):
+    '''Get Anemometer Model Command'''
     ACK_PATTERNS = [ '^\(Z(\d{3})\)' ]
     FMT = '(z)'
 
     def extractValues(self, line, matchobj):
-        GetAnemometerParameter.extractValues(self, line, matchobj)
+        Command.extractValues(self, line, matchobj)
         self.response = "TX20" if self.response == 1 else "Homemade"
+
  
 # ------------------------------------------------------------------------------
 #                               BAROMETER COMMANDS
 # ------------------------------------------------------------------------------
 
-class GetBarometerHeight(Command):
-    '''
-    Get Current Wind Speed Threshold Command
-    '''
-    name = 'Get Barometer Height'
+class GetBarometerHeight(GetCommand):
+    '''Get Barometer Height Command'''
+
     ACK_PATTERNS = [ '^\(M(\d{5})\)' ]
     FMT = '(m)'
 
-    def __init__(self):
-        # Request format
-        Command.__init__(self, ack_patterns=self.ACK_PATTERNS, fmt=self.FMT)
-        
 
-    def extractValues(self, line, matchobj):
-        '''Return threshold in Km/h'''
-        self.response = int(line[2:-1])
+# ------------------------------------------------------------------------------
 
+class GetBarometerOffset(GetCommand):
+    '''Get Barometer Offset Command'''
 
-class GetBarometerOffset(Command):
-    '''
-    Get Current Wind Speed Threshold Command
-    '''
-    name = 'Get Barometer Offset'
     ACK_PATTERNS = [ '^\(B([+-]\d{2})\)' ]
     FMT = '(b)'
 
-    def __init__(self):
-        # Request format
-        Command.__init__(self, ack_patterns=self.ACK_PATTERNS, fmt=self.FMT)
-        
+
+# ------------------------------------------------------------------------------
+#                               CLOUD DETECTOR COMMANDS
+# ------------------------------------------------------------------------------
+
+class GetCloudSensorThreshold(GetCommand):
+    '''Get Cloud Sensor Threshold Command'''
+    
+    ACK_PATTERNS = [ '^\(N(\d{3})\)' ]
+    FMT = '(n)'
+
+
+# ------------------------------------------------------------------------------
+
+class GetCloudSensorGain(GetCommand):
+    '''Get Cloud Sensor Gain Command'''
+
+    ACK_PATTERNS = [ '^\(R(\d{3})\)' ]
+    FMT = '(r)'
 
     def extractValues(self, line, matchobj):
-        '''Return threshold in Km/h'''
-        self.response = int(matchobj.group(1))
+        Command.extractValues(self, line, matchobj)
+        self.response = self.response * 0.10
 
+# ------------------------------------------------------------------------------
+#                               PHOTOMETER COMMANDS
+# ------------------------------------------------------------------------------
+
+# UNO DE ESTOS DOS ESTA MAL
+class GetPhotometerThreshold(GetCommand):
+    '''Get Photometer Threshold Command'''
+
+    ACK_PATTERNS = [ '^\(I(\d{3})\)' ]
+    FMT = '(i)'
+
+    def extractValues(self, line, matchobj):
+        Command.extractValues(self, line, matchobj)
+        self.response = self.response * 0.10
+        
+# ------------------------------------------------------------------------------
+
+class GetPhotometerOffset(GetCommand):
+    '''Get Photometer Gain Offset'''
+
+    ACK_PATTERNS = [ '^\(I([+-]\d{2})\)' ]
+    FMT = '(i)'
+
+    def extractValues(self, line, matchobj):
+        Command.extractValues(self, line, matchobj)
+        self.response = self.response * 0.10
 
