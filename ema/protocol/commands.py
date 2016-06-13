@@ -37,12 +37,15 @@ class Command(object):
     Get Real Time Clock time Command
     '''
 
-    def __init__(self, ack_patterns, Niters=1):
+    name = 'Abstract command'
+
+    def __init__(self, ack_patterns, fmt=None, Niters=1):
         # Request format
         self.ackPat   = [ re.compile(pat) for pat in ack_patterns ]
         self.N        = len(self.ackPat)
         self.NIters   = Niters
-        self.encoded = None
+        self.fmt      = fmt
+        self.encoded  = None
         self.reset()
 
     def reset(self):
@@ -51,13 +54,15 @@ class Command(object):
         self.iteration = 1
 
     def encode(self):
-        raise NotImplementedError
+        self.encoded = self.fmt
+        return self.encoded
     
     def extractValues(self, line):
         raise NotImplementedError
 
     def collectData(self, line):
-        raise NotImplementedError
+        '''To be subclassed if necessary'''
+        pass
 
     def getResponse(self):
         '''Returns a response object. Must be called only after decode() returns True'''
@@ -71,25 +76,38 @@ class Command(object):
        
         matched = self.ackPat[self.i].search(line)
         if not matched:
-            log.debug("Line does not match {command.__class__.__name__} response", command=self)
+            log.debug("Line does not match {command.name} response", command=self)
             return False
 
         if (self.i + 1) == self.N and self.iteration == self.NIters:
             self.extractValues(line)
             finished = True
-            log.debug("Matched {command.__class__.__name__} response, command complete", command=self)
+            log.debug("Matched {command.name} response, command complete", command=self)
         elif (self.i + 1) == self.N and self.iteration < self.NIters:
             self.collectData(line)
             finished = True
             self.iteration += 1
-            log.debug("Matched {command.__class__.__name__} response, command complete, accumulating data", command=self)
+            log.debug("Matched {command.name} response, command complete, accumulating data", command=self)
         else:   
             self.collectData(line)
             self.i += 1
             finished = False
-            log.debug("Matched {command.__class__.__name__} echo response, awaiting data", command=self)
+            log.debug("Matched {command.name} echo response, awaiting data", command=self)
         return finished
 
+# ------------------------------------------------------------------------------
+
+class Ping(Command):
+
+    name = 'Ping'
+    ACK_PATTERNS = [ '^\( \)' ]
+    FMT = '( )'
+
+    def __init__(self):
+        Command.__init__(self, ack_patterns=self.ACK_PATTERNS, fmt=self.FMT)
+
+    def extractValues(self, line):
+        self.response = line
 
 
 # ------------------------------------------------------------------------------
@@ -98,35 +116,29 @@ class GetRTC(Command):
     '''
     Get Real Time Clock time Command
     '''
-
+    name = 'Get Real Time Clock time'
     ACK_PATTERNS = [ '^\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)' ]
-    EMA_TFORMAT = '(%H:%M:%S %d/%m/%Y)'
+    FMT = '(y)'
+    EMA_TIME_FORMAT = '(%H:%M:%S %d/%m/%Y)'
 
     def __init__(self):
         # Request format
-        Command.__init__(self, ack_patterns=self.ACK_PATTERNS)
-        self.fmt    =  '(y)'
-        
-    def encode(self):
-        self.encoded   = self.fmt
-        return self.encoded
+        Command.__init__(self, ack_patterns=self.ACK_PATTERNS, fmt=self.FMT)
 
     def extractValues(self, line):
-        self.response = datetime.datetime.strptime(line, self.EMA_TFORMAT)
-
-    def collectData(self, line):
-        pass
+        self.response = datetime.datetime.strptime(line, self.EMA_TIME_FORMAT)
 
 # ------------------------------------------------------------------------------
 
 class SetRTC(Command):
 
+    name = 'Set Real Time Clock time'
     ACK_PATTERNS = [ '(Y\d{2}\d{2}\d{4}\d{2}\d{2}\d{2})','\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)']
-    EMA_TFORMAT = '(%H:%M:%S %d/%m/%Y)'
+    FMT = '(Y%d%m%y%H%M%S)'
+    EMA_TIME_FORMAT = '(%H:%M:%S %d/%m/%Y)'
 
     def __init__(self, tstamp=None):
-        Command.__init__(self, ack_patterns=self.ACK_PATTERNS)
-        self.fmt =  '(Y%d%m%y%H%M%S)'
+        Command.__init__(self, ack_patterns=self.ACK_PATTERNS, fmt=self.FMT)
         if tstamp is not None:
             self.tstamp = tstamp
             self.renew = False
@@ -144,30 +156,66 @@ class SetRTC(Command):
         return self.encoded
 
     def extractValues(self, line):
-        self.response = datetime.datetime.strptime(line, self.EMA_TFORMAT)
-
-    def collectData(self, line):
-        pass
+        self.response = datetime.datetime.strptime(line, self.EMA_TIME_FORMAT)
 
 # ------------------------------------------------------------------------------
 
-class Ping(Command):
-
-    ACK_PATTERNS = [ '^\( \)' ]
-
+class GetAnemometerParameter(Command):
+    '''
+    Get Current Wind Speed Threshold Command
+    '''
+ 
     def __init__(self):
-        Command.__init__(self, ack_patterns=self.ACK_PATTERNS)
-        pass
+        # Request format
+        Command.__init__(self, ack_patterns=self.ACK_PATTERNS, fmt=self.FMT)
         
-    def encode(self):
-        self.encoded = '( )'
-        return self.encoded
 
     def extractValues(self, line):
-        self.response = line
-
-    def collectData(self, line):
-        pass
+        '''Return threshold in Km/h'''
+        self.response = int(line[2:-1])
 
 # ------------------------------------------------------------------------------
 
+class GetCurrentWindSpeedThreshold(GetAnemometerParameter):
+    '''
+    Get Current Wind Speed Threshold Command
+    '''
+    name = 'Get Current Wind Speed Threshold'
+    ACK_PATTERNS = [ '^\(W(\d{3})\)' ]
+    FMT = '(w)'
+    
+
+# ------------------------------------------------------------------------------
+
+class GetAverageWindSpeedThreshold(GetAnemometerParameter):
+    '''
+    Get Average Wind Speed Threshold Command, over an interval of 10 min.
+    '''
+    name = 'Get Average Wind Speed Threshold'
+    ACK_PATTERNS = [ '^\(O(\d{3})\)' ]
+    FMT = '(o)'
+ 
+
+
+class GetAnemometerCalibrationConstant(GetAnemometerParameter):
+    '''
+    Get Anemometer Calibration Constant.
+    '''
+    name = 'Get Anemometer Calibration Constant'
+    ACK_PATTERNS = [ '^\(A(\d{3})\)' ]
+    FMT = '(a)'
+ 
+   
+
+class GetAnemometerModel(GetAnemometerParameter):
+    '''
+    Get Anemometer Model.
+    '''
+    name = 'Get Anemometer Model'
+    ACK_PATTERNS = [ '^\(Z(\d{3})\)' ]
+    FMT = '(z)'
+
+    def extractValues(self, line):
+        GetAnemometerParameter.extractValues(self, line)
+        self.response = "TX20" if self.response == 1 else "Homemade"
+ 

@@ -109,11 +109,26 @@ class SerialService(Service):
         else:
             log.debug("PINGED. Result = {result}", result=res)
 
+
     @inlineCallbacks
     def sync(self):
+        '''
+        Asynchronous Parameter syncronization process
+        Returns a Deferred when all synchronization is complete
+        '''
         try:
+
             res = yield self.protocol.getTime()
             log.debug("GET RTC. Result = {result}", result=res)
+            res = yield self.protocol.getCurrentWindSpeedThreshold()
+            log.debug("GET CURR WIND THRESH. Result = {result}", result=res)
+            res = yield self.protocol.getAverageWindSpeedThreshold()
+            log.debug("GET AVER WIND THRESH. Result = {result}", result=res)
+            res = yield self.protocol.getAnemometerCalibrationConstant()
+            log.debug("GET ANEMOMENTER CALIB CONSTANT. Result = {result}", result=res)
+            res = yield self.protocol.getAnemometerModel()
+            log.debug("GET ANEMOMETER MODEL. Result = {result}", result=res)
+
         except EMATimeoutError as e:
             log.error("{excp!s}", excp=e)
         else:

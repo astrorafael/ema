@@ -37,8 +37,11 @@ from twisted.protocols.basic     import LineOnlyReceiver
 from ..        import PY2
 from .status   import decode
 from ..error   import EMATimeoutError
-from .commands import Ping, GetRTC
 from .interval import Interval
+from .commands import (
+    Ping, GetRTC, 
+    GetCurrentWindSpeedThreshold, GetAverageWindSpeedThreshold, GetAnemometerCalibrationConstant, GetAnemometerModel
+)
 
 # ----------------
 # Module constants
@@ -82,7 +85,6 @@ def match(line):
         if regexp.search(line):
             log.debug("matched {pattern}", pattern=UNSOLICITED_RESPONSES[UNSOLICITED_PATTERNS.index(regexp)]['name'])
             return UNSOLICITED_RESPONSES[UNSOLICITED_PATTERNS.index(regexp)]
-    log.debug("No unsolicited pattern matched input")
     return None
 
 class EMAProtocol(LineOnlyReceiver):
@@ -108,9 +110,11 @@ class EMAProtocol(LineOnlyReceiver):
     def lineReceived(self, line):
         now = datetime.datetime.utcnow() + datetime.timedelta(seconds=0.5)
         line = line.lstrip(' \t\n\r') + b')'
-        log.debug("<== EMA {line}", line=line)
+        log.info("<== EMA {line}", line=line)
 
+        # ---------------------------------------------
         # Match against current pending command, if any
+        # ---------------------------------------------
         if len(self._queue) > 0:
             request = self._queue[0]
             ack = request.decode(line)
@@ -118,26 +122,31 @@ class EMAProtocol(LineOnlyReceiver):
                 self._queue.popleft()
                 request.alarm.cancel()
                 response = request.getResponse()
-                request.deferred.callback(response)
-                del request
                 if len(self._queue):    # Fires next command if any
                     self._retry()
+                request.deferred.callback(response)
+                del request
                 return
-            
+
+        # -------------------------- 
         # Match unsolicited reponses
+        # --------------------------
         ur = match(line)
-        if ur:
-            if ur['name'] == 'Current status message':
-                curState = decode(line)
-                if self._onStatus:
-                    self._onStatus((curState, timestamp))
-            elif ur['name'] == 'Photometer begin':
+        if not ur:
+            log.debug("Unknown message {line}", line=line)
+            return
+
+        if ur['name'] == 'Current status message':
+            curState = decode(line)
+            if self._onStatus:
+                self._onStatus((curState, timestamp))
+        elif ur['name'] == 'Photometer begin':
                 pass
-            elif ur['name'] == 'Photometer end':
+        elif ur['name'] == 'Photometer end':
                 pass
-            elif ur['name'] == 'Thermopile I2C':
+        elif ur['name'] == 'Thermopile I2C':
                 pass
-            else:
+        else:
                 log.error("We should never hace reached this")
 
     
@@ -148,7 +157,7 @@ class EMAProtocol(LineOnlyReceiver):
         @param line: The line to send, including the delimiter.
         @type line: C{bytes}
         """
-        log.debug("==> EMA {line}", line=line)
+        log.info("==> EMA {line}", line=line)
         return self.transport.write(line)
         
     # ================
@@ -171,18 +180,21 @@ class EMAProtocol(LineOnlyReceiver):
         '''
         return self._enqueue(Ping(), nretries=0)
 
-    
-    def getTime(self):
+    # -------
+    # EMA RTC
+    # -------
+
+    def getTime(self, nretries=0):
         '''
         Get EMA current RTC time
         Retuns a deferred. 
         Success callback returns ?
         An errback may be invoked with EMATimeoutError
         '''
-        return self._enqueue(GetRTC(), nretries=0)
+        return self._enqueue(GetRTC(), nretries)
 
 
-    def setTime(self, tstamp=None):
+    def setTime(self, tstamp=None, nretries=0):
         '''
         Set EMA current RTC time
         Retuns a deferred. 
@@ -191,8 +203,24 @@ class EMAProtocol(LineOnlyReceiver):
         '''
         pass
 
+    # --------------
+    # EMA Anemometer
+    # --------------
 
-    def getVoltageOffset(self):
+    def getCurrentWindSpeedThreshold(self, nretries=0):
+        return self._enqueue(GetCurrentWindSpeedThreshold(), nretries)
+
+    def getAverageWindSpeedThreshold(self, nretries=0):
+        return self._enqueue(GetAverageWindSpeedThreshold(), nretries)
+
+    def getAnemometerCalibrationConstant(self, nretries=0):
+        return self._enqueue(GetAnemometerCalibrationConstant(), nretries)
+
+    def getAnemometerModel(self, nretries=0):
+        return self._enqueue(GetAnemometerModel(), nretries)
+
+
+    def getVoltageOffset(self, nretries=0):
         '''
         Get EMA calibration Voltage Offset
         Retuns a deferred. 
@@ -201,7 +229,7 @@ class EMAProtocol(LineOnlyReceiver):
         '''
         pass
 
-    def setVoltageOffset(self, value):
+    def setVoltageOffset(self, value, nretries=0):
         '''
         Set EMA calibration Voltage Offset
         Retuns a deferred. 
@@ -211,7 +239,7 @@ class EMAProtocol(LineOnlyReceiver):
         pass
 
 
-    def getVoltageThreshold(self):
+    def getVoltageThreshold(self, nretries=0):
         '''
         Get EMA calibration Voltage Threshold
         Retuns a deferred. 
@@ -221,7 +249,7 @@ class EMAProtocol(LineOnlyReceiver):
         pass
 
 
-    def setVoltageThreshold(self, value):
+    def setVoltageThreshold(self, value, nretries=0):
         '''
         Set EMA calibration Voltage Threshold
         Retuns a deferred. 
@@ -231,7 +259,7 @@ class EMAProtocol(LineOnlyReceiver):
         pass
  
 
-    def roofRelaySwitch(self, onFlag):
+    def roofRelaySwitch(self, onFlag, nretries=0):
         '''
         Roof Relay force open/close. 
         Retuns a deferred. 
@@ -241,7 +269,7 @@ class EMAProtocol(LineOnlyReceiver):
         pass
 
 
-    def auxRelaySwitch(self, onFlag):
+    def auxRelaySwitch(self, onFlag, nretries=0):
         '''
         Auxiliar Relay force open/close. 
         Retuns a deferred. 
@@ -251,7 +279,7 @@ class EMAProtocol(LineOnlyReceiver):
         pass
 
 
-    def auxRelayGetStatus(self):
+    def auxRelayGetStatus(self, nretries=0):
         '''
         Get Auxiliar Relay status. 
         Retuns a deferred. 
@@ -260,7 +288,7 @@ class EMAProtocol(LineOnlyReceiver):
         '''
         pass
 
-    def auxRelaySetMode(self, mode):
+    def auxRelaySetMode(self, mode, nretries=0):
         '''
         Set Aunx relay mode, either AUTO, MANUAL or TIMED 
         Retuns a deferred. 
@@ -270,7 +298,7 @@ class EMAProtocol(LineOnlyReceiver):
         pass
 
 
-    def auxRelayTimerOn(self, time):
+    def auxRelayTimerOn(self, time, nretries=0):
         '''
         Programs Auxiliar Relay 'On' time in TIMED mode. 
         Retuns a deferred. 
@@ -279,7 +307,7 @@ class EMAProtocol(LineOnlyReceiver):
         '''
         pass
 
-    def auxRelayTimerOff(self, time):
+    def auxRelayTimerOff(self, time, nretries=0):
         '''
         Programs Auxiliar Relay 'Off' time in TIMED mode. 
         Retuns a deferred. 
@@ -288,7 +316,7 @@ class EMAProtocol(LineOnlyReceiver):
         '''
         pass
 
-    def getHourlyMinMax(self, time):
+    def getHourlyMinMax(self, time, nretries=0):
         '''
         Get 24h Hourly MinMax Bulk Dump. 
         Retuns a deferred. 
@@ -297,7 +325,7 @@ class EMAProtocol(LineOnlyReceiver):
         '''
         pass
 
-    def get5MinData(self, time):
+    def get5MinData(self, time, nretries=0):
         '''
         24h 5m Averages Bulk Dump. 
         Retuns a deferred. 
@@ -329,13 +357,14 @@ class EMAProtocol(LineOnlyReceiver):
             self._retry()
         return request.deferred
 
+
     def _retry(self):
         '''
         Transmit/Retransmit the front request
         '''
         request = self._queue[0]
         request.alarm = self.callLater(request.interval(), self._responseTimeout)
-        log.debug("==> {request.__class__.__name__} (retries={request.retries}/{request.nretries})", 
+        log.debug("==> {request.name} (retries={request.retries}/{request.nretries})", 
             request=request)
         self.sendLine(str(request.encoded) if PY2 else bytes(request.encoded))
 
@@ -345,10 +374,9 @@ class EMAProtocol(LineOnlyReceiver):
         Handle lack of response
         '''
         request = self._queue[0]
-        log.error("Command {request.__class__.__name__} {timeout}", 
-             request=request, timeout="timeout")
+        log.error("Command {request.name} {timeout}", request=request, timeout="timeout")
         if request.retries == request.nretries:
-            request.deferred.errback(EMATimeoutError(request.__class__.__name__))
+            request.deferred.errback(EMATimeoutError(request.name))
             request.deferred = None
             self._queue.popleft()
             del request

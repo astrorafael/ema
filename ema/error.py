@@ -58,7 +58,7 @@ class EMAWindowError(EMAError):
 
 
 class EMATimeoutError(EMAError):
-    '''EMA no responding in time to expected command'''
+    '''EMA no responding to command'''
     def __str__(self):
         s = self.__doc__
         if self.args:
