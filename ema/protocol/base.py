@@ -37,7 +37,7 @@ from twisted.protocols.basic     import LineOnlyReceiver
 from ..        import PY2
 from .status   import decode
 from ..error   import EMATimeoutError
-from .commands import Ping
+from .commands import Ping, GetRTC
 from .interval import Interval
 
 # ----------------
@@ -107,8 +107,24 @@ class EMAProtocol(LineOnlyReceiver):
 
     def lineReceived(self, line):
         now = datetime.datetime.utcnow() + datetime.timedelta(seconds=0.5)
-        line = line.lstrip('\t\n\r') + b')'
+        line = line.lstrip(' \t\n\r') + b')'
         log.debug("<== EMA {line}", line=line)
+
+        # Match against current pending command, if any
+        if len(self._queue) > 0:
+            request = self._queue[0]
+            ack = request.decode(line)
+            if ack:
+                self._queue.popleft()
+                request.alarm.cancel()
+                response = request.getResponse()
+                request.deferred.callback(response)
+                del request
+                if len(self._queue):    # Fires next command if any
+                    self._retry()
+                return
+            
+        # Match unsolicited reponses
         ur = match(line)
         if ur:
             if ur['name'] == 'Current status message':
@@ -163,7 +179,8 @@ class EMAProtocol(LineOnlyReceiver):
         Success callback returns ?
         An errback may be invoked with EMATimeoutError
         '''
-        pass
+        return self._enqueue(GetRTC(), nretries=0)
+
 
     def setTime(self, tstamp=None):
         '''
@@ -306,6 +323,7 @@ class EMAProtocol(LineOnlyReceiver):
         request.retries  = 0  
         request.deferred = defer.Deferred()
         request.encode()
+        request.reset()
         self._queue.append(request)
         if len(self._queue) == 1:    # start the ball rolling
             self._retry()
@@ -333,6 +351,7 @@ class EMAProtocol(LineOnlyReceiver):
             request.deferred.errback(EMATimeoutError(request.__class__.__name__))
             request.deferred = None
             self._queue.popleft()
+            del request
             if len(self._queue):    # Continue with the next command
                 self._retry()
         else:

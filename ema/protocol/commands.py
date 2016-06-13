@@ -11,6 +11,7 @@ from __future__ import division
 # ----------------
 
 import re
+import datetime
 
 # ----------------
 # Twisted  modules
@@ -26,7 +27,7 @@ from twisted.logger import Logger
 #from .error import StringValueError, PayloadValueError, PayloadTypeError
 
 
-log = Logger(namespace='pdu')
+log = Logger(namespace='serial')
 
 
 # ------------------------------------------------------------------------------
@@ -40,7 +41,7 @@ class Command(object):
         # Request format
         self.ackPat   = [ re.compile(pat) for pat in ack_patterns ]
         self.N        = len(self.ackPat)
-        self.Niters   = Niters
+        self.NIters   = Niters
         self.encoded = None
         self.reset()
 
@@ -65,25 +66,28 @@ class Command(object):
     def decode(self, line):
         '''
         Generic decoding algorithm for commands
-        Must again and again until returns True'''
+        Must again and again until returns True
+        '''
+       
         matched = self.ackPat[self.i].search(line)
         if not matched:
-            log.debug("Matched {command} response, command complete", command=self.__class__.__name__)
+            log.debug("Line does not match {command.__class__.__name__} response", command=self)
             return False
+
         if (self.i + 1) == self.N and self.iteration == self.NIters:
             self.extractValues(line)
             finished = True
-            log.debug("Matched {command} response, command complete", command=self.__class__.__name__)
-        if (self.i + 1) == self.N and self.iteration < self.NIters:
-            self.collectValues(line)
+            log.debug("Matched {command.__class__.__name__} response, command complete", command=self)
+        elif (self.i + 1) == self.N and self.iteration < self.NIters:
+            self.collectData(line)
             finished = True
             self.iteration += 1
-            log.debug("Matched {command} response, command complete, accumulating data", command=self.__class__.__name__)
+            log.debug("Matched {command.__class__.__name__} response, command complete, accumulating data", command=self)
         else:   
-            self.collectValues(line)
+            self.collectData(line)
             self.i += 1
             finished = False
-            log.debug("Matched {command} echo response, awaiting data", command=self.__class__.__name__)
+            log.debug("Matched {command.__class__.__name__} echo response, awaiting data", command=self)
         return finished
 
 
@@ -95,7 +99,7 @@ class GetRTC(Command):
     Get Real Time Clock time Command
     '''
 
-    ACK_PATTERNS = [ '^\(y\)', '^\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)' ]
+    ACK_PATTERNS = [ '^\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)' ]
     EMA_TFORMAT = '(%H:%M:%S %d/%m/%Y)'
 
     def __init__(self):

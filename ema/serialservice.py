@@ -32,6 +32,7 @@ from twisted.application.service import Service
 from .logger   import setLogLevel
 from .utils    import chop
 from .protocol import EMAProtocol
+from .error    import EMATimeoutError
 
 # ----------------
 # Module constants
@@ -59,6 +60,7 @@ class SerialService(Service):
 
         self.resetCounters()
         self.pingTask   = task.LoopingCall(self.ping)
+        self.syncTask   = self.protocol.callLater(10, self.sync)
         Service.__init__(self)
 
     
@@ -98,10 +100,25 @@ class SerialService(Service):
     # EMA API
     # -------------
 
-  
+    @inlineCallbacks
     def ping(self):
-        d = self.protocol.ping()
-        log.debug("PINGED. Result ={result}", result=d)
+        try:
+            res = yield self.protocol.ping()
+        except EMATimeoutError as e:
+            log.error("{excp!s}", excp=e)
+        else:
+            log.debug("PINGED. Result = {result}", result=res)
+
+    @inlineCallbacks
+    def sync(self):
+        try:
+            res = yield self.protocol.getTime()
+            log.debug("GET RTC. Result = {result}", result=res)
+        except EMATimeoutError as e:
+            log.error("{excp!s}", excp=e)
+        else:
+            pass
+
 
     # -------------
     # log stats API
