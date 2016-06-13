@@ -40,7 +40,9 @@ from ..error   import EMATimeoutError
 from .interval import Interval
 from .commands import (
     Ping, GetRTC, 
-    GetCurrentWindSpeedThreshold, GetAverageWindSpeedThreshold, GetAnemometerCalibrationConstant, GetAnemometerModel
+    GetCurrentWindSpeedThreshold, GetAverageWindSpeedThreshold, 
+    GetAnemometerCalibrationConstant, GetAnemometerModel,
+    GetBarometerHeight, GetBarometerOffset
 )
 
 # ----------------
@@ -124,7 +126,7 @@ class EMAProtocol(LineOnlyReceiver):
                 response = request.getResponse()
                 if len(self._queue):    # Fires next command if any
                     self._retry()
-                request.deferred.callback(response)
+                request.deferred.callback(response) # Fire callback after _retry() !!!
                 del request
                 return
 
@@ -218,6 +220,16 @@ class EMAProtocol(LineOnlyReceiver):
 
     def getAnemometerModel(self, nretries=0):
         return self._enqueue(GetAnemometerModel(), nretries)
+
+    # -------------
+    # EMA Barometer
+    # -------------
+
+    def getBarometerHeight(self, nretries=0):
+        return self._enqueue(GetBarometerHeight(), nretries)
+
+    def getBarometerOffset(self, nretries=0):
+        return self._enqueue(GetBarometerOffset(), nretries)
 
 
     def getVoltageOffset(self, nretries=0):

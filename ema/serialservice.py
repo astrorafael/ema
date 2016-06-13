@@ -128,6 +128,10 @@ class SerialService(Service):
             log.debug("GET ANEMOMENTER CALIB CONSTANT. Result = {result}", result=res)
             res = yield self.protocol.getAnemometerModel()
             log.debug("GET ANEMOMETER MODEL. Result = {result}", result=res)
+            res = yield self.protocol.getBarometerHeight()
+            log.debug("GET BAROMETER HEIGHT. Result = {result}", result=res)
+            res = yield self.protocol.getBarometerHeight()
+            log.debug("GET BAROMETER OFFSET. Result = {result}", result=res)
 
         except EMATimeoutError as e:
             log.error("{excp!s}", excp=e)

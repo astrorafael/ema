@@ -57,10 +57,10 @@ class Command(object):
         self.encoded = self.fmt
         return self.encoded
     
-    def extractValues(self, line):
+    def extractValues(self, line, matchobj):
         raise NotImplementedError
 
-    def collectData(self, line):
+    def collectData(self, line, matchobj):
         '''To be subclassed if necessary'''
         pass
 
@@ -80,16 +80,16 @@ class Command(object):
             return False
 
         if (self.i + 1) == self.N and self.iteration == self.NIters:
-            self.extractValues(line)
+            self.extractValues(line, matched)
             finished = True
             log.debug("Matched {command.name} response, command complete", command=self)
         elif (self.i + 1) == self.N and self.iteration < self.NIters:
-            self.collectData(line)
+            self.collectData(line, matched)
             finished = True
             self.iteration += 1
             log.debug("Matched {command.name} response, command complete, accumulating data", command=self)
         else:   
-            self.collectData(line)
+            self.collectData(line, matched)
             self.i += 1
             finished = False
             log.debug("Matched {command.name} echo response, awaiting data", command=self)
@@ -106,10 +106,12 @@ class Ping(Command):
     def __init__(self):
         Command.__init__(self, ack_patterns=self.ACK_PATTERNS, fmt=self.FMT)
 
-    def extractValues(self, line):
+    def extractValues(self, line, matchobj):
         self.response = line
 
 
+# ------------------------------------------------------------------------------
+#                               REAL TIME CLOCK COMMANDS
 # ------------------------------------------------------------------------------
 
 class GetRTC(Command):
@@ -125,7 +127,7 @@ class GetRTC(Command):
         # Request format
         Command.__init__(self, ack_patterns=self.ACK_PATTERNS, fmt=self.FMT)
 
-    def extractValues(self, line):
+    def extractValues(self, line, matchobj):
         self.response = datetime.datetime.strptime(line, self.EMA_TIME_FORMAT)
 
 # ------------------------------------------------------------------------------
@@ -155,9 +157,11 @@ class SetRTC(Command):
         self.encoded = self.tstamp.strftime(self.fmt)
         return self.encoded
 
-    def extractValues(self, line):
+    def extractValues(self, line, matchobj):
         self.response = datetime.datetime.strptime(line, self.EMA_TIME_FORMAT)
 
+# ------------------------------------------------------------------------------
+#                               ANEMOMETER COMMANDS
 # ------------------------------------------------------------------------------
 
 class GetAnemometerParameter(Command):
@@ -170,7 +174,7 @@ class GetAnemometerParameter(Command):
         Command.__init__(self, ack_patterns=self.ACK_PATTERNS, fmt=self.FMT)
         
 
-    def extractValues(self, line):
+    def extractValues(self, line, matchobj):
         '''Return threshold in Km/h'''
         self.response = int(line[2:-1])
 
@@ -215,7 +219,47 @@ class GetAnemometerModel(GetAnemometerParameter):
     ACK_PATTERNS = [ '^\(Z(\d{3})\)' ]
     FMT = '(z)'
 
-    def extractValues(self, line):
-        GetAnemometerParameter.extractValues(self, line)
+    def extractValues(self, line, matchobj):
+        GetAnemometerParameter.extractValues(self, line, matchobj)
         self.response = "TX20" if self.response == 1 else "Homemade"
  
+# ------------------------------------------------------------------------------
+#                               BAROMETER COMMANDS
+# ------------------------------------------------------------------------------
+
+class GetBarometerHeight(Command):
+    '''
+    Get Current Wind Speed Threshold Command
+    '''
+    name = 'Get Barometer Height'
+    ACK_PATTERNS = [ '^\(M(\d{5})\)' ]
+    FMT = '(m)'
+
+    def __init__(self):
+        # Request format
+        Command.__init__(self, ack_patterns=self.ACK_PATTERNS, fmt=self.FMT)
+        
+
+    def extractValues(self, line, matchobj):
+        '''Return threshold in Km/h'''
+        self.response = int(line[2:-1])
+
+
+class GetBarometerOffset(Command):
+    '''
+    Get Current Wind Speed Threshold Command
+    '''
+    name = 'Get Barometer Offset'
+    ACK_PATTERNS = [ '^\(B([+-]\d{2})\)' ]
+    FMT = '(b)'
+
+    def __init__(self):
+        # Request format
+        Command.__init__(self, ack_patterns=self.ACK_PATTERNS, fmt=self.FMT)
+        
+
+    def extractValues(self, line, matchobj):
+        '''Return threshold in Km/h'''
+        self.response = int(matchobj.group(1))
+
+
