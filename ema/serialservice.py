@@ -116,37 +116,26 @@ class SerialService(Service):
         Asynchronous Parameter syncronization process
         Returns a Deferred when all synchronization is complete
         '''
-        try:
+        getFuncs = [ 
+            self.protocol.getCurrentWindSpeedThreshold,
+            self.protocol.getAverageWindSpeedThreshold,
+            self.protocol.getAnemometerCalibrationConstant,
+            self.protocol.getAnemometerModel,
+            self.protocol.getBarometerHeight,
+            self.protocol.getBarometerOffset,
+            self.protocol.getCloudSensorThreshold,
+            self.protocol.getCloudSensorGain,
+            self.protocol.getPhotometerThreshold,
+            self.protocol.getPhotometerOffset,
+        ]
 
-            res = yield self.protocol.getTime()
-            log.debug("GET RTC. Result = {result}", result=res)
-            res = yield self.protocol.getCurrentWindSpeedThreshold()
-            log.debug("GET CURR WIND THRESH. Result = {result}", result=res)
-            res = yield self.protocol.getAverageWindSpeedThreshold()
-            log.debug("GET AVER WIND THRESH. Result = {result}", result=res)
-            res = yield self.protocol.getAnemometerCalibrationConstant()
-            log.debug("GET ANEMOMENTER CALIB CONSTANT. Result = {result}", result=res)
-            res = yield self.protocol.getAnemometerModel()
-            log.debug("GET ANEMOMETER MODEL. Result = {result}", result=res)
-            res = yield self.protocol.getBarometerHeight()
-            log.debug("GET BAROMETER HEIGHT. Result = {result}", result=res)
-            res = yield self.protocol.getBarometerOffset()
-            log.debug("GET BAROMETER OFFSET. Result = {result}", result=res)
-            res = yield self.protocol.getCloudSensorThreshold()
-            log.debug("GET CLOUD SENSOR THRESHOLD. Result = {result}", result=res)
-            res = yield self.protocol.getCloudSensorGain()
-            log.debug("GET CLOUD SENSOR GAIN. Result = {result}", result=res)
-            res = yield self.protocol.getPhotometerThreshold()
-            log.debug("GET PHOTOMETER THRESHOLD. Result = {result}", result=res)
-            res = yield self.protocol.getPhotometerOffset()
-            log.debug("GET PHOTOMETER OFFSET. Result = {result}", result=res)
-
-
-        except EMATimeoutError as e:
-            log.error("{excp!s}", excp=e)
-        else:
-            pass
-
+        for getter in getFuncs:
+            try:
+                res = yield getter()
+                log.debug("Result = {result}", result=res)
+            except EMATimeoutError as e:
+                log.error("{excp!s}", excp=e)
+                continue
 
     # -------------
     # log stats API
