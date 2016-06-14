@@ -92,7 +92,7 @@ class Command(object):
             self.collectData(line, matchobj)
             self.i += 1
             handled = True; finished = False
-            log.debug("Matched {command.name} echo response, awaiting data", command=self)
+            log.debug("Matched {command.name} response, awaiting data", command=self)
         return handled, finished
 
 class GetCommand(Command):
@@ -399,4 +399,18 @@ class GetAuxRelaySwitchOffTime(GetCommand):
     def extractValues(self, line, matchobj):
         self.response.append(line)
         self.response = datetime.datetime.strptime(self.response[2], self.EMA_TIME_FORMAT).time()
+
+class GetAuxRelayMode(GetCommand):
+    '''Get Aux Relay Switch-Off Time Command'''
+    ACK_PATTERNS    = [ '^\(S(\d{3})\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
+    FMT             = '(s)'
+    MAPPING = { 0 : 'Auto', 5 : 'Manual', 9 : 'Timed' }
+
+    def collectData(self, line, matchobj):
+        if self.i == 0:
+            self.response = self.MAPPING[int(matchobj.group(1))]
+       
+    def extractValues(self, line, matchobj):
+        pass
+        
 

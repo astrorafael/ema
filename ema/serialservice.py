@@ -131,10 +131,11 @@ class SerialService(Service):
             self.protocol.getPyranometerGain ,
             self.protocol.getPyranometerOffset ,
             self.protocol.getRainSensorThreshold ,
-            self.protocol.getThermometerDeltaTempThreshold ,
-            self.protocol.getVoltmeterThreshold ,
-            self.protocol.getAuxRelaySwitchOnTime ,
-            self.protocol.getAuxRelaySwitchOffTime ,
+            self.protocol.getThermometerDeltaTempThreshold,
+            self.protocol.getVoltmeterThreshold,
+            self.protocol.getAuxRelaySwitchOnTime,
+            self.protocol.getAuxRelaySwitchOffTime,
+            self.protocol.getAuxRelayMode,
         ]
 
         for getter in getFuncs:
