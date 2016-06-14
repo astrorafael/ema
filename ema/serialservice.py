@@ -133,7 +133,8 @@ class SerialService(Service):
             self.protocol.getRainSensorThreshold ,
             self.protocol.getThermometerDeltaTempThreshold ,
             self.protocol.getVoltmeterThreshold ,
-            self.protocol.getVoltmeterOffset ,
+            self.protocol.getAuxRelaySwitchOnTime ,
+            self.protocol.getAuxRelaySwitchOffTime ,
         ]
 
         for getter in getFuncs:

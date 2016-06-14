@@ -49,7 +49,8 @@ from .commands import (
     GetPyranometerGain, GetPyranometerOffset,
     GetRainSensorThreshold,
     GetThermometerDeltaTempThreshold,
-    GetVoltmeterThreshold, GetVoltmeterOffset
+    GetVoltmeterThreshold, GetVoltmeterOffset,
+    GetAuxRelaySwitchOnTime, GetAuxRelaySwitchOffTime
 )
 
 # ----------------
@@ -315,6 +316,16 @@ class EMAProtocol(LineOnlyReceiver):
         '''
         return self._enqueue(GetVoltmeterOffset(), nretries)
 
+    # ------------------
+    # EMA Auxiliar Relay
+    # -----------------
+
+
+    def getAuxRelaySwitchOnTime(self, nretries=3):
+        return self._enqueue(GetAuxRelaySwitchOnTime(), nretries)
+
+    def getAuxRelaySwitchOffTime(self, nretries=3):
+        return self._enqueue(GetAuxRelaySwitchOffTime(), nretries)
 
     # OLD STUFFF
 

@@ -370,3 +370,33 @@ class GetVoltmeterOffset(GetCommand):
 # ------------------------------------------------------------------------------
 #                               AUX RELAY COMMANDS
 # ------------------------------------------------------------------------------
+
+class GetAuxRelaySwitchOnTime(GetCommand):
+    '''Get Aux Relay Switch-On Time Command'''
+    units           = 'HH:MM'
+    ACK_PATTERNS    = [ '^\(S009\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
+    FMT             = '(s)'
+    EMA_TIME_FORMAT = '(Son%H%M)'
+
+    def collectData(self, line, matchobj):
+        self.response.append(line)
+
+    def extractValues(self, line, matchobj):
+        self.response.append(line)
+        self.response = datetime.datetime.strptime(self.response[1], self.EMA_TIME_FORMAT).time()
+
+
+class GetAuxRelaySwitchOffTime(GetCommand):
+    '''Get Aux Relay Switch-Off Time Command'''
+    units           = 'HH:MM'
+    ACK_PATTERNS    = [ '^\(S009\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
+    FMT             = '(s)'
+    EMA_TIME_FORMAT = '(Sof%H%M)'
+
+    def collectData(self, line, matchobj):
+        self.response.append(line)
+
+    def extractValues(self, line, matchobj):
+        self.response.append(line)
+        self.response = datetime.datetime.strptime(self.response[2], self.EMA_TIME_FORMAT).time()
+
