@@ -44,7 +44,12 @@ from .commands import (
     GetAnemometerCalibrationConstant, GetAnemometerModel,
     GetBarometerHeight, GetBarometerOffset,
     GetCloudSensorThreshold, GetCloudSensorGain,
-    GetPhotometerThreshold, GetPhotometerOffset
+    GetPhotometerThreshold, GetPhotometerOffset,
+    GetPluviometerCalibration,
+    GetPyranometerGain, GetPyranometerOffset,
+    GetRainSensorThreshold,
+    GetThermometerDeltaTempThreshold,
+    GetVoltmeterThreshold, GetVoltmeterOffset
 )
 
 # ----------------
@@ -257,15 +262,63 @@ class EMAProtocol(LineOnlyReceiver):
     def getPhotometerOffset(self, nretries=3):
         return self._enqueue(GetPhotometerOffset(), nretries)
 
+    # ---------------
+    # EMA Pluviometer
+    # ---------------
 
-    def getVoltageOffset(self, nretries=0):
+    def getPluviometerCalibration(self, nretries=3):
+        return self._enqueue(GetPluviometerCalibration(), nretries)
+
+    # ---------------
+    # EMA Pyranometer
+    # ---------------
+
+    def getPyranometerGain(self, nretries=3):
+        return self._enqueue(GetPyranometerGain(), nretries)
+
+    def getPyranometerOffset(self, nretries=3):
+        return self._enqueue(GetPyranometerOffset(), nretries)
+
+    # ---------------
+    # EMA Rain Sensor
+    # ---------------
+
+    def getRainSensorThreshold(self, nretries=3):
+        return self._enqueue(GetRainSensorThreshold(), nretries)
+  
+    # ---------------
+    # EMA Thermometer
+    # ---------------
+
+    def getThermometerDeltaTempThreshold(self, nretries=3):
+        return self._enqueue(GetThermometerDeltaTempThreshold(), nretries)
+
+    # -------------
+    # EMA Voltmeter
+    # -------------
+
+    def getVoltmeterThreshold(self, nretries=3):
+        '''
+        Get EMA calibration Voltage Threshold
+        Retuns a deferred. 
+        Success callback returns ?
+        An errback may be invoked with EMATimeoutError
+        '''
+        return self._enqueue(GetVoltmeterThreshold(), nretries)
+
+    def getVoltmeterOffset(self, nretries=3):
         '''
         Get EMA calibration Voltage Offset
         Retuns a deferred. 
         Success callback returns ?
         An errback may be invoked with EMATimeoutError
         '''
-        pass
+        return self._enqueue(GetVoltmeterOffset(), nretries)
+
+
+    # OLD STUFFF
+
+
 
     def setVoltageOffset(self, value, nretries=0):
         '''
@@ -278,12 +331,7 @@ class EMAProtocol(LineOnlyReceiver):
 
 
     def getVoltageThreshold(self, nretries=0):
-        '''
-        Get EMA calibration Voltage Threshold
-        Retuns a deferred. 
-        Success callback returns ?
-        An errback may be invoked with EMATimeoutError
-        '''
+        
         pass
 
 

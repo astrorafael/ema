@@ -201,7 +201,7 @@ class GetAnemometerModel(GetCommand):
     FMT = '(z)'
 
     def extractValues(self, line, matchobj):
-        Command.extractValues(self, line, matchobj)
+        self.response = int(matchobj.group(1))
         self.response = "TX20" if self.response == 1 else "Homemade"
 
  
@@ -245,8 +245,7 @@ class GetCloudSensorGain(GetCommand):
     FMT = '(r)'
 
     def extractValues(self, line, matchobj):
-        Command.extractValues(self, line, matchobj)
-        self.response = self.response * 0.10
+        self.response = int(matchobj.group(1)) * 0.10
 
 # ------------------------------------------------------------------------------
 #                               PHOTOMETER COMMANDS
@@ -254,7 +253,6 @@ class GetCloudSensorGain(GetCommand):
 
 class GetPhotometerThreshold(GetCommand):
     '''Get Photometer Threshold Command'''
-
     units = 'Mv/arcsec^2'
     ACK_PATTERNS = [ '^\(I(\d{3})\)',  '^\(I([+-]\d{2})\)',  '^\(I(\d{5})\)']
     FMT = '(i)'
@@ -270,7 +268,6 @@ class GetPhotometerThreshold(GetCommand):
 
 class GetPhotometerOffset(GetCommand):
     '''Get Photometer Gain Offset'''
-
     units = 'Mv/arcsec^2'
     ACK_PATTERNS = [ '^\(I(\d{3})\)',  '^\(I([+-]\d{2})\)',  '^\(I(\d{5})\)']
     FMT = '(i)'
@@ -283,3 +280,93 @@ class GetPhotometerOffset(GetCommand):
         self.response.append(int(matchobj.group(1)))
         self.response = self.response[1]
 
+
+# ------------------------------------------------------------------------------
+#                               PLUVIOMETER COMMANDS
+# ------------------------------------------------------------------------------
+
+class GetPluviometerCalibration(GetCommand):
+    '''Get Pluviometer Calibration Constant Command'''
+    units = 'mm'
+    ACK_PATTERNS = [ '^\(P(\d{3})\)']
+    FMT = '(p)'
+
+# ------------------------------------------------------------------------------
+#                               PYRANOMETER COMMANDS
+# ------------------------------------------------------------------------------
+
+class GetPyranometerGain(GetCommand):
+    '''Get Pyranometer Gain Command'''
+    units = 'Unknown'
+    ACK_PATTERNS = [ '^\(J(\d{3})\)']
+    FMT = '(j)'
+
+    def extractValues(self, line, matchobj):
+        self.response = int(matchobj.group(1)) * 0.10
+
+
+class GetPyranometerOffset(GetCommand):
+    '''Get Pyranometer Offset Command'''
+    units = 'Unknown'
+    ACK_PATTERNS = [ '^\(U(\d{3})\)']
+    FMT = '(u)'
+
+# ------------------------------------------------------------------------------
+#                               RAIN SENSOR DETECTOR COMMANDS
+# ------------------------------------------------------------------------------
+
+class GetRainSensorThreshold(GetCommand):
+    '''Get Rain Sensor Threshold Command'''
+    units = 'mm'
+    ACK_PATTERNS = [ '^\(L(\d{3})\)']
+    FMT = '(l)'
+
+# ------------------------------------------------------------------------------
+#                               THERMOMETER DETECTOR COMMANDS
+# ------------------------------------------------------------------------------
+
+class GetThermometerDeltaTempThreshold(GetCommand):
+    '''Get Thermometer DeltaTemp Threshold Command'''
+    units = 'mm'
+    ACK_PATTERNS = [ '^\(C(\d{3})\)']
+    FMT = '(c)'
+
+# ------------------------------------------------------------------------------
+#                               VOLTMETER COMMANDS
+# ------------------------------------------------------------------------------
+
+class GetVoltmeterThreshold(GetCommand):
+    '''Get Voltmeter Threshold Command'''
+    units = 'V'
+    ACK_PATTERNS = [ '^\(F(\d{3})\)', '^\(F([+-]\d{2})\)' ]
+    FMT = '(f)'
+
+    def collectData(self, line, matchobj):
+        self.response.append(int(matchobj.group(1)) * 0.10)
+
+    def extractValues(self, line, matchobj):
+        self.response.append(int(matchobj.group(1)) * 0.10)
+        self.response = self.response[0]
+
+
+class GetVoltmeterOffset(GetCommand):
+    '''Get Voltmeter Offset Command'''
+    units = 'V'
+    ACK_PATTERNS = [ '^\(F(\d{3})\)', '^\(F([+-]\d{2})\)' ]
+    FMT = '(f)'
+
+    def collectData(self, line, matchobj):
+        self.response.append(int(matchobj.group(1)) * 0.10)
+
+    def extractValues(self, line, matchobj):
+        self.response.append(int(matchobj.group(1)) * 0.10)
+        self.response = self.response[1]
+
+
+# ------------------------------------------------------------------------------
+#                               ROOF RELAY COMMANDS
+# ------------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------------
+#                               AUX RELAY COMMANDS
+# ------------------------------------------------------------------------------

@@ -127,6 +127,13 @@ class SerialService(Service):
             self.protocol.getCloudSensorGain,
             self.protocol.getPhotometerThreshold,
             self.protocol.getPhotometerOffset,
+            self.protocol.getPluviometerCalibration ,
+            self.protocol.getPyranometerGain ,
+            self.protocol.getPyranometerOffset ,
+            self.protocol.getRainSensorThreshold ,
+            self.protocol.getThermometerDeltaTempThreshold ,
+            self.protocol.getVoltmeterThreshold ,
+            self.protocol.getVoltmeterOffset ,
         ]
 
         for getter in getFuncs:
