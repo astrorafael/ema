@@ -51,6 +51,7 @@ class Command(object):
         '''reinitialization for retries'''
         self.i         = 0
         self.iteration = 1
+        self.response  = []
 
     def encode(self):
         self.encoded = self.fmt
@@ -73,27 +74,26 @@ class Command(object):
         Generic decoding algorithm for commands
         Must again and again until returns True
         '''
-       
-        matched = self.ackPat[self.i].search(line)
-        if not matched:
+        
+        matchobj = self.ackPat[self.i].search(line)
+        if not matchobj:
+            handled = False; finished = False
             log.debug("Line does not match {command.name} response", command=self)
-            return False
-
-        if (self.i + 1) == self.N and self.iteration == self.NIters:
-            self.extractValues(line, matched)
-            finished = True
+        elif (self.i + 1) == self.N and self.iteration == self.NIters:
+            self.extractValues(line, matchobj)
+            handled = True; finished = True
             log.debug("Matched {command.name} response, command complete", command=self)
         elif (self.i + 1) == self.N and self.iteration < self.NIters:
-            self.collectData(line, matched)
-            finished = True
+            self.collectData(line, matchobj)
             self.iteration += 1
+            handled = True; finished = False
             log.debug("Matched {command.name} response, command complete, accumulating data", command=self)
         else:   
-            self.collectData(line, matched)
+            self.collectData(line, matchobj)
             self.i += 1
-            finished = False
+            handled = True; finished = False
             log.debug("Matched {command.name} echo response, awaiting data", command=self)
-        return finished
+        return handled, finished
 
 class GetCommand(Command):
     '''Abstract Get Command'''
@@ -170,7 +170,7 @@ class SetRTC(Command):
 
 class GetCurrentWindSpeedThreshold(GetCommand):
     '''Get Current Wind Speed Threshold Command'''
-
+    units = 'Km/h'
     ACK_PATTERNS = [ '^\(W(\d{3})\)' ]
     FMT = '(w)'
     
@@ -179,7 +179,7 @@ class GetCurrentWindSpeedThreshold(GetCommand):
 
 class GetAverageWindSpeedThreshold(GetCommand):
     '''Get 10min Average Wind Speed Threshold Command'''
-
+    units = 'Km/h'
     ACK_PATTERNS = [ '^\(O(\d{3})\)' ]
     FMT = '(o)'
  
@@ -188,7 +188,7 @@ class GetAverageWindSpeedThreshold(GetCommand):
 
 class GetAnemometerCalibrationConstant(GetCommand):
     '''Get Anemometer Calibration Constant'''
-
+    units = 'Unknown'
     ACK_PATTERNS = [ '^\(A(\d{3})\)' ]
     FMT = '(a)'
  
@@ -211,7 +211,7 @@ class GetAnemometerModel(GetCommand):
 
 class GetBarometerHeight(GetCommand):
     '''Get Barometer Height Command'''
-
+    units = 'm.'
     ACK_PATTERNS = [ '^\(M(\d{5})\)' ]
     FMT = '(m)'
 
@@ -220,7 +220,7 @@ class GetBarometerHeight(GetCommand):
 
 class GetBarometerOffset(GetCommand):
     '''Get Barometer Offset Command'''
-
+    units = 'mBar'
     ACK_PATTERNS = [ '^\(B([+-]\d{2})\)' ]
     FMT = '(b)'
 
@@ -231,7 +231,7 @@ class GetBarometerOffset(GetCommand):
 
 class GetCloudSensorThreshold(GetCommand):
     '''Get Cloud Sensor Threshold Command'''
-    
+    units = '%'
     ACK_PATTERNS = [ '^\(N(\d{3})\)' ]
     FMT = '(n)'
 
@@ -240,7 +240,7 @@ class GetCloudSensorThreshold(GetCommand):
 
 class GetCloudSensorGain(GetCommand):
     '''Get Cloud Sensor Gain Command'''
-
+    units = 'Unknown'
     ACK_PATTERNS = [ '^\(R(\d{3})\)' ]
     FMT = '(r)'
 
@@ -252,26 +252,34 @@ class GetCloudSensorGain(GetCommand):
 #                               PHOTOMETER COMMANDS
 # ------------------------------------------------------------------------------
 
-# UNO DE ESTOS DOS ESTA MAL
 class GetPhotometerThreshold(GetCommand):
     '''Get Photometer Threshold Command'''
 
-    ACK_PATTERNS = [ '^\(I(\d{3})\)' ]
+    units = 'Mv/arcsec^2'
+    ACK_PATTERNS = [ '^\(I(\d{3})\)',  '^\(I([+-]\d{2})\)',  '^\(I(\d{5})\)']
     FMT = '(i)'
 
+    def collectData(self, line, matchobj):
+        self.response.append(int(matchobj.group(1)) * 0.10)
+
     def extractValues(self, line, matchobj):
-        Command.extractValues(self, line, matchobj)
-        self.response = self.response * 0.10
-        
+        self.response.append(int(matchobj.group(1)))
+        self.response = self.response[0]
+
 # ------------------------------------------------------------------------------
 
 class GetPhotometerOffset(GetCommand):
     '''Get Photometer Gain Offset'''
 
-    ACK_PATTERNS = [ '^\(I([+-]\d{2})\)' ]
+    units = 'Mv/arcsec^2'
+    ACK_PATTERNS = [ '^\(I(\d{3})\)',  '^\(I([+-]\d{2})\)',  '^\(I(\d{5})\)']
     FMT = '(i)'
 
+   
+    def collectData(self, line, matchobj):
+        self.response.append(int(matchobj.group(1)) * 0.10)
+
     def extractValues(self, line, matchobj):
-        Command.extractValues(self, line, matchobj)
-        self.response = self.response * 0.10
+        self.response.append(int(matchobj.group(1)))
+        self.response = self.response[1]
 

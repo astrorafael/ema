@@ -119,10 +119,11 @@ class EMAProtocol(LineOnlyReceiver):
         # ---------------------------------------------
         # Match against current pending command, if any
         # ---------------------------------------------
+
         if len(self._queue) > 0:
             request = self._queue[0]
-            ack = request.decode(line)
-            if ack:
+            handled, finished = request.decode(line)
+            if finished:
                 self._queue.popleft()
                 request.alarm.cancel()
                 response = request.getResponse()
@@ -131,10 +132,13 @@ class EMAProtocol(LineOnlyReceiver):
                 request.deferred.callback(response) # Fire callback after _retry() !!!
                 del request
                 return
+            if handled:
+                return
 
         # -------------------------- 
         # Match unsolicited reponses
         # --------------------------
+
         ur = match(line)
         if not ur:
             log.debug("Unknown message {line}", line=line)
@@ -145,13 +149,13 @@ class EMAProtocol(LineOnlyReceiver):
             if self._onStatus:
                 self._onStatus((curState, timestamp))
         elif ur['name'] == 'Photometer begin':
-                pass
+            pass
         elif ur['name'] == 'Photometer end':
-                pass
+            pass
         elif ur['name'] == 'Thermopile I2C':
-                pass
+            pass
         else:
-                log.error("We should never hace reached this")
+            log.error("We should never hace reached this")
 
     
 
@@ -398,7 +402,7 @@ class EMAProtocol(LineOnlyReceiver):
         '''
         request = self._queue[0]
         request.alarm = self.callLater(request.interval(), self._responseTimeout)
-        log.debug("==> {request.name} (retries={request.retries}/{request.nretries})", 
+        log.debug("-> {request.name} (retries={request.retries}/{request.nretries})", 
             request=request)
         self.sendLine(str(request.encoded) if PY2 else bytes(request.encoded))
 
