@@ -12,6 +12,7 @@ from __future__ import division
 
 import re
 import datetime
+import math
 
 # ----------------
 # Twisted  modules
@@ -99,9 +100,10 @@ class Command(object):
         self.iteration = 1
         self.response  = []
     
+    
     def extractValues(self, line, matchobj):
         '''Default implementation, maybe overriden'''
-        self.response = int(matchobj.group(1)) * self.scale
+        self.response = int(matchobj.group(1)) / float(self.scale)
 
     def collectData(self, line, matchobj):
         '''To be subclassed if necessary'''
@@ -118,8 +120,6 @@ class GetCommand(Command):
         # Request format
         Command.__init__(self, ack_patterns=self.ack_patterns, fmt=self.cmdformat)
 
-    
-
 
 # ------------------------------------------------------------------------------
 
@@ -132,7 +132,8 @@ class SetCommand(Command):
         self.value = value
 
     def encode(self):
-        self.encoded = self.cmdformat.format(self.value * self.scale)
+        self.encoded = self.cmdformat.format(int(math.ceil(self.value * self.scale)))
+
 
 
 # ------------------------------------------------------------------------------
@@ -313,15 +314,28 @@ class GetCloudSensorThreshold(GetCommand):
     ack_patterns = [ '^\(N(\d{3})\)' ]
     cmdformat    = '(n)'
 
+class SetCloudSensorThreshold(SetCommand):
+    '''Set Cloud Sensor Threshold Command'''
+    units        = '%'
+    scale        = 1
+    ack_patterns = [ '^\(N(\d{3})\)' ]
+    cmdformat    = '(N{:03d})'
 
 # ------------------------------------------------------------------------------
 
 class GetCloudSensorGain(GetCommand):
     '''Get Cloud Sensor Gain Command'''
     units        = 'Unknown'
-    scale        = 0.1
+    scale        = 10
     ack_patterns = [ '^\(R(\d{3})\)' ]
     cmdformat    = '(r)'
+
+class SetCloudSensorGain(SetCommand):
+    '''Set Cloud Sensor Gain Command'''
+    units        = 'Unknown'
+    scale        = 10
+    ack_patterns = [ '^\(R(\d{3})\)' ]
+    cmdformat    = '(R{:03d})'
 
 # ------------------------------------------------------------------------------
 #                               PHOTOMETER COMMANDS
@@ -330,7 +344,7 @@ class GetCloudSensorGain(GetCommand):
 class GetPhotometerThreshold(GetCommand):
     '''Get Photometer Threshold Command'''
     units        = 'Mv/arcsec^2'
-    scale        = 0.10
+    scale        = 10
     ack_patterns = [ '^\(I(\d{3})\)',  '^\(I([+-]\d{2})\)',  '^\(I(\d{5})\)']
     cmdformat    = '(i)'
 
@@ -338,14 +352,14 @@ class GetPhotometerThreshold(GetCommand):
         self.response.append(int(matchobj.group(1)))
 
     def extractValues(self, line, matchobj):
-        self.response = self.response[0] * self.scale
+        self.response = self.response[0] / float(self.scale)
 
 # ------------------------------------------------------------------------------
 
 class GetPhotometerOffset(GetCommand):
     '''Get Photometer Gain Offset'''
     units        = 'Mv/arcsec^2'
-    scale        = 0.10
+    scale        = 10
     ack_patterns = [ '^\(I(\d{3})\)',  '^\(I([+-]\d{2})\)',  '^\(I(\d{5})\)']
     cmdformat    = '(i)'
 
@@ -353,7 +367,7 @@ class GetPhotometerOffset(GetCommand):
         self.response.append(int(matchobj.group(1)))
 
     def extractValues(self, line, matchobj):
-        self.response = self.response[1] * self.scale
+        self.response = self.response[1] / float(self.scale)
 
 # ------------------------------------------------------------------------------
 #                               PLUVIOMETER COMMANDS
@@ -373,7 +387,7 @@ class GetPluviometerCalibration(GetCommand):
 class GetPyranometerGain(GetCommand):
     '''Get Pyranometer Gain Command'''
     units        = 'Unknown'
-    scale        = 0.10
+    scale        = 10
     ack_patterns = [ '^\(J(\d{3})\)']
     cmdformat    = '(j)'
 
@@ -414,7 +428,7 @@ class GetThermometerDeltaTempThreshold(GetCommand):
 class GetVoltmeterThreshold(GetCommand):
     '''Get Voltmeter Threshold Command'''
     units        = 'V'
-    scale        = 0.1
+    scale        = 10
     ack_patterns = [ '^\(F(\d{3})\)', '^\(F([+-]\d{2})\)' ]
     cmdformat    = '(f)'
 
@@ -422,13 +436,13 @@ class GetVoltmeterThreshold(GetCommand):
         self.response.append(int(matchobj.group(1)))
 
     def extractValues(self, line, matchobj):
-        self.response = self.response[0] * self.scale
+        self.response = self.response[0] / float(self.scale)
 
 
 class GetVoltmeterOffset(GetCommand):
     '''Get Voltmeter Offset Command'''
     units        = 'V'
-    scale        = 0.1
+    scale        = 10
     ack_patterns = [ '^\(F(\d{3})\)', '^\(F([+-]\d{2})\)' ]
     cmdformat    = '(f)'
 
@@ -495,8 +509,10 @@ __all__ = [
     SetBarometerHeight, 
     GetBarometerOffset,
     SetBarometerOffset,
-    GetCloudSensorThreshold, 
+    GetCloudSensorThreshold,
+    SetCloudSensorThreshold, 
     GetCloudSensorGain,
+    SetCloudSensorGain,
     GetPhotometerThreshold, 
     GetPhotometerOffset,
     GetPluviometerCalibration,

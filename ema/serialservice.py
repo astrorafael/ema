@@ -150,6 +150,8 @@ class SerialService(Service):
             (self.protocol.setAnemometerModel, 'Homemade'),
             (self.protocol.setBarometerHeight, 711),
             (self.protocol.setBarometerOffset, -10),
+            (self.protocol.setCloudSensorThreshold, 67),
+            (self.protocol.setCloudSensorGain, 1.0),
         ]
 
         if False:

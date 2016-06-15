@@ -53,8 +53,10 @@ from .commands import (
     SetBarometerHeight, 
     GetBarometerOffset,
     SetBarometerOffset,
-    GetCloudSensorThreshold, 
+    GetCloudSensorThreshold,
+    SetCloudSensorThreshold, 
     GetCloudSensorGain,
+    SetCloudSensorGain,
     GetPhotometerThreshold, 
     GetPhotometerOffset,
     GetPluviometerCalibration,
@@ -251,8 +253,14 @@ class EMAProtocol(LineOnlyReceiver):
     def getCloudSensorThreshold(self, nretries=3):
         return self._enqueue(GetCloudSensorThreshold(), nretries)
 
+    def setCloudSensorThreshold(self, value, nretries=3):
+        return self._enqueue(SetCloudSensorThreshold(value), nretries)
+
     def getCloudSensorGain(self, nretries=3):
         return self._enqueue(GetCloudSensorGain(), nretries)
+
+    def setCloudSensorGain(self, value, nretries=3):
+        return self._enqueue(SetCloudSensorGain(value), nretries)
 
     # --------------
     # EMA Photometer
