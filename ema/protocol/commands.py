@@ -354,6 +354,14 @@ class GetPhotometerThreshold(GetCommand):
     def extractValues(self, line, matchobj):
         self.response = self.response[0] / float(self.scale)
 
+
+class SetPhotometerThreshold(SetCommand):
+    '''Set Photometer Threshold Command'''
+    units        = 'Mv/arcsec^2'
+    scale        = 10
+    ack_patterns = [ '^\(I(\d{3})\)' ]
+    cmdformat    = '(I{:03d})'
+
 # ------------------------------------------------------------------------------
 
 class GetPhotometerOffset(GetCommand):
@@ -368,6 +376,14 @@ class GetPhotometerOffset(GetCommand):
 
     def extractValues(self, line, matchobj):
         self.response = self.response[1] / float(self.scale)
+
+
+class SetPhotometerOffset(SetCommand):
+    '''Set Photometer Gain Offset'''
+    units        = 'Mv/arcsec^2'
+    scale        = 10
+    ack_patterns = [ '^\(I([+-]\d{2})\)']
+    cmdformat    = '(I{:+03d})'
 
 # ------------------------------------------------------------------------------
 #                               PLUVIOMETER COMMANDS
@@ -513,8 +529,10 @@ __all__ = [
     SetCloudSensorThreshold, 
     GetCloudSensorGain,
     SetCloudSensorGain,
-    GetPhotometerThreshold, 
+    GetPhotometerThreshold,
+    SetPhotometerThreshold, 
     GetPhotometerOffset,
+    SetPhotometerOffset,
     GetPluviometerCalibration,
     GetPyranometerGain, 
     GetPyranometerOffset,

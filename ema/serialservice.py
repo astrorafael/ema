@@ -152,6 +152,8 @@ class SerialService(Service):
             (self.protocol.setBarometerOffset, -10),
             (self.protocol.setCloudSensorThreshold, 67),
             (self.protocol.setCloudSensorGain, 1.0),
+            (self.protocol.setPhotometerThreshold, 10.5),
+            (self.protocol.setPhotometerOffset, 0),
         ]
 
         if False:
