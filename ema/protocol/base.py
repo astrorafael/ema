@@ -40,6 +40,8 @@ from ..error   import EMATimeoutError
 from .interval import Interval
 from .commands import (
     Ping, 
+    GetWatchdogPeriod,
+    SetWatchdogPeriod,
     GetRTC,
     SetRTC, 
     GetCurrentWindSpeedThreshold,
@@ -182,6 +184,9 @@ class EMAProtocol(LineOnlyReceiver):
         '''
         self._onStatus = callback
 
+    # ------------
+    # EMA Watchdog
+    # ------------
 
     def ping(self):
         '''
@@ -191,6 +196,14 @@ class EMAProtocol(LineOnlyReceiver):
         An errback may be invoked with EMATimeoutError
         '''
         return self._enqueue(Ping(), nretries=0)
+
+    def getWatchdogPeriod(self, nretries=3):
+        return self._enqueue(GetWatchdogPeriod(), nretries)
+
+    def setWatchdogPeriod(self, value, nretries=3):
+        return self._enqueue(SetWatchdogPeriod(value), nretries)
+
+       
 
     # -------
     # EMA RTC

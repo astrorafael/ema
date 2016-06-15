@@ -141,6 +141,7 @@ class SerialService(Service):
             self.protocol.getAuxRelaySwitchOnTime,
             self.protocol.getAuxRelaySwitchOffTime,
             self.protocol.getAuxRelayMode,
+            self.protocol.getWatchdogPeriod,
         ]
 
         setFuncs = [ 
@@ -164,6 +165,8 @@ class SerialService(Service):
             (self.protocol.setAuxRelaySwitchOnTime,  datetime.time(hour=6)),
             (self.protocol.setAuxRelaySwitchOffTime, datetime.time(hour=9)),
             (self.protocol.setAuxRelayMode, 'Timed'),
+            (self.protocol.setWatchdogPeriod, 200),
+
         ]
 
         if False:
@@ -174,14 +177,14 @@ class SerialService(Service):
                 except EMATimeoutError as e:
                     log.error("{excp!s}", excp=e)
                     continue
-
-        for setter in setFuncs:
-            try:
-                res = yield setter[0](setter[1])
-                log.debug("Result = {result}", result=res)
-            except EMATimeoutError as e:
-                log.error("{excp!s}", excp=e)
-                continue
+        if True:
+            for setter in setFuncs:
+                try:
+                    res = yield setter[0](setter[1])
+                    log.debug("Result = {result}", result=res)
+                except EMATimeoutError as e:
+                    log.error("{excp!s}", excp=e)
+                    continue
 
     # -------------
     # log stats API

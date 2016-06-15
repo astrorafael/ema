@@ -136,18 +136,6 @@ class SetCommand(Command):
 
 
 
-# ------------------------------------------------------------------------------
-#                               PING COMMAND
-# ------------------------------------------------------------------------------
-
-class Ping(GetCommand):
-    '''Ping'''
-    ack_patterns = [ '^\( \)' ]
-    cmdformat    = '( )'
-
-    def extractValues(self, line, matchobj):
-        self.response = line
-
 
 # ------------------------------------------------------------------------------
 #                               REAL TIME CLOCK COMMANDS
@@ -189,6 +177,34 @@ class SetRTC(Command):
 
     def extractValues(self, line, matchobj):
         self.response = datetime.datetime.strptime(line, self.ema_time_format)
+
+# ------------------------------------------------------------------------------
+#                               WATCHDOG COMMANDS
+# ------------------------------------------------------------------------------
+
+class Ping(GetCommand):
+    '''Ping'''
+    ack_patterns = [ '^\( \)' ]
+    cmdformat    = '( )'
+
+    def extractValues(self, line, matchobj):
+        self.response = line
+
+
+class GetWatchdogPeriod(GetCommand):
+    '''Get Watchdog Period Command'''
+    units        = 'sec'
+    scale        = 1
+    ack_patterns = [ '^\(T(\d{3})\)' ]
+    cmdformat    = '(t)'
+
+
+class SetWatchdogPeriod(SetCommand):
+    '''Set Watchdog Period Command'''
+    units        = 'sec'
+    scale        = 1
+    ack_patterns = [ '^\(T(\d{3})\)' ]
+    cmdformat    = '(T{:03d})'
 
 # ------------------------------------------------------------------------------
 #                               ANEMOMETER COMMANDS
@@ -610,6 +626,8 @@ class SetAuxRelayMode(SetCommand):
 
 __all__ = [
     Ping, 
+    GetWatchdogPeriod,
+    SetWatchdogPeriod,
     GetRTC,
     SetRTC, 
     GetCurrentWindSpeedThreshold,
