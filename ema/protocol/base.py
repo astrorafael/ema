@@ -42,8 +42,8 @@ from .commands import (
     Ping, 
     GetWatchdogPeriod,
     SetWatchdogPeriod,
-    GetRTC,
-    SetRTC, 
+    GetRTCDateTime,
+    SetRTCDateTime, 
     GetCurrentWindSpeedThreshold,
     SetCurrentWindSpeedThreshold,  
     GetAverageWindSpeedThreshold, 
@@ -209,24 +209,24 @@ class EMAProtocol(LineOnlyReceiver):
     # EMA RTC
     # -------
 
-    def getTime(self, nretries=3):
+    def getRTCDateTime(self, nretries=3):
         '''
         Get EMA current RTC time
         Retuns a deferred. 
         Success callback returns ?
         An errback may be invoked with EMATimeoutError
         '''
-        return self._enqueue(GetRTC(), nretries)
+        return self._enqueue(GetRTCDateTime(), nretries)
 
 
-    def setTime(self, tstamp=None, nretries=0):
+    def setRTCDateTime(self, value, nretries=0):
         '''
         Set EMA current RTC time
         Retuns a deferred. 
         Success callback returns ?
         An errback may be invoked with EMATimeoutError
         '''
-        pass
+        return self._enqueue(SetRTCDateTime(value), nretries)
 
     # --------------
     # EMA Anemometer

@@ -121,6 +121,7 @@ class SerialService(Service):
         Returns a Deferred when all synchronization is complete
         '''
         getFuncs = [ 
+            self.protocol.getRTCDateTime,
             self.protocol.getCurrentWindSpeedThreshold,
             self.protocol.getAverageWindSpeedThreshold,
             self.protocol.getAnemometerCalibrationConstant,
@@ -144,6 +145,7 @@ class SerialService(Service):
             self.protocol.getWatchdogPeriod,
         ]
 
+
         setFuncs = [ 
             (self.protocol.setCurrentWindSpeedThreshold, 20),
             (self.protocol.setAverageWindSpeedThreshold, 66),
@@ -166,10 +168,11 @@ class SerialService(Service):
             (self.protocol.setAuxRelaySwitchOffTime, datetime.time(hour=9)),
             (self.protocol.setAuxRelayMode, 'Timed'),
             (self.protocol.setWatchdogPeriod, 200),
+            (self.protocol.setRTCDateTime, None),
 
         ]
 
-        if False:
+        if True:
             for getter in getFuncs:
                 try:
                     res = yield getter()

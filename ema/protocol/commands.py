@@ -141,8 +141,8 @@ class SetCommand(Command):
 #                               REAL TIME CLOCK COMMANDS
 # ------------------------------------------------------------------------------
 
-class GetRTC(GetCommand):
-    '''Get Real Time Clock time Command'''
+class GetRTCDateTime(GetCommand):
+    '''Get Real Time Clock Date & Time Command'''
     ack_patterns    = [ '^\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)' ]
     cmdformat       = '(y)'
     ema_time_format = '(%H:%M:%S %d/%m/%Y)'
@@ -152,28 +152,26 @@ class GetRTC(GetCommand):
 
 # ------------------------------------------------------------------------------
 
-class SetRTC(Command):
-    '''Set Real Time Clock time Command'''
-    ack_patterns    = [ '(Y\d{2}\d{2}\d{4}\d{2}\d{2}\d{2})','\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)']
+class SetRTCDateTime(SetCommand):
+    '''Set Real Time Clock Date & Time Command'''
+    ack_patterns    = [ '\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)']
     cmdformat       = '(Y%d%m%y%H%M%S)'
     ema_time_format = '(%H:%M:%S %d/%m/%Y)'
 
-    def __init__(self, tstamp=None):
-        Command.__init__(self, ack_patterns=self.ack_patterns, fmt=self.cmdformat)
-        if tstamp is not None:
-            self.tstamp = tstamp
-            self.renew = False
-        else:
+    def __init__(self, value):
+        self.renew = False
+        SetCommand.__init__(self, value)
+        if value is None:
             self.renew = True
-            self.tstamp = datetime.datetime.utcnow()+datetime.timedelta(seconds=0.5)
+            self.value = datetime.datetime.utcnow()+datetime.timedelta(seconds=0.5)
 
     def reset(self):
-        Command.reset()
+        Command.reset(self)
         if self.renew:
-            self.tstamp = datetime.datetime.utcnow()+datetime.timedelta(seconds=0.5)
+            self.value = datetime.datetime.utcnow()+datetime.timedelta(seconds=0.5)
 
     def encode(self):
-        self.encoded = self.tstamp.strftime(self.fmt)
+        self.encoded = self.value.strftime(self.fmt)
 
     def extractValues(self, line, matchobj):
         self.response = datetime.datetime.strptime(line, self.ema_time_format)
@@ -628,8 +626,8 @@ __all__ = [
     Ping, 
     GetWatchdogPeriod,
     SetWatchdogPeriod,
-    GetRTC,
-    SetRTC, 
+    GetRTCDateTime,
+    SetRTCDateTime, 
     GetCurrentWindSpeedThreshold,
     SetCurrentWindSpeedThreshold,  
     GetAverageWindSpeedThreshold, 
