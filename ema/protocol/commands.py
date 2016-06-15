@@ -536,6 +536,38 @@ class SetVoltmeterOffset(SetCommand):
 #                               ROOF RELAY COMMANDS
 # ------------------------------------------------------------------------------
 
+
+class SetRoofRelayMode(Command):
+    '''Set Roof Relay Mode Command'''
+    ack_patterns = [ '^\(X(\d{3})\)' ]
+    cmdformat    = '(X{:03d})'
+    MAPPING      = {  0: 'Closed', 7: 'Open',  'Closed': 0, 'Open' : 7,  }
+    
+    def __init__(self, value):
+        self.value    = value
+        self.NIters   = 1
+        self.fmt      = self.cmdformat
+        self.name     = self.__doc__
+        self.encoded  = None
+        self.ackPat   = [ re.compile(pat) for pat in self.ack_patterns ]
+        if self.value == 'Open':
+            self.ackPat.append(re.compile('^\(\d{2}:\d{2}:\d{2} Abrir Obs\. FORZADO\)'))
+        elif self.value == 'Closed':
+            self.ackPat.append(re.compile('^\(\d{2}:\d{2}:\d{2} Cerrar Obs\.\)'))
+        self.N        = len(self.ackPat)
+        self.reset()
+
+    def encode(self):
+        self.encoded = self.cmdformat.format(self.MAPPING[self.value])
+    
+    def collectData(self, line, matchobj):
+        if self.i == 0:
+            self.response = self.MAPPING[int(matchobj.group(1))]
+       
+    def extractValues(self, line, matchobj):
+        pass
+
+
 # ------------------------------------------------------------------------------
 #                               AUX RELAY COMMANDS
 # ------------------------------------------------------------------------------
@@ -543,7 +575,7 @@ class SetVoltmeterOffset(SetCommand):
 class GetAuxRelaySwitchOnTime(GetCommand):
     '''Get Aux Relay Switch-On Time Command'''
     units           = 'HH:MM:00'
-    ack_patterns    = [ '^\(S009\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
+    ack_patterns    = [ '^\(S\d{3}\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
     cmdformat       = '(s)'
     ema_time_format = '(Son%H%M)'
 
@@ -571,7 +603,7 @@ class SetAuxRelaySwitchOnTime(SetCommand):
 class GetAuxRelaySwitchOffTime(GetCommand):
     '''Get Aux Relay Switch-Off Time Command'''
     units           = 'HH:MM:00'
-    ack_patterns    = [ '^\(S009\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
+    ack_patterns    = [ '^\(S\d{3}\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
     cmdformat       = '(s)'
     ema_time_format = '(Sof%H%M)'
 
@@ -597,7 +629,7 @@ class GetAuxRelayMode(GetCommand):
     '''Get Aux Relay Mode Command'''
     ack_patterns = [ '^\(S(\d{3})\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
     cmdformat    = '(s)'
-    MAPPING      = { 0 : 'Auto', 5 : 'Manual', 9 : 'Timed' }
+    MAPPING      = { 0 : 'Auto', 4: 'Closed', 5 : 'Open', 8 : 'Timer/Off', 9 : 'Timer/On' }
 
     def collectData(self, line, matchobj):
         if self.i == 0:
@@ -607,17 +639,40 @@ class GetAuxRelayMode(GetCommand):
         pass
     
 
-class SetAuxRelayMode(SetCommand):
+class SetAuxRelayMode(Command):
     '''Set Aux Relay Mode Command'''
     ack_patterns = [ '^\(S(\d{3})\)' ]
     cmdformat    = '(S{:03d})'
-    MAPPING      = { 0 : 'Auto', 5 : 'Manual', 9 : 'Timed', 'Auto': 0, 'Manual' : 5, 'Timed' : 9 }
-        
+    MAPPING      = { 0 : 'Auto', 4: 'Closed', 5 : 'Open', 8 : 'Timer/Off', 9 : 'Timer/On', 
+                    'Auto': 0, 'Closed': 4, 'Open' : 5, 'Timer/Off': 8, 'Timer/On' : 9 }
+    
+    def __init__(self, value):
+        self.value    = value
+        self.NIters   = 1
+        self.fmt      = self.cmdformat
+        self.name     = self.__doc__
+        self.encoded  = None
+        self.ackPat   = [ re.compile(pat) for pat in self.ack_patterns ]
+        if self.value == 'Open':
+            self.ackPat.append(re.compile('^\(\d{2}:\d{2}:\d{2} Calentador on\.\)'))
+        elif self.value == 'Closed':
+            self.ackPat.append(re.compile('^\(\d{2}:\d{2}:\d{2} Calentador off\.\)'))
+        elif self.value == 'Timer/On':
+            self.ackPat.append(re.compile('^\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4} Timer ON\)'))
+        elif self.value == 'Timer/Off':
+            self.ackPat.append(re.compile('^\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4} Timer OFF\)'))
+        self.N        = len(self.ackPat)
+        self.reset()
+
     def encode(self):
         self.encoded = self.cmdformat.format(self.MAPPING[self.value])
     
+    def collectData(self, line, matchobj):
+        if self.i == 0:
+            self.response = self.MAPPING[int(matchobj.group(1))]
+       
     def extractValues(self, line, matchobj):
-        self.response = self.MAPPING[int(matchobj.group(1))]
+        pass
 
 
 
@@ -667,5 +722,6 @@ __all__ = [
     GetAuxRelaySwitchOffTime,
     SetAuxRelaySwitchOffTime, 
     GetAuxRelayMode,
-    SetAuxRelayMode
+    SetAuxRelayMode,
+    SetRoofRelayMode,
 ]

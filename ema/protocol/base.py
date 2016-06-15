@@ -83,7 +83,8 @@ from .commands import (
     GetAuxRelaySwitchOffTime,
     SetAuxRelaySwitchOffTime, 
     GetAuxRelayMode,
-    SetAuxRelayMode
+    SetAuxRelayMode,
+    SetRoofRelayMode
     )
 
 
@@ -400,7 +401,14 @@ class EMAProtocol(LineOnlyReceiver):
     def setAuxRelayMode(self, value, nretries=3):
         return self._enqueue(SetAuxRelayMode(value), nretries)
 
-    
+    # --------------
+    # EMA Roof Relay
+    # --------------
+
+    def setRoofRelayMode(self, value, nretries=3):
+        return self._enqueue(SetRoofRelayMode(value), nretries)
+
+
 
 
 
