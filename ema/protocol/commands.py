@@ -396,6 +396,7 @@ class GetPluviometerCalibration(GetCommand):
     ack_patterns = [ '^\(P(\d{3})\)']
     cmdformat    = '(p)'
 
+
 class SetPluviometerCalibration(SetCommand):
     '''Set Pluviometer Calibration Constant Command'''
     units        = 'mm'
@@ -415,12 +416,28 @@ class GetPyranometerGain(GetCommand):
     cmdformat    = '(j)'
 
 
+class SetPyranometerGain(SetCommand):
+    '''Set Pyranometer Gain Command'''
+    units        = 'Unknown'
+    scale        = 10
+    ack_patterns = [ '^\(J(\d{3})\)']
+    cmdformat    = '(J{:03d})'
+
+
 class GetPyranometerOffset(GetCommand):
     '''Get Pyranometer Offset Command'''
     units        = 'Unknown'
     scale        = 1
     ack_patterns = [ '^\(U(\d{3})\)']
     cmdformat    = '(u)'
+
+
+class SetPyranometerOffset(SetCommand):
+    '''Get Pyranometer Offset Command'''
+    units        = 'Unknown'
+    scale        = 1
+    ack_patterns = [ '^\(U(\d{3})\)']
+    cmdformat    = '(U{:03d})'
 
 # ------------------------------------------------------------------------------
 #                               RAIN SENSOR DETECTOR COMMANDS
@@ -542,8 +559,10 @@ __all__ = [
     SetPhotometerOffset,
     GetPluviometerCalibration,
     SetPluviometerCalibration,
-    GetPyranometerGain, 
+    GetPyranometerGain,
+    SetPyranometerGain,
     GetPyranometerOffset,
+    SetPyranometerOffset,
     GetRainSensorThreshold,
     GetThermometerDeltaTempThreshold,
     GetVoltmeterThreshold, 

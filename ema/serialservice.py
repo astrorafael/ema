@@ -155,6 +155,8 @@ class SerialService(Service):
             (self.protocol.setPhotometerThreshold, 10.5),
             (self.protocol.setPhotometerOffset, 0),
             (self.protocol.setPluviometerCalibration, 124),
+            (self.protocol.getPyranometerGain, 14),
+            (self.protocol.getPyranometerOffset, 0),
         ]
 
         if False:

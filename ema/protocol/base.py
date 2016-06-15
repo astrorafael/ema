@@ -39,7 +39,7 @@ from .status   import decode
 from ..error   import EMATimeoutError
 from .interval import Interval
 from .commands import (
-     Ping, 
+    Ping, 
     GetRTC, 
     GetCurrentWindSpeedThreshold,
     SetCurrentWindSpeedThreshold,  
@@ -63,8 +63,10 @@ from .commands import (
     SetPhotometerOffset,
     GetPluviometerCalibration,
     SetPluviometerCalibration,
-    GetPyranometerGain, 
+    GetPyranometerGain,
+    SetPyranometerGain,
     GetPyranometerOffset,
+    SetPyranometerOffset,
     GetRainSensorThreshold,
     GetThermometerDeltaTempThreshold,
     GetVoltmeterThreshold, 
@@ -298,8 +300,14 @@ class EMAProtocol(LineOnlyReceiver):
     def getPyranometerGain(self, nretries=3):
         return self._enqueue(GetPyranometerGain(), nretries)
 
+    def setPyranometerGain(self, value, nretries=3):
+        return self._enqueue(SetPyranometerGain(value), nretries)
+
     def getPyranometerOffset(self, nretries=3):
         return self._enqueue(GetPyranometerOffset(), nretries)
+
+    def setPyranometerOffset(self, value, nretries=3):
+        return self._enqueue(SetPyranometerOffset(), nretries)
 
     # ---------------
     # EMA Rain Sensor
