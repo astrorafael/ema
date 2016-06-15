@@ -157,8 +157,10 @@ class SerialService(Service):
             (self.protocol.setPluviometerCalibration, 124),
             (self.protocol.setPyranometerGain, 14),
             (self.protocol.setPyranometerOffset, 0),
-            (self.protocol.getRainSensorThreshold, 1),
-            (self.protocol.getThermometerDeltaTempThreshold, 5),
+            (self.protocol.setRainSensorThreshold, 1),
+            (self.protocol.setThermometerDeltaTempThreshold, 5),
+            (self.protocol.setVoltmeterThreshold, 0),
+            (self.protocol.setVoltmeterOffset, -1.4),
         ]
 
         if False:

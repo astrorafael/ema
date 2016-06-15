@@ -71,8 +71,10 @@ from .commands import (
     SetRainSensorThreshold,
     GetThermometerDeltaTempThreshold,
     SetThermometerDeltaTempThreshold,
-    GetVoltmeterThreshold, 
+    GetVoltmeterThreshold,
+    SetVoltmeterThreshold, 
     GetVoltmeterOffset,
+    SetVoltmeterOffset,
     GetAuxRelaySwitchOnTime, 
     GetAuxRelaySwitchOffTime, 
     GetAuxRelayMode
@@ -338,11 +340,14 @@ class EMAProtocol(LineOnlyReceiver):
     def getVoltmeterThreshold(self, nretries=3):
         '''
         Get EMA calibration Voltage Threshold
-        Retuns a deferred. 
+        Retunrs a deferred. 
         Success callback returns ?
         An errback may be invoked with EMATimeoutError
         '''
         return self._enqueue(GetVoltmeterThreshold(), nretries)
+
+    def setVoltmeterThreshold(self, value, nretries=3):
+        return self._enqueue(SetVoltmeterThreshold(value), nretries)
 
     def getVoltmeterOffset(self, nretries=3):
         '''
@@ -352,6 +357,9 @@ class EMAProtocol(LineOnlyReceiver):
         An errback may be invoked with EMATimeoutError
         '''
         return self._enqueue(GetVoltmeterOffset(), nretries)
+
+    def setVoltmeterOffset(self, value, nretries=3):
+        return self._enqueue(SetVoltmeterOffset(value), nretries)
 
     # ------------------
     # EMA Auxiliar Relay
@@ -366,109 +374,7 @@ class EMAProtocol(LineOnlyReceiver):
     def getAuxRelayMode(self, nretries=3):
         return self._enqueue(GetAuxRelayMode(), nretries)
 
-    # OLD STUFFF
-
-
-
-    def setVoltageOffset(self, value, nretries=0):
-        '''
-        Set EMA calibration Voltage Offset
-        Retuns a deferred. 
-        Success callback returns ?
-        An errback may be invoked with EMATimeoutError
-        '''
-        pass
-
-
-    def getVoltageThreshold(self, nretries=0):
-        
-        pass
-
-
-    def setVoltageThreshold(self, value, nretries=0):
-        '''
-        Set EMA calibration Voltage Threshold
-        Retuns a deferred. 
-        Success callback returns ?
-        An errback may be invoked with EMATimeoutError
-        '''
-        pass
- 
-
-    def roofRelaySwitch(self, onFlag, nretries=0):
-        '''
-        Roof Relay force open/close. 
-        Retuns a deferred. 
-        Success callback returns ?
-        An errback may be invoked with EMATimeoutError
-        '''
-        pass
-
-
-    def auxRelaySwitch(self, onFlag, nretries=0):
-        '''
-        Auxiliar Relay force open/close. 
-        Retuns a deferred. 
-        Success callback returns ?
-        An errback may be invoked with EMATimeoutError
-        '''
-        pass
-
-
-    def auxRelayGetStatus(self, nretries=0):
-        '''
-        Get Auxiliar Relay status. 
-        Retuns a deferred. 
-        Success callback returns ?
-        An errback may be invoked with EMATimeoutError
-        '''
-        pass
-
-    def auxRelaySetMode(self, mode, nretries=0):
-        '''
-        Set Aunx relay mode, either AUTO, MANUAL or TIMED 
-        Retuns a deferred. 
-        Success callback returns ?
-        An errback may be invoked with EMATimeoutError
-        '''
-        pass
-
-
-    def auxRelayTimerOn(self, time, nretries=0):
-        '''
-        Programs Auxiliar Relay 'On' time in TIMED mode. 
-        Retuns a deferred. 
-        Success callback returns ?
-        An errback may be invoked with EMATimeoutError
-        '''
-        pass
-
-    def auxRelayTimerOff(self, time, nretries=0):
-        '''
-        Programs Auxiliar Relay 'Off' time in TIMED mode. 
-        Retuns a deferred. 
-        Success callback returns ?
-        An errback may be invoked with EMATimeoutError
-        '''
-        pass
-
-    def getHourlyMinMax(self, time, nretries=0):
-        '''
-        Get 24h Hourly MinMax Bulk Dump. 
-        Retuns a deferred. 
-        Success callback returns ?
-        An errback may be invoked with EMATimeoutError
-        '''
-        pass
-
-    def get5MinData(self, time, nretries=0):
-        '''
-        24h 5m Averages Bulk Dump. 
-        Retuns a deferred. 
-        Success callback returns ?
-        An errback may be invoked with EMATimeoutError
-        '''
-        pass
+    
 
 
 

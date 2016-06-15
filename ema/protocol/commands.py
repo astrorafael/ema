@@ -495,6 +495,13 @@ class GetVoltmeterThreshold(GetCommand):
     def extractValues(self, line, matchobj):
         self.response = self.response[0] / float(self.scale)
 
+class SetVoltmeterThreshold(SetCommand):
+    '''Set Voltmeter Threshold Command'''
+    units        = 'V'
+    scale        = 10
+    ack_patterns = [ '^\(F(\d{3})\)' ]
+    cmdformat    = '(F{:03d})'
+
 
 class GetVoltmeterOffset(GetCommand):
     '''Get Voltmeter Offset Command'''
@@ -503,6 +510,13 @@ class GetVoltmeterOffset(GetCommand):
     ack_patterns = [ '^\(F(\d{3})\)', '^\(F([+-]\d{2})\)' ]
     cmdformat    = '(f)'
 
+
+class SetVoltmeterOffset(SetCommand):
+    '''Set Voltmeter Offset Command'''
+    units        = 'V'
+    scale        = 10
+    ack_patterns = [ '^\(F([+-]\d{2})\)' ]
+    cmdformat    = '(F{:+03d})'
 
 # ------------------------------------------------------------------------------
 #                               ROOF RELAY COMMANDS
@@ -584,8 +598,10 @@ __all__ = [
     SetRainSensorThreshold,
     GetThermometerDeltaTempThreshold,
     SetThermometerDeltaTempThreshold,
-    GetVoltmeterThreshold, 
+    GetVoltmeterThreshold,
+    SetVoltmeterThreshold, 
     GetVoltmeterOffset,
+    SetVoltmeterOffset,
     GetAuxRelaySwitchOnTime, 
     GetAuxRelaySwitchOffTime, 
     GetAuxRelayMode
