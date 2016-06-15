@@ -396,6 +396,13 @@ class GetPluviometerCalibration(GetCommand):
     ack_patterns = [ '^\(P(\d{3})\)']
     cmdformat    = '(p)'
 
+class SetPluviometerCalibration(SetCommand):
+    '''Set Pluviometer Calibration Constant Command'''
+    units        = 'mm'
+    scale        = 1
+    ack_patterns = [ '^\(P(\d{3})\)']
+    cmdformat    = '(P{:03d})'
+
 # ------------------------------------------------------------------------------
 #                               PYRANOMETER COMMANDS
 # ------------------------------------------------------------------------------
@@ -534,6 +541,7 @@ __all__ = [
     GetPhotometerOffset,
     SetPhotometerOffset,
     GetPluviometerCalibration,
+    SetPluviometerCalibration,
     GetPyranometerGain, 
     GetPyranometerOffset,
     GetRainSensorThreshold,
