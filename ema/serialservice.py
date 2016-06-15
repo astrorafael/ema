@@ -145,9 +145,6 @@ class SerialService(Service):
             self.protocol.getWatchdogPeriod,
         ]
 
-        getFuncs = [ 
-            self.protocol.getAuxRelayMode,
-        ]
 
         setFuncs = [ 
             (self.protocol.setCurrentWindSpeedThreshold, 20),
@@ -172,12 +169,11 @@ class SerialService(Service):
             (self.protocol.setAuxRelayMode, 'Timer/On'),
             (self.protocol.setWatchdogPeriod, 200),
             (self.protocol.setRTCDateTime, None),
-
-        ]
-
-        setFuncs = [ 
             (self.protocol.setRoofRelayMode, 'Closed'),
+
         ]
+
+     
 
         if True:
             for getter in getFuncs:
