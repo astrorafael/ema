@@ -53,7 +53,9 @@ class SerialService(Service):
     def __init__(self, parent, options, **kargs):
         self.parent     = parent
         self.options    = options
+        protocol_level  = 'debug' if options['log_messages'] else 'info'
         setLogLevel(namespace='serial', levelStr=options['log_level'])
+        setLogLevel(namespace='protoc', levelStr=protocol_level)
        
         self.protocol  = EMAProtocol()
         self.port      = None
@@ -85,7 +87,9 @@ class SerialService(Service):
     # --------------------
 
     def reloadService(self, new_options):
+        protocol_level  = 'debug' if new_options['log_messages'] else 'info'
         setLogLevel(namespace='serial', levelStr=new_options['log_level'])
+        setLogLevel(namespace='protoc', levelStr=protocol_level)
         log.info("new log level is {lvl}", lvl=new_options['log_level'])
         self.options = new_options
         
@@ -133,14 +137,27 @@ class SerialService(Service):
             self.protocol.getRainSensorThreshold ,
             self.protocol.getThermometerDeltaTempThreshold,
             self.protocol.getVoltmeterThreshold,
+            self.protocol.getVoltmeterOffset,
             self.protocol.getAuxRelaySwitchOnTime,
             self.protocol.getAuxRelaySwitchOffTime,
             self.protocol.getAuxRelayMode,
         ]
 
+        setFuncs = [ 
+            (self.protocol.setCurrentWindSpeedThreshold, 20),
+        ]
+
         for getter in getFuncs:
             try:
                 res = yield getter()
+                log.debug("Result = {result}", result=res)
+            except EMATimeoutError as e:
+                log.error("{excp!s}", excp=e)
+                continue
+
+        for setter in setFuncs:
+            try:
+                res = yield setter[0](setter[1])
                 log.debug("Result = {result}", result=res)
             except EMATimeoutError as e:
                 log.error("{excp!s}", excp=e)

@@ -37,44 +37,31 @@ class Command(object):
     Get Real Time Clock time Command
     '''
 
-    def __init__(self, ack_patterns, fmt=None, Niters=1):
+    def __init__(self, ack_patterns, fmt=None, NIters=1):
         # Request format
         self.ackPat   = [ re.compile(pat) for pat in ack_patterns ]
         self.N        = len(self.ackPat)
-        self.NIters   = Niters
+        self.NIters   = NIters
         self.fmt      = fmt
-        self.encoded  = None
         self.name     = self.__doc__
+        self.encoded  = None
         self.reset()
 
-    def reset(self):
-        '''reinitialization for retries'''
-        self.i         = 0
-        self.iteration = 1
-        self.response  = []
+    # ----------
+    # Public API
+    # ----------
 
     def encode(self):
+        '''
+        Simple encoding implementation. May be overriden by subclasses
+        '''
         self.encoded = self.fmt
-        return self.encoded
-    
-    def extractValues(self, line, matchobj):
-        '''Default implementation, maybe overriden'''
-        self.response = int(matchobj.group(1))
-
-    def collectData(self, line, matchobj):
-        '''To be subclassed if necessary'''
-        pass
-
-    def getResponse(self):
-        '''Returns a response object. Must be called only after decode() returns True'''
-        return self.response
 
     def decode(self, line):
         '''
         Generic decoding algorithm for commands
         Must again and again until returns True
         '''
-        
         matchobj = self.ackPat[self.i].search(line)
         if not matchobj:
             handled = False; finished = False
@@ -95,12 +82,57 @@ class Command(object):
             log.debug("Matched {command.name} response, awaiting data", command=self)
         return handled, finished
 
+    def getResponse(self):
+        '''
+        Returns a response object. 
+        Must be called only after decode() returns True
+        '''
+        return self.response
+
+    # ----------------------------
+    # Protected API for subclasses
+    # ----------------------------
+
+    def reset(self):
+        '''reinitialization for retries'''
+        self.i         = 0
+        self.iteration = 1
+        self.response  = []
+    
+    def extractValues(self, line, matchobj):
+        '''Default implementation, maybe overriden'''
+        self.response = int(matchobj.group(1)) * self.scale
+
+    def collectData(self, line, matchobj):
+        '''To be subclassed if necessary'''
+        pass
+
+   
+
+# ------------------------------------------------------------------------------
+
 class GetCommand(Command):
     '''Abstract Get Command'''
  
     def __init__(self):
         # Request format
-        Command.__init__(self, ack_patterns=self.ACK_PATTERNS, fmt=self.FMT)
+        Command.__init__(self, ack_patterns=self.ack_patterns, fmt=self.cmdformat)
+
+    
+
+
+# ------------------------------------------------------------------------------
+
+class SetCommand(Command):
+    '''Abstract Get Command'''
+ 
+    def __init__(self, value):
+        # Request format
+        Command.__init__(self, ack_patterns=self.ack_patterns, fmt=self.cmdformat)
+        self.value = value
+
+    def encode(self):
+        self.encoded = self.cmdformat.format(self.value * self.scale)
 
 
 # ------------------------------------------------------------------------------
@@ -109,10 +141,8 @@ class GetCommand(Command):
 
 class Ping(GetCommand):
     '''Ping'''
-
-    ACK_PATTERNS = [ '^\( \)' ]
-    FMT = '( )'
-
+    ack_patterns = [ '^\( \)' ]
+    cmdformat    = '( )'
 
     def extractValues(self, line, matchobj):
         self.response = line
@@ -124,25 +154,23 @@ class Ping(GetCommand):
 
 class GetRTC(GetCommand):
     '''Get Real Time Clock time Command'''
-    ACK_PATTERNS = [ '^\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)' ]
-    FMT = '(y)'
-    EMA_TIME_FORMAT = '(%H:%M:%S %d/%m/%Y)'
-
+    ack_patterns    = [ '^\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)' ]
+    cmdformat       = '(y)'
+    ema_time_format = '(%H:%M:%S %d/%m/%Y)'
 
     def extractValues(self, line, matchobj):
-        self.response = datetime.datetime.strptime(line, self.EMA_TIME_FORMAT)
+        self.response = datetime.datetime.strptime(line, self.ema_time_format)
 
 # ------------------------------------------------------------------------------
 
 class SetRTC(Command):
     '''Set Real Time Clock time Command'''
-
-    ACK_PATTERNS = [ '(Y\d{2}\d{2}\d{4}\d{2}\d{2}\d{2})','\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)']
-    FMT = '(Y%d%m%y%H%M%S)'
-    EMA_TIME_FORMAT = '(%H:%M:%S %d/%m/%Y)'
+    ack_patterns    = [ '(Y\d{2}\d{2}\d{4}\d{2}\d{2}\d{2})','\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)']
+    cmdformat       = '(Y%d%m%y%H%M%S)'
+    ema_time_format = '(%H:%M:%S %d/%m/%Y)'
 
     def __init__(self, tstamp=None):
-        Command.__init__(self, ack_patterns=self.ACK_PATTERNS, fmt=self.FMT)
+        Command.__init__(self, ack_patterns=self.ack_patterns, fmt=self.cmdformat)
         if tstamp is not None:
             self.tstamp = tstamp
             self.renew = False
@@ -157,72 +185,108 @@ class SetRTC(Command):
 
     def encode(self):
         self.encoded = self.tstamp.strftime(self.fmt)
-        return self.encoded
 
     def extractValues(self, line, matchobj):
-        self.response = datetime.datetime.strptime(line, self.EMA_TIME_FORMAT)
+        self.response = datetime.datetime.strptime(line, self.ema_time_format)
 
 # ------------------------------------------------------------------------------
 #                               ANEMOMETER COMMANDS
 # ------------------------------------------------------------------------------
 
-        
 
 class GetCurrentWindSpeedThreshold(GetCommand):
     '''Get Current Wind Speed Threshold Command'''
-    units = 'Km/h'
-    ACK_PATTERNS = [ '^\(W(\d{3})\)' ]
-    FMT = '(w)'
+    units        = 'Km/h'
+    scale        = 1
+    ack_patterns = [ '^\(W(\d{3})\)' ]
+    cmdformat    = '(w)'
     
+class SetCurrentWindSpeedThreshold(SetCommand):
+    '''Set Current Wind Speed Threshold Command'''
+    units        = 'Km/h'
+    scale        = 1
+    ack_patterns = [ '^\(W(\d{3})\)' ]
+    cmdformat    = '(W{:03d})'
+
 
 # ------------------------------------------------------------------------------
 
 class GetAverageWindSpeedThreshold(GetCommand):
     '''Get 10min Average Wind Speed Threshold Command'''
-    units = 'Km/h'
-    ACK_PATTERNS = [ '^\(O(\d{3})\)' ]
-    FMT = '(o)'
+    units        = 'Km/h'
+    scale        = 1
+    ack_patterns = [ '^\(O(\d{3})\)' ]
+    cmdformat    = '(o)'
+ 
+class SetAverageWindSpeedThreshold(GetCommand):
+    '''Set 10min Average Wind Speed Threshold Command'''
+    units        = 'Km/h'
+    scale        = 1
+    ack_patterns = [ '^\(O(\d{3})\)' ]
+    cmdformat    = '(O{:03d})'
  
 
 # ------------------------------------------------------------------------------
 
 class GetAnemometerCalibrationConstant(GetCommand):
     '''Get Anemometer Calibration Constant'''
-    units = 'Unknown'
-    ACK_PATTERNS = [ '^\(A(\d{3})\)' ]
-    FMT = '(a)'
+    units        = 'Unknown'
+    scale        = 1
+    ack_patterns = [ '^\(A(\d{3})\)' ]
+    cmdformat    = '(a)'
+
+class SetAnemometerCalibrationConstant(GetCommand):
+    '''Set Anemometer Calibration Constant'''
+    units        = 'Unknown'
+    scale        = 1
+    ack_patterns = [ '^\(A(\d{3})\)' ]
+    cmdformat    = '(A{:03d})'
  
    
 # ------------------------------------------------------------------------------
 
 class GetAnemometerModel(GetCommand):
     '''Get Anemometer Model Command'''
-    ACK_PATTERNS = [ '^\(Z(\d{3})\)' ]
-    FMT = '(z)'
+    ack_patterns = [ '^\(Z(\d{3})\)' ]
+    cmdformat    = '(z)'
+    MAPPING      = { 1: 'TX20', 0: 'Homemade'}
 
     def extractValues(self, line, matchobj):
-        self.response = int(matchobj.group(1))
-        self.response = "TX20" if self.response == 1 else "Homemade"
+        self.response = self.MAPPING[int(matchobj.group(1))]
+       
 
- 
+class SetAnemometerModel(GetCommand):
+    '''Set Anemometer Model Command'''
+    ack_patterns = [ '^\(Z(\d{3})\)' ]
+    cmdformat    = '(Z{:03d})'
+    MAPPING      = {'TX20': 1, 'Homemade': 0, 1: 'TX20', 0: 'Homemade'}
+
+    def encode(self):
+        self.encoded = self.cmdformat.format(self.MAPPING[self.value])
+    
+    def extractValues(self, line, matchobj):
+        self.response = self.MAPPING[int(matchobj.group(1))]
+
 # ------------------------------------------------------------------------------
 #                               BAROMETER COMMANDS
 # ------------------------------------------------------------------------------
 
 class GetBarometerHeight(GetCommand):
     '''Get Barometer Height Command'''
-    units = 'm.'
-    ACK_PATTERNS = [ '^\(M(\d{5})\)' ]
-    FMT = '(m)'
+    units        = 'm.'
+    scale        = 1
+    ack_patterns = [ '^\(M(\d{5})\)' ]
+    cmdformat    = '(m)'
 
 
 # ------------------------------------------------------------------------------
 
 class GetBarometerOffset(GetCommand):
     '''Get Barometer Offset Command'''
-    units = 'mBar'
-    ACK_PATTERNS = [ '^\(B([+-]\d{2})\)' ]
-    FMT = '(b)'
+    units        = 'mBar'
+    scale        = 1
+    ack_patterns = [ '^\(B([+-]\d{2})\)' ]
+    cmdformat    = '(b)'
 
 
 # ------------------------------------------------------------------------------
@@ -231,21 +295,20 @@ class GetBarometerOffset(GetCommand):
 
 class GetCloudSensorThreshold(GetCommand):
     '''Get Cloud Sensor Threshold Command'''
-    units = '%'
-    ACK_PATTERNS = [ '^\(N(\d{3})\)' ]
-    FMT = '(n)'
+    units        = '%'
+    scale        = 1
+    ack_patterns = [ '^\(N(\d{3})\)' ]
+    cmdformat    = '(n)'
 
 
 # ------------------------------------------------------------------------------
 
 class GetCloudSensorGain(GetCommand):
     '''Get Cloud Sensor Gain Command'''
-    units = 'Unknown'
-    ACK_PATTERNS = [ '^\(R(\d{3})\)' ]
-    FMT = '(r)'
-
-    def extractValues(self, line, matchobj):
-        self.response = int(matchobj.group(1)) * 0.10
+    units        = 'Unknown'
+    scale        = 0.1
+    ack_patterns = [ '^\(R(\d{3})\)' ]
+    cmdformat    = '(r)'
 
 # ------------------------------------------------------------------------------
 #                               PHOTOMETER COMMANDS
@@ -253,33 +316,31 @@ class GetCloudSensorGain(GetCommand):
 
 class GetPhotometerThreshold(GetCommand):
     '''Get Photometer Threshold Command'''
-    units = 'Mv/arcsec^2'
-    ACK_PATTERNS = [ '^\(I(\d{3})\)',  '^\(I([+-]\d{2})\)',  '^\(I(\d{5})\)']
-    FMT = '(i)'
+    units        = 'Mv/arcsec^2'
+    scale        = 0.10
+    ack_patterns = [ '^\(I(\d{3})\)',  '^\(I([+-]\d{2})\)',  '^\(I(\d{5})\)']
+    cmdformat    = '(i)'
 
     def collectData(self, line, matchobj):
-        self.response.append(int(matchobj.group(1)) * 0.10)
+        self.response.append(int(matchobj.group(1)))
 
     def extractValues(self, line, matchobj):
-        self.response.append(int(matchobj.group(1)))
-        self.response = self.response[0]
+        self.response = self.response[0] * self.scale
 
 # ------------------------------------------------------------------------------
 
 class GetPhotometerOffset(GetCommand):
     '''Get Photometer Gain Offset'''
-    units = 'Mv/arcsec^2'
-    ACK_PATTERNS = [ '^\(I(\d{3})\)',  '^\(I([+-]\d{2})\)',  '^\(I(\d{5})\)']
-    FMT = '(i)'
+    units        = 'Mv/arcsec^2'
+    scale        = 0.10
+    ack_patterns = [ '^\(I(\d{3})\)',  '^\(I([+-]\d{2})\)',  '^\(I(\d{5})\)']
+    cmdformat    = '(i)'
 
-   
     def collectData(self, line, matchobj):
-        self.response.append(int(matchobj.group(1)) * 0.10)
+        self.response.append(int(matchobj.group(1)))
 
     def extractValues(self, line, matchobj):
-        self.response.append(int(matchobj.group(1)))
-        self.response = self.response[1]
-
+        self.response = self.response[1] * self.scale
 
 # ------------------------------------------------------------------------------
 #                               PLUVIOMETER COMMANDS
@@ -287,9 +348,10 @@ class GetPhotometerOffset(GetCommand):
 
 class GetPluviometerCalibration(GetCommand):
     '''Get Pluviometer Calibration Constant Command'''
-    units = 'mm'
-    ACK_PATTERNS = [ '^\(P(\d{3})\)']
-    FMT = '(p)'
+    units        = 'mm'
+    scale        = 1
+    ack_patterns = [ '^\(P(\d{3})\)']
+    cmdformat    = '(p)'
 
 # ------------------------------------------------------------------------------
 #                               PYRANOMETER COMMANDS
@@ -297,19 +359,18 @@ class GetPluviometerCalibration(GetCommand):
 
 class GetPyranometerGain(GetCommand):
     '''Get Pyranometer Gain Command'''
-    units = 'Unknown'
-    ACK_PATTERNS = [ '^\(J(\d{3})\)']
-    FMT = '(j)'
-
-    def extractValues(self, line, matchobj):
-        self.response = int(matchobj.group(1)) * 0.10
+    units        = 'Unknown'
+    scale        = 0.10
+    ack_patterns = [ '^\(J(\d{3})\)']
+    cmdformat    = '(j)'
 
 
 class GetPyranometerOffset(GetCommand):
     '''Get Pyranometer Offset Command'''
-    units = 'Unknown'
-    ACK_PATTERNS = [ '^\(U(\d{3})\)']
-    FMT = '(u)'
+    units        = 'Unknown'
+    scale        = 1
+    ack_patterns = [ '^\(U(\d{3})\)']
+    cmdformat    = '(u)'
 
 # ------------------------------------------------------------------------------
 #                               RAIN SENSOR DETECTOR COMMANDS
@@ -317,9 +378,10 @@ class GetPyranometerOffset(GetCommand):
 
 class GetRainSensorThreshold(GetCommand):
     '''Get Rain Sensor Threshold Command'''
-    units = 'mm'
-    ACK_PATTERNS = [ '^\(L(\d{3})\)']
-    FMT = '(l)'
+    units        = 'mm'
+    scale        = 1
+    ack_patterns = [ '^\(L(\d{3})\)']
+    cmdformat    = '(l)'
 
 # ------------------------------------------------------------------------------
 #                               THERMOMETER DETECTOR COMMANDS
@@ -327,9 +389,10 @@ class GetRainSensorThreshold(GetCommand):
 
 class GetThermometerDeltaTempThreshold(GetCommand):
     '''Get Thermometer DeltaTemp Threshold Command'''
-    units = 'mm'
-    ACK_PATTERNS = [ '^\(C(\d{3})\)']
-    FMT = '(c)'
+    units        = 'mm'
+    scale        = 1
+    ack_patterns = [ '^\(C(\d{3})\)']
+    cmdformat    = '(c)'
 
 # ------------------------------------------------------------------------------
 #                               VOLTMETER COMMANDS
@@ -337,30 +400,24 @@ class GetThermometerDeltaTempThreshold(GetCommand):
 
 class GetVoltmeterThreshold(GetCommand):
     '''Get Voltmeter Threshold Command'''
-    units = 'V'
-    ACK_PATTERNS = [ '^\(F(\d{3})\)', '^\(F([+-]\d{2})\)' ]
-    FMT = '(f)'
+    units        = 'V'
+    scale        = 0.1
+    ack_patterns = [ '^\(F(\d{3})\)', '^\(F([+-]\d{2})\)' ]
+    cmdformat    = '(f)'
 
     def collectData(self, line, matchobj):
-        self.response.append(int(matchobj.group(1)) * 0.10)
+        self.response.append(int(matchobj.group(1)))
 
     def extractValues(self, line, matchobj):
-        self.response.append(int(matchobj.group(1)) * 0.10)
-        self.response = self.response[0]
+        self.response = self.response[0] * self.scale
 
 
 class GetVoltmeterOffset(GetCommand):
     '''Get Voltmeter Offset Command'''
-    units = 'V'
-    ACK_PATTERNS = [ '^\(F(\d{3})\)', '^\(F([+-]\d{2})\)' ]
-    FMT = '(f)'
-
-    def collectData(self, line, matchobj):
-        self.response.append(int(matchobj.group(1)) * 0.10)
-
-    def extractValues(self, line, matchobj):
-        self.response.append(int(matchobj.group(1)) * 0.10)
-        self.response = self.response[1]
+    units        = 'V'
+    scale        = 0.1
+    ack_patterns = [ '^\(F(\d{3})\)', '^\(F([+-]\d{2})\)' ]
+    cmdformat    = '(f)'
 
 
 # ------------------------------------------------------------------------------
@@ -374,37 +431,33 @@ class GetVoltmeterOffset(GetCommand):
 class GetAuxRelaySwitchOnTime(GetCommand):
     '''Get Aux Relay Switch-On Time Command'''
     units           = 'HH:MM'
-    ACK_PATTERNS    = [ '^\(S009\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
-    FMT             = '(s)'
-    EMA_TIME_FORMAT = '(Son%H%M)'
+    ack_patterns    = [ '^\(S009\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
+    cmdformat       = '(s)'
+    ema_time_format = '(Son%H%M)'
 
     def collectData(self, line, matchobj):
         self.response.append(line)
 
     def extractValues(self, line, matchobj):
-        self.response.append(line)
-        self.response = datetime.datetime.strptime(self.response[1], self.EMA_TIME_FORMAT).time()
+        self.response = datetime.datetime.strptime(self.response[1], self.ema_time_format).time()
 
 
 class GetAuxRelaySwitchOffTime(GetCommand):
     '''Get Aux Relay Switch-Off Time Command'''
     units           = 'HH:MM'
-    ACK_PATTERNS    = [ '^\(S009\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
-    FMT             = '(s)'
-    EMA_TIME_FORMAT = '(Sof%H%M)'
-
-    def collectData(self, line, matchobj):
-        self.response.append(line)
+    ack_patterns    = [ '^\(S009\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
+    cmdformat       = '(s)'
+    ema_time_format = '(Sof%H%M)'
 
     def extractValues(self, line, matchobj):
-        self.response.append(line)
-        self.response = datetime.datetime.strptime(self.response[2], self.EMA_TIME_FORMAT).time()
+        self.response = datetime.datetime.strptime(line, self.ema_time_format).time()
+
 
 class GetAuxRelayMode(GetCommand):
-    '''Get Aux Relay Switch-Off Time Command'''
-    ACK_PATTERNS    = [ '^\(S(\d{3})\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
-    FMT             = '(s)'
-    MAPPING = { 0 : 'Auto', 5 : 'Manual', 9 : 'Timed' }
+    '''Get Aux Relay Mode Command'''
+    ack_patterns = [ '^\(S(\d{3})\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
+    cmdformat    = '(s)'
+    MAPPING      = { 0 : 'Auto', 5 : 'Manual', 9 : 'Timed' }
 
     def collectData(self, line, matchobj):
         if self.i == 0:

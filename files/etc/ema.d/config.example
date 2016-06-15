@@ -50,6 +50,9 @@ baud = 9600
 # component log level (debug, info, warn, error, critical)
 log_level = debug
 
+# log serial protocol messages from/to EMA ?
+log_messages = yes
+
 #------------------------------------------------------------------------#
 
 # MQTT Client config

@@ -41,6 +41,7 @@ from .interval import Interval
 from .commands import (
     Ping, GetRTC, 
     GetCurrentWindSpeedThreshold, GetAverageWindSpeedThreshold, 
+    SetCurrentWindSpeedThreshold, 
     GetAnemometerCalibrationConstant, GetAnemometerModel,
     GetBarometerHeight, GetBarometerOffset,
     GetCloudSensorThreshold, GetCloudSensorGain,
@@ -83,7 +84,8 @@ UNSOLICITED_PATTERNS = [ re.compile(ur['pattern']) for ur in UNSOLICITED_RESPONS
 # Module global variables
 # -----------------------
 
-log = Logger(namespace='serial')
+log  = Logger(namespace='serial')
+log2 = Logger(namespace='protoc')
 
 # ----------------
 # Module functions
@@ -120,50 +122,15 @@ class EMAProtocol(LineOnlyReceiver):
     def lineReceived(self, line):
         now = datetime.datetime.utcnow() + datetime.timedelta(seconds=0.5)
         line = line.lstrip(' \t\n\r') + b')'
-        log.info("<== EMA {line}", line=line)
-
-        # ---------------------------------------------
-        # Match against current pending command, if any
-        # ---------------------------------------------
-
-        if len(self._queue) > 0:
-            request = self._queue[0]
-            handled, finished = request.decode(line)
-            if finished:
-                self._queue.popleft()
-                request.alarm.cancel()
-                response = request.getResponse()
-                if len(self._queue):    # Fires next command if any
-                    self._retry()
-                request.deferred.callback(response) # Fire callback after _retry() !!!
-                del request
-                return
-            if handled:
-                return
-
-        # -------------------------- 
-        # Match unsolicited reponses
-        # --------------------------
-
-        ur = match(line)
-        if not ur:
-            log.debug("Unknown message {line}", line=line)
+        log2.debug("<== EMA {line}", line=line)
+        handled = self._handleCommandResponse(line, now)
+        if handled:
             return
+        handled = self._handleUnsolicitedResponse(line, now)
+        if handled:
+            return
+        log.debug("Unknown message {line}", line=line)
 
-        if ur['name'] == 'Current status message':
-            curState = decode(line)
-            if self._onStatus:
-                self._onStatus((curState, timestamp))
-        elif ur['name'] == 'Photometer begin':
-            pass
-        elif ur['name'] == 'Photometer end':
-            pass
-        elif ur['name'] == 'Thermopile I2C':
-            pass
-        else:
-            log.error("We should never hace reached this")
-
-    
 
     def sendLine(self, line):
         """
@@ -171,7 +138,7 @@ class EMAProtocol(LineOnlyReceiver):
         @param line: The line to send, including the delimiter.
         @type line: C{bytes}
         """
-        log.info("==> EMA {line}", line=line)
+        log2.debug("==> EMA {line}", line=line)
         return self.transport.write(line)
         
     # ================
@@ -223,6 +190,9 @@ class EMAProtocol(LineOnlyReceiver):
 
     def getCurrentWindSpeedThreshold(self, nretries=3):
         return self._enqueue(GetCurrentWindSpeedThreshold(), nretries)
+
+    def setCurrentWindSpeedThreshold(self, value, nretries=3):
+        return self._enqueue(SetCurrentWindSpeedThreshold(value), nretries)
 
     def getAverageWindSpeedThreshold(self, nretries=3):
         return self._enqueue(GetAverageWindSpeedThreshold(), nretries)
@@ -486,4 +456,46 @@ class EMAProtocol(LineOnlyReceiver):
             self._retry()
 
 
-    
+    def _handleCommandResponse(self, line, tstamp):
+        '''
+        Handle incoming command responses.
+        Returns True if handled or finished, False otherwise
+        '''
+        if len(self._queue) == 0:
+            return False
+
+        request = self._queue[0]
+        handled, finished = request.decode(line)
+        if finished:
+            self._queue.popleft()
+            request.alarm.cancel()
+            response = request.getResponse()
+            if len(self._queue):    # Fires next command if any
+                    self._retry()
+            request.deferred.callback(response) # Fire callback after _retry() !!!
+            del request
+        return handled or finished
+
+    def _handleUnsolicitedResponse(self, line, tstamp):
+        '''
+        Handle unsolicited responses from EMA.
+        Returns True if handled, False otherwise
+        '''
+        ur = match(line)
+        if not ur:
+            return False
+
+        if ur['name'] == 'Current status message':
+            curState = decode(line)
+            if self._onStatus:
+                self._onStatus((curState, tstamp))
+            return True
+        if ur['name'] == 'Photometer begin':
+            return True
+        if ur['name'] == 'Photometer end':
+            return True
+        if ur['name'] == 'Thermopile I2C':
+            return True
+        log.error("We should never have reached this unsolicited response")
+        return False
+        

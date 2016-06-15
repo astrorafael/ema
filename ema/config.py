@@ -98,6 +98,7 @@ def loadCfgFile(path):
     options['serial']['port']       = parser.get("serial","port")
     options['serial']['baud']       = parser.getint("serial","baud")
     options['serial']['log_level']  = parser.get("serial","log_level")
+    options['serial']['log_messages']  = parser.getboolean("serial","log_messages")
 
     options['mqtt'] = {}
     options['mqtt']['id']             = parser.get("mqtt","id")
