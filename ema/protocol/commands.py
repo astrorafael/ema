@@ -218,7 +218,7 @@ class GetAverageWindSpeedThreshold(GetCommand):
     ack_patterns = [ '^\(O(\d{3})\)' ]
     cmdformat    = '(o)'
  
-class SetAverageWindSpeedThreshold(GetCommand):
+class SetAverageWindSpeedThreshold(SetCommand):
     '''Set 10min Average Wind Speed Threshold Command'''
     units        = 'Km/h'
     scale        = 1
@@ -235,7 +235,7 @@ class GetAnemometerCalibrationConstant(GetCommand):
     ack_patterns = [ '^\(A(\d{3})\)' ]
     cmdformat    = '(a)'
 
-class SetAnemometerCalibrationConstant(GetCommand):
+class SetAnemometerCalibrationConstant(SetCommand):
     '''Set Anemometer Calibration Constant'''
     units        = 'Unknown'
     scale        = 1
@@ -255,7 +255,7 @@ class GetAnemometerModel(GetCommand):
         self.response = self.MAPPING[int(matchobj.group(1))]
        
 
-class SetAnemometerModel(GetCommand):
+class SetAnemometerModel(SetCommand):
     '''Set Anemometer Model Command'''
     ack_patterns = [ '^\(Z(\d{3})\)' ]
     cmdformat    = '(Z{:03d})'

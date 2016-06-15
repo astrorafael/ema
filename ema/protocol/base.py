@@ -41,8 +41,9 @@ from .interval import Interval
 from .commands import (
     Ping, GetRTC, 
     GetCurrentWindSpeedThreshold, GetAverageWindSpeedThreshold, 
-    SetCurrentWindSpeedThreshold, 
+    SetCurrentWindSpeedThreshold, SetAverageWindSpeedThreshold,
     GetAnemometerCalibrationConstant, GetAnemometerModel,
+    SetAnemometerCalibrationConstant, SetAnemometerModel,
     GetBarometerHeight, GetBarometerOffset,
     GetCloudSensorThreshold, GetCloudSensorGain,
     GetPhotometerThreshold, GetPhotometerOffset,
@@ -197,11 +198,20 @@ class EMAProtocol(LineOnlyReceiver):
     def getAverageWindSpeedThreshold(self, nretries=3):
         return self._enqueue(GetAverageWindSpeedThreshold(), nretries)
 
+    def setAverageWindSpeedThreshold(self, value, nretries=3):
+        return self._enqueue(SetAverageWindSpeedThreshold(value), nretries)
+
     def getAnemometerCalibrationConstant(self, nretries=3):
         return self._enqueue(GetAnemometerCalibrationConstant(), nretries)
 
+    def setAnemometerCalibrationConstant(self, value, nretries=3):
+        return self._enqueue(SetAnemometerCalibrationConstant(value), nretries)
+
     def getAnemometerModel(self, nretries=3):
         return self._enqueue(GetAnemometerModel(), nretries)
+
+    def setAnemometerModel(self, value, nretries=3):
+        return self._enqueue(SetAnemometerModel(value), nretries)
 
     # -------------
     # EMA Barometer

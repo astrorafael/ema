@@ -145,15 +145,19 @@ class SerialService(Service):
 
         setFuncs = [ 
             (self.protocol.setCurrentWindSpeedThreshold, 20),
+            (self.protocol.setAverageWindSpeedThreshold, 66),
+            (self.protocol.setAnemometerCalibrationConstant, 70),
+            (self.protocol.setAnemometerModel, 'Homemade'),
         ]
 
-        for getter in getFuncs:
-            try:
-                res = yield getter()
-                log.debug("Result = {result}", result=res)
-            except EMATimeoutError as e:
-                log.error("{excp!s}", excp=e)
-                continue
+        if False:
+            for getter in getFuncs:
+                try:
+                    res = yield getter()
+                    log.debug("Result = {result}", result=res)
+                except EMATimeoutError as e:
+                    log.error("{excp!s}", excp=e)
+                    continue
 
         for setter in setFuncs:
             try:
