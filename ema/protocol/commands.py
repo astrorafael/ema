@@ -278,6 +278,12 @@ class GetBarometerHeight(GetCommand):
     ack_patterns = [ '^\(M(\d{5})\)' ]
     cmdformat    = '(m)'
 
+class SetBarometerHeight(SetCommand):
+    '''Set Barometer Height Command'''
+    units        = 'm.'
+    scale        = 1
+    ack_patterns = [ '^\(M(\d{5})\)' ]
+    cmdformat    = '(M{:05d})'
 
 # ------------------------------------------------------------------------------
 
@@ -287,6 +293,13 @@ class GetBarometerOffset(GetCommand):
     scale        = 1
     ack_patterns = [ '^\(B([+-]\d{2})\)' ]
     cmdformat    = '(b)'
+
+class SetBarometerOffset(SetCommand):
+    '''Set Barometer Offset Command'''
+    units        = 'mBar'
+    scale        = 1
+    ack_patterns = [ '^\(B([+-]\d{2})\)' ]
+    cmdformat    = '(B{:+03d})'
 
 
 # ------------------------------------------------------------------------------
@@ -467,3 +480,33 @@ class GetAuxRelayMode(GetCommand):
         pass
         
 
+__all__ = [
+    Ping, 
+    GetRTC, 
+    GetCurrentWindSpeedThreshold,
+    SetCurrentWindSpeedThreshold,  
+    GetAverageWindSpeedThreshold, 
+    SetAverageWindSpeedThreshold,
+    GetAnemometerCalibrationConstant,
+    SetAnemometerCalibrationConstant,  
+    GetAnemometerModel,
+    SetAnemometerModel,
+    GetBarometerHeight,
+    SetBarometerHeight, 
+    GetBarometerOffset,
+    SetBarometerOffset,
+    GetCloudSensorThreshold, 
+    GetCloudSensorGain,
+    GetPhotometerThreshold, 
+    GetPhotometerOffset,
+    GetPluviometerCalibration,
+    GetPyranometerGain, 
+    GetPyranometerOffset,
+    GetRainSensorThreshold,
+    GetThermometerDeltaTempThreshold,
+    GetVoltmeterThreshold, 
+    GetVoltmeterOffset,
+    GetAuxRelaySwitchOnTime, 
+    GetAuxRelaySwitchOffTime, 
+    GetAuxRelayMode
+]

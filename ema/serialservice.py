@@ -148,6 +148,8 @@ class SerialService(Service):
             (self.protocol.setAverageWindSpeedThreshold, 66),
             (self.protocol.setAnemometerCalibrationConstant, 70),
             (self.protocol.setAnemometerModel, 'Homemade'),
+            (self.protocol.setBarometerHeight, 711),
+            (self.protocol.setBarometerOffset, -10),
         ]
 
         if False:

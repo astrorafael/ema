@@ -39,21 +39,36 @@ from .status   import decode
 from ..error   import EMATimeoutError
 from .interval import Interval
 from .commands import (
-    Ping, GetRTC, 
-    GetCurrentWindSpeedThreshold, GetAverageWindSpeedThreshold, 
-    SetCurrentWindSpeedThreshold, SetAverageWindSpeedThreshold,
-    GetAnemometerCalibrationConstant, GetAnemometerModel,
-    SetAnemometerCalibrationConstant, SetAnemometerModel,
-    GetBarometerHeight, GetBarometerOffset,
-    GetCloudSensorThreshold, GetCloudSensorGain,
-    GetPhotometerThreshold, GetPhotometerOffset,
+    Ping, 
+    GetRTC, 
+    GetCurrentWindSpeedThreshold,
+    SetCurrentWindSpeedThreshold,  
+    GetAverageWindSpeedThreshold, 
+    SetAverageWindSpeedThreshold,
+    GetAnemometerCalibrationConstant,
+    SetAnemometerCalibrationConstant,  
+    GetAnemometerModel,
+    SetAnemometerModel,
+    GetBarometerHeight,
+    SetBarometerHeight, 
+    GetBarometerOffset,
+    SetBarometerOffset,
+    GetCloudSensorThreshold, 
+    GetCloudSensorGain,
+    GetPhotometerThreshold, 
+    GetPhotometerOffset,
     GetPluviometerCalibration,
-    GetPyranometerGain, GetPyranometerOffset,
+    GetPyranometerGain, 
+    GetPyranometerOffset,
     GetRainSensorThreshold,
     GetThermometerDeltaTempThreshold,
-    GetVoltmeterThreshold, GetVoltmeterOffset,
-    GetAuxRelaySwitchOnTime, GetAuxRelaySwitchOffTime, GetAuxRelayMode
-)
+    GetVoltmeterThreshold, 
+    GetVoltmeterOffset,
+    GetAuxRelaySwitchOnTime, 
+    GetAuxRelaySwitchOffTime, 
+    GetAuxRelayMode
+    )
+
 
 # ----------------
 # Module constants
@@ -220,8 +235,14 @@ class EMAProtocol(LineOnlyReceiver):
     def getBarometerHeight(self, nretries=3):
         return self._enqueue(GetBarometerHeight(), nretries)
 
+    def setBarometerHeight(self, value, nretries=3):
+        return self._enqueue(SetBarometerHeight(value), nretries)
+
     def getBarometerOffset(self, nretries=3):
         return self._enqueue(GetBarometerOffset(), nretries)
+
+    def setBarometerOffset(self, value, nretries=3):
+        return self._enqueue(SetBarometerOffset(value), nretries)
 
     # ------------------
     # EMA Cloud Detector
