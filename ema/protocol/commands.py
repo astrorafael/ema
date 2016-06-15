@@ -450,6 +450,14 @@ class GetRainSensorThreshold(GetCommand):
     ack_patterns = [ '^\(L(\d{3})\)']
     cmdformat    = '(l)'
 
+
+class SetRainSensorThreshold(SetCommand):
+    '''Set Rain Sensor Threshold Command'''
+    units        = 'mm'
+    scale        = 1
+    ack_patterns = [ '^\(L(\d{3})\)']
+    cmdformat    = '(L{:03d})'
+
 # ------------------------------------------------------------------------------
 #                               THERMOMETER DETECTOR COMMANDS
 # ------------------------------------------------------------------------------
@@ -460,6 +468,15 @@ class GetThermometerDeltaTempThreshold(GetCommand):
     scale        = 1
     ack_patterns = [ '^\(C(\d{3})\)']
     cmdformat    = '(c)'
+
+
+class SetThermometerDeltaTempThreshold(SetCommand):
+    '''Set Thermometer DeltaTemp Threshold Command'''
+    units        = 'mm'
+    scale        = 1
+    ack_patterns = [ '^\(C(\d{3})\)']
+    cmdformat    = '(C{:03d})'
+
 
 # ------------------------------------------------------------------------------
 #                               VOLTMETER COMMANDS
@@ -564,7 +581,9 @@ __all__ = [
     GetPyranometerOffset,
     SetPyranometerOffset,
     GetRainSensorThreshold,
+    SetRainSensorThreshold,
     GetThermometerDeltaTempThreshold,
+    SetThermometerDeltaTempThreshold,
     GetVoltmeterThreshold, 
     GetVoltmeterOffset,
     GetAuxRelaySwitchOnTime, 

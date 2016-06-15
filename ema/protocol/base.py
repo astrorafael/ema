@@ -68,7 +68,9 @@ from .commands import (
     GetPyranometerOffset,
     SetPyranometerOffset,
     GetRainSensorThreshold,
+    SetRainSensorThreshold,
     GetThermometerDeltaTempThreshold,
+    SetThermometerDeltaTempThreshold,
     GetVoltmeterThreshold, 
     GetVoltmeterOffset,
     GetAuxRelaySwitchOnTime, 
@@ -307,7 +309,7 @@ class EMAProtocol(LineOnlyReceiver):
         return self._enqueue(GetPyranometerOffset(), nretries)
 
     def setPyranometerOffset(self, value, nretries=3):
-        return self._enqueue(SetPyranometerOffset(), nretries)
+        return self._enqueue(SetPyranometerOffset(value), nretries)
 
     # ---------------
     # EMA Rain Sensor
@@ -315,6 +317,9 @@ class EMAProtocol(LineOnlyReceiver):
 
     def getRainSensorThreshold(self, nretries=3):
         return self._enqueue(GetRainSensorThreshold(), nretries)
+
+    def setRainSensorThreshold(self, value, nretries=3):
+        return self._enqueue(SetRainSensorThreshold(value), nretries)
   
     # ---------------
     # EMA Thermometer
@@ -322,6 +327,9 @@ class EMAProtocol(LineOnlyReceiver):
 
     def getThermometerDeltaTempThreshold(self, nretries=3):
         return self._enqueue(GetThermometerDeltaTempThreshold(), nretries)
+
+    def setThermometerDeltaTempThreshold(self, value, nretries=3):
+        return self._enqueue(SetThermometerDeltaTempThreshold(value), nretries)
 
     # -------------
     # EMA Voltmeter
