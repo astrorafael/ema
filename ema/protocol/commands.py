@@ -528,7 +528,7 @@ class SetVoltmeterOffset(SetCommand):
 
 class GetAuxRelaySwitchOnTime(GetCommand):
     '''Get Aux Relay Switch-On Time Command'''
-    units           = 'HH:MM'
+    units           = 'HH:MM:00'
     ack_patterns    = [ '^\(S009\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
     cmdformat       = '(s)'
     ema_time_format = '(Son%H%M)'
@@ -540,12 +540,40 @@ class GetAuxRelaySwitchOnTime(GetCommand):
         self.response = datetime.datetime.strptime(self.response[1], self.ema_time_format).time()
 
 
+class SetAuxRelaySwitchOnTime(SetCommand):
+    '''Set Aux Relay Switch-On Time Command'''
+    units           = 'HH:MM:00'
+    ack_patterns    = [ '^\(Son\d{4}\)' ]
+    cmdformat       = '(Son{:04d})'
+    ema_time_format = '(Son%H%M)'
+
+    def encode(self):
+        self.encoded = self.value.strftime(self.ema_time_format)
+
+    def extractValues(self, line, matchobj):
+        self.response = datetime.datetime.strptime(line, self.ema_time_format).time()
+
+
 class GetAuxRelaySwitchOffTime(GetCommand):
     '''Get Aux Relay Switch-Off Time Command'''
-    units           = 'HH:MM'
+    units           = 'HH:MM:00'
     ack_patterns    = [ '^\(S009\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
     cmdformat       = '(s)'
     ema_time_format = '(Sof%H%M)'
+
+    def extractValues(self, line, matchobj):
+        self.response = datetime.datetime.strptime(line, self.ema_time_format).time()
+
+
+class SetAuxRelaySwitchOffTime(SetCommand):
+    '''Set Aux Relay Switch-Off Time Command'''
+    units           = 'HH:MM:00'
+    ack_patterns    = [ '^\(Sof\d{4}\)' ]
+    cmdformat       = '(Sof{:04d})'
+    ema_time_format = '(Sof%H%M)'
+
+    def encode(self):
+        self.encoded = self.value.strftime(self.ema_time_format)
 
     def extractValues(self, line, matchobj):
         self.response = datetime.datetime.strptime(line, self.ema_time_format).time()
@@ -563,11 +591,27 @@ class GetAuxRelayMode(GetCommand):
        
     def extractValues(self, line, matchobj):
         pass
+    
+
+class SetAuxRelayMode(SetCommand):
+    '''Set Aux Relay Mode Command'''
+    ack_patterns = [ '^\(S(\d{3})\)' ]
+    cmdformat    = '(S{:03d})'
+    MAPPING      = { 0 : 'Auto', 5 : 'Manual', 9 : 'Timed', 'Auto': 0, 'Manual' : 5, 'Timed' : 9 }
         
+    def encode(self):
+        self.encoded = self.cmdformat.format(self.MAPPING[self.value])
+    
+    def extractValues(self, line, matchobj):
+        self.response = self.MAPPING[int(matchobj.group(1))]
+
+
+
 
 __all__ = [
     Ping, 
-    GetRTC, 
+    GetRTC,
+    SetRTC, 
     GetCurrentWindSpeedThreshold,
     SetCurrentWindSpeedThreshold,  
     GetAverageWindSpeedThreshold, 
@@ -602,7 +646,10 @@ __all__ = [
     SetVoltmeterThreshold, 
     GetVoltmeterOffset,
     SetVoltmeterOffset,
-    GetAuxRelaySwitchOnTime, 
-    GetAuxRelaySwitchOffTime, 
-    GetAuxRelayMode
+    GetAuxRelaySwitchOnTime,
+    SetAuxRelaySwitchOnTime, 
+    GetAuxRelaySwitchOffTime,
+    SetAuxRelaySwitchOffTime, 
+    GetAuxRelayMode,
+    SetAuxRelayMode
 ]

@@ -40,7 +40,8 @@ from ..error   import EMATimeoutError
 from .interval import Interval
 from .commands import (
     Ping, 
-    GetRTC, 
+    GetRTC,
+    SetRTC, 
     GetCurrentWindSpeedThreshold,
     SetCurrentWindSpeedThreshold,  
     GetAverageWindSpeedThreshold, 
@@ -75,9 +76,12 @@ from .commands import (
     SetVoltmeterThreshold, 
     GetVoltmeterOffset,
     SetVoltmeterOffset,
-    GetAuxRelaySwitchOnTime, 
-    GetAuxRelaySwitchOffTime, 
-    GetAuxRelayMode
+    GetAuxRelaySwitchOnTime,
+    SetAuxRelaySwitchOnTime, 
+    GetAuxRelaySwitchOffTime,
+    SetAuxRelaySwitchOffTime, 
+    GetAuxRelayMode,
+    SetAuxRelayMode
     )
 
 
@@ -368,11 +372,20 @@ class EMAProtocol(LineOnlyReceiver):
     def getAuxRelaySwitchOnTime(self, nretries=3):
         return self._enqueue(GetAuxRelaySwitchOnTime(), nretries)
 
+    def setAuxRelaySwitchOnTime(self, value, nretries=3):
+        return self._enqueue(SetAuxRelaySwitchOnTime(value), nretries)
+
     def getAuxRelaySwitchOffTime(self, nretries=3):
         return self._enqueue(GetAuxRelaySwitchOffTime(), nretries)
 
+    def setAuxRelaySwitchOffTime(self, value, nretries=3):
+        return self._enqueue(SetAuxRelaySwitchOffTime(value), nretries)
+
     def getAuxRelayMode(self, nretries=3):
         return self._enqueue(GetAuxRelayMode(), nretries)
+
+    def setAuxRelayMode(self, value, nretries=3):
+        return self._enqueue(SetAuxRelayMode(value), nretries)
 
     
 

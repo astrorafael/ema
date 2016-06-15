@@ -161,6 +161,9 @@ class SerialService(Service):
             (self.protocol.setThermometerDeltaTempThreshold, 5),
             (self.protocol.setVoltmeterThreshold, 0),
             (self.protocol.setVoltmeterOffset, -1.4),
+            (self.protocol.setAuxRelaySwitchOnTime,  datetime.time(hour=6)),
+            (self.protocol.setAuxRelaySwitchOffTime, datetime.time(hour=9)),
+            (self.protocol.setAuxRelayMode, 'Timed'),
         ]
 
         if False:
