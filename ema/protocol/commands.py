@@ -551,35 +551,21 @@ class SetVoltmeterOffset(SetCommand):
 # ------------------------------------------------------------------------------
 
 
-class SetRoofRelayMode(Command):
+class SetRoofRelayMode(SetCommand):
     '''Set Roof Relay Mode Command'''
-    ack_patterns = [ '^\(X(\d{3})\)' ]
     cmdformat    = '(X{:03d})'
-    MAPPING      = {  0: 'Closed', 7: 'Open',  'Closed': 0, 'Open' : 7,  }
+    ack_patterns = [ '^\(X(\d{3})\)' , 
+        '(^\(\d{2}:\d{2}:\d{2} Abrir Obs\. FORZADO\))|(^\(\d{2}:\d{2}:\d{2} Cerrar Obs\.\))']
+    ack_index    = 0
+    mapping      = { 'Closed': 0, 'Open' : 7, }
+    inv_mapping  = { 0: 'Closed', 7: 'Open',  }
     
-    def __init__(self, value):
-        self.value    = value
-        self.NIters   = 1
-        self.fmt      = self.cmdformat
-        self.name     = self.__doc__
-        self.encoded  = None
-        self.ackPat   = [ re.compile(pat) for pat in self.ack_patterns ]
-        if self.value == 'Open':
-            self.ackPat.append(re.compile('^\(\d{2}:\d{2}:\d{2} Abrir Obs\. FORZADO\)'))
-        elif self.value == 'Closed':
-            self.ackPat.append(re.compile('^\(\d{2}:\d{2}:\d{2} Cerrar Obs\.\)'))
-        self.N        = len(self.ackPat)
-        self.reset()
-
+    
     def encode(self):
-        self.encoded = self.cmdformat.format(self.MAPPING[self.value])
-    
-    def collectData(self, line, matchobj):
-        if self.i == 0:
-            self.response = self.MAPPING[int(matchobj.group(1))]
+        self.encoded = self.fmt.format(self.mapping[self.value])
        
-    def getResult(self, line, matchobj):
-        pass
+    def getResult(self):
+        return self.inv_mapping[int(self.matchobj[0].group(1))]
 
 
 # ------------------------------------------------------------------------------

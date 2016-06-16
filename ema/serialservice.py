@@ -188,6 +188,7 @@ class SerialService(Service):
             (self.protocol.setAnemometerModel, 'Homemade'),
             (self.protocol.setPhotometerThreshold, 10.5),
             (self.protocol.setPhotometerOffset, 0),
+            (self.protocol.setRoofRelayMode, 'Closed'),
         ]
 
         if True:
