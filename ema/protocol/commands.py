@@ -16,7 +16,9 @@
 #
 # Bulk Dump commands extend this behaviour by repeating 
 # (<resp1>)(<resp2>)(<resp3>) responses a number of times.
-
+#
+# The use of Class variables as constants, not even referenced in the base class
+# allows us to define commands in an extremely compatc way
 
 
 from __future__ import division
@@ -47,10 +49,13 @@ log = Logger(namespace='serial')
 
 
 # ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 class Command(object):
     '''
     Generic Command for the most common type of commands
+    Uppercase class variables must be defined in the proper subclasses.
     '''
 
     def __init__(self):
@@ -97,21 +102,19 @@ class Command(object):
     def getResult(self):
         '''
         Returns a response.
-        Can be overriden.
         Must be called only after decode() returns True
         '''
         return int(self.matchobj[self.selindex].group(1)) / float(self.SCALE)
 
-    # ----------------------------
-    # Protected API for subclasses
-    # ----------------------------
-
+   
     def reset(self):
-        '''reinitialization for retries after a tiemout'''
+        '''reinitialization for retries after a timeout'''
         self.i         = 0
         self.response  = []
         self.matchobj  = []
    
+
+
 
 # ------------------------------------------------------------------------------
 
@@ -669,27 +672,112 @@ class SetAuxRelayMode(SetCommand):
     def getResult(self):
         return self.INV_MAPPING[int(self.matchobj[0].group(1))]
 
+# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+
+class BulkDumpCommand(object):
+    '''
+    Generic Command for the most common type of commands
+    Uppercase class variables must be defined in the proper subclasses.
+    '''
+
+    def __init__(self):
+        # Request format
+        self.ackPat    = [ re.compile(pat) for pat in self.ACK_PATTERNS ]
+        self.N         = len(self.ackPat)
+        self.name      = self.__doc__
+        self.encoded   = None
+        self.reset()
+
+    # ----------
+    # Public API
+    # ----------
+
+    def encode(self):
+        '''
+        Simple encoding implementation. May be overriden by subclasses
+        '''
+        self.encoded = self.CMDFORMAT
+
+    def decodeOneIteration(self, line):
+        '''
+        Generic decoding algorithm for one iteration of commands
+        '''
+        matchobj = self.ackPat[self.i].search(line)
+        if not matchobj:
+            handled = False; finished = False
+            log.debug("Line does not match {command.name} response", command=self)
+        elif self.i  < self.N - 1:
+            self.response[self.iteration].append(line)
+            self.matchobj[self.iteration].append(matchobj)   
+            self.i += 1
+            handled = True; finished = False
+            log.debug("Matched {command.name} response, awaiting iteration {i} data", command=self, i=self.iteration-1)
+        else:
+            self.response[self.iteration].append(line)
+            self.matchobj[self.iteration].append(matchobj)
+            handled = True; finished = True
+            log.debug("Matched {command.name} response, iteration {i} complete", command=self, i=self.iteration)
+        return handled, finished
+
+    def decode(self, line):
+        '''
+        Generic decoding algorithm for bulk dumps commands
+        Must again and again until returns True
+        '''
+        handled, finished = self.decodeOneIteration(line)
+        if not handled:
+            return False, False
+        if not finished:
+            return True, False
+        # Finished all iterations
+        if self.iteration == self.ITERATIONS-1:
+            return True, True
+
+        # Do one more iteration
+        self.i         = 0
+        self.iteration += 1
+        self.response.append([])
+        self.matchobj.append([])
+        return True, False
+
+    def getResult(self):
+        '''
+        Returns the response matrix.
+        Must be called only after decode() returns True
+        '''
+        return self.response
+
+    def getMatchObjs(self):
+        '''
+        Returns the matched objects, may be useful for parsing "line" items.
+        Must be called only after decode() returns True
+        '''
+        return self.matchobj
+
+
+    def reset(self):
+        '''reinitialization for retries after a timeout'''
+        self.i         = 0
+        self.iteration = 0
+        self.response  = []
+        self.matchobj  = []
+        self.response.append([])
+        self.matchobj.append([])
+   
+
+# ------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------
 #                                BULK DUMP COMMANDS
 # ------------------------------------------------------------------------------
 
-class GetDailyMinMaxDump(Command):
+class GetDailyMinMaxDump(BulkDumpCommand):
     '''Get Daily Min/Max Dump Command'''
     ACK_PATTERNS = [ '^\(.{76}M\d{4}\)', '^\(.{76}m\d{4}\)', '^\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)']
     CMDFORMAT    = '(@H0300)'
-    NIters       = 24
-
-    def __init__(self):
-        # Request format
-        Command.__init__(self, ack_patterns=self.ACK_PATTERNS, fmt=self.CMDFORMAT, NIters=self.NIters)
-
-    def collectData(self, line, matchobj):
-        self.response.append(line)
-
-    def getResult(self, line, matchobj):
-        pass
-
+    ITERATIONS   = 24
 
 
 __all__ = [

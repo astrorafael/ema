@@ -39,6 +39,7 @@ from .status   import decode
 from ..error   import EMATimeoutError
 from .interval import Interval
 from .commands import (
+    BulkDumpCommand,
     Ping, 
     GetWatchdogPeriod,
     SetWatchdogPeriod,
@@ -428,7 +429,7 @@ class EMAProtocol(LineOnlyReceiver):
         '''
         Starts the ball rolling for the given request
         '''
-        request.interval = Interval()   
+        request.interval = Interval(128) if isinstance(request, BulkDumpCommand) else Interval() 
         request.nretries = nretries
         request.retries  = 0  
         request.deferred = defer.Deferred()

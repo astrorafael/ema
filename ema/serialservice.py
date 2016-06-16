@@ -147,11 +147,8 @@ class SerialService(Service):
 
         getFuncs = [ 
             self.protocol.getRTCDateTime,
-            self.protocol.getWatchdogPeriod,
-            self.protocol.getCurrentWindSpeedThreshold,
-            self.protocol.getAnemometerModel,
-            self.protocol.getPhotometerThreshold,
-            self.protocol.getPhotometerOffset,
+            self.protocol.getDailyMinMaxDump
+           
         ]
 
         setFuncs = [ 
@@ -182,14 +179,7 @@ class SerialService(Service):
         ]
 
         setFuncs = [ 
-            (self.protocol.setRTCDateTime, None),
-            (self.protocol.setWatchdogPeriod, 200),
-            (self.protocol.setCurrentWindSpeedThreshold, 20),
-            (self.protocol.setAnemometerModel, 'Homemade'),
-            (self.protocol.setPhotometerThreshold, 10.5),
-            (self.protocol.setPhotometerOffset, 0),
-            (self.protocol.setRoofRelayMode, 'Closed'),
-            (self.protocol.setAuxRelayMode, 'Timer/On'),
+
         ]
 
         if True:

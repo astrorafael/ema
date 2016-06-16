@@ -24,12 +24,12 @@ class Interval(object):
   
     # Class attributes
     initial  = 2    # seconds
-    maxDelay = 32  # seconds
+    maxDelay = 128  # seconds
     factor   = 2
 
-    def __init__(self):
+    def __init__(self, initial=None):
         '''Initialize interval object'''
-        self._value   = self.initial
+        self._value   = self.initial if initial is None else initial
 
 
     def __call__(self):
