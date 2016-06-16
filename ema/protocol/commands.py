@@ -415,53 +415,58 @@ class SetPhotometerOffset(SetCommand):
 
 class GetPluviometerCalibration(GetCommand):
     '''Get Pluviometer Calibration Constant Command'''
-    units        = 'mm'
-    scale        = 1
-    ack_patterns = [ '^\(P(\d{3})\)']
     cmdformat    = '(p)'
+    ack_patterns = [ '^\(P(\d{3})\)']
+    scale        = 1
+    units        = 'mm'
 
 
 class SetPluviometerCalibration(SetCommand):
     '''Set Pluviometer Calibration Constant Command'''
-    units        = 'mm'
-    scale        = 1
-    ack_patterns = [ '^\(P(\d{3})\)']
     cmdformat    = '(P{:03d})'
-
+    ack_patterns = [ '^\(P(\d{3})\)']
+    scale        = 1
+    units        = 'mm'
+    
+    
 # ------------------------------------------------------------------------------
 #                               PYRANOMETER COMMANDS
 # ------------------------------------------------------------------------------
 
 class GetPyranometerGain(GetCommand):
     '''Get Pyranometer Gain Command'''
-    units        = 'Unknown'
-    scale        = 10
-    ack_patterns = [ '^\(J(\d{3})\)']
     cmdformat    = '(j)'
+    ack_patterns = [ '^\(J(\d{3})\)']
+    scale        = 10
+    units        = 'Unknown'  
 
 
 class SetPyranometerGain(SetCommand):
     '''Set Pyranometer Gain Command'''
-    units        = 'Unknown'
-    scale        = 10
-    ack_patterns = [ '^\(J(\d{3})\)']
     cmdformat    = '(J{:03d})'
+    ack_patterns = [ '^\(J(\d{3})\)']
+    scale        = 10
+    units        = 'Unknown'
+    
 
 
 class GetPyranometerOffset(GetCommand):
     '''Get Pyranometer Offset Command'''
-    units        = 'Unknown'
-    scale        = 1
-    ack_patterns = [ '^\(U(\d{3})\)']
     cmdformat    = '(u)'
+    ack_patterns = [ '^\(U(\d{3})\)']
+    scale        = 1
+    units        = 'Unknown'
+  
 
 
 class SetPyranometerOffset(SetCommand):
     '''Get Pyranometer Offset Command'''
-    units        = 'Unknown'
-    scale        = 1
-    ack_patterns = [ '^\(U(\d{3})\)']
     cmdformat    = '(U{:03d})'
+    ack_patterns = [ '^\(U(\d{3})\)']
+    scale        = 1
+    units        = 'Unknown'
+
+    
 
 # ------------------------------------------------------------------------------
 #                               RAIN SENSOR DETECTOR COMMANDS
@@ -469,18 +474,19 @@ class SetPyranometerOffset(SetCommand):
 
 class GetRainSensorThreshold(GetCommand):
     '''Get Rain Sensor Threshold Command'''
-    units        = 'mm'
-    scale        = 1
-    ack_patterns = [ '^\(L(\d{3})\)']
     cmdformat    = '(l)'
+    ack_patterns = [ '^\(L(\d{3})\)']
+    scale        = 1
+    units        = 'mm'
 
 
 class SetRainSensorThreshold(SetCommand):
     '''Set Rain Sensor Threshold Command'''
-    units        = 'mm'
-    scale        = 1
-    ack_patterns = [ '^\(L(\d{3})\)']
     cmdformat    = '(L{:03d})'
+    ack_patterns = [ '^\(L(\d{3})\)']
+    scale        = 1
+    units        = 'mm'
+    
 
 # ------------------------------------------------------------------------------
 #                               THERMOMETER DETECTOR COMMANDS
@@ -488,19 +494,19 @@ class SetRainSensorThreshold(SetCommand):
 
 class GetThermometerDeltaTempThreshold(GetCommand):
     '''Get Thermometer DeltaTemp Threshold Command'''
-    units        = 'mm'
-    scale        = 1
-    ack_patterns = [ '^\(C(\d{3})\)']
     cmdformat    = '(c)'
-
+    ack_patterns = [ '^\(C(\d{3})\)']
+    scale        = 1
+    units        = 'mm'
+    
 
 class SetThermometerDeltaTempThreshold(SetCommand):
     '''Set Thermometer DeltaTemp Threshold Command'''
-    units        = 'mm'
-    scale        = 1
-    ack_patterns = [ '^\(C(\d{3})\)']
     cmdformat    = '(C{:03d})'
-
+    ack_patterns = [ '^\(C(\d{3})\)']
+    scale        = 1
+    units        = 'mm'
+  
 
 # ------------------------------------------------------------------------------
 #                               VOLTMETER COMMANDS
