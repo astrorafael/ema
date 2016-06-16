@@ -221,17 +221,20 @@ class SetWatchdogPeriod(SetCommand):
 
 class GetCurrentWindSpeedThreshold(GetCommand):
     '''Get Current Wind Speed Threshold Command'''
+    cmdformat    = '(w)'
+    ack_patterns = [ '^\(W(\d{3})\)' ]
+    ack_index    = 0
     units        = 'Km/h'
     scale        = 1
-    ack_patterns = [ '^\(W(\d{3})\)' ]
-    cmdformat    = '(w)'
+   
     
 class SetCurrentWindSpeedThreshold(SetCommand):
     '''Set Current Wind Speed Threshold Command'''
+    cmdformat    = '(W{:03d})'
+    ack_patterns = [ '^\(W(\d{3})\)' ]
+    ack_index    = 0
     units        = 'Km/h'
     scale        = 1
-    ack_patterns = [ '^\(W(\d{3})\)' ]
-    cmdformat    = '(W{:03d})'
 
 
 # ------------------------------------------------------------------------------

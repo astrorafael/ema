@@ -148,6 +148,7 @@ class SerialService(Service):
         getFuncs = [ 
             self.protocol.getRTCDateTime,
             self.protocol.getWatchdogPeriod,
+            self.protocol.getCurrentWindSpeedThreshold,
         ]
 
         setFuncs = [ 
@@ -180,6 +181,7 @@ class SerialService(Service):
         setFuncs = [ 
             (self.protocol.setRTCDateTime, None),
             (self.protocol.setWatchdogPeriod, 200),
+            (self.protocol.setCurrentWindSpeedThreshold, 20),
         ]
 
         if True:
