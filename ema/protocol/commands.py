@@ -9,7 +9,7 @@
 # The usual kind of command is one that sets or gets a configurable
 # parameter and only one of the responses above contains the desired value.
 # Parameters are usually numeric physical quantities, 
-# subject to an scale value to accomodate the message format.
+# subject to an SCALE value to accomodate the message format.
 # The base Command class implementation addresses this kind of most 
 # common command class. Other specific subclasses address specific responses
 # due to datatypes used (dates, string labels, etc.)
@@ -53,14 +53,13 @@ class Command(object):
     Generic Command for the most common type of commands
     '''
 
-    def __init__(self, ack_patterns, fmt):
+    def __init__(self):
         # Request format
-        self.ackPat   = [ re.compile(pat) for pat in ack_patterns ]
+        self.ackPat   = [ re.compile(pat) for pat in self.ACK_PATTERNS ]
         self.N        = len(self.ackPat)
-        self.fmt      = fmt
         self.name     = self.__doc__
         self.encoded  = None
-        self.selindex = 0 if self.N == 1 else self.ack_index
+        self.selindex = 0 if self.N == 1 else self.ACK_INDEX
         self.reset()
 
     # ----------
@@ -71,7 +70,7 @@ class Command(object):
         '''
         Simple encoding implementation. May be overriden by subclasses
         '''
-        self.encoded = self.fmt
+        self.encoded = self.CMDFORMAT
 
     def decode(self, line):
         '''
@@ -101,7 +100,7 @@ class Command(object):
         Can be overriden.
         Must be called only after decode() returns True
         '''
-        return int(self.matchobj[self.selindex].group(1)) / float(self.scale)
+        return int(self.matchobj[self.selindex].group(1)) / float(self.SCALE)
 
     # ----------------------------
     # Protected API for subclasses
@@ -121,7 +120,7 @@ class GetCommand(Command):
  
     def __init__(self):
         # Request format
-        Command.__init__(self, ack_patterns=self.ack_patterns, fmt=self.cmdformat)
+        Command.__init__(self)
 
 
 # ------------------------------------------------------------------------------
@@ -131,11 +130,11 @@ class SetCommand(Command):
  
     def __init__(self, value):
         # Request format
-        Command.__init__(self, ack_patterns=self.ack_patterns, fmt=self.cmdformat)
+        Command.__init__(self)
         self.value = value
 
     def encode(self):
-        self.encoded = self.cmdformat.format(int(math.ceil(self.value * self.scale)))
+        self.encoded = self.CMDFORMAT.format(int(math.ceil(self.value * self.SCALE)))
 
 
 
@@ -146,20 +145,20 @@ class SetCommand(Command):
 
 class GetRTCDateTime(GetCommand):
     '''Get Real Time Clock Date & Time Command'''
-    cmdformat       = '(y)'
-    ack_patterns    = [ '^\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)' ]
-    ema_time_format = '(%H:%M:%S %d/%m/%Y)'
+    CMDFORMAT       = '(y)'
+    ACK_PATTERNS    = [ '^\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)' ]
+    EMA_TIME_FORMAT = '(%H:%M:%S %d/%m/%Y)'
 
     def getResult(self):
-        return  datetime.datetime.strptime(self.response[0], self.ema_time_format)
+        return  datetime.datetime.strptime(self.response[0], self.EMA_TIME_FORMAT)
 
 # ------------------------------------------------------------------------------
 
 class SetRTCDateTime(SetCommand):
     '''Set Real Time Clock Date & Time Command'''
-    cmdformat       = '(Y%d%m%y%H%M%S)'
-    ack_patterns    = [ '\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)']
-    ema_time_format = '(%H:%M:%S %d/%m/%Y)'
+    CMDFORMAT       = '(Y%d%m%y%H%M%S)'
+    ACK_PATTERNS    = [ '\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)']
+    EMA_TIME_FORMAT = '(%H:%M:%S %d/%m/%Y)'
 
     def __init__(self, value):
         self.renew = False
@@ -174,10 +173,10 @@ class SetRTCDateTime(SetCommand):
             self.value = datetime.datetime.utcnow()+datetime.timedelta(seconds=0.5)
 
     def encode(self):
-        self.encoded = self.value.strftime(self.fmt)
+        self.encoded = self.value.strftime(self.CMDFORMAT)
 
     def getResult(self):
-        return  datetime.datetime.strptime(self.response[0], self.ema_time_format)
+        return  datetime.datetime.strptime(self.response[0], self.EMA_TIME_FORMAT)
 
 # ------------------------------------------------------------------------------
 #                               WATCHDOG COMMANDS
@@ -185,8 +184,8 @@ class SetRTCDateTime(SetCommand):
 
 class Ping(GetCommand):
     '''Ping'''
-    cmdformat    = '( )'
-    ack_patterns = [ '^\( \)' ]
+    CMDFORMAT    = '( )'
+    ACK_PATTERNS = [ '^\( \)' ]
 
     def getResult(self):
         return self.response[0]
@@ -194,20 +193,20 @@ class Ping(GetCommand):
 
 class GetWatchdogPeriod(GetCommand):
     '''Get Watchdog Period Command'''
-    cmdformat    = '(t)'
-    ack_patterns = [ '^\(T(\d{3})\)' ]
-    ack_index    = 0
-    units        = 'sec'
-    scale        = 1
+    CMDFORMAT    = '(t)'
+    ACK_PATTERNS = [ '^\(T(\d{3})\)' ]
+    ACK_INDEX    = 0
+    UNITS        = 'sec'
+    SCALE        = 1
     
 
 class SetWatchdogPeriod(SetCommand):
     '''Set Watchdog Period Command'''
-    cmdformat    = '(T{:03d})'
-    ack_patterns = [ '^\(T(\d{3})\)' ]
-    ack_index    = 0
-    scale        = 1
-    units        = 'sec'
+    CMDFORMAT    = '(T{:03d})'
+    ACK_PATTERNS = [ '^\(T(\d{3})\)' ]
+    ACK_INDEX    = 0
+    SCALE        = 1
+    UNITS        = 'sec'
     
 
 # ------------------------------------------------------------------------------
@@ -217,79 +216,79 @@ class SetWatchdogPeriod(SetCommand):
 
 class GetCurrentWindSpeedThreshold(GetCommand):
     '''Get Current Wind Speed Threshold Command'''
-    cmdformat    = '(w)'
-    ack_patterns = [ '^\(W(\d{3})\)' ]
-    scale        = 1
-    units        = 'Km/h'
+    CMDFORMAT    = '(w)'
+    ACK_PATTERNS = [ '^\(W(\d{3})\)' ]
+    SCALE        = 1
+    UNITS        = 'Km/h'
     
     
 class SetCurrentWindSpeedThreshold(SetCommand):
     '''Set Current Wind Speed Threshold Command'''
-    cmdformat    = '(W{:03d})'
-    ack_patterns = [ '^\(W(\d{3})\)' ]
-    scale        = 1
-    units        = 'Km/h'
+    CMDFORMAT    = '(W{:03d})'
+    ACK_PATTERNS = [ '^\(W(\d{3})\)' ]
+    SCALE        = 1
+    UNITS        = 'Km/h'
    
 
 # ------------------------------------------------------------------------------
 
 class GetAverageWindSpeedThreshold(GetCommand):
     '''Get 10min Average Wind Speed Threshold Command'''
-    cmdformat    = '(o)'
-    ack_patterns = [ '^\(O(\d{3})\)' ]
-    scale        = 1
-    units        = 'Km/h'
+    CMDFORMAT    = '(o)'
+    ACK_PATTERNS = [ '^\(O(\d{3})\)' ]
+    SCALE        = 1
+    UNITS        = 'Km/h'
     
  
 class SetAverageWindSpeedThreshold(SetCommand):
     '''Set 10min Average Wind Speed Threshold Command'''
-    cmdformat    = '(O{:03d})'
-    ack_patterns = [ '^\(O(\d{3})\)' ]
-    scale        = 1
-    units        = 'Km/h'
+    CMDFORMAT    = '(O{:03d})'
+    ACK_PATTERNS = [ '^\(O(\d{3})\)' ]
+    SCALE        = 1
+    UNITS        = 'Km/h'
     
 
 # ------------------------------------------------------------------------------
 
 class GetAnemometerCalibrationConstant(GetCommand):
     '''Get Anemometer Calibration Constant'''
-    cmdformat    = '(a)'
-    ack_patterns = [ '^\(A(\d{3})\)' ]
-    scale        = 1
-    units        = 'Unknown'
+    CMDFORMAT    = '(a)'
+    ACK_PATTERNS = [ '^\(A(\d{3})\)' ]
+    SCALE        = 1
+    UNITS        = 'Unknown'
      
 
 class SetAnemometerCalibrationConstant(SetCommand):
     '''Set Anemometer Calibration Constant'''
-    cmdformat    = '(A{:03d})'
-    ack_patterns = [ '^\(A(\d{3})\)' ]
-    scale        = 1
-    units        = 'Unknown'
+    CMDFORMAT    = '(A{:03d})'
+    ACK_PATTERNS = [ '^\(A(\d{3})\)' ]
+    SCALE        = 1
+    UNITS        = 'Unknown'
    
 # ------------------------------------------------------------------------------
 
 class GetAnemometerModel(GetCommand):
     '''Get Anemometer Model Command'''
-    cmdformat    = '(z)'
-    ack_patterns = [ '^\(Z(\d{3})\)' ]
-    mapping      = { 1: 'TX20', 0: 'Homemade'}
+    CMDFORMAT    = '(z)'
+    ACK_PATTERNS = [ '^\(Z(\d{3})\)' ]
+    MAPPING      = { 1: 'TX20', 0: 'Homemade'}
 
     def getResult(self):
-        return self.mapping[int(self.matchobj[0].group(1))]
+        return self.MAPPING[int(self.matchobj[0].group(1))]
        
 
 class SetAnemometerModel(SetCommand):
     '''Set Anemometer Model Command'''
-    cmdformat    = '(Z{:03d})'
-    ack_patterns = [ '^\(Z(\d{3})\)' ]
-    mapping      = {'TX20': 1, 'Homemade': 0 }
-    inv_mapping  = { 1: 'TX20', 0: 'Homemade'}
+    CMDFORMAT    = '(Z{:03d})'
+    ACK_PATTERNS = [ '^\(Z(\d{3})\)' ]
+    MAPPING      = {'TX20': 1, 'Homemade': 0 }
+    INV_MAPPING  = { 1: 'TX20', 0: 'Homemade'}
 
     def encode(self):
-        self.encoded = self.cmdformat.format(self.mapping[self.value])
+        self.encoded = self.CMDFORMAT.format(self.MAPPING[self.value])
     
     def getResult(self):
-        return self.inv_mapping[int(self.matchobj[0].group(1))]
+        return self.INV_MAPPING[int(self.matchobj[0].group(1))]
 
 # ------------------------------------------------------------------------------
 #                               BAROMETER COMMANDS
@@ -297,36 +296,36 @@ class SetAnemometerModel(SetCommand):
 
 class GetBarometerHeight(GetCommand):
     '''Get Barometer Height Command'''
-    cmdformat    = '(m)'
-    ack_patterns = [ '^\(M(\d{5})\)' ]
-    scale        = 1
-    units        = 'm.'
+    CMDFORMAT    = '(m)'
+    ACK_PATTERNS = [ '^\(M(\d{5})\)' ]
+    SCALE        = 1
+    UNITS        = 'm.'
    
 
 class SetBarometerHeight(SetCommand):
     '''Set Barometer Height Command'''
-    cmdformat    = '(M{:05d})'
-    ack_patterns = [ '^\(M(\d{5})\)' ]
-    scale        = 1
-    units        = 'm.'
+    CMDFORMAT    = '(M{:05d})'
+    ACK_PATTERNS = [ '^\(M(\d{5})\)' ]
+    SCALE        = 1
+    UNITS        = 'm.'
     
 
 # ------------------------------------------------------------------------------
 
 class GetBarometerOffset(GetCommand):
     '''Get Barometer Offset Command'''
-    units        = 'mBar'
-    scale        = 1
-    ack_patterns = [ '^\(B([+-]\d{2})\)' ]
-    cmdformat    = '(b)'
+    UNITS        = 'mBar'
+    SCALE        = 1
+    ACK_PATTERNS = [ '^\(B([+-]\d{2})\)' ]
+    CMDFORMAT    = '(b)'
 
 
 class SetBarometerOffset(SetCommand):
     '''Set Barometer Offset Command'''
-    cmdformat    = '(B{:+03d})'
-    ack_patterns = [ '^\(B([+-]\d{2})\)' ]
-    scale        = 1
-    units        = 'mBar'
+    CMDFORMAT    = '(B{:+03d})'
+    ACK_PATTERNS = [ '^\(B([+-]\d{2})\)' ]
+    SCALE        = 1
+    UNITS        = 'mBar'
    
 
 # ------------------------------------------------------------------------------
@@ -335,37 +334,37 @@ class SetBarometerOffset(SetCommand):
 
 class GetCloudSensorThreshold(GetCommand):
     '''Get Cloud Sensor Threshold Command'''
-    cmdformat    = '(n)'
-    ack_patterns = [ '^\(N(\d{3})\)' ]
-    ack_index    = 0
-    scale        = 1
-    units        = '%'
+    CMDFORMAT    = '(n)'
+    ACK_PATTERNS = [ '^\(N(\d{3})\)' ]
+    ACK_INDEX    = 0
+    SCALE        = 1
+    UNITS        = '%'
     
 
 class SetCloudSensorThreshold(SetCommand):
     '''Set Cloud Sensor Threshold Command'''
-    cmdformat    = '(N{:03d})'
-    ack_patterns = [ '^\(N(\d{3})\)' ]
-    scale        = 1
-    units        = '%'
+    CMDFORMAT    = '(N{:03d})'
+    ACK_PATTERNS = [ '^\(N(\d{3})\)' ]
+    SCALE        = 1
+    UNITS        = '%'
     
 
 # ------------------------------------------------------------------------------
 
 class GetCloudSensorGain(GetCommand):
     '''Get Cloud Sensor Gain Command'''
-    cmdformat    = '(r)'
-    ack_patterns = [ '^\(R(\d{3})\)' ]
-    scale        = 10
-    units        = 'Unknown'
+    CMDFORMAT    = '(r)'
+    ACK_PATTERNS = [ '^\(R(\d{3})\)' ]
+    SCALE        = 10
+    UNITS        = 'Unknown'
    
 
 class SetCloudSensorGain(SetCommand):
     '''Set Cloud Sensor Gain Command'''
-    cmdformat    = '(R{:03d})'
-    ack_patterns = [ '^\(R(\d{3})\)' ]
-    scale        = 10
-    units        = 'Unknown'
+    CMDFORMAT    = '(R{:03d})'
+    ACK_PATTERNS = [ '^\(R(\d{3})\)' ]
+    SCALE        = 10
+    UNITS        = 'Unknown'
     
 
 # ------------------------------------------------------------------------------
@@ -374,39 +373,39 @@ class SetCloudSensorGain(SetCommand):
 
 class GetPhotometerThreshold(GetCommand):
     '''Get Photometer Threshold Command'''
-    cmdformat    = '(i)'
-    ack_patterns = [ '^\(I(\d{3})\)',  '^\(I([+-]\d{2})\)',  '^\(I(\d{5})\)']
-    ack_index    = 0
-    scale        = 10
-    units        = 'Mv/arcsec^2'
+    CMDFORMAT    = '(i)'
+    ACK_PATTERNS = [ '^\(I(\d{3})\)',  '^\(I([+-]\d{2})\)',  '^\(I(\d{5})\)']
+    ACK_INDEX    = 0
+    SCALE        = 10
+    UNITS        = 'Mv/arcsec^2'
    
 
 class SetPhotometerThreshold(SetCommand):
     '''Set Photometer Threshold Command'''
-    cmdformat    = '(I{:03d})'
-    ack_patterns = [ '^\(I(\d{3})\)' ]
-    scale        = 10
-    units        = 'Mv/arcsec^2'
+    CMDFORMAT    = '(I{:03d})'
+    ACK_PATTERNS = [ '^\(I(\d{3})\)' ]
+    SCALE        = 10
+    UNITS        = 'Mv/arcsec^2'
     
 
 # ------------------------------------------------------------------------------
 
 class GetPhotometerOffset(GetCommand):
     '''Get Photometer Gain Offset'''
-    cmdformat    = '(i)'
-    ack_patterns = [ '^\(I(\d{3})\)',  '^\(I([+-]\d{2})\)',  '^\(I(\d{5})\)']
-    ack_index    = 1
-    scale        = 10
-    units        = 'Mv/arcsec^2'
+    CMDFORMAT    = '(i)'
+    ACK_PATTERNS = [ '^\(I(\d{3})\)',  '^\(I([+-]\d{2})\)',  '^\(I(\d{5})\)']
+    ACK_INDEX    = 1
+    SCALE        = 10
+    UNITS        = 'Mv/arcsec^2'
     
 
 
 class SetPhotometerOffset(SetCommand):
     '''Set Photometer Gain Offset'''
-    cmdformat    = '(I{:+03d})'
-    ack_patterns = [ '^\(I([+-]\d{2})\)']
-    scale        = 10
-    units        = 'Mv/arcsec^2'
+    CMDFORMAT    = '(I{:+03d})'
+    ACK_PATTERNS = [ '^\(I([+-]\d{2})\)']
+    SCALE        = 10
+    UNITS        = 'Mv/arcsec^2'
     
 
 # ------------------------------------------------------------------------------
@@ -415,18 +414,18 @@ class SetPhotometerOffset(SetCommand):
 
 class GetPluviometerCalibration(GetCommand):
     '''Get Pluviometer Calibration Constant Command'''
-    cmdformat    = '(p)'
-    ack_patterns = [ '^\(P(\d{3})\)']
-    scale        = 1
-    units        = 'mm'
+    CMDFORMAT    = '(p)'
+    ACK_PATTERNS = [ '^\(P(\d{3})\)']
+    SCALE        = 1
+    UNITS        = 'mm'
 
 
 class SetPluviometerCalibration(SetCommand):
     '''Set Pluviometer Calibration Constant Command'''
-    cmdformat    = '(P{:03d})'
-    ack_patterns = [ '^\(P(\d{3})\)']
-    scale        = 1
-    units        = 'mm'
+    CMDFORMAT    = '(P{:03d})'
+    ACK_PATTERNS = [ '^\(P(\d{3})\)']
+    SCALE        = 1
+    UNITS        = 'mm'
     
     
 # ------------------------------------------------------------------------------
@@ -435,36 +434,36 @@ class SetPluviometerCalibration(SetCommand):
 
 class GetPyranometerGain(GetCommand):
     '''Get Pyranometer Gain Command'''
-    cmdformat    = '(j)'
-    ack_patterns = [ '^\(J(\d{3})\)']
-    scale        = 10
-    units        = 'Unknown'  
+    CMDFORMAT    = '(j)'
+    ACK_PATTERNS = [ '^\(J(\d{3})\)']
+    SCALE        = 10
+    UNITS        = 'Unknown'  
 
 
 class SetPyranometerGain(SetCommand):
     '''Set Pyranometer Gain Command'''
-    cmdformat    = '(J{:03d})'
-    ack_patterns = [ '^\(J(\d{3})\)']
-    scale        = 10
-    units        = 'Unknown'
+    CMDFORMAT    = '(J{:03d})'
+    ACK_PATTERNS = [ '^\(J(\d{3})\)']
+    SCALE        = 10
+    UNITS        = 'Unknown'
     
 
 
 class GetPyranometerOffset(GetCommand):
     '''Get Pyranometer Offset Command'''
-    cmdformat    = '(u)'
-    ack_patterns = [ '^\(U(\d{3})\)']
-    scale        = 1
-    units        = 'Unknown'
+    CMDFORMAT    = '(u)'
+    ACK_PATTERNS = [ '^\(U(\d{3})\)']
+    SCALE        = 1
+    UNITS        = 'Unknown'
   
 
 
 class SetPyranometerOffset(SetCommand):
     '''Get Pyranometer Offset Command'''
-    cmdformat    = '(U{:03d})'
-    ack_patterns = [ '^\(U(\d{3})\)']
-    scale        = 1
-    units        = 'Unknown'
+    CMDFORMAT    = '(U{:03d})'
+    ACK_PATTERNS = [ '^\(U(\d{3})\)']
+    SCALE        = 1
+    UNITS        = 'Unknown'
 
     
 
@@ -474,18 +473,18 @@ class SetPyranometerOffset(SetCommand):
 
 class GetRainSensorThreshold(GetCommand):
     '''Get Rain Sensor Threshold Command'''
-    cmdformat    = '(l)'
-    ack_patterns = [ '^\(L(\d{3})\)']
-    scale        = 1
-    units        = 'mm'
+    CMDFORMAT    = '(l)'
+    ACK_PATTERNS = [ '^\(L(\d{3})\)']
+    SCALE        = 1
+    UNITS        = 'mm'
 
 
 class SetRainSensorThreshold(SetCommand):
     '''Set Rain Sensor Threshold Command'''
-    cmdformat    = '(L{:03d})'
-    ack_patterns = [ '^\(L(\d{3})\)']
-    scale        = 1
-    units        = 'mm'
+    CMDFORMAT    = '(L{:03d})'
+    ACK_PATTERNS = [ '^\(L(\d{3})\)']
+    SCALE        = 1
+    UNITS        = 'mm'
     
 
 # ------------------------------------------------------------------------------
@@ -494,18 +493,18 @@ class SetRainSensorThreshold(SetCommand):
 
 class GetThermometerDeltaTempThreshold(GetCommand):
     '''Get Thermometer DeltaTemp Threshold Command'''
-    cmdformat    = '(c)'
-    ack_patterns = [ '^\(C(\d{3})\)']
-    scale        = 1
-    units        = 'mm'
+    CMDFORMAT    = '(c)'
+    ACK_PATTERNS = [ '^\(C(\d{3})\)']
+    SCALE        = 1
+    UNITS        = 'mm'
     
 
 class SetThermometerDeltaTempThreshold(SetCommand):
     '''Set Thermometer DeltaTemp Threshold Command'''
-    cmdformat    = '(C{:03d})'
-    ack_patterns = [ '^\(C(\d{3})\)']
-    scale        = 1
-    units        = 'mm'
+    CMDFORMAT    = '(C{:03d})'
+    ACK_PATTERNS = [ '^\(C(\d{3})\)']
+    SCALE        = 1
+    UNITS        = 'mm'
   
 
 # ------------------------------------------------------------------------------
@@ -514,36 +513,36 @@ class SetThermometerDeltaTempThreshold(SetCommand):
 
 class GetVoltmeterThreshold(GetCommand):
     '''Get Voltmeter Threshold Command'''
-    cmdformat    = '(f)'
-    ack_patterns = [ '^\(F(\d{3})\)', '^\(F([+-]\d{2})\)' ]
-    ack_index    = 0
-    units        = 'V'
-    scale        = 10
+    CMDFORMAT    = '(f)'
+    ACK_PATTERNS = [ '^\(F(\d{3})\)', '^\(F([+-]\d{2})\)' ]
+    ACK_INDEX    = 0
+    UNITS        = 'V'
+    SCALE        = 10
 
 
 class SetVoltmeterThreshold(SetCommand):
     '''Set Voltmeter Threshold Command'''
-    cmdformat    = '(F{:03d})'
-    ack_patterns = [ '^\(F(\d{3})\)' ]
-    scale        = 10
-    units        = 'V'
+    CMDFORMAT    = '(F{:03d})'
+    ACK_PATTERNS = [ '^\(F(\d{3})\)' ]
+    SCALE        = 10
+    UNITS        = 'V'
 
 
 class GetVoltmeterOffset(GetCommand):
     '''Get Voltmeter Offset Command'''
-    cmdformat    = '(f)'
-    ack_patterns = [ '^\(F(\d{3})\)', '^\(F([+-]\d{2})\)' ]
-    ack_index    = 1
-    scale        = 10
-    units        = 'V'
+    CMDFORMAT    = '(f)'
+    ACK_PATTERNS = [ '^\(F(\d{3})\)', '^\(F([+-]\d{2})\)' ]
+    ACK_INDEX    = 1
+    SCALE        = 10
+    UNITS        = 'V'
 
 
 class SetVoltmeterOffset(SetCommand):
     '''Set Voltmeter Offset Command'''
-    cmdformat    = '(F{:+03d})'
-    ack_patterns = [ '^\(F([+-]\d{2})\)' ]
-    scale        = 10
-    units        = 'V'
+    CMDFORMAT    = '(F{:+03d})'
+    ACK_PATTERNS = [ '^\(F([+-]\d{2})\)' ]
+    SCALE        = 10
+    UNITS        = 'V'
     
 
 # ------------------------------------------------------------------------------
@@ -553,11 +552,11 @@ class SetVoltmeterOffset(SetCommand):
 
 class SetRoofRelayMode(SetCommand):
     '''Set Roof Relay Mode Command'''
-    cmdformat    = '(X{:03d})'
-    ack_patterns = [ '^\(X(\d{3})\)' ,  '^(dummy)' ]
-    ack_index    = 0
-    mapping      = { 'Closed': 0, 'Open' : 7, }
-    inv_mapping  = { 0: 'Closed', 7: 'Open',  }
+    CMDFORMAT    = '(X{:03d})'
+    ACK_PATTERNS = [ '^\(X(\d{3})\)' ,  '^(dummy)' ]
+    ACK_INDEX    = 0
+    MAPPING      = { 'Closed': 0, 'Open' : 7, }
+    INV_MAPPING  = { 0: 'Closed', 7: 'Open',  }
     
     def __init__(self, value):
         SetCommand.__init__(self, value)
@@ -568,10 +567,10 @@ class SetRoofRelayMode(SetCommand):
             self.ackPat[1] = re.compile('^\(\d{2}:\d{2}:\d{2} Cerrar Obs\.\)')
 
     def encode(self):
-        self.encoded = self.fmt.format(self.mapping[self.value])
+        self.encoded = self.CMDFORMAT.format(self.MAPPING[self.value])
        
     def getResult(self):
-        return self.inv_mapping[int(self.matchobj[0].group(1))]
+        return self.INV_MAPPING[int(self.matchobj[0].group(1))]
 
 
 # ------------------------------------------------------------------------------
@@ -580,75 +579,75 @@ class SetRoofRelayMode(SetCommand):
 
 class GetAuxRelaySwitchOnTime(GetCommand):
     '''Get Aux Relay Switch-On Time Command'''
-    cmdformat       = '(s)'
-    ack_patterns    = [ '^\(S\d{3}\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
-    ack_index       = 1
-    units           = 'HH:MM:00'
-    ema_time_format = '(Son%H%M)'
+    CMDFORMAT       = '(s)'
+    ACK_PATTERNS    = [ '^\(S\d{3}\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
+    ACK_INDEX       = 1
+    UNITS           = 'HH:MM:00'
+    EMA_TIME_FORMAT = '(Son%H%M)'
 
     def getResult(self):
-        return datetime.datetime.strptime(self.response[1], self.ema_time_format).time()
+        return datetime.datetime.strptime(self.response[1], self.EMA_TIME_FORMAT).time()
 
 
 class SetAuxRelaySwitchOnTime(SetCommand):
     '''Set Aux Relay Switch-On Time Command'''
-    cmdformat       = '(Son{:04d})'
-    ack_patterns    = [ '^\(Son\d{4}\)' ]
-    units           = 'HH:MM:00'
-    ema_time_format = '(Son%H%M)'
+    CMDFORMAT       = '(Son{:04d})'
+    ACK_PATTERNS    = [ '^\(Son\d{4}\)' ]
+    UNITS           = 'HH:MM:00'
+    EMA_TIME_FORMAT = '(Son%H%M)'
 
     def encode(self):
-        self.encoded = self.value.strftime(self.ema_time_format)
+        self.encoded = self.value.strftime(self.EMA_TIME_FORMAT)
 
     def getResult(self):
-        return datetime.datetime.strptime(self.response[0], self.ema_time_format).time()
+        return datetime.datetime.strptime(self.response[0], self.EMA_TIME_FORMAT).time()
 
 
 class GetAuxRelaySwitchOffTime(GetCommand):
     '''Get Aux Relay Switch-Off Time Command'''
-    cmdformat       = '(s)'
-    ack_patterns    = [ '^\(S\d{3}\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
-    ack_index       = 2
-    units           = 'HH:MM:00'
-    ema_time_format = '(Sof%H%M)'
+    CMDFORMAT       = '(s)'
+    ACK_PATTERNS    = [ '^\(S\d{3}\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
+    ACK_INDEX       = 2
+    UNITS           = 'HH:MM:00'
+    EMA_TIME_FORMAT = '(Sof%H%M)'
 
     def getResult(self):
-         return datetime.datetime.strptime(self.response[2], self.ema_time_format).time()
+         return datetime.datetime.strptime(self.response[2], self.EMA_TIME_FORMAT).time()
 
 
 class SetAuxRelaySwitchOffTime(SetCommand):
     '''Set Aux Relay Switch-Off Time Command'''
-    cmdformat       = '(Sof{:04d})'
-    ack_patterns    = [ '^\(Sof\d{4}\)' ]
-    units           = 'HH:MM:00'
-    ema_time_format = '(Sof%H%M)'
+    CMDFORMAT       = '(Sof{:04d})'
+    ACK_PATTERNS    = [ '^\(Sof\d{4}\)' ]
+    UNITS           = 'HH:MM:00'
+    EMA_TIME_FORMAT = '(Sof%H%M)'
 
     def encode(self):
-        self.encoded = self.value.strftime(self.ema_time_format)
+        self.encoded = self.value.strftime(self.EMA_TIME_FORMAT)
 
     def getResult(self):
-       return datetime.datetime.strptime(self.response[0], self.ema_time_format).time()
+       return datetime.datetime.strptime(self.response[0], self.EMA_TIME_FORMAT).time()
 
 
 class GetAuxRelayMode(GetCommand):
     '''Get Aux Relay Mode Command'''
-    cmdformat    = '(s)'
-    ack_patterns = [ '^\(S(\d{3})\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
-    ack_index    = 0
-    mapping      = { 0 : 'Auto', 4: 'Closed', 5 : 'Open', 8 : 'Timer/Off', 9 : 'Timer/On' }
+    CMDFORMAT    = '(s)'
+    ACK_PATTERNS = [ '^\(S(\d{3})\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
+    ACK_INDEX    = 0
+    MAPPING      = { 0 : 'Auto', 4: 'Closed', 5 : 'Open', 8 : 'Timer/Off', 9 : 'Timer/On' }
 
        
     def getResult(self):
-        return self.mapping[int(self.matchobj[0].group(1))]
+        return self.MAPPING[int(self.matchobj[0].group(1))]
     
 
 class SetAuxRelayMode(SetCommand):
     '''Set Aux Relay Mode Command'''
-    cmdformat    = '(S{:03d})'
-    ack_patterns = [ '^\(S(\d{3})\)', '^(dummy)' ]
-    ack_index    = 0
-    mapping      = { 'Auto': 0,  'Closed': 4, 'Open' : 5, 'Timer/Off': 8,  'Timer/On' : 9 }
-    inv_mapping  = { 0 : 'Auto', 4: 'Closed', 5 : 'Open', 8 : 'Timer/Off', 9 : 'Timer/On' }
+    CMDFORMAT    = '(S{:03d})'
+    ACK_PATTERNS = [ '^\(S(\d{3})\)', '^(dummy)' ]
+    ACK_INDEX    = 0
+    MAPPING      = { 'Auto': 0,  'Closed': 4, 'Open' : 5, 'Timer/Off': 8,  'Timer/On' : 9 }
+    INV_MAPPING  = { 0 : 'Auto', 4: 'Closed', 5 : 'Open', 8 : 'Timer/Off', 9 : 'Timer/On' }
    
     
     def __init__(self, value):
@@ -665,10 +664,10 @@ class SetAuxRelayMode(SetCommand):
       
 
     def encode(self):
-        self.encoded = self.cmdformat.format(self.mapping[self.value])
+        self.encoded = self.CMDFORMAT.format(self.MAPPING[self.value])
        
     def getResult(self):
-        return self.inv_mapping[int(self.matchobj[0].group(1))]
+        return self.INV_MAPPING[int(self.matchobj[0].group(1))]
 
 
 # ------------------------------------------------------------------------------
@@ -677,13 +676,13 @@ class SetAuxRelayMode(SetCommand):
 
 class GetDailyMinMaxDump(Command):
     '''Get Daily Min/Max Dump Command'''
-    ack_patterns = [ '^\(.{76}M\d{4}\)', '^\(.{76}m\d{4}\)', '^\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)']
-    cmdformat    = '(@H0300)'
+    ACK_PATTERNS = [ '^\(.{76}M\d{4}\)', '^\(.{76}m\d{4}\)', '^\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)']
+    CMDFORMAT    = '(@H0300)'
     NIters       = 24
 
     def __init__(self):
         # Request format
-        Command.__init__(self, ack_patterns=self.ack_patterns, fmt=self.cmdformat, NIters=self.NIters)
+        Command.__init__(self, ack_patterns=self.ACK_PATTERNS, fmt=self.CMDFORMAT, NIters=self.NIters)
 
     def collectData(self, line, matchobj):
         self.response.append(line)
