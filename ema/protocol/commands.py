@@ -779,6 +779,12 @@ class GetDailyMinMaxDump(BulkDumpCommand):
     CMDFORMAT    = '(@H0300)'
     ITERATIONS   = 24
 
+class Get5MinAveragesDump(BulkDumpCommand):
+    '''Get 5 min Averages Bulk Dump'''
+    ACK_PATTERNS = [ '^\(.{76}t\d{4}\)' ]
+    CMDFORMAT    = '(@t0000)'
+    ITERATIONS   = 288
+
 
 __all__ = [
     Ping, 
@@ -828,4 +834,5 @@ __all__ = [
     SetAuxRelayMode,
     SetRoofRelayMode,
     GetDailyMinMaxDump,
+    Get5MinAveragesDump,
 ]

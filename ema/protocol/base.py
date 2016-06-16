@@ -86,7 +86,8 @@ from .commands import (
     GetAuxRelayMode,
     SetAuxRelayMode,
     SetRoofRelayMode,
-    GetDailyMinMaxDump
+    GetDailyMinMaxDump,
+    Get5MinAveragesDump,
     )
 
 
@@ -417,6 +418,9 @@ class EMAProtocol(LineOnlyReceiver):
     def getDailyMinMaxDump(self, nretries=0):
         return self._enqueue(GetDailyMinMaxDump(), nretries)
 
+    def get5MinAveragesDump(self, nretries=0):
+        return self._enqueue(Get5MinAveragesDump(), nretries)
+
 
 
 
@@ -429,7 +433,7 @@ class EMAProtocol(LineOnlyReceiver):
         '''
         Starts the ball rolling for the given request
         '''
-        request.interval = Interval(128) if isinstance(request, BulkDumpCommand) else Interval() 
+        request.interval = Interval(Interval.maxDelay) if isinstance(request, BulkDumpCommand) else Interval() 
         request.nretries = nretries
         request.retries  = 0  
         request.deferred = defer.Deferred()

@@ -24,7 +24,7 @@ class Interval(object):
   
     # Class attributes
     initial  = 2    # seconds
-    maxDelay = 128  # seconds
+    maxDelay = 256  # seconds
     factor   = 2
 
     def __init__(self, initial=None):
