@@ -466,6 +466,7 @@ class EMAProtocol(LineOnlyReceiver):
                 self._retry()
         else:
             request.retries += 1
+            request.reset()
             self._retry()
 
 
@@ -482,10 +483,9 @@ class EMAProtocol(LineOnlyReceiver):
         if finished:
             self._queue.popleft()
             request.alarm.cancel()
-            response = request.getResponse()
             if len(self._queue):    # Fires next command if any
                     self._retry()
-            request.deferred.callback(response) # Fire callback after _retry() !!!
+            request.deferred.callback(request.getResult()) # Fire callback after _retry() !!!
             del request
         return handled or finished
 

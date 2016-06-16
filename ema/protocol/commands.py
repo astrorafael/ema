@@ -4,6 +4,21 @@
 #  See the LICENSE file.
 # ----------------------------------------------------------------------
 
+# EMA Commands consists of request messages like (<weq>) 
+# and one or more response messages like (<resp1>)(<resp2>)(<resp3>)
+# The usual kind of command is one that sets or gets a configurable
+# parameter and only one of the responses above contains the desired value.
+# Parameters are usually numeric physical quantities, 
+# subject to an scale value to accomodate the message format.
+# The base Command class implementation addresses this kind of most 
+# common command class. Other specific subclasses address specific responses
+# due to datatypes used (dates, string labels, etc.)
+#
+# Bulk Dump commands extend this behaviour by repeating 
+# (<resp1>)(<resp2>)(<resp3>) responses a number of times.
+
+
+
 from __future__ import division
 
 # ----------------
@@ -35,17 +50,17 @@ log = Logger(namespace='serial')
 
 class Command(object):
     '''
-    Get Real Time Clock time Command
+    Generic Command for the most common type of commands
     '''
 
-    def __init__(self, ack_patterns, fmt=None, NIters=1):
+    def __init__(self, ack_patterns, fmt=None, index=-1):
         # Request format
         self.ackPat   = [ re.compile(pat) for pat in ack_patterns ]
         self.N        = len(self.ackPat)
-        self.NIters   = NIters
         self.fmt      = fmt
         self.name     = self.__doc__
         self.encoded  = None
+        self.selindex = index
         self.reset()
 
     # ----------
@@ -67,28 +82,27 @@ class Command(object):
         if not matchobj:
             handled = False; finished = False
             log.debug("Line does not match {command.name} response", command=self)
-        elif (self.i + 1) == self.N and self.iteration == self.NIters:
-            self.extractValues(line, matchobj)
-            handled = True; finished = True
-            log.debug("Matched {command.name} response, command complete", command=self)
-        elif (self.i + 1) == self.N and self.iteration < self.NIters:
-            self.collectData(line, matchobj)
-            self.iteration += 1
-            handled = True; finished = False
-            log.debug("Matched {command.name} response, command complete, accumulating data", command=self)
-        else:   
-            self.collectData(line, matchobj)
+        elif self.i  < self.N - 1:
+            self.response.append(line)
+            self.matchobj.append(matchobj)   
             self.i += 1
             handled = True; finished = False
             log.debug("Matched {command.name} response, awaiting data", command=self)
+        else:
+            self.response.append(line)
+            self.matchobj.append(matchobj)
+            handled = True; finished = True
+            log.debug("Matched {command.name} response, command complete", command=self)
         return handled, finished
 
-    def getResponse(self):
+    def getResult(self):
         '''
-        Returns a response object. 
+        Returns a response.
+        The default response is to apply the last match object to the last line.
+        Can be overriden.
         Must be called only after decode() returns True
         '''
-        return self.response
+        return int(self.matchobj[self.selindex].group(1)) / float(self.scale)
 
     # ----------------------------
     # Protected API for subclasses
@@ -99,16 +113,7 @@ class Command(object):
         self.i         = 0
         self.iteration = 1
         self.response  = []
-    
-    
-    def extractValues(self, line, matchobj):
-        '''Default implementation, maybe overriden'''
-        self.response = int(matchobj.group(1)) / float(self.scale)
-
-    def collectData(self, line, matchobj):
-        '''To be subclassed if necessary'''
-        pass
-
+        self.matchobj  = []
    
 
 # ------------------------------------------------------------------------------
@@ -118,7 +123,7 @@ class GetCommand(Command):
  
     def __init__(self):
         # Request format
-        Command.__init__(self, ack_patterns=self.ack_patterns, fmt=self.cmdformat)
+        Command.__init__(self, ack_patterns=self.ack_patterns, fmt=self.cmdformat, index=self.ack_index)
 
 
 # ------------------------------------------------------------------------------
@@ -128,7 +133,7 @@ class SetCommand(Command):
  
     def __init__(self, value):
         # Request format
-        Command.__init__(self, ack_patterns=self.ack_patterns, fmt=self.cmdformat)
+        Command.__init__(self, ack_patterns=self.ack_patterns, fmt=self.cmdformat, index=self.ack_index)
         self.value = value
 
     def encode(self):
@@ -143,19 +148,21 @@ class SetCommand(Command):
 
 class GetRTCDateTime(GetCommand):
     '''Get Real Time Clock Date & Time Command'''
-    ack_patterns    = [ '^\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)' ]
     cmdformat       = '(y)'
+    ack_patterns    = [ '^\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)' ]
+    ack_index       = 0
     ema_time_format = '(%H:%M:%S %d/%m/%Y)'
 
-    def extractValues(self, line, matchobj):
-        self.response = datetime.datetime.strptime(line, self.ema_time_format)
+    def getResult(self):
+        return  datetime.datetime.strptime(self.response[0], self.ema_time_format)
 
 # ------------------------------------------------------------------------------
 
 class SetRTCDateTime(SetCommand):
     '''Set Real Time Clock Date & Time Command'''
-    ack_patterns    = [ '\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)']
     cmdformat       = '(Y%d%m%y%H%M%S)'
+    ack_patterns    = [ '\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)']
+    ack_index       = 0
     ema_time_format = '(%H:%M:%S %d/%m/%Y)'
 
     def __init__(self, value):
@@ -173,8 +180,8 @@ class SetRTCDateTime(SetCommand):
     def encode(self):
         self.encoded = self.value.strftime(self.fmt)
 
-    def extractValues(self, line, matchobj):
-        self.response = datetime.datetime.strptime(line, self.ema_time_format)
+    def getResult(self):
+        return  datetime.datetime.strptime(self.response[0], self.ema_time_format)
 
 # ------------------------------------------------------------------------------
 #                               WATCHDOG COMMANDS
@@ -182,27 +189,30 @@ class SetRTCDateTime(SetCommand):
 
 class Ping(GetCommand):
     '''Ping'''
-    ack_patterns = [ '^\( \)' ]
     cmdformat    = '( )'
+    ack_patterns = [ '^\( \)' ]
+    ack_index    = 0
 
-    def extractValues(self, line, matchobj):
-        self.response = line
+    def getResult(self):
+        return self.response[0]
 
 
 class GetWatchdogPeriod(GetCommand):
     '''Get Watchdog Period Command'''
+    cmdformat    = '(t)'
+    ack_patterns = [ '^\(T(\d{3})\)' ]
+    ack_index    = 0
     units        = 'sec'
     scale        = 1
-    ack_patterns = [ '^\(T(\d{3})\)' ]
-    cmdformat    = '(t)'
-
+    
 
 class SetWatchdogPeriod(SetCommand):
     '''Set Watchdog Period Command'''
+    cmdformat    = '(T{:03d})'
+    ack_patterns = [ '^\(T(\d{3})\)' ]
+    ack_index    = 0
     units        = 'sec'
     scale        = 1
-    ack_patterns = [ '^\(T(\d{3})\)' ]
-    cmdformat    = '(T{:03d})'
 
 # ------------------------------------------------------------------------------
 #                               ANEMOMETER COMMANDS
@@ -266,7 +276,7 @@ class GetAnemometerModel(GetCommand):
     cmdformat    = '(z)'
     MAPPING      = { 1: 'TX20', 0: 'Homemade'}
 
-    def extractValues(self, line, matchobj):
+    def getResult(self, line, matchobj):
         self.response = self.MAPPING[int(matchobj.group(1))]
        
 
@@ -279,7 +289,7 @@ class SetAnemometerModel(SetCommand):
     def encode(self):
         self.encoded = self.cmdformat.format(self.MAPPING[self.value])
     
-    def extractValues(self, line, matchobj):
+    def getResult(self, line, matchobj):
         self.response = self.MAPPING[int(matchobj.group(1))]
 
 # ------------------------------------------------------------------------------
@@ -365,7 +375,7 @@ class GetPhotometerThreshold(GetCommand):
     def collectData(self, line, matchobj):
         self.response.append(int(matchobj.group(1)))
 
-    def extractValues(self, line, matchobj):
+    def getResult(self, line, matchobj):
         self.response = self.response[0] / float(self.scale)
 
 
@@ -388,7 +398,7 @@ class GetPhotometerOffset(GetCommand):
     def collectData(self, line, matchobj):
         self.response.append(int(matchobj.group(1)))
 
-    def extractValues(self, line, matchobj):
+    def getResult(self, line, matchobj):
         self.response = self.response[1] / float(self.scale)
 
 
@@ -506,7 +516,7 @@ class GetVoltmeterThreshold(GetCommand):
     def collectData(self, line, matchobj):
         self.response.append(int(matchobj.group(1)))
 
-    def extractValues(self, line, matchobj):
+    def getResult(self, line, matchobj):
         self.response = self.response[0] / float(self.scale)
 
 class SetVoltmeterThreshold(SetCommand):
@@ -564,7 +574,7 @@ class SetRoofRelayMode(Command):
         if self.i == 0:
             self.response = self.MAPPING[int(matchobj.group(1))]
        
-    def extractValues(self, line, matchobj):
+    def getResult(self, line, matchobj):
         pass
 
 
@@ -582,7 +592,7 @@ class GetAuxRelaySwitchOnTime(GetCommand):
     def collectData(self, line, matchobj):
         self.response.append(line)
 
-    def extractValues(self, line, matchobj):
+    def getResult(self, line, matchobj):
         self.response = datetime.datetime.strptime(self.response[1], self.ema_time_format).time()
 
 
@@ -596,7 +606,7 @@ class SetAuxRelaySwitchOnTime(SetCommand):
     def encode(self):
         self.encoded = self.value.strftime(self.ema_time_format)
 
-    def extractValues(self, line, matchobj):
+    def getResult(self, line, matchobj):
         self.response = datetime.datetime.strptime(line, self.ema_time_format).time()
 
 
@@ -607,7 +617,7 @@ class GetAuxRelaySwitchOffTime(GetCommand):
     cmdformat       = '(s)'
     ema_time_format = '(Sof%H%M)'
 
-    def extractValues(self, line, matchobj):
+    def getResult(self, line, matchobj):
         self.response = datetime.datetime.strptime(line, self.ema_time_format).time()
 
 
@@ -621,7 +631,7 @@ class SetAuxRelaySwitchOffTime(SetCommand):
     def encode(self):
         self.encoded = self.value.strftime(self.ema_time_format)
 
-    def extractValues(self, line, matchobj):
+    def getResult(self, line, matchobj):
         self.response = datetime.datetime.strptime(line, self.ema_time_format).time()
 
 
@@ -635,7 +645,7 @@ class GetAuxRelayMode(GetCommand):
         if self.i == 0:
             self.response = self.MAPPING[int(matchobj.group(1))]
        
-    def extractValues(self, line, matchobj):
+    def getResult(self, line, matchobj):
         pass
     
 
@@ -671,7 +681,7 @@ class SetAuxRelayMode(Command):
         if self.i == 0:
             self.response = self.MAPPING[int(matchobj.group(1))]
        
-    def extractValues(self, line, matchobj):
+    def getResult(self, line, matchobj):
         pass
 
 
@@ -692,7 +702,7 @@ class GetDailyMinMaxDump(Command):
     def collectData(self, line, matchobj):
         self.response.append(line)
 
-    def extractValues(self, line, matchobj):
+    def getResult(self, line, matchobj):
         pass
 
 

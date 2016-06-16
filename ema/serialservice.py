@@ -146,7 +146,8 @@ class SerialService(Service):
         ]
 
         getFuncs = [ 
-            self.protocol.getDailyMinMaxDump,
+            self.protocol.getRTCDateTime,
+            self.protocol.getWatchdogPeriod,
         ]
 
         setFuncs = [ 
@@ -176,7 +177,10 @@ class SerialService(Service):
 
         ]
 
-     
+        setFuncs = [ 
+            (self.protocol.setRTCDateTime, None),
+            (self.protocol.setWatchdogPeriod, 200),
+        ]
 
         if True:
             for getter in getFuncs:
@@ -186,7 +190,7 @@ class SerialService(Service):
                 except EMATimeoutError as e:
                     log.error("{excp!s}", excp=e)
                     continue
-        if False:
+        if True:
             for setter in setFuncs:
                 try:
                     res = yield setter[0](setter[1])
