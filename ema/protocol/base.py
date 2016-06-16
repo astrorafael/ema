@@ -30,7 +30,7 @@ from twisted.internet.protocol   import ClientFactory
 # -------------
 
 from ..        import PY2
-from .status   import decodeAsDict
+from .status   import decodeAsDict, STATLEN
 from .error    import EMATimeoutError
 from .interval import Interval
 from .commands import (
@@ -177,14 +177,27 @@ class EMAProtocol(LineOnlyReceiver):
     def lineReceived(self, line):
         now = datetime.datetime.utcnow() + datetime.timedelta(seconds=0.5)
         line = line.lstrip(' \t\n\r') + b')'
-        log2.debug("<== EMA {line}", line=line)
+        # Dirty hack: EMA status Voltage is sent as a non-ASCII character
+        # 13.0V ==> chr(130) 
+        # and the log system complains. I did my best t avoid it ...
+        l = len(line)
+        offending = (l == STATLEN) and (ord(line[3]) > 127)
+        if offending:
+            line2 = bytearray(line)
+            line2[3] = b'+'
+            log2.debug("<== EMA+[{l}] {line}", l=l, line=line2)
+        else:
+            log2.debug("<== EMA [{l}] {line}", l=l, line=line)
         handled = self._handleCommandResponse(line, now)
         if handled:
             return
         handled = self._handleUnsolicitedResponse(line, now)
         if handled:
             return
-        log.debug("Unknown message {line}", line=line)
+        if offending:
+            log.debug("Unknown/Unexpected message")
+        else:
+            log.debug("Unknown/Unexpected message {line}", line=line)
 
 
     def sendLine(self, line):
@@ -193,7 +206,7 @@ class EMAProtocol(LineOnlyReceiver):
         @param line: The line to send, including the delimiter.
         @type line: C{bytes}
         """
-        log2.debug("==> EMA {line}", line=line)
+        log2.debug("==> EMA [{l}] {line}", l=len(line), line=line)
         return self.transport.write(line)
         
     # ================
