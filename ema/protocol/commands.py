@@ -53,14 +53,14 @@ class Command(object):
     Generic Command for the most common type of commands
     '''
 
-    def __init__(self, ack_patterns, fmt=None, index=-1):
+    def __init__(self, ack_patterns, fmt):
         # Request format
         self.ackPat   = [ re.compile(pat) for pat in ack_patterns ]
         self.N        = len(self.ackPat)
         self.fmt      = fmt
         self.name     = self.__doc__
         self.encoded  = None
-        self.selindex = index
+        self.selindex = 0 if self.N == 1 else self.ack_index
         self.reset()
 
     # ----------
@@ -98,7 +98,6 @@ class Command(object):
     def getResult(self):
         '''
         Returns a response.
-        The default response is to apply the last match object to the last line.
         Can be overriden.
         Must be called only after decode() returns True
         '''
@@ -111,7 +110,6 @@ class Command(object):
     def reset(self):
         '''reinitialization for retries after a tiemout'''
         self.i         = 0
-        self.iteration = 1
         self.response  = []
         self.matchobj  = []
    
@@ -123,7 +121,7 @@ class GetCommand(Command):
  
     def __init__(self):
         # Request format
-        Command.__init__(self, ack_patterns=self.ack_patterns, fmt=self.cmdformat, index=self.ack_index)
+        Command.__init__(self, ack_patterns=self.ack_patterns, fmt=self.cmdformat)
 
 
 # ------------------------------------------------------------------------------
@@ -133,7 +131,7 @@ class SetCommand(Command):
  
     def __init__(self, value):
         # Request format
-        Command.__init__(self, ack_patterns=self.ack_patterns, fmt=self.cmdformat, index=self.ack_index)
+        Command.__init__(self, ack_patterns=self.ack_patterns, fmt=self.cmdformat)
         self.value = value
 
     def encode(self):
@@ -150,7 +148,6 @@ class GetRTCDateTime(GetCommand):
     '''Get Real Time Clock Date & Time Command'''
     cmdformat       = '(y)'
     ack_patterns    = [ '^\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)' ]
-    ack_index       = 0
     ema_time_format = '(%H:%M:%S %d/%m/%Y)'
 
     def getResult(self):
@@ -162,7 +159,6 @@ class SetRTCDateTime(SetCommand):
     '''Set Real Time Clock Date & Time Command'''
     cmdformat       = '(Y%d%m%y%H%M%S)'
     ack_patterns    = [ '\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)']
-    ack_index       = 0
     ema_time_format = '(%H:%M:%S %d/%m/%Y)'
 
     def __init__(self, value):
@@ -191,7 +187,6 @@ class Ping(GetCommand):
     '''Ping'''
     cmdformat    = '( )'
     ack_patterns = [ '^\( \)' ]
-    ack_index    = 0
 
     def getResult(self):
         return self.response[0]
@@ -224,7 +219,6 @@ class GetCurrentWindSpeedThreshold(GetCommand):
     '''Get Current Wind Speed Threshold Command'''
     cmdformat    = '(w)'
     ack_patterns = [ '^\(W(\d{3})\)' ]
-    ack_index    = 0
     scale        = 1
     units        = 'Km/h'
     
@@ -233,7 +227,6 @@ class SetCurrentWindSpeedThreshold(SetCommand):
     '''Set Current Wind Speed Threshold Command'''
     cmdformat    = '(W{:03d})'
     ack_patterns = [ '^\(W(\d{3})\)' ]
-    ack_index    = 0
     scale        = 1
     units        = 'Km/h'
    
@@ -244,7 +237,6 @@ class GetAverageWindSpeedThreshold(GetCommand):
     '''Get 10min Average Wind Speed Threshold Command'''
     cmdformat    = '(o)'
     ack_patterns = [ '^\(O(\d{3})\)' ]
-    ack_index    = 0
     scale        = 1
     units        = 'Km/h'
     
@@ -253,7 +245,6 @@ class SetAverageWindSpeedThreshold(SetCommand):
     '''Set 10min Average Wind Speed Threshold Command'''
     cmdformat    = '(O{:03d})'
     ack_patterns = [ '^\(O(\d{3})\)' ]
-    ack_index    = 0
     scale        = 1
     units        = 'Km/h'
     
@@ -264,7 +255,6 @@ class GetAnemometerCalibrationConstant(GetCommand):
     '''Get Anemometer Calibration Constant'''
     cmdformat    = '(a)'
     ack_patterns = [ '^\(A(\d{3})\)' ]
-    ack_index    = 0
     scale        = 1
     units        = 'Unknown'
      
@@ -273,7 +263,6 @@ class SetAnemometerCalibrationConstant(SetCommand):
     '''Set Anemometer Calibration Constant'''
     cmdformat    = '(A{:03d})'
     ack_patterns = [ '^\(A(\d{3})\)' ]
-    ack_index    = 0
     scale        = 1
     units        = 'Unknown'
    
@@ -283,7 +272,6 @@ class GetAnemometerModel(GetCommand):
     '''Get Anemometer Model Command'''
     cmdformat    = '(z)'
     ack_patterns = [ '^\(Z(\d{3})\)' ]
-    ack_index    = 0
     mapping      = { 1: 'TX20', 0: 'Homemade'}
 
     def getResult(self):
@@ -294,7 +282,6 @@ class SetAnemometerModel(SetCommand):
     '''Set Anemometer Model Command'''
     cmdformat    = '(Z{:03d})'
     ack_patterns = [ '^\(Z(\d{3})\)' ]
-    ack_index    = 0
     mapping      = {'TX20': 1, 'Homemade': 0 }
     inv_mapping  = { 1: 'TX20', 0: 'Homemade'}
 
@@ -312,7 +299,6 @@ class GetBarometerHeight(GetCommand):
     '''Get Barometer Height Command'''
     cmdformat    = '(m)'
     ack_patterns = [ '^\(M(\d{5})\)' ]
-    ack_index    = 0
     scale        = 1
     units        = 'm.'
    
@@ -321,7 +307,6 @@ class SetBarometerHeight(SetCommand):
     '''Set Barometer Height Command'''
     cmdformat    = '(M{:05d})'
     ack_patterns = [ '^\(M(\d{5})\)' ]
-    ack_index    = 0
     scale        = 1
     units        = 'm.'
     
@@ -333,7 +318,6 @@ class GetBarometerOffset(GetCommand):
     units        = 'mBar'
     scale        = 1
     ack_patterns = [ '^\(B([+-]\d{2})\)' ]
-    ack_index    = 0
     cmdformat    = '(b)'
 
 
@@ -341,7 +325,6 @@ class SetBarometerOffset(SetCommand):
     '''Set Barometer Offset Command'''
     cmdformat    = '(B{:+03d})'
     ack_patterns = [ '^\(B([+-]\d{2})\)' ]
-    ack_index    = 0
     scale        = 1
     units        = 'mBar'
    
@@ -363,7 +346,6 @@ class SetCloudSensorThreshold(SetCommand):
     '''Set Cloud Sensor Threshold Command'''
     cmdformat    = '(N{:03d})'
     ack_patterns = [ '^\(N(\d{3})\)' ]
-    ack_index    = 0
     scale        = 1
     units        = '%'
     
@@ -374,7 +356,6 @@ class GetCloudSensorGain(GetCommand):
     '''Get Cloud Sensor Gain Command'''
     cmdformat    = '(r)'
     ack_patterns = [ '^\(R(\d{3})\)' ]
-    ack_index    = 0
     scale        = 10
     units        = 'Unknown'
    
@@ -383,7 +364,6 @@ class SetCloudSensorGain(SetCommand):
     '''Set Cloud Sensor Gain Command'''
     cmdformat    = '(R{:03d})'
     ack_patterns = [ '^\(R(\d{3})\)' ]
-    ack_index    = 0
     scale        = 10
     units        = 'Unknown'
     
@@ -405,7 +385,6 @@ class SetPhotometerThreshold(SetCommand):
     '''Set Photometer Threshold Command'''
     cmdformat    = '(I{:03d})'
     ack_patterns = [ '^\(I(\d{3})\)' ]
-    ack_index    = 0
     scale        = 10
     units        = 'Mv/arcsec^2'
     
@@ -426,7 +405,6 @@ class SetPhotometerOffset(SetCommand):
     '''Set Photometer Gain Offset'''
     cmdformat    = '(I{:+03d})'
     ack_patterns = [ '^\(I([+-]\d{2})\)']
-    ack_index    = 0
     scale        = 10
     units        = 'Mv/arcsec^2'
     
