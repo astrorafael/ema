@@ -514,39 +514,37 @@ class SetThermometerDeltaTempThreshold(SetCommand):
 
 class GetVoltmeterThreshold(GetCommand):
     '''Get Voltmeter Threshold Command'''
+    cmdformat    = '(f)'
+    ack_patterns = [ '^\(F(\d{3})\)', '^\(F([+-]\d{2})\)' ]
+    ack_index    = 0
     units        = 'V'
     scale        = 10
-    ack_patterns = [ '^\(F(\d{3})\)', '^\(F([+-]\d{2})\)' ]
-    cmdformat    = '(f)'
 
-    def collectData(self, line, matchobj):
-        self.response.append(int(matchobj.group(1)))
-
-    def getResult(self, line, matchobj):
-        self.response = self.response[0] / float(self.scale)
 
 class SetVoltmeterThreshold(SetCommand):
     '''Set Voltmeter Threshold Command'''
-    units        = 'V'
-    scale        = 10
-    ack_patterns = [ '^\(F(\d{3})\)' ]
     cmdformat    = '(F{:03d})'
+    ack_patterns = [ '^\(F(\d{3})\)' ]
+    scale        = 10
+    units        = 'V'
 
 
 class GetVoltmeterOffset(GetCommand):
     '''Get Voltmeter Offset Command'''
-    units        = 'V'
-    scale        = 10
-    ack_patterns = [ '^\(F(\d{3})\)', '^\(F([+-]\d{2})\)' ]
     cmdformat    = '(f)'
+    ack_patterns = [ '^\(F(\d{3})\)', '^\(F([+-]\d{2})\)' ]
+    ack_index    = 1
+    scale        = 10
+    units        = 'V'
 
 
 class SetVoltmeterOffset(SetCommand):
     '''Set Voltmeter Offset Command'''
-    units        = 'V'
-    scale        = 10
-    ack_patterns = [ '^\(F([+-]\d{2})\)' ]
     cmdformat    = '(F{:+03d})'
+    ack_patterns = [ '^\(F([+-]\d{2})\)' ]
+    scale        = 10
+    units        = 'V'
+    
 
 # ------------------------------------------------------------------------------
 #                               ROOF RELAY COMMANDS
