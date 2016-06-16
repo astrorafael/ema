@@ -310,17 +310,21 @@ class SetAnemometerModel(SetCommand):
 
 class GetBarometerHeight(GetCommand):
     '''Get Barometer Height Command'''
-    units        = 'm.'
-    scale        = 1
-    ack_patterns = [ '^\(M(\d{5})\)' ]
     cmdformat    = '(m)'
+    ack_patterns = [ '^\(M(\d{5})\)' ]
+    ack_index    = 0
+    scale        = 1
+    units        = 'm.'
+   
 
 class SetBarometerHeight(SetCommand):
     '''Set Barometer Height Command'''
-    units        = 'm.'
-    scale        = 1
-    ack_patterns = [ '^\(M(\d{5})\)' ]
     cmdformat    = '(M{:05d})'
+    ack_patterns = [ '^\(M(\d{5})\)' ]
+    ack_index    = 0
+    scale        = 1
+    units        = 'm.'
+    
 
 # ------------------------------------------------------------------------------
 
@@ -329,15 +333,18 @@ class GetBarometerOffset(GetCommand):
     units        = 'mBar'
     scale        = 1
     ack_patterns = [ '^\(B([+-]\d{2})\)' ]
+    ack_index    = 0
     cmdformat    = '(b)'
+
 
 class SetBarometerOffset(SetCommand):
     '''Set Barometer Offset Command'''
-    units        = 'mBar'
-    scale        = 1
-    ack_patterns = [ '^\(B([+-]\d{2})\)' ]
     cmdformat    = '(B{:+03d})'
-
+    ack_patterns = [ '^\(B([+-]\d{2})\)' ]
+    ack_index    = 0
+    scale        = 1
+    units        = 'mBar'
+   
 
 # ------------------------------------------------------------------------------
 #                               CLOUD DETECTOR COMMANDS
@@ -345,33 +352,41 @@ class SetBarometerOffset(SetCommand):
 
 class GetCloudSensorThreshold(GetCommand):
     '''Get Cloud Sensor Threshold Command'''
-    units        = '%'
-    scale        = 1
-    ack_patterns = [ '^\(N(\d{3})\)' ]
     cmdformat    = '(n)'
+    ack_patterns = [ '^\(N(\d{3})\)' ]
+    ack_index    = 0
+    scale        = 1
+    units        = '%'
+    
 
 class SetCloudSensorThreshold(SetCommand):
     '''Set Cloud Sensor Threshold Command'''
-    units        = '%'
-    scale        = 1
-    ack_patterns = [ '^\(N(\d{3})\)' ]
     cmdformat    = '(N{:03d})'
+    ack_patterns = [ '^\(N(\d{3})\)' ]
+    ack_index    = 0
+    scale        = 1
+    units        = '%'
+    
 
 # ------------------------------------------------------------------------------
 
 class GetCloudSensorGain(GetCommand):
     '''Get Cloud Sensor Gain Command'''
-    units        = 'Unknown'
-    scale        = 10
-    ack_patterns = [ '^\(R(\d{3})\)' ]
     cmdformat    = '(r)'
+    ack_patterns = [ '^\(R(\d{3})\)' ]
+    ack_index    = 0
+    scale        = 10
+    units        = 'Unknown'
+   
 
 class SetCloudSensorGain(SetCommand):
     '''Set Cloud Sensor Gain Command'''
-    units        = 'Unknown'
-    scale        = 10
-    ack_patterns = [ '^\(R(\d{3})\)' ]
     cmdformat    = '(R{:03d})'
+    ack_patterns = [ '^\(R(\d{3})\)' ]
+    ack_index    = 0
+    scale        = 10
+    units        = 'Unknown'
+    
 
 # ------------------------------------------------------------------------------
 #                               PHOTOMETER COMMANDS
@@ -379,47 +394,42 @@ class SetCloudSensorGain(SetCommand):
 
 class GetPhotometerThreshold(GetCommand):
     '''Get Photometer Threshold Command'''
-    units        = 'Mv/arcsec^2'
-    scale        = 10
-    ack_patterns = [ '^\(I(\d{3})\)',  '^\(I([+-]\d{2})\)',  '^\(I(\d{5})\)']
     cmdformat    = '(i)'
-
-    def collectData(self, line, matchobj):
-        self.response.append(int(matchobj.group(1)))
-
-    def getResult(self, line, matchobj):
-        self.response = self.response[0] / float(self.scale)
-
+    ack_patterns = [ '^\(I(\d{3})\)',  '^\(I([+-]\d{2})\)',  '^\(I(\d{5})\)']
+    ack_index    = 0
+    scale        = 10
+    units        = 'Mv/arcsec^2'
+   
 
 class SetPhotometerThreshold(SetCommand):
     '''Set Photometer Threshold Command'''
-    units        = 'Mv/arcsec^2'
-    scale        = 10
-    ack_patterns = [ '^\(I(\d{3})\)' ]
     cmdformat    = '(I{:03d})'
+    ack_patterns = [ '^\(I(\d{3})\)' ]
+    ack_index    = 0
+    scale        = 10
+    units        = 'Mv/arcsec^2'
+    
 
 # ------------------------------------------------------------------------------
 
 class GetPhotometerOffset(GetCommand):
     '''Get Photometer Gain Offset'''
-    units        = 'Mv/arcsec^2'
-    scale        = 10
-    ack_patterns = [ '^\(I(\d{3})\)',  '^\(I([+-]\d{2})\)',  '^\(I(\d{5})\)']
     cmdformat    = '(i)'
-
-    def collectData(self, line, matchobj):
-        self.response.append(int(matchobj.group(1)))
-
-    def getResult(self, line, matchobj):
-        self.response = self.response[1] / float(self.scale)
+    ack_patterns = [ '^\(I(\d{3})\)',  '^\(I([+-]\d{2})\)',  '^\(I(\d{5})\)']
+    ack_index    = 1
+    scale        = 10
+    units        = 'Mv/arcsec^2'
+    
 
 
 class SetPhotometerOffset(SetCommand):
     '''Set Photometer Gain Offset'''
-    units        = 'Mv/arcsec^2'
-    scale        = 10
-    ack_patterns = [ '^\(I([+-]\d{2})\)']
     cmdformat    = '(I{:+03d})'
+    ack_patterns = [ '^\(I([+-]\d{2})\)']
+    ack_index    = 0
+    scale        = 10
+    units        = 'Mv/arcsec^2'
+    
 
 # ------------------------------------------------------------------------------
 #                               PLUVIOMETER COMMANDS

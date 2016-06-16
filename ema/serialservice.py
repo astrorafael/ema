@@ -150,6 +150,8 @@ class SerialService(Service):
             self.protocol.getWatchdogPeriod,
             self.protocol.getCurrentWindSpeedThreshold,
             self.protocol.getAnemometerModel,
+            self.protocol.getPhotometerThreshold,
+            self.protocol.getPhotometerOffset,
         ]
 
         setFuncs = [ 
@@ -184,6 +186,8 @@ class SerialService(Service):
             (self.protocol.setWatchdogPeriod, 200),
             (self.protocol.setCurrentWindSpeedThreshold, 20),
             (self.protocol.setAnemometerModel, 'Homemade'),
+            (self.protocol.setPhotometerThreshold, 10.5),
+            (self.protocol.setPhotometerOffset, 0),
         ]
 
         if True:
