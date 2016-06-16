@@ -787,9 +787,17 @@ class Get5MinAveragesDump(BulkDumpCommand):
     CMDFORMAT    = '(@t0000)'
     ITERATIONS   = 288
 
+    def toTime(self, page):
+      '''Computes the end time coresponding to a given page'''
+      minutes = page*5 + 5
+      hour = (minutes//60) % 24
+      return datetime.time(hour=hour, minute=minutes%60)
+
     def accumulate(self, line, matchobj):
         '''Default implementation, maybe overriden in subclasses'''
-        self.response[self.iteration].append(decodeStatusAsList(line))
+        status = decodeStatusAsList(line)
+        status[-1] = self.toTime(status[-1])
+        self.response[self.iteration].append(status)
        
 
 

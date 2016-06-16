@@ -10,15 +10,9 @@ from __future__ import division
 # System wide imports
 # -------------------
 
-import os
-import errno
-import sys
-import json
-import math
-
 import datetime
 import re
-from collections import deque
+from   collections import deque
 
 # ---------------
 # Twisted imports
@@ -36,7 +30,7 @@ from twisted.protocols.basic     import LineOnlyReceiver
 
 from ..        import PY2
 from .status   import decodeAsDict
-from ..error   import EMATimeoutError
+from .error    import EMATimeoutError
 from .interval import Interval
 from .commands import (
     BulkDumpCommand,
