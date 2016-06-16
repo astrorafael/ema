@@ -554,13 +554,19 @@ class SetVoltmeterOffset(SetCommand):
 class SetRoofRelayMode(SetCommand):
     '''Set Roof Relay Mode Command'''
     cmdformat    = '(X{:03d})'
-    ack_patterns = [ '^\(X(\d{3})\)' , 
-        '(^\(\d{2}:\d{2}:\d{2} Abrir Obs\. FORZADO\))|(^\(\d{2}:\d{2}:\d{2} Cerrar Obs\.\))']
+    ack_patterns = [ '^\(X(\d{3})\)' ,  '^(dummy)' ]
     ack_index    = 0
     mapping      = { 'Closed': 0, 'Open' : 7, }
     inv_mapping  = { 0: 'Closed', 7: 'Open',  }
     
-    
+    def __init__(self, value):
+        SetCommand.__init__(self, value)
+       # Patches the last compiled expression
+        if self.value == 'Open':
+            self.ackPat[1] = re.compile('^\(\d{2}:\d{2}:\d{2} Abrir Obs\. FORZADO\)')
+        elif self.value == 'Closed':
+            self.ackPat[1] = re.compile('^\(\d{2}:\d{2}:\d{2} Cerrar Obs\.\)')
+
     def encode(self):
         self.encoded = self.fmt.format(self.mapping[self.value])
        
@@ -574,105 +580,95 @@ class SetRoofRelayMode(SetCommand):
 
 class GetAuxRelaySwitchOnTime(GetCommand):
     '''Get Aux Relay Switch-On Time Command'''
-    units           = 'HH:MM:00'
-    ack_patterns    = [ '^\(S\d{3}\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
     cmdformat       = '(s)'
+    ack_patterns    = [ '^\(S\d{3}\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
+    ack_index       = 1
+    units           = 'HH:MM:00'
     ema_time_format = '(Son%H%M)'
 
-    def collectData(self, line, matchobj):
-        self.response.append(line)
-
-    def getResult(self, line, matchobj):
-        self.response = datetime.datetime.strptime(self.response[1], self.ema_time_format).time()
+    def getResult(self):
+        return datetime.datetime.strptime(self.response[1], self.ema_time_format).time()
 
 
 class SetAuxRelaySwitchOnTime(SetCommand):
     '''Set Aux Relay Switch-On Time Command'''
-    units           = 'HH:MM:00'
-    ack_patterns    = [ '^\(Son\d{4}\)' ]
     cmdformat       = '(Son{:04d})'
+    ack_patterns    = [ '^\(Son\d{4}\)' ]
+    units           = 'HH:MM:00'
     ema_time_format = '(Son%H%M)'
 
     def encode(self):
         self.encoded = self.value.strftime(self.ema_time_format)
 
-    def getResult(self, line, matchobj):
-        self.response = datetime.datetime.strptime(line, self.ema_time_format).time()
+    def getResult(self):
+        return datetime.datetime.strptime(self.response[0], self.ema_time_format).time()
 
 
 class GetAuxRelaySwitchOffTime(GetCommand):
     '''Get Aux Relay Switch-Off Time Command'''
-    units           = 'HH:MM:00'
-    ack_patterns    = [ '^\(S\d{3}\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
     cmdformat       = '(s)'
+    ack_patterns    = [ '^\(S\d{3}\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
+    ack_index       = 2
+    units           = 'HH:MM:00'
     ema_time_format = '(Sof%H%M)'
 
-    def getResult(self, line, matchobj):
-        self.response = datetime.datetime.strptime(line, self.ema_time_format).time()
+    def getResult(self):
+         return datetime.datetime.strptime(self.response[2], self.ema_time_format).time()
 
 
 class SetAuxRelaySwitchOffTime(SetCommand):
     '''Set Aux Relay Switch-Off Time Command'''
-    units           = 'HH:MM:00'
-    ack_patterns    = [ '^\(Sof\d{4}\)' ]
     cmdformat       = '(Sof{:04d})'
+    ack_patterns    = [ '^\(Sof\d{4}\)' ]
+    units           = 'HH:MM:00'
     ema_time_format = '(Sof%H%M)'
 
     def encode(self):
         self.encoded = self.value.strftime(self.ema_time_format)
 
-    def getResult(self, line, matchobj):
-        self.response = datetime.datetime.strptime(line, self.ema_time_format).time()
+    def getResult(self):
+       return datetime.datetime.strptime(self.response[0], self.ema_time_format).time()
 
 
 class GetAuxRelayMode(GetCommand):
     '''Get Aux Relay Mode Command'''
-    ack_patterns = [ '^\(S(\d{3})\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
     cmdformat    = '(s)'
-    MAPPING      = { 0 : 'Auto', 4: 'Closed', 5 : 'Open', 8 : 'Timer/Off', 9 : 'Timer/On' }
+    ack_patterns = [ '^\(S(\d{3})\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
+    ack_index    = 0
+    mapping      = { 0 : 'Auto', 4: 'Closed', 5 : 'Open', 8 : 'Timer/Off', 9 : 'Timer/On' }
 
-    def collectData(self, line, matchobj):
-        if self.i == 0:
-            self.response = self.MAPPING[int(matchobj.group(1))]
        
-    def getResult(self, line, matchobj):
-        pass
+    def getResult(self):
+        return self.mapping[int(self.matchobj[0].group(1))]
     
 
-class SetAuxRelayMode(Command):
+class SetAuxRelayMode(SetCommand):
     '''Set Aux Relay Mode Command'''
-    ack_patterns = [ '^\(S(\d{3})\)' ]
     cmdformat    = '(S{:03d})'
-    MAPPING      = { 0 : 'Auto', 4: 'Closed', 5 : 'Open', 8 : 'Timer/Off', 9 : 'Timer/On', 
-                    'Auto': 0, 'Closed': 4, 'Open' : 5, 'Timer/Off': 8, 'Timer/On' : 9 }
+    ack_patterns = [ '^\(S(\d{3})\)', '^(dummy)' ]
+    ack_index    = 0
+    mapping      = { 'Auto': 0,  'Closed': 4, 'Open' : 5, 'Timer/Off': 8,  'Timer/On' : 9 }
+    inv_mapping  = { 0 : 'Auto', 4: 'Closed', 5 : 'Open', 8 : 'Timer/Off', 9 : 'Timer/On' }
+   
     
     def __init__(self, value):
-        self.value    = value
-        self.NIters   = 1
-        self.fmt      = self.cmdformat
-        self.name     = self.__doc__
-        self.encoded  = None
-        self.ackPat   = [ re.compile(pat) for pat in self.ack_patterns ]
+        SetCommand.__init__(self, value)
+       # Patches the last compiled expression
         if self.value == 'Open':
-            self.ackPat.append(re.compile('^\(\d{2}:\d{2}:\d{2} Calentador on\.\)'))
+            self.ackPat[1] = re.compile('^\(\d{2}:\d{2}:\d{2} Calentador on\.\)')
         elif self.value == 'Closed':
-            self.ackPat.append(re.compile('^\(\d{2}:\d{2}:\d{2} Calentador off\.\)'))
+            self.ackPat[1] = re.compile('^\(\d{2}:\d{2}:\d{2} Calentador off\.\)')
         elif self.value == 'Timer/On':
-            self.ackPat.append(re.compile('^\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4} Timer ON\)'))
+            self.ackPat[1] = re.compile('^\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4} Timer ON\)')
         elif self.value == 'Timer/Off':
-            self.ackPat.append(re.compile('^\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4} Timer OFF\)'))
-        self.N        = len(self.ackPat)
-        self.reset()
+            self.ackPat[1] = re.compile('^\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4} Timer OFF\)')
+      
 
     def encode(self):
-        self.encoded = self.cmdformat.format(self.MAPPING[self.value])
-    
-    def collectData(self, line, matchobj):
-        if self.i == 0:
-            self.response = self.MAPPING[int(matchobj.group(1))]
+        self.encoded = self.cmdformat.format(self.mapping[self.value])
        
-    def getResult(self, line, matchobj):
-        pass
+    def getResult(self):
+        return self.inv_mapping[int(self.matchobj[0].group(1))]
 
 
 # ------------------------------------------------------------------------------

@@ -189,6 +189,7 @@ class SerialService(Service):
             (self.protocol.setPhotometerThreshold, 10.5),
             (self.protocol.setPhotometerOffset, 0),
             (self.protocol.setRoofRelayMode, 'Closed'),
+            (self.protocol.setAuxRelayMode, 'Timer/On'),
         ]
 
         if True:
