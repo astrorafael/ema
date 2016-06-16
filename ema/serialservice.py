@@ -147,7 +147,7 @@ class SerialService(Service):
 
         getFuncs = [ 
             self.protocol.getRTCDateTime,
-            self.protocol.get5MinAveragesDump,
+            self.protocol.getDailyMinMaxDump,
            
         ]
 

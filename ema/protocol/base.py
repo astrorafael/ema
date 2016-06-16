@@ -35,7 +35,7 @@ from twisted.protocols.basic     import LineOnlyReceiver
 # -------------
 
 from ..        import PY2
-from .status   import decode
+from .status   import decodeAsDict
 from ..error   import EMATimeoutError
 from .interval import Interval
 from .commands import (
@@ -504,7 +504,7 @@ class EMAProtocol(LineOnlyReceiver):
             return False
 
         if ur['name'] == 'Current status message':
-            curState = decode(line)
+            curState = decodeAsDict(line)
             if self._onStatus:
                 self._onStatus((curState, tstamp))
             return True

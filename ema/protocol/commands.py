@@ -41,8 +41,7 @@ from twisted.logger import Logger
 # Own modules
 # -----------
 
-#from .     import PY2
-#from .error import StringValueError, PayloadValueError, PayloadTypeError
+from .status import decodeAsList as decodeStatusAsList
 
 
 log = Logger(namespace='serial')
@@ -709,17 +708,20 @@ class BulkDumpCommand(object):
             handled = False; finished = False
             log.debug("Line does not match {command.name} response", command=self)
         elif self.i  < self.N - 1:
-            self.response[self.iteration].append(line)
-            self.matchobj[self.iteration].append(matchobj)   
+            self.accumulate(line, matchobj)
             self.i += 1
             handled = True; finished = False
             log.debug("Matched {command.name} response, awaiting iteration {i} data", command=self, i=self.iteration-1)
         else:
-            self.response[self.iteration].append(line)
-            self.matchobj[self.iteration].append(matchobj)
+            self.accumulate(line, matchobj)
             handled = True; finished = True
             log.debug("Matched {command.name} response, iteration {i} complete", command=self, i=self.iteration)
         return handled, finished
+
+    def accumulate(self, line, matchobj):
+        '''Default implementation, maybe overriden in subclasses'''
+        self.response[self.iteration].append(line)
+      
 
     def decode(self, line):
         '''
@@ -739,7 +741,6 @@ class BulkDumpCommand(object):
         self.i         = 0
         self.iteration += 1
         self.response.append([])
-        self.matchobj.append([])
         return True, False
 
     def getResult(self):
@@ -749,22 +750,15 @@ class BulkDumpCommand(object):
         '''
         return self.response
 
-    def getMatchObjs(self):
-        '''
-        Returns the matched objects, may be useful for parsing "line" items.
-        Must be called only after decode() returns True
-        '''
-        return self.matchobj
-
 
     def reset(self):
         '''reinitialization for retries after a timeout'''
         self.i         = 0
         self.iteration = 0
         self.response  = []
-        self.matchobj  = []
         self.response.append([])
-        self.matchobj.append([])
+       
+     
    
 
 # ------------------------------------------------------------------------------
@@ -778,12 +772,26 @@ class GetDailyMinMaxDump(BulkDumpCommand):
     ACK_PATTERNS = [ '^\(.{76}M\d{4}\)', '^\(.{76}m\d{4}\)', '^\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)']
     CMDFORMAT    = '(@H0300)'
     ITERATIONS   = 24
+    EMA_TIME_FORMAT = '(%H:%M:%S %d/%m/%Y)'
 
+    def accumulate(self, line, matchobj):
+        '''Default implementation, maybe overriden in subclasses'''
+        if self.i < 2:
+            self.response[self.iteration].append(decodeStatusAsList(line))
+        else:
+            self.response[self.iteration].append(datetime.datetime.strptime(line, self.EMA_TIME_FORMAT))
+      
 class Get5MinAveragesDump(BulkDumpCommand):
     '''Get 5 min Averages Bulk Dump'''
     ACK_PATTERNS = [ '^\(.{76}t\d{4}\)' ]
     CMDFORMAT    = '(@t0000)'
     ITERATIONS   = 288
+
+    def accumulate(self, line, matchobj):
+        '''Default implementation, maybe overriden in subclasses'''
+        self.response[self.iteration].append(decodeStatusAsList(line))
+       
+
 
 
 __all__ = [

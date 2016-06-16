@@ -166,7 +166,7 @@ def magnitude(frequency):
 
 #TSTAMP_FORMAT = "%Y-%m-%d %H:%M:%S"
 
-def decode(line):
+def decodeAsDict(line):
   '''Decode an EMA status line'''
   #status = { 'rev': VERSION, 'tstamp': timestamp.strftime(TSTAMP_FORMAT) }
   status            = {}
@@ -191,4 +191,29 @@ def decode(line):
   status['page']    = int(line[SMFB:SMFE])  # page number
   return status
 
-__all__ = [PERIOD, VERSION, decode]
+def decodeAsList(line):
+  '''Decode an EMA status line'''
+  #status = { 'rev': VERSION, 'tstamp': timestamp.strftime(TSTAMP_FORMAT) }
+  status            = []
+  status.append(False if line[SRRB] == 'C' else True)  # Roof
+  status.append(True if line[SARB] == 'E' or line[SARB] == 'e' else False) # Aux Relay
+  status.append(ord(line[SPSB]) * 0.10)           # Volts
+  status.append(int(line[SRAB:SRAE]) * 0.10)      # Rain mm
+  status.append(int(line[SCLB:SCLE]) * 0.10)      # Cloud %
+  status.append(int(line[SABB:SABE]) * 0.10)      # Abs Press HPa
+  status.append(int(line[SCBB:SCBE]) * 0.10)      # Calib HPa
+  status.append(int(line[SPCB:SPCE]) * 0.10)      # Current pluviom mm
+  status.append(int(line[SPAB:SPAE]))             # Accumulated pluviom mm
+  status.append(int(line[SPYB:SPYE]) * 0.10)      # Pyranomenter %
+  status.append(decodeFreq(line[SPHB:SPHE]))      # Photometer Hz
+  status.append(int(line[SATB:SATE]) * 0.10)      # Ambient Temp deg C
+  status.append(int(line[SRHB:SRHE]) * 0.10)      # Humidity %
+  status.append(int(line[SDPB:SDPE]) * 0.10)      # Dew Point deg C
+  status.append(int(line[SACB:SACE]) * 0.10)      # Wind Speed Km/h
+  status.append((line[SAAB:SAAE]))                # Wind Speedn 10 min Km/h
+  status.append(int(line[SWDB:SWDE]))             # Wind direction, degrees
+  #status['type']    = STATUS_TYPE[line[SMTB:SMTE]] # status type
+  status.append(int(line[SMFB:SMFE]))             # Flash page number
+  return status
+
+__all__ = [PERIOD, VERSION, decodeAsDict, decodeAsList]
