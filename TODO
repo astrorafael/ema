@@ -1,7 +1,7 @@
 *) Documentar las APIs del EMAProtocol
-*) endponts (serial y TCP _> needs factory)
+*) Hay que tocar Interval() para configurarlo por comando
+  los comandos cortos, poco intervalo y los bulk dump mucho intervalo
  - Comunicación al modulo MQTT con Colas deque() para desacoplar el servicio
   MQTT del servicio de lectura.
 - revisar los intervalos deben ser [0,24)
 *) nuevo modulo ema/devices.py para la sincronización
-
