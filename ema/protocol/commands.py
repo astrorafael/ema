@@ -211,8 +211,9 @@ class SetWatchdogPeriod(SetCommand):
     cmdformat    = '(T{:03d})'
     ack_patterns = [ '^\(T(\d{3})\)' ]
     ack_index    = 0
-    units        = 'sec'
     scale        = 1
+    units        = 'sec'
+    
 
 # ------------------------------------------------------------------------------
 #                               ANEMOMETER COMMANDS
@@ -224,76 +225,84 @@ class GetCurrentWindSpeedThreshold(GetCommand):
     cmdformat    = '(w)'
     ack_patterns = [ '^\(W(\d{3})\)' ]
     ack_index    = 0
-    units        = 'Km/h'
     scale        = 1
-   
+    units        = 'Km/h'
+    
     
 class SetCurrentWindSpeedThreshold(SetCommand):
     '''Set Current Wind Speed Threshold Command'''
     cmdformat    = '(W{:03d})'
     ack_patterns = [ '^\(W(\d{3})\)' ]
     ack_index    = 0
-    units        = 'Km/h'
     scale        = 1
-
+    units        = 'Km/h'
+   
 
 # ------------------------------------------------------------------------------
 
 class GetAverageWindSpeedThreshold(GetCommand):
     '''Get 10min Average Wind Speed Threshold Command'''
-    units        = 'Km/h'
-    scale        = 1
-    ack_patterns = [ '^\(O(\d{3})\)' ]
     cmdformat    = '(o)'
+    ack_patterns = [ '^\(O(\d{3})\)' ]
+    ack_index    = 0
+    scale        = 1
+    units        = 'Km/h'
+    
  
 class SetAverageWindSpeedThreshold(SetCommand):
     '''Set 10min Average Wind Speed Threshold Command'''
-    units        = 'Km/h'
-    scale        = 1
-    ack_patterns = [ '^\(O(\d{3})\)' ]
     cmdformat    = '(O{:03d})'
- 
+    ack_patterns = [ '^\(O(\d{3})\)' ]
+    ack_index    = 0
+    scale        = 1
+    units        = 'Km/h'
+    
 
 # ------------------------------------------------------------------------------
 
 class GetAnemometerCalibrationConstant(GetCommand):
     '''Get Anemometer Calibration Constant'''
-    units        = 'Unknown'
-    scale        = 1
-    ack_patterns = [ '^\(A(\d{3})\)' ]
     cmdformat    = '(a)'
+    ack_patterns = [ '^\(A(\d{3})\)' ]
+    ack_index    = 0
+    scale        = 1
+    units        = 'Unknown'
+     
 
 class SetAnemometerCalibrationConstant(SetCommand):
     '''Set Anemometer Calibration Constant'''
-    units        = 'Unknown'
-    scale        = 1
-    ack_patterns = [ '^\(A(\d{3})\)' ]
     cmdformat    = '(A{:03d})'
- 
+    ack_patterns = [ '^\(A(\d{3})\)' ]
+    ack_index    = 0
+    scale        = 1
+    units        = 'Unknown'
    
 # ------------------------------------------------------------------------------
 
 class GetAnemometerModel(GetCommand):
     '''Get Anemometer Model Command'''
-    ack_patterns = [ '^\(Z(\d{3})\)' ]
     cmdformat    = '(z)'
-    MAPPING      = { 1: 'TX20', 0: 'Homemade'}
+    ack_patterns = [ '^\(Z(\d{3})\)' ]
+    ack_index    = 0
+    mapping      = { 1: 'TX20', 0: 'Homemade'}
 
-    def getResult(self, line, matchobj):
-        self.response = self.MAPPING[int(matchobj.group(1))]
+    def getResult(self):
+        return self.mapping[int(self.matchobj[0].group(1))]
        
 
 class SetAnemometerModel(SetCommand):
     '''Set Anemometer Model Command'''
-    ack_patterns = [ '^\(Z(\d{3})\)' ]
     cmdformat    = '(Z{:03d})'
-    MAPPING      = {'TX20': 1, 'Homemade': 0, 1: 'TX20', 0: 'Homemade'}
+    ack_patterns = [ '^\(Z(\d{3})\)' ]
+    ack_index    = 0
+    mapping      = {'TX20': 1, 'Homemade': 0 }
+    inv_mapping  = { 1: 'TX20', 0: 'Homemade'}
 
     def encode(self):
-        self.encoded = self.cmdformat.format(self.MAPPING[self.value])
+        self.encoded = self.cmdformat.format(self.mapping[self.value])
     
-    def getResult(self, line, matchobj):
-        self.response = self.MAPPING[int(matchobj.group(1))]
+    def getResult(self):
+        return self.inv_mapping[int(self.matchobj[0].group(1))]
 
 # ------------------------------------------------------------------------------
 #                               BAROMETER COMMANDS

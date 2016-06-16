@@ -149,6 +149,7 @@ class SerialService(Service):
             self.protocol.getRTCDateTime,
             self.protocol.getWatchdogPeriod,
             self.protocol.getCurrentWindSpeedThreshold,
+            self.protocol.getAnemometerModel,
         ]
 
         setFuncs = [ 
@@ -182,6 +183,7 @@ class SerialService(Service):
             (self.protocol.setRTCDateTime, None),
             (self.protocol.setWatchdogPeriod, 200),
             (self.protocol.setCurrentWindSpeedThreshold, 20),
+            (self.protocol.setAnemometerModel, 'Homemade'),
         ]
 
         if True:
