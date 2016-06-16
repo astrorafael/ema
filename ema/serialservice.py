@@ -145,6 +145,9 @@ class SerialService(Service):
             self.protocol.getWatchdogPeriod,
         ]
 
+        getFuncs = [ 
+            self.protocol.getDailyMinMaxDump,
+        ]
 
         setFuncs = [ 
             (self.protocol.setCurrentWindSpeedThreshold, 20),
@@ -183,7 +186,7 @@ class SerialService(Service):
                 except EMATimeoutError as e:
                     log.error("{excp!s}", excp=e)
                     continue
-        if True:
+        if False:
             for setter in setFuncs:
                 try:
                     res = yield setter[0](setter[1])

@@ -84,7 +84,8 @@ from .commands import (
     SetAuxRelaySwitchOffTime, 
     GetAuxRelayMode,
     SetAuxRelayMode,
-    SetRoofRelayMode
+    SetRoofRelayMode,
+    GetDailyMinMaxDump
     )
 
 
@@ -408,7 +409,12 @@ class EMAProtocol(LineOnlyReceiver):
     def setRoofRelayMode(self, value, nretries=3):
         return self._enqueue(SetRoofRelayMode(value), nretries)
 
+    # --------------
+    # EMA Bulk Dumps
+    # --------------
 
+    def getDailyMinMaxDump(self, nretries=0):
+        return self._enqueue(GetDailyMinMaxDump(), nretries)
 
 
 

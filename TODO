@@ -1,2 +1,3 @@
 *) Implementar y probar todos los SetCommand()
+*) Documentar las APIs del EMAProtocol
 *) endponts (serial y TCP _> needs factory)

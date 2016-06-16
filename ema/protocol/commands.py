@@ -95,7 +95,7 @@ class Command(object):
     # ----------------------------
 
     def reset(self):
-        '''reinitialization for retries'''
+        '''reinitialization for retries after a tiemout'''
         self.i         = 0
         self.iteration = 1
         self.response  = []
@@ -675,6 +675,26 @@ class SetAuxRelayMode(Command):
         pass
 
 
+# ------------------------------------------------------------------------------
+#                                BULK DUMP COMMANDS
+# ------------------------------------------------------------------------------
+
+class GetDailyMinMaxDump(Command):
+    '''Get Daily Min/Max Dump Command'''
+    ack_patterns = [ '^\(.{76}M\d{4}\)', '^\(.{76}m\d{4}\)', '^\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)']
+    cmdformat    = '(@H0300)'
+    NIters       = 24
+
+    def __init__(self):
+        # Request format
+        Command.__init__(self, ack_patterns=self.ack_patterns, fmt=self.cmdformat, NIters=self.NIters)
+
+    def collectData(self, line, matchobj):
+        self.response.append(line)
+
+    def extractValues(self, line, matchobj):
+        pass
+
 
 
 __all__ = [
@@ -724,4 +744,5 @@ __all__ = [
     GetAuxRelayMode,
     SetAuxRelayMode,
     SetRoofRelayMode,
+    GetDailyMinMaxDump,
 ]
