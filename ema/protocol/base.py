@@ -22,6 +22,7 @@ from twisted.logger              import Logger, LogLevel
 from twisted.internet            import reactor, defer, task
 from twisted.internet.defer      import inlineCallbacks
 from twisted.protocols.basic     import LineOnlyReceiver
+from twisted.internet.protocol   import ClientFactory
 
 
 #--------------
@@ -129,6 +130,29 @@ def match(line):
             log.debug("matched {pattern}", pattern=UNSOLICITED_RESPONSES[UNSOLICITED_PATTERNS.index(regexp)]['name'])
             return UNSOLICITED_RESPONSES[UNSOLICITED_PATTERNS.index(regexp)]
     return None
+
+
+
+# -------
+# Classes
+# -------
+
+class EMAProtocolFactory(ClientFactory):
+
+    def startedConnecting(self, connector):
+        log.debug('Factory: Started to connect.')
+
+    def buildProtocol(self, addr):
+        log.debug('Factory: Connected.')
+        return EMAProtocol()
+
+    def clientConnectionLost(self, connector, reason):
+        log.debug('Factory: Lost connection. Reason: {reason}', reason=reason)
+
+    def clientConnectionFailed(self, connector, reason):
+        log.febug('Factory: Connection failed. Reason: {reason}', reason=reason)
+
+
 
 class EMAProtocol(LineOnlyReceiver):
 

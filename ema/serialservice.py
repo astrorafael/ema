@@ -19,11 +19,14 @@ import math
 # Twisted imports
 # ---------------
 
-from twisted.logger              import Logger, LogLevel
-from twisted.internet            import reactor, task
-from twisted.internet.defer      import inlineCallbacks
-from twisted.internet.serialport import SerialPort
-from twisted.application.service import Service
+from twisted.logger               import Logger, LogLevel
+from twisted.internet             import reactor, task
+from twisted.internet.defer       import inlineCallbacks
+from twisted.internet.serialport  import SerialPort
+from twisted.application.service  import Service
+from twisted.application.internet import ClientService, backoffPolicy
+from twisted.internet.endpoints   import clientFromString
+
 
 #--------------
 # local imports
@@ -31,13 +34,24 @@ from twisted.application.service import Service
 
 from .logger   import setLogLevel
 from .utils    import chop
-from .protocol import EMAProtocol
+from .protocol import EMAProtocol, EMAProtocolFactory
 from .error    import EMATimeoutError
 
 # ----------------
 # Module constants
 # ----------------
 
+# ----------------
+# Global functions
+# -----------------
+
+def chop(string, sep=None):
+    '''Chop a list of strings, separated by sep and 
+    strips individual string items from leading and trailing blanks'''
+    chopped = [ elem.strip() for elem in string.split(sep) ]
+    if len(chopped) == 1 and chopped[0] == '':
+        chopped = []
+    return chopped
 
 # -----------------------
 # Module global variables
@@ -47,7 +61,7 @@ log = Logger(namespace='serial')
 
 
 
-class SerialService(Service):
+class SerialService(ClientService):
 
 
     def __init__(self, parent, options, **kargs):
@@ -57,27 +71,54 @@ class SerialService(Service):
         setLogLevel(namespace='serial', levelStr=options['log_level'])
         setLogLevel(namespace='protoc', levelStr=protocol_level)
        
-        self.protocol  = EMAProtocol()
-        self.port      = None
+        self.factory   = EMAProtocolFactory()
+        self.serport   = None
 
         self.resetCounters()
-        self.pingTask   = task.LoopingCall(self.ping)
-        self.syncTask   = self.protocol.callLater(10, self.sync)
-        Service.__init__(self)
+        
+        
+        self.goSerial = self._decide()
+
+
+    def _decide(self):
+        '''Decide which endpoint must be built, either TCP or Serial'''
+        parts = chop(self.options['endpoint'], sep=':')
+        if parts[0] == 'serial':
+            self.endpoint = parts[1:]
+            Service.__init__(self)
+            return True
+        else:
+            self.endpoint = clientFromString(reactor, self.options['endpoint'])
+            ClientService.__init__(self, self.endpoint, self.factory, 
+                retryPolicy=backoffPolicy(initialDelay=2, factor=2, maxDelay=300))
+            return False
 
     
     def startService(self):
         log.info("starting Serial Service")
-        if self.port is None:
-            self.port      = SerialPort(self.protocol, self.options['port'], reactor, baudrate=self.options['baud'])
-        self.pingTask.start(20, now=False)
-        Service.startService(self)
+        if self.goSerial:
+            if self.serport is None:
+                self.protocol  = self.factory.buildProtocol(0)
+                self.serport      = SerialPort(self.protocol, self.endpoint[0], reactor, baudrate=self.endpoint[1])
+            Service.startService(self)
+            self.gotProtocol(self.protocol)
+        else:
+            self.whenConnected().addCallback(self.gotProtocol)
+            ClientService.startService(self)
 
 
+    def gotProtocol(self, protocol):
+        log.debug("got Protocol")
+        self.protocol  = protocol
+        self.pingTask   = task.LoopingCall(self.ping)
+        self.pingTask.start(100, now=False)
+        self.syncTask  = self.protocol.callLater(10, self.sync)
+        
+       
     @inlineCallbacks
     def stopService(self):
         try:
-            yield Service.stopService(self)
+            yield ClientService.stopService(self)
         except Exception as e:
             log.error("Exception {excp!s}", excp=e)
             reactor.stop()

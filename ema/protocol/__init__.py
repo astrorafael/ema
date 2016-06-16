@@ -18,7 +18,7 @@ from __future__ import division
 # local imports
 # -------------
 
-from .base import EMAProtocol
+from .base import EMAProtocol, EMAProtocolFactory
 
 # ----------------
 # Module constants
@@ -29,4 +29,4 @@ from .base import EMAProtocol
 # -----------------------
 
 
-__all__ = [EMAProtocol]
+__all__ = [EMAProtocol, EMAProtocolFactory]

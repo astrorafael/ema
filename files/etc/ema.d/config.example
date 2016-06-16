@@ -44,8 +44,9 @@ log_level = debug
 
 [serial]
 # Serial Port Settings. Baud rate supported only 9600 & 57600
-port = /dev/ttyUSB0
-baud = 9600
+# As an alternative a tcp:<host>:port can be specified
+# Not reloadable property
+endpoint = serial:/dev/ttyUSB0:9600
 
 # component log level (debug, info, warn, error, critical)
 log_level = debug
