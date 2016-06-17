@@ -1,7 +1,29 @@
+*) Casos de test del protocolo completos
+ - assert de lo que escupe
+ - inyeccion simulada de lo que llega
+ - assert del valor resultante
+ - incluir Bulk Dumps
 *) Documentar las APIs del EMAProtocol
 *) Hay que tocar Interval() para configurarlo por comando
   los comandos cortos, poco intervalo y los bulk dump mucho intervalo
  - Comunicación al modulo MQTT con Colas deque() para desacoplar el servicio
   MQTT del servicio de lectura.
-- revisar los intervalos deben ser [0,24)
+*)  revisar los intervalos window deben ser [0,24)
 *) nuevo modulo ema/devices.py para la sincronización
+  - sincronizacion configurable individualmente por dispositivo, que tendrá varios parametros
+*) Una unica EMA no se registra al MQTT si sus parametros seleccionados de registro no han podido
+   obtenerse
+*) Topic MQTT
+	  EMA/register
+	  EMA/<channel>/events
+	  EMA/<channel>/current/state
+	  EMA/<channel>/historic/minmax
+	  EMA/<channel>/historic/dailyaverage
+*) Eventos JSON (¿con retained?)
+   - Ya estoy en linea de nuevo
+   - error de registro
+   - error en bulk dump
+*) Formato eventos JSON { "name": "foo", "tstamp": "<a tstamp>" "type": "error", "msg": "<a message>"} 
+*) Definir formato JSON MQTT en e README y con Tablas
+*) Servicio MQTTClient para stars4all
+
