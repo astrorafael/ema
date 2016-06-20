@@ -195,8 +195,8 @@ def decodeAsList(line):
   '''Decode an EMA status line'''
   #status = { 'rev': VERSION, 'tstamp': timestamp.strftime(TSTAMP_FORMAT) }
   status            = []
-  status.append(False if line[SRRB] == 'C' else True)  # Roof
-  status.append(True if line[SARB] == 'E' or line[SARB] == 'e' else False) # Aux Relay
+  status.append('Closed' if line[SRRB] == 'C' else 'Open')  # Roof
+  status.append('Open' if line[SARB] == 'E' or line[SARB] == 'e' else 'Closed') # Aux Relay
   status.append(ord(line[SPSB]) * 0.10)           # Volts
   status.append(int(line[SRAB:SRAE]) * 0.10)      # Rain mm
   status.append(int(line[SCLB:SCLE]) * 0.10)      # Cloud %
@@ -210,7 +210,7 @@ def decodeAsList(line):
   status.append(int(line[SRHB:SRHE]) * 0.10)      # Humidity %
   status.append(int(line[SDPB:SDPE]) * 0.10)      # Dew Point deg C
   status.append(int(line[SACB:SACE]) * 0.10)      # Wind Speed Km/h
-  status.append((line[SAAB:SAAE]))                # Wind Speedn 10 min Km/h
+  status.append(int(line[SAAB:SAAE]))             # Wind Speedn 10 min Km/h
   status.append(int(line[SWDB:SWDE]))             # Wind direction, degrees
   #status['type']    = STATUS_TYPE[line[SMTB:SMTE]] # status type
   status.append(int(line[SMFB:SMFE]))             # Flash page number
