@@ -458,7 +458,43 @@ class TestEMAProtocol1(unittest.TestCase):
         d.addCallback(self.assertEqual, 'Timer/On')
         return d
     
-    def test_setAuxRelayMode(self):
+    # def test_setAuxRelayMode1(self):
+    #     d = self.protocol.setAuxRelayMode('Auto')
+    #     self.assertEqual(self.transport.value(), '(S000)')
+    #     self.transport.clear()
+    #     self.protocol.dataReceived('(S000)')
+    #     self.protocol.dataReceived('(dummy)')
+    #     d.addCallback(self.assertEqual, 'Auto')
+    #     return d
+
+    def test_setAuxRelayMode2(self):
+        d = self.protocol.setAuxRelayMode('Closed')
+        self.assertEqual(self.transport.value(), '(S004)')
+        self.transport.clear()
+        self.protocol.dataReceived('(S004)')
+        self.protocol.dataReceived('(12:34:56 Calentador off.)')
+        d.addCallback(self.assertEqual, 'Closed')
+        return d
+
+    def test_setAuxRelayMode3(self):
+        d = self.protocol.setAuxRelayMode('Open')
+        self.assertEqual(self.transport.value(), '(S005)')
+        self.transport.clear()
+        self.protocol.dataReceived('(S005)')
+        self.protocol.dataReceived('(12:34:56 Calentador on.)')
+        d.addCallback(self.assertEqual, 'Open')
+        return d
+
+    def test_setAuxRelayMode4(self):
+        d = self.protocol.setAuxRelayMode('Timer/Off')
+        self.assertEqual(self.transport.value(), '(S008)')
+        self.transport.clear()
+        self.protocol.dataReceived('(S008)')
+        self.protocol.dataReceived('(12:34:56 20/06/2016 Timer OFF)')
+        d.addCallback(self.assertEqual, 'Timer/Off')
+        return d
+
+    def test_setAuxRelayMode5(self):
         d = self.protocol.setAuxRelayMode('Timer/On')
         self.assertEqual(self.transport.value(), '(S009)')
         self.transport.clear()
@@ -471,7 +507,7 @@ class TestEMAProtocol1(unittest.TestCase):
     # EMA Roof Relay
     # --------------
 
-    def test_setRoofRelayMode(self):
+    def test_setRoofRelayMode1(self):
         d = self.protocol.setRoofRelayMode('Open')
         self.assertEqual(self.transport.value(), '(X007)')
         self.transport.clear()
@@ -480,4 +516,12 @@ class TestEMAProtocol1(unittest.TestCase):
         d.addCallback(self.assertEqual, 'Open')
         return d
 
+    def test_setRoofRelayMode2(self):
+        d = self.protocol.setRoofRelayMode('Closed')
+        self.assertEqual(self.transport.value(), '(X000)')
+        self.transport.clear()
+        self.protocol.dataReceived('(X000)')
+        self.protocol.dataReceived('(12:34:56 Cerrar Obs.)')
+        d.addCallback(self.assertEqual, 'Closed')
+        return d
  
