@@ -187,9 +187,7 @@ class SerialService(ClientService):
         ]
 
         getFuncs = [ 
-            self.protocol.getRTCDateTime,
-            self.protocol.get5MinAveragesDump,
-           
+           self.protocol.get5MinAveragesDump
         ]
 
         setFuncs = [ 
@@ -220,7 +218,6 @@ class SerialService(ClientService):
         ]
 
         setFuncs = [ 
-
         ]
 
         if True:

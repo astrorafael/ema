@@ -804,6 +804,8 @@ class SetAuxRelayMode(SetCommand):
             self.ackPat[1] = re.compile('^\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4} Timer ON\)')
         elif self.value == 'Timer/Off':
             self.ackPat[1] = re.compile('^\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4} Timer OFF\)')
+        elif self.value == 'Auto':
+            self.N = 1
       
 
     def encode(self):

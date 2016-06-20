@@ -167,8 +167,9 @@ class EMAProtocol(LineOnlyReceiver):
     def __init__(self):
         '''Sets the delimiter to the closihg parenthesis'''
         LineOnlyReceiver.delimiter = b')'
-        self._onStatus = None
-        self._queue    = deque()              # Command queue
+        self._onStatus     = set()                # callback sets
+        self._onPhotometer = set()
+        self._queue        = deque()              # Command queue
       
     def connectionMade(self):
         log.debug("connectionMade()")
@@ -213,11 +214,29 @@ class EMAProtocol(LineOnlyReceiver):
     # EMA Protocol API
     # ================
 
-    def setStatusCallback(self, callback):
+    def addStatusCallback(self, callback):
         '''
         API Entry Point
         '''
-        self._onStatus = callback
+        self._onStatus.add(callback)
+
+    def delStatusCallback(self, callback):
+        '''
+        API Entry Point
+        '''
+        self._onStatus.remove(callback)
+
+    def addPhotometerCallback(self, callback):
+        '''
+        API Entry Point
+        '''
+        self._onPhotometer.add(callback)
+
+    def delPhotometerCallback(self, callback):
+        '''
+        API Entry Point
+        '''
+        self._onPhotometer.remove(callback)
 
     # ------------
     # EMA Watchdog
@@ -538,12 +557,14 @@ class EMAProtocol(LineOnlyReceiver):
 
         if ur['name'] == 'Current status message':
             curState = decodeAsDict(line)
-            if self._onStatus:
-                self._onStatus((curState, tstamp))
+            for callback in self._onStatus:
+                callback(curState, tstamp)
             return True
         if ur['name'] == 'Photometer begin':
             return True
         if ur['name'] == 'Photometer end':
+            for callback in self._onPhotometer:
+                callback(curState, tstamp)
             return True
         if ur['name'] == 'Thermopile I2C':
             return True

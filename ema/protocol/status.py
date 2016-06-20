@@ -170,8 +170,8 @@ def decodeAsDict(line):
   '''Decode an EMA status line'''
   #status = { 'rev': VERSION, 'tstamp': timestamp.strftime(TSTAMP_FORMAT) }
   status            = {}
-  status['roof']    = False if line[SRRB] == 'C' else True
-  status['aux']     = True if line[SARB] == 'E' or line[SARB] == 'e' else False
+  status['roof']    = 'Closed' if line[SRRB] == 'C' else 'Open'
+  status['aux']     = 'Open'   if line[SARB] == 'E' or line[SARB] == 'e' else 'Closed'
   status['volt']    = ord(line[SPSB])      * 0.10 # Volts
   status['rain']    = int(line[SRAB:SRAE]) * 0.10 # mm
   status['cloud']   = int(line[SCLB:SCLE]) * 0.10 # %

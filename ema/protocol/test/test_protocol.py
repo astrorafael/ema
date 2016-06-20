@@ -463,7 +463,6 @@ class TestEMAProtocol1(unittest.TestCase):
         self.assertEqual(self.transport.value(), '(S000)')
         self.transport.clear()
         self.protocol.dataReceived('(S000)')
-        self.protocol.dataReceived('(dummy)')
         d.addCallback(self.assertEqual, 'Auto')
         return d
 
