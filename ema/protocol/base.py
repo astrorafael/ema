@@ -230,12 +230,12 @@ class EMAProtocol(LineOnlyReceiver):
         Success callback returns ?
         An errback may be invoked with EMATimeoutError
         '''
-        return self._enqueue(Ping(), nretries=0)
+        return self._enqueue(Ping(), nretries=Ping.RETRIES)
 
-    def getWatchdogPeriod(self, nretries=3):
+    def getWatchdogPeriod(self, nretries=GetWatchdogPeriod.RETRIES):
         return self._enqueue(GetWatchdogPeriod(), nretries)
 
-    def setWatchdogPeriod(self, value, nretries=3):
+    def setWatchdogPeriod(self, value, nretries=SetWatchdogPeriod.RETRIES):
         return self._enqueue(SetWatchdogPeriod(value), nretries)
 
        
@@ -244,7 +244,7 @@ class EMAProtocol(LineOnlyReceiver):
     # EMA RTC
     # -------
 
-    def getRTCDateTime(self, nretries=3):
+    def getRTCDateTime(self, nretries=GetRTCDateTime.RETRIES):
         '''
         Get EMA current RTC time
         Retuns a deferred. 
@@ -254,7 +254,7 @@ class EMAProtocol(LineOnlyReceiver):
         return self._enqueue(GetRTCDateTime(), nretries)
 
 
-    def setRTCDateTime(self, value, nretries=0):
+    def setRTCDateTime(self, value, nretries=SetRTCDateTime.RETRIES):
         '''
         Set EMA current RTC time
         Retuns a deferred. 
@@ -267,129 +267,129 @@ class EMAProtocol(LineOnlyReceiver):
     # EMA Anemometer
     # --------------
 
-    def getCurrentWindSpeedThreshold(self, nretries=3):
+    def getCurrentWindSpeedThreshold(self, nretries=GetCurrentWindSpeedThreshold.RETRIES):
         return self._enqueue(GetCurrentWindSpeedThreshold(), nretries)
 
-    def setCurrentWindSpeedThreshold(self, value, nretries=3):
+    def setCurrentWindSpeedThreshold(self, value, nretries=SetCurrentWindSpeedThreshold.RETRIES):
         return self._enqueue(SetCurrentWindSpeedThreshold(value), nretries)
 
-    def getAverageWindSpeedThreshold(self, nretries=3):
+    def getAverageWindSpeedThreshold(self, nretries=GetAverageWindSpeedThreshold.RETRIES):
         return self._enqueue(GetAverageWindSpeedThreshold(), nretries)
 
-    def setAverageWindSpeedThreshold(self, value, nretries=3):
+    def setAverageWindSpeedThreshold(self, value, nretries=SetAverageWindSpeedThreshold.RETRIES):
         return self._enqueue(SetAverageWindSpeedThreshold(value), nretries)
 
-    def getAnemometerCalibrationConstant(self, nretries=3):
+    def getAnemometerCalibrationConstant(self, nretries=GetAnemometerCalibrationConstant.RETRIES):
         return self._enqueue(GetAnemometerCalibrationConstant(), nretries)
 
-    def setAnemometerCalibrationConstant(self, value, nretries=3):
+    def setAnemometerCalibrationConstant(self, value, nretries=SetAnemometerCalibrationConstant.RETRIES):
         return self._enqueue(SetAnemometerCalibrationConstant(value), nretries)
 
-    def getAnemometerModel(self, nretries=3):
+    def getAnemometerModel(self, nretries=GetAnemometerModel.RETRIES):
         return self._enqueue(GetAnemometerModel(), nretries)
 
-    def setAnemometerModel(self, value, nretries=3):
+    def setAnemometerModel(self, value, nretries=SetAnemometerModel.RETRIES):
         return self._enqueue(SetAnemometerModel(value), nretries)
 
     # -------------
     # EMA Barometer
     # -------------
 
-    def getBarometerHeight(self, nretries=3):
+    def getBarometerHeight(self, nretries=GetBarometerHeight.RETRIES):
         return self._enqueue(GetBarometerHeight(), nretries)
 
-    def setBarometerHeight(self, value, nretries=3):
+    def setBarometerHeight(self, value, nretries=SetBarometerHeight.RETRIES):
         return self._enqueue(SetBarometerHeight(value), nretries)
 
-    def getBarometerOffset(self, nretries=3):
+    def getBarometerOffset(self, nretries=GetBarometerOffset.RETRIES):
         return self._enqueue(GetBarometerOffset(), nretries)
 
-    def setBarometerOffset(self, value, nretries=3):
+    def setBarometerOffset(self, value, nretries=SetBarometerOffset.RETRIES):
         return self._enqueue(SetBarometerOffset(value), nretries)
 
     # ------------------
     # EMA Cloud Detector
     # ------------------
 
-    def getCloudSensorThreshold(self, nretries=3):
+    def getCloudSensorThreshold(self, nretries=GetCloudSensorThreshold.RETRIES):
         return self._enqueue(GetCloudSensorThreshold(), nretries)
 
-    def setCloudSensorThreshold(self, value, nretries=3):
+    def setCloudSensorThreshold(self, value, nretries=SetCloudSensorThreshold.RETRIES):
         return self._enqueue(SetCloudSensorThreshold(value), nretries)
 
-    def getCloudSensorGain(self, nretries=3):
+    def getCloudSensorGain(self, nretries=GetCloudSensorGain.RETRIES):
         return self._enqueue(GetCloudSensorGain(), nretries)
 
-    def setCloudSensorGain(self, value, nretries=3):
+    def setCloudSensorGain(self, value, nretries=SetCloudSensorGain.RETRIES):
         return self._enqueue(SetCloudSensorGain(value), nretries)
 
     # --------------
     # EMA Photometer
     # --------------
 
-    def getPhotometerThreshold(self, nretries=3):
+    def getPhotometerThreshold(self, nretries=GetPhotometerThreshold.RETRIES):
         return self._enqueue(GetPhotometerThreshold(), nretries)
 
-    def setPhotometerThreshold(self, value, nretries=3):
+    def setPhotometerThreshold(self, value, nretries=SetPhotometerThreshold.RETRIES):
         return self._enqueue(SetPhotometerThreshold(value), nretries)
 
-    def getPhotometerOffset(self, nretries=3):
+    def getPhotometerOffset(self, nretries=GetPhotometerOffset.RETRIES):
         return self._enqueue(GetPhotometerOffset(), nretries)
 
-    def setPhotometerOffset(self, value, nretries=3):
+    def setPhotometerOffset(self, value, nretries=SetPhotometerOffset.RETRIES):
         return self._enqueue(SetPhotometerOffset(value), nretries)
 
     # ---------------
     # EMA Pluviometer
     # ---------------
 
-    def getPluviometerCalibration(self, nretries=3):
+    def getPluviometerCalibration(self, nretries=GetPluviometerCalibration.RETRIES):
         return self._enqueue(GetPluviometerCalibration(), nretries)
 
-    def setPluviometerCalibration(self, value, nretries=3):
+    def setPluviometerCalibration(self, value, nretries=SetPluviometerCalibration.RETRIES):
         return self._enqueue(SetPluviometerCalibration(value), nretries)
 
     # ---------------
     # EMA Pyranometer
     # ---------------
 
-    def getPyranometerGain(self, nretries=3):
+    def getPyranometerGain(self, nretries=GetPyranometerGain.RETRIES):
         return self._enqueue(GetPyranometerGain(), nretries)
 
-    def setPyranometerGain(self, value, nretries=3):
+    def setPyranometerGain(self, value, nretries=SetPyranometerGain.RETRIES):
         return self._enqueue(SetPyranometerGain(value), nretries)
 
-    def getPyranometerOffset(self, nretries=3):
+    def getPyranometerOffset(self, nretries=GetPyranometerOffset.RETRIES):
         return self._enqueue(GetPyranometerOffset(), nretries)
 
-    def setPyranometerOffset(self, value, nretries=3):
+    def setPyranometerOffset(self, value, nretries=SetPyranometerOffset.RETRIES):
         return self._enqueue(SetPyranometerOffset(value), nretries)
 
     # ---------------
     # EMA Rain Sensor
     # ---------------
 
-    def getRainSensorThreshold(self, nretries=3):
+    def getRainSensorThreshold(self, nretries=GetRainSensorThreshold.RETRIES):
         return self._enqueue(GetRainSensorThreshold(), nretries)
 
-    def setRainSensorThreshold(self, value, nretries=3):
+    def setRainSensorThreshold(self, value, nretries=SetRainSensorThreshold.RETRIES):
         return self._enqueue(SetRainSensorThreshold(value), nretries)
   
     # ---------------
     # EMA Thermometer
     # ---------------
 
-    def getThermometerDeltaTempThreshold(self, nretries=3):
+    def getThermometerDeltaTempThreshold(self, nretries=GetThermometerDeltaTempThreshold.RETRIES):
         return self._enqueue(GetThermometerDeltaTempThreshold(), nretries)
 
-    def setThermometerDeltaTempThreshold(self, value, nretries=3):
+    def setThermometerDeltaTempThreshold(self, value, nretries=SetThermometerDeltaTempThreshold.RETRIES):
         return self._enqueue(SetThermometerDeltaTempThreshold(value), nretries)
 
     # -------------
     # EMA Voltmeter
     # -------------
 
-    def getVoltmeterThreshold(self, nretries=3):
+    def getVoltmeterThreshold(self, nretries=GetVoltmeterThreshold.RETRIES):
         '''
         Get EMA calibration Voltage Threshold
         Retunrs a deferred. 
@@ -398,10 +398,10 @@ class EMAProtocol(LineOnlyReceiver):
         '''
         return self._enqueue(GetVoltmeterThreshold(), nretries)
 
-    def setVoltmeterThreshold(self, value, nretries=3):
+    def setVoltmeterThreshold(self, value, nretries=SetVoltmeterThreshold.RETRIES):
         return self._enqueue(SetVoltmeterThreshold(value), nretries)
 
-    def getVoltmeterOffset(self, nretries=3):
+    def getVoltmeterOffset(self, nretries=GetVoltmeterOffset.RETRIES):
         '''
         Get EMA calibration Voltage Offset
         Retuns a deferred. 
@@ -410,46 +410,46 @@ class EMAProtocol(LineOnlyReceiver):
         '''
         return self._enqueue(GetVoltmeterOffset(), nretries)
 
-    def setVoltmeterOffset(self, value, nretries=3):
+    def setVoltmeterOffset(self, value, nretries=SetVoltmeterOffset.RETRIES):
         return self._enqueue(SetVoltmeterOffset(value), nretries)
 
     # ------------------
     # EMA Auxiliar Relay
     # -----------------
 
-    def getAuxRelaySwitchOnTime(self, nretries=3):
+    def getAuxRelaySwitchOnTime(self, nretries=GetAuxRelaySwitchOnTime.RETRIES):
         return self._enqueue(GetAuxRelaySwitchOnTime(), nretries)
 
-    def setAuxRelaySwitchOnTime(self, value, nretries=3):
+    def setAuxRelaySwitchOnTime(self, value, nretries=SetAuxRelaySwitchOnTime.RETRIES):
         return self._enqueue(SetAuxRelaySwitchOnTime(value), nretries)
 
-    def getAuxRelaySwitchOffTime(self, nretries=3):
+    def getAuxRelaySwitchOffTime(self, nretries=GetAuxRelaySwitchOffTime.RETRIES):
         return self._enqueue(GetAuxRelaySwitchOffTime(), nretries)
 
-    def setAuxRelaySwitchOffTime(self, value, nretries=3):
+    def setAuxRelaySwitchOffTime(self, value, nretries=SetAuxRelaySwitchOffTime.RETRIES):
         return self._enqueue(SetAuxRelaySwitchOffTime(value), nretries)
 
-    def getAuxRelayMode(self, nretries=3):
+    def getAuxRelayMode(self, nretries=GetAuxRelayMode.RETRIES):
         return self._enqueue(GetAuxRelayMode(), nretries)
 
-    def setAuxRelayMode(self, value, nretries=3):
+    def setAuxRelayMode(self, value, nretries=SetAuxRelayMode.RETRIES):
         return self._enqueue(SetAuxRelayMode(value), nretries)
 
     # --------------
     # EMA Roof Relay
     # --------------
 
-    def setRoofRelayMode(self, value, nretries=3):
+    def setRoofRelayMode(self, value, nretries=SetRoofRelayMode.RETRIES):
         return self._enqueue(SetRoofRelayMode(value), nretries)
 
     # --------------
     # EMA Bulk Dumps
     # --------------
 
-    def getDailyMinMaxDump(self, nretries=0):
+    def getDailyMinMaxDump(self, nretries=GetDailyMinMaxDump.RETRIES):
         return self._enqueue(GetDailyMinMaxDump(), nretries)
 
-    def get5MinAveragesDump(self, nretries=0):
+    def get5MinAveragesDump(self, nretries=Get5MinAveragesDump.RETRIES):
         return self._enqueue(Get5MinAveragesDump(), nretries)
 
 

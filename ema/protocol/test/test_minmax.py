@@ -234,8 +234,6 @@ class TestEMAProtocol1(unittest.TestCase):
     ]
 
 
-
-
     def setUp(self):
         setLogLevel(namespace='serial', levelStr='debug')
         setLogLevel(namespace='protoc', levelStr='debug')

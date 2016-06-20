@@ -150,6 +150,7 @@ class GetRTCDateTime(GetCommand):
     CMDFORMAT       = '(y)'
     ACK_PATTERNS    = [ '^\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)' ]
     EMA_TIME_FORMAT = '(%H:%M:%S %d/%m/%Y)'
+    RETRIES         = 0
 
     def getResult(self):
         return  datetime.datetime.strptime(self.response[0], self.EMA_TIME_FORMAT)
@@ -161,6 +162,7 @@ class SetRTCDateTime(SetCommand):
     CMDFORMAT       = '(Y%d%m%y%H%M%S)'
     ACK_PATTERNS    = [ '\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)']
     EMA_TIME_FORMAT = '(%H:%M:%S %d/%m/%Y)'
+    RETRIES         = 0
 
     def __init__(self, value):
         self.renew = False
@@ -188,6 +190,7 @@ class Ping(GetCommand):
     '''Ping'''
     CMDFORMAT    = '( )'
     ACK_PATTERNS = [ '^\( \)' ]
+    RETRIES      = 0
 
     def getResult(self):
         return self.response[0]
@@ -200,6 +203,7 @@ class GetWatchdogPeriod(GetCommand):
     ACK_INDEX    = 0
     UNITS        = 'sec'
     SCALE        = 1
+    RETRIES      = 2
     
 
 class SetWatchdogPeriod(SetCommand):
@@ -209,6 +213,7 @@ class SetWatchdogPeriod(SetCommand):
     ACK_INDEX    = 0
     SCALE        = 1
     UNITS        = 'sec'
+    RETRIES      = 2
     
 
 # ------------------------------------------------------------------------------
@@ -222,6 +227,7 @@ class GetCurrentWindSpeedThreshold(GetCommand):
     ACK_PATTERNS = [ '^\(W(\d{3})\)' ]
     SCALE        = 1
     UNITS        = 'Km/h'
+    RETRIES      = 2
     
     
 class SetCurrentWindSpeedThreshold(SetCommand):
@@ -230,6 +236,7 @@ class SetCurrentWindSpeedThreshold(SetCommand):
     ACK_PATTERNS = [ '^\(W(\d{3})\)' ]
     SCALE        = 1
     UNITS        = 'Km/h'
+    RETRIES      = 2
    
 
 # ------------------------------------------------------------------------------
@@ -240,6 +247,7 @@ class GetAverageWindSpeedThreshold(GetCommand):
     ACK_PATTERNS = [ '^\(O(\d{3})\)' ]
     SCALE        = 1
     UNITS        = 'Km/h'
+    RETRIES      = 2
     
  
 class SetAverageWindSpeedThreshold(SetCommand):
@@ -248,6 +256,7 @@ class SetAverageWindSpeedThreshold(SetCommand):
     ACK_PATTERNS = [ '^\(O(\d{3})\)' ]
     SCALE        = 1
     UNITS        = 'Km/h'
+    RETRIES      = 2
     
 
 # ------------------------------------------------------------------------------
@@ -258,6 +267,7 @@ class GetAnemometerCalibrationConstant(GetCommand):
     ACK_PATTERNS = [ '^\(A(\d{3})\)' ]
     SCALE        = 1
     UNITS        = 'Unknown'
+    RETRIES      = 2
      
 
 class SetAnemometerCalibrationConstant(SetCommand):
@@ -266,6 +276,7 @@ class SetAnemometerCalibrationConstant(SetCommand):
     ACK_PATTERNS = [ '^\(A(\d{3})\)' ]
     SCALE        = 1
     UNITS        = 'Unknown'
+    RETRIES      = 2
    
 # ------------------------------------------------------------------------------
 
@@ -274,6 +285,7 @@ class GetAnemometerModel(GetCommand):
     CMDFORMAT    = '(z)'
     ACK_PATTERNS = [ '^\(Z(\d{3})\)' ]
     MAPPING      = { 1: 'TX20', 0: 'Homemade'}
+    RETRIES      = 2
 
     def getResult(self):
         return self.MAPPING[int(self.matchobj[0].group(1))]
@@ -285,6 +297,7 @@ class SetAnemometerModel(SetCommand):
     ACK_PATTERNS = [ '^\(Z(\d{3})\)' ]
     MAPPING      = {'TX20': 1, 'Homemade': 0 }
     INV_MAPPING  = { 1: 'TX20', 0: 'Homemade'}
+    RETRIES      = 2
 
     def encode(self):
         self.encoded = self.CMDFORMAT.format(self.MAPPING[self.value])
@@ -302,6 +315,7 @@ class GetBarometerHeight(GetCommand):
     ACK_PATTERNS = [ '^\(M(\d{5})\)' ]
     SCALE        = 1
     UNITS        = 'm.'
+    RETRIES      = 2
    
 
 class SetBarometerHeight(SetCommand):
@@ -310,6 +324,7 @@ class SetBarometerHeight(SetCommand):
     ACK_PATTERNS = [ '^\(M(\d{5})\)' ]
     SCALE        = 1
     UNITS        = 'm.'
+    RETRIES      = 2
     
 
 # ------------------------------------------------------------------------------
@@ -320,6 +335,7 @@ class GetBarometerOffset(GetCommand):
     ACK_PATTERNS = [ '^\(B([+-]\d{2})\)' ]
     SCALE        = 1
     UNITS        = 'mBar'
+    RETRIES      = 2
 
 
 
@@ -329,6 +345,7 @@ class SetBarometerOffset(SetCommand):
     ACK_PATTERNS = [ '^\(B([+-]\d{2})\)' ]
     SCALE        = 1
     UNITS        = 'mBar'
+    RETRIES      = 2
    
 
 # ------------------------------------------------------------------------------
@@ -342,6 +359,7 @@ class GetCloudSensorThreshold(GetCommand):
     ACK_INDEX    = 0
     SCALE        = 1
     UNITS        = '%'
+    RETRIES      = 2
     
 
 class SetCloudSensorThreshold(SetCommand):
@@ -350,6 +368,7 @@ class SetCloudSensorThreshold(SetCommand):
     ACK_PATTERNS = [ '^\(N(\d{3})\)' ]
     SCALE        = 1
     UNITS        = '%'
+    RETRIES      = 2
     
 
 # ------------------------------------------------------------------------------
@@ -360,6 +379,7 @@ class GetCloudSensorGain(GetCommand):
     ACK_PATTERNS = [ '^\(R(\d{3})\)' ]
     SCALE        = 10
     UNITS        = 'Unknown'
+    RETRIES      = 2
    
 
 class SetCloudSensorGain(SetCommand):
@@ -368,6 +388,7 @@ class SetCloudSensorGain(SetCommand):
     ACK_PATTERNS = [ '^\(R(\d{3})\)' ]
     SCALE        = 10
     UNITS        = 'Unknown'
+    RETRIES      = 2
     
 
 # ------------------------------------------------------------------------------
@@ -381,6 +402,7 @@ class GetPhotometerThreshold(GetCommand):
     ACK_INDEX    = 0
     SCALE        = 10
     UNITS        = 'Mv/arcsec^2'
+    RETRIES      = 2
    
 
 class SetPhotometerThreshold(SetCommand):
@@ -389,6 +411,7 @@ class SetPhotometerThreshold(SetCommand):
     ACK_PATTERNS = [ '^\(I(\d{3})\)' ]
     SCALE        = 10
     UNITS        = 'Mv/arcsec^2'
+    RETRIES      = 2
     
 
 # ------------------------------------------------------------------------------
@@ -400,6 +423,7 @@ class GetPhotometerOffset(GetCommand):
     ACK_INDEX    = 1
     SCALE        = 10
     UNITS        = 'Mv/arcsec^2'
+    RETRIES      = 2
     
 
 
@@ -409,6 +433,7 @@ class SetPhotometerOffset(SetCommand):
     ACK_PATTERNS = [ '^\(I([+-]\d{2})\)']
     SCALE        = 10
     UNITS        = 'Mv/arcsec^2'
+    RETRIES      = 2
     
 
 # ------------------------------------------------------------------------------
@@ -421,6 +446,7 @@ class GetPluviometerCalibration(GetCommand):
     ACK_PATTERNS = [ '^\(P(\d{3})\)']
     SCALE        = 1
     UNITS        = 'mm'
+    RETRIES      = 2
 
 
 class SetPluviometerCalibration(SetCommand):
@@ -429,6 +455,7 @@ class SetPluviometerCalibration(SetCommand):
     ACK_PATTERNS = [ '^\(P(\d{3})\)']
     SCALE        = 1
     UNITS        = 'mm'
+    RETRIES      = 2
     
     
 # ------------------------------------------------------------------------------
@@ -441,6 +468,7 @@ class GetPyranometerGain(GetCommand):
     ACK_PATTERNS = [ '^\(J(\d{3})\)']
     SCALE        = 10
     UNITS        = 'Unknown'  
+    RETRIES      = 2
 
 
 class SetPyranometerGain(SetCommand):
@@ -449,6 +477,7 @@ class SetPyranometerGain(SetCommand):
     ACK_PATTERNS = [ '^\(J(\d{3})\)']
     SCALE        = 10
     UNITS        = 'Unknown'
+    RETRIES      = 2
     
 
 
@@ -458,6 +487,7 @@ class GetPyranometerOffset(GetCommand):
     ACK_PATTERNS = [ '^\(U(\d{3})\)']
     SCALE        = 1
     UNITS        = 'Unknown'
+    RETRIES      = 2
   
 
 
@@ -467,6 +497,7 @@ class SetPyranometerOffset(SetCommand):
     ACK_PATTERNS = [ '^\(U(\d{3})\)']
     SCALE        = 1
     UNITS        = 'Unknown'
+    RETRIES      = 2
 
     
 
@@ -480,6 +511,7 @@ class GetRainSensorThreshold(GetCommand):
     ACK_PATTERNS = [ '^\(L(\d{3})\)']
     SCALE        = 1
     UNITS        = 'mm'
+    RETRIES      = 2
 
 
 class SetRainSensorThreshold(SetCommand):
@@ -488,6 +520,7 @@ class SetRainSensorThreshold(SetCommand):
     ACK_PATTERNS = [ '^\(L(\d{3})\)']
     SCALE        = 1
     UNITS        = 'mm'
+    RETRIES      = 2
     
 
 # ------------------------------------------------------------------------------
@@ -500,6 +533,7 @@ class GetThermometerDeltaTempThreshold(GetCommand):
     ACK_PATTERNS = [ '^\(C(\d{3})\)']
     SCALE        = 1
     UNITS        = 'mm'
+    RETRIES      = 2
     
 
 class SetThermometerDeltaTempThreshold(SetCommand):
@@ -508,6 +542,7 @@ class SetThermometerDeltaTempThreshold(SetCommand):
     ACK_PATTERNS = [ '^\(C(\d{3})\)']
     SCALE        = 1
     UNITS        = 'mm'
+    RETRIES      = 2
   
 
 # ------------------------------------------------------------------------------
@@ -521,6 +556,7 @@ class GetVoltmeterThreshold(GetCommand):
     ACK_INDEX    = 0
     UNITS        = 'V'
     SCALE        = 10
+    RETRIES      = 2
 
 
 class SetVoltmeterThreshold(SetCommand):
@@ -529,6 +565,7 @@ class SetVoltmeterThreshold(SetCommand):
     ACK_PATTERNS = [ '^\(F(\d{3})\)' ]
     SCALE        = 10
     UNITS        = 'V'
+    RETRIES      = 2
 
 
 class GetVoltmeterOffset(GetCommand):
@@ -538,6 +575,7 @@ class GetVoltmeterOffset(GetCommand):
     ACK_INDEX    = 1
     SCALE        = 10
     UNITS        = 'V'
+    RETRIES      = 2
 
 
 class SetVoltmeterOffset(SetCommand):
@@ -546,6 +584,7 @@ class SetVoltmeterOffset(SetCommand):
     ACK_PATTERNS = [ '^\(F([+-]\d{2})\)' ]
     SCALE        = 10
     UNITS        = 'V'
+    RETRIES      = 2
     
 
 # ------------------------------------------------------------------------------
@@ -560,6 +599,7 @@ class SetRoofRelayMode(SetCommand):
     ACK_INDEX    = 0
     MAPPING      = { 'Closed': 0, 'Open' : 7, }
     INV_MAPPING  = { 0: 'Closed', 7: 'Open',  }
+    RETRIES      = 2
     
     def __init__(self, value):
         SetCommand.__init__(self, value)
@@ -587,6 +627,7 @@ class GetAuxRelaySwitchOnTime(GetCommand):
     ACK_INDEX       = 1
     UNITS           = 'HH:MM:00'
     EMA_TIME_FORMAT = '(Son%H%M)'
+    RETRIES         = 2
 
     def getResult(self):
         return datetime.datetime.strptime(self.response[1], self.EMA_TIME_FORMAT).time()
@@ -598,6 +639,7 @@ class SetAuxRelaySwitchOnTime(SetCommand):
     ACK_PATTERNS    = [ '^\(Son\d{4}\)' ]
     UNITS           = 'HH:MM:00'
     EMA_TIME_FORMAT = '(Son%H%M)'
+    RETRIES         = 2
 
     def encode(self):
         self.encoded = self.value.strftime(self.EMA_TIME_FORMAT)
@@ -613,6 +655,7 @@ class GetAuxRelaySwitchOffTime(GetCommand):
     ACK_INDEX       = 2
     UNITS           = 'HH:MM:00'
     EMA_TIME_FORMAT = '(Sof%H%M)'
+    RETRIES         = 2
 
     def getResult(self):
          return datetime.datetime.strptime(self.response[2], self.EMA_TIME_FORMAT).time()
@@ -624,6 +667,7 @@ class SetAuxRelaySwitchOffTime(SetCommand):
     ACK_PATTERNS    = [ '^\(Sof\d{4}\)' ]
     UNITS           = 'HH:MM:00'
     EMA_TIME_FORMAT = '(Sof%H%M)'
+    RETRIES         = 2
 
     def encode(self):
         self.encoded = self.value.strftime(self.EMA_TIME_FORMAT)
@@ -638,6 +682,7 @@ class GetAuxRelayMode(GetCommand):
     ACK_PATTERNS = [ '^\(S(\d{3})\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
     ACK_INDEX    = 0
     MAPPING      = { 0 : 'Auto', 4: 'Closed', 5 : 'Open', 8 : 'Timer/Off', 9 : 'Timer/On' }
+    RETRIES      = 2
 
        
     def getResult(self):
@@ -651,6 +696,7 @@ class SetAuxRelayMode(SetCommand):
     ACK_INDEX    = 0
     MAPPING      = { 'Auto': 0,  'Closed': 4, 'Open' : 5, 'Timer/Off': 8,  'Timer/On' : 9 }
     INV_MAPPING  = { 0 : 'Auto', 4: 'Closed', 5 : 'Open', 8 : 'Timer/Off', 9 : 'Timer/On' }
+    RETRIES      = 2
    
     
     def __init__(self, value):
@@ -774,6 +820,7 @@ class GetDailyMinMaxDump(BulkDumpCommand):
     CMDFORMAT    = '(@H0300)'
     ITERATIONS   = 24
     EMA_TIME_FORMAT = '(%H:%M:%S %d/%m/%Y)'
+    RETRIES      = 0
 
     def accumulate(self, line, matchobj):
         '''Default implementation, maybe overriden in subclasses'''
@@ -787,6 +834,7 @@ class Get5MinAveragesDump(BulkDumpCommand):
     ACK_PATTERNS = [ '^\(.{76}t\d{4}\)' ]
     CMDFORMAT    = '(@t0000)'
     ITERATIONS   = 288
+    RETRIES      = 0
 
     def toTime(self, page):
       '''Computes the end time coresponding to a given page'''
