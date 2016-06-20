@@ -1,6 +1,4 @@
 *) Documentar las APIs del EMAProtocol
-*) Hay que tocar Interval() para configurarlo por comando
-  los comandos cortos, poco intervalo y los bulk dump mucho intervalo
  - Comunicación al modulo MQTT con Colas deque() para desacoplar el servicio
   MQTT del servicio de lectura.
 *)  revisar los intervalos window deben ser [0,24)
