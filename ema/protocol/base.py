@@ -464,7 +464,9 @@ class EMAProtocol(LineOnlyReceiver):
         '''
         Starts the ball rolling for the given request
         '''
-        request.interval = Interval(Interval.maxDelay) if isinstance(request, BulkDumpCommand) else Interval() 
+        request.interval = Interval(initial=request.TIMEOUT['min'], 
+                                    maxDelay=request.TIMEOUT['max'],
+                                    factor=request.TIMEOUT['factor']) 
         request.nretries = nretries
         request.retries  = 0  
         request.deferred = defer.Deferred()

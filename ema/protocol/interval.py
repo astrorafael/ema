@@ -17,19 +17,17 @@ class Interval(object):
     C{t = interval()}
     C{t = interval()}
 
-    @cvar initial:  Initial interval value, in seconds.
-    @cvar maxDelay: maximun interval value produced, in seconds.
-    @cvar factor:   multiplier for the next interval.
+    @var initial:  Initial interval value, in seconds.
+    @var maxDelay: maximun interval value produced, in seconds.
+    @var factor:   multiplier for the next interval.
     '''
   
-    # Class attributes
-    initial  = 2    # seconds
-    maxDelay = 256  # seconds
-    factor   = 2
-
-    def __init__(self, initial=None):
+    def __init__(self, initial=1, maxDelay=256, factor=2):
         '''Initialize interval object'''
-        self._value   = self.initial if initial is None else initial
+        self.initial = initial
+        self.factor = factor
+        self.maxDelay = max(initial, maxDelay)
+        self._value   = self.initial
 
 
     def __call__(self):
