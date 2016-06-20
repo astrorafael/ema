@@ -618,9 +618,6 @@ class TestEMAProtocol1(unittest.TestCase):
 ]
 
        
-    
-
-
     def setUp(self):
         setLogLevel(namespace='serial', levelStr='debug')
         setLogLevel(namespace='protoc', levelStr='debug')
@@ -632,7 +629,6 @@ class TestEMAProtocol1(unittest.TestCase):
         #EMAProtocol.callLater   = self.clock.callLater
         self.protocol.makeConnection(self.transport)
        
-   
     # --------------
     # EMA Bulk Dumps
     # --------------
