@@ -548,3 +548,4 @@ class EMAProtocol(LineOnlyReceiver):
         log.error("We should never have reached this unsolicited response")
         return False
         
+__all__ = [ EMAProtocolFactory, EMAProtocol]

@@ -316,10 +316,11 @@ class SetBarometerHeight(SetCommand):
 
 class GetBarometerOffset(GetCommand):
     '''Get Barometer Offset Command'''
-    UNITS        = 'mBar'
-    SCALE        = 1
-    ACK_PATTERNS = [ '^\(B([+-]\d{2})\)' ]
     CMDFORMAT    = '(b)'
+    ACK_PATTERNS = [ '^\(B([+-]\d{2})\)' ]
+    SCALE        = 1
+    UNITS        = 'mBar'
+
 
 
 class SetBarometerOffset(SetCommand):
