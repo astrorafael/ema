@@ -711,7 +711,7 @@ class GetAuxRelaySwitchOnTime(GetCommand):
     UNITS           = 'HH:MM:00'
     EMA_TIME_FORMAT = '(Son%H%M)'
     RETRIES         = 2
-    TIMEOUT      = {'min': 2, 'max': 128, 'factor': 2}
+    TIMEOUT         = {'min': 2, 'max': 128, 'factor': 2}
 
     def getResult(self):
         return datetime.datetime.strptime(self.response[1], self.EMA_TIME_FORMAT).time()
@@ -725,7 +725,7 @@ class SetAuxRelaySwitchOnTime(SetCommand):
     UNITS           = 'HH:MM:00'
     EMA_TIME_FORMAT = '(Son%H%M)'
     RETRIES         = 2
-    TIMEOUT      = {'min': 2, 'max': 128, 'factor': 2}
+    TIMEOUT         = {'min': 2, 'max': 128, 'factor': 2}
 
     def encode(self):
         self.encoded = self.value.strftime(self.EMA_TIME_FORMAT)
@@ -743,7 +743,7 @@ class GetAuxRelaySwitchOffTime(GetCommand):
     UNITS           = 'HH:MM:00'
     EMA_TIME_FORMAT = '(Sof%H%M)'
     RETRIES         = 2
-    TIMEOUT      = {'min': 2, 'max': 128, 'factor': 2}
+    TIMEOUT         = {'min': 2, 'max': 128, 'factor': 2}
 
     def getResult(self):
          return datetime.datetime.strptime(self.response[2], self.EMA_TIME_FORMAT).time()
@@ -757,7 +757,7 @@ class SetAuxRelaySwitchOffTime(SetCommand):
     UNITS           = 'HH:MM:00'
     EMA_TIME_FORMAT = '(Sof%H%M)'
     RETRIES         = 2
-    TIMEOUT      = {'min': 2, 'max': 128, 'factor': 2}
+    TIMEOUT         = {'min': 2, 'max': 128, 'factor': 2}
 
     def encode(self):
         self.encoded = self.value.strftime(self.EMA_TIME_FORMAT)
