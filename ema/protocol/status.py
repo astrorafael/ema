@@ -121,7 +121,7 @@ def decodeFreq(enc):
     '''
     exp  = int(enc[0])-3
     mant = int(enc[1:5])
-    return mant*math.pow(10, exp)
+    return round(mant*math.pow(10, exp), 3)
         
 # --------------------------------------------------------------------
 # Visual magnitude computed by the following C function
@@ -172,20 +172,20 @@ def decodeAsDict(line):
   status            = {}
   status['roof']    = 'Closed' if line[SRRB] == 'C' else 'Open'
   status['aux']     = 'Open'   if line[SARB] == 'E' or line[SARB] == 'e' else 'Closed'
-  status['volt']    = ord(line[SPSB])      * 0.10 # Volts
-  status['rain']    = int(line[SRAB:SRAE]) * 0.10 # mm
-  status['cloud']   = int(line[SCLB:SCLE]) * 0.10 # %
-  status['abspres'] = int(line[SABB:SABE]) * 0.10 # HPa
-  status['calpres'] = int(line[SCBB:SCBE]) * 0.10 # HPa
-  status['pluv']    = int(line[SPCB:SPCE]) * 0.10 # mm
+  status['volt']    = round(ord(line[SPSB])       * 0.10, 1) # Volts
+  status['rain']    = round(int(line[SRAB:SRAE])  * 0.10, 1) # %
+  status['cloud']   = round(int(line[SCLB:SCLE])  * 0.10, 1) # %
+  status['abspres'] = round(int(line[SABB:SABE])  * 0.10, 1) # HPa
+  status['calpres'] = round(int(line[SCBB:SCBE])  * 0.10, 1) # HPa
+  status['pluv']    = round(int(line[SPCB:SPCE])  * 0.10, 1) # mm
   status['accpluv'] = int(line[SPAB:SPAE])        # mm
-  status['pyro']    = int(line[SPYB:SPYE]) * 0.10 # %
+  status['pyro']    = round(int(line[SPYB:SPYE])  * 0.10, 1) # %
   status['phot']    = decodeFreq(line[SPHB:SPHE]) # Hz
-  status['temp']    = int(line[SATB:SATE]) * 0.10 # deg C
-  status['hum']     = int(line[SRHB:SRHE]) * 0.10 # %
-  status['dew']     = int(line[SDPB:SDPE]) * 0.10 # deg C
-  status['anem']    = int(line[SACB:SACE]) * 0.10 # Km/h
-  status['accanem'] = int(line[SAAB:SAAE])        # Km/h
+  status['temp']    = round(int(line[SATB:SATE]) * 0.10, 1) # deg C
+  status['hum']     = round(int(line[SRHB:SRHE]) * 0.10, 1) # %
+  status['dew']     = round(int(line[SDPB:SDPE]) * 0.10, 1) # deg C
+  status['anem']    = round(int(line[SACB:SACE]) * 0.10, 1) # Km/h
+  status['aveanem'] = int(line[SAAB:SAAE])        # Km/h
   status['wind']    = int(line[SWDB:SWDE])        # degrees
   #status['type']    = STATUS_TYPE[line[SMTB:SMTE]] # status type
   status['page']    = int(line[SMFB:SMFE])  # page number
@@ -197,19 +197,19 @@ def decodeAsList(line):
   status            = []
   status.append('Closed' if line[SRRB] == 'C' else 'Open')  # Roof
   status.append('Open' if line[SARB] == 'E' or line[SARB] == 'e' else 'Closed') # Aux Relay
-  status.append(ord(line[SPSB]) * 0.10)           # Volts
-  status.append(int(line[SRAB:SRAE]) * 0.10)      # Rain mm
-  status.append(int(line[SCLB:SCLE]) * 0.10)      # Cloud %
-  status.append(int(line[SABB:SABE]) * 0.10)      # Abs Press HPa
-  status.append(int(line[SCBB:SCBE]) * 0.10)      # Calib HPa
-  status.append(int(line[SPCB:SPCE]) * 0.10)      # Current pluviom mm
+  status.append(round(ord(line[SPSB])       * 0.10, 1))      # Volts
+  status.append(round(int(line[SRAB:SRAE])  * 0.10, 1))      # Rain %
+  status.append(round(int(line[SCLB:SCLE])  * 0.10, 1))      # Cloud %
+  status.append(round(int(line[SABB:SABE])  * 0.10, 1))      # Abs Press HPa
+  status.append(round(int(line[SCBB:SCBE])  * 0.10, 1))      # Calib HPa
+  status.append(round(int(line[SPCB:SPCE])  * 0.10, 1))      # Current pluviom mm
   status.append(int(line[SPAB:SPAE]))             # Accumulated pluviom mm
-  status.append(int(line[SPYB:SPYE]) * 0.10)      # Pyranomenter %
+  status.append(round(int(line[SPYB:SPYE])  * 0.10, 1))      # Pyranomenter %
   status.append(decodeFreq(line[SPHB:SPHE]))      # Photometer Hz
-  status.append(int(line[SATB:SATE]) * 0.10)      # Ambient Temp deg C
-  status.append(int(line[SRHB:SRHE]) * 0.10)      # Humidity %
-  status.append(int(line[SDPB:SDPE]) * 0.10)      # Dew Point deg C
-  status.append(int(line[SACB:SACE]) * 0.10)      # Wind Speed Km/h
+  status.append(round(int(line[SATB:SATE]) * 0.10, 1))      # Ambient Temp deg C
+  status.append(round(int(line[SRHB:SRHE]) * 0.10, 1))      # Humidity %
+  status.append(round(int(line[SDPB:SDPE]) * 0.10, 1))      # Dew Point deg C
+  status.append(round(int(line[SACB:SACE]) * 0.10, 1))      # Wind Speed Km/h
   status.append(int(line[SAAB:SAAE]))             # Wind Speedn 10 min Km/h
   status.append(int(line[SWDB:SWDE]))             # Wind direction, degrees
   #status['type']    = STATUS_TYPE[line[SMTB:SMTE]] # status type

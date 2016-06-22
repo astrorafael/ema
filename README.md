@@ -100,5 +100,89 @@ Log file is placed under `/var/log/ema.log` (Linux) or `C:\ema\log\ema.log` (Win
 Default log level is `info`. It generates very litte logging at this level.
 On Linux, the log is rotated through the /etc/logrotate.d/ema policy. On Windows, there is no such policy.
 
+# DESIGN
+
+## MQTT Topics
+
+| Topic                | Description                                         |
+|:--------------------:|:-----------------------------------------------------|
+| EMA/register         | Where EMA weather stations declare themselves online |
+| EMA/<channel>/events                | Log for important events, with levels |
+| EMA/<channel>/current/state         | EMA current measurements,every minute |
+| EMA/<channel>/historic/minmax       | Daily minima and maxima, every hour   |
+| EMA/<channel>/historic/dailyaverage | Daily average, every 5 minutes        |
+
+<channel> is an intermedaite topic level that aggregates several EMAs into one.
+In the extreme cases, <channel> could be the unique device name or a single constant string for all EMAs.
+
+## MQTT Payloads
+
+All payloads are in JSON format
+
+### Published on EMA/<channel>/events
+
+All fields are mandatory
+
+| Field name |  Type  | Description                                          |
+|:----------:|:------:|:-----------------------------------------------------|
+| rev        | int    | Payload format revision number (currently 1)
+| who        | string | EMA station emitting this record
+| tstamp     | string | timestamp "YYYY-MM-DDThh:mm:ss", UTC
+| type       | string | one of "critical", error", warning" or "info"
+| msg        | string | Free style string. Recommended max size: 80 chars
+
+***Example:**
+```
+{ "who": "ema1", "tstamp": "2016-06-05T23:45:03" "type": "info", "msg": "<a message>"} 
+```
+
+### Published on EMA/<channel>/current/state
+
+All fields are mandatory
+
+| Field name |  Type  | Description                                          |
+|:----------:|:------:|:-----------------------------------------------------|
+| rev        | int    | Payload format revision number (currently 1)
+| who        | string | EMA station emitting this record                     |
+| tstamp     | string | timestamp "YYYY-MM-DDThh:mm:ss", UTC                 |
+| roof       | string | Roof relay state.  'Closed' or 'Open'
+| aux        | string | Aux relay state.  'Closed' or 'Open'
+| volt       | float  | Power supply current voltage [Volts]
+| rain       | float  | Rain detector current level [%]
+| cloud      | float  | Current Cloud level [%]. 100% totally cloudy
+| abspres    | float  | Current Absolute Pressure [HPa]
+| calpres    | float  | Current Calibrated Pressure [HPa]
+| pluv       | float  | Current pluviometer level [mm]
+| accpluv    | int    | Accumulated pluviomenter since ???? [mm]
+| pyro       | float  | Current pyranometer radiation level [%]
+| phot       | float  | Current photometer frequency [Hz]
+| temp       | float  | Current ambient temperature [ºC]
+| hum        | float  | Current humidity level [%]
+| dew        | float  | Current dew point [ºC]
+| anem       | float  | Current wind speed [Km/h]
+| aveanem    | int    | Average widn speed in 10 mins [Km/h]
+| wind       | int    | Wind orientation [degrees]
+
+### Published on EMA/<channel>/historic/minmax
+
+All fields are mandatory
+
+| Field name |  Type  | Description                                          |
+|:----------:|:------:|:-----------------------------------------------------|
+| rev        | int    | Payload format revision number (currently 1)
+| who        | string | EMA station emitting this record                     |
+| tstamp     | string | timestamp "YYYY-MM-DDThh:mm:ss", UTC                 |
+
+### Published on EMA/<channel>/historic/dailyaverage
+
+All fields are mandatory
+
+| Field name |  Type  | Description                                          |
+|:----------:|:------:|:-----------------------------------------------------|
+| rev        | int    | Payload format revision number (currently 1)
+| who        | string | EMA station emitting this record                     |
+| tstamp     | string | timestamp "YYYY-MM-DDThh:mm:ss", UTC                 |
+
+
 
 
