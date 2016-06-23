@@ -41,7 +41,7 @@ from twisted.logger import Logger
 # Own modules
 # -----------
 
-from .status import decodeAsList as decodeStatusAsList
+from .status import decode as decodeStatusAsList
 
 
 log = Logger(namespace='serial')
@@ -921,11 +921,19 @@ class GetDailyMinMaxDump(BulkDumpCommand):
 
     def accumulate(self, line, matchobj):
         '''Default implementation, maybe overriden in subclasses'''
+
         if self.i < 2:
-            self.response[self.iteration].append(decodeStatusAsList(line))
+            vec, _ = decodeStatusAsList(line)
+            self.response[self.iteration].append(vec)
         else:
-            self.response[self.iteration].append(datetime.datetime.strptime(line, self.EMA_TIME_FORMAT))
+            tstamp = datetime.datetime.strptime(line, self.EMA_TIME_FORMAT)
+            self.response[self.iteration].append(tstamp)    # Make room
+            # Swap triplet components
+            self.response[self.iteration][2] = self.response[self.iteration][1]
+            self.response[self.iteration][1] = self.response[self.iteration][0]
+            self.response[self.iteration][0] = tstamp
       
+
 class Get5MinAveragesDump(BulkDumpCommand):
     '''Get 5 min Averages Bulk Dump'''
     ACK_PATTERNS = [ '^\(.{76}t\d{4}\)' ]
@@ -934,6 +942,12 @@ class Get5MinAveragesDump(BulkDumpCommand):
     RETRIES      = 0
     TIMEOUT      = {'min': 256, 'max': 256, 'factor': 2}
 
+    ONE_DAY = datetime.timedelta(days=1)
+
+    def toPage(self, time):
+      '''Computes the flash page corresponding to a given time'''
+      return (time.hour*60 + time.minute)//5
+
     def toTime(self, page):
       '''Computes the end time coresponding to a given page'''
       minutes = page*5 + 5
@@ -941,9 +955,20 @@ class Get5MinAveragesDump(BulkDumpCommand):
       return datetime.time(hour=hour, minute=minutes%60)
 
     def accumulate(self, line, matchobj):
-        '''Default implementation, maybe overriden in subclasses'''
-        status = decodeStatusAsList(line)
-        status[-1] = self.toTime(status[-1])
+        '''Accumulate lines and calculate timestamps on the fly'''
+        today        = datetime.datetime.utcnow()
+        yesterday    = today - self.ONE_DAY
+        todayPage    = self.toPage(today.time())
+        status, page = decodeStatusAsList(line)
+       
+        if todayPage < page:
+            log.debug("Timestamping with today's day")
+            tstamp = datetime.datetime.combine(today.date(), self.toTime(page))
+        else:
+            log.debug("Timestamping with yesterday's day")
+            tstamp = datetime.datetime.combine(yesterday.date(), self.toTime(page))
+
+        self.response[self.iteration].append(tstamp)
         self.response[self.iteration].append(status)
        
 

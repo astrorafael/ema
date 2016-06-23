@@ -7,7 +7,7 @@
 from __future__ import division
 
 #
-# Constants belinging the EMA Protocol v2, for portability issues
+# Constants belonging the EMA Protocol v2, for portability issues
 # EMA protocol is sometimes revised
 #
 VERSION = 2
@@ -15,11 +15,15 @@ VERSION = 2
 # EMA send status messages every 5 seconds
 PERIOD = 5
 
-STATLEN = 83            # Status message length including ( and ) 
+# Status message length including ( and ) 
+STATLEN = 83            
 
+# -------------------------------------------------------
 # OFFSETS IN GEHERAL STATUS MESSAGE
 # 'end' constants are 1 character past the given field , 
 # to directly use in string slicing with [:]
+# These constants are for internal use only
+# --------------------------------------------------------
 
 SRRB = 1          # Status Roof Relay Begin
 SRRE = SRRB + 1      # Status Roof Relay End
@@ -163,57 +167,51 @@ def magnitude(frequency):
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
 
+# -------------------------------------
+# Indexes to the sequence decoded below
+# -------------------------------------
 
-#TSTAMP_FORMAT = "%Y-%m-%d %H:%M:%S"
+ROOF_RELAY     =  0
+AUX_RELAY      =  1
+POWER_VOLT     =  2
+RAIN_PROB      =  3
+CLOUD_LEVEL    =  4
+ABS_PRESSURE   =  5
+CAL_PRESSURE   =  6
+CUR_PLUVIOM    =  7
+ACC_PLUVIOM    =  8
+PYRANOMETER    =  9
+PHOTOM_FREQ    = 10
+AMB_TEMP       = 11
+HUMIDITY       = 12
+DEW_POINT      = 13
+CUR_WIND_SPEED = 14
+AVE_WIND_SPEED = 15
+WIND_DIRECTION = 16
 
-def decodeAsDict(line):
-  '''Decode an EMA status line'''
-  #status = { 'rev': VERSION, 'tstamp': timestamp.strftime(TSTAMP_FORMAT) }
-  status            = {}
-  status['roof']    = 'Closed' if line[SRRB] == 'C' else 'Open'
-  status['aux']     = 'Open'   if line[SARB] == 'E' or line[SARB] == 'e' else 'Closed'
-  status['volt']    = round(ord(line[SPSB])       * 0.10, 1) # Volts
-  status['rain']    = round(int(line[SRAB:SRAE])  * 0.10, 1) # %
-  status['cloud']   = round(int(line[SCLB:SCLE])  * 0.10, 1) # %
-  status['abspres'] = round(int(line[SABB:SABE])  * 0.10, 1) # HPa
-  status['calpres'] = round(int(line[SCBB:SCBE])  * 0.10, 1) # HPa
-  status['pluv']    = round(int(line[SPCB:SPCE])  * 0.10, 1) # mm
-  status['accpluv'] = int(line[SPAB:SPAE])        # mm
-  status['pyro']    = round(int(line[SPYB:SPYE])  * 0.10, 1) # %
-  status['phot']    = decodeFreq(line[SPHB:SPHE]) # Hz
-  status['temp']    = round(int(line[SATB:SATE]) * 0.10, 1) # deg C
-  status['hum']     = round(int(line[SRHB:SRHE]) * 0.10, 1) # %
-  status['dew']     = round(int(line[SDPB:SDPE]) * 0.10, 1) # deg C
-  status['anem']    = round(int(line[SACB:SACE]) * 0.10, 1) # Km/h
-  status['aveanem'] = int(line[SAAB:SAAE])        # Km/h
-  status['wind']    = int(line[SWDB:SWDE])        # degrees
-  #status['type']    = STATUS_TYPE[line[SMTB:SMTE]] # status type
-  status['page']    = int(line[SMFB:SMFE])  # page number
-  return status
-
-def decodeAsList(line):
+def decode(line):
   '''Decode an EMA status line'''
   #status = { 'rev': VERSION, 'tstamp': timestamp.strftime(TSTAMP_FORMAT) }
   status            = []
   status.append('Closed' if line[SRRB] == 'C' else 'Open')  # Roof
   status.append('Open' if line[SARB] == 'E' or line[SARB] == 'e' else 'Closed') # Aux Relay
-  status.append(round(ord(line[SPSB])       * 0.10, 1))      # Volts
-  status.append(round(int(line[SRAB:SRAE])  * 0.10, 1))      # Rain %
-  status.append(round(int(line[SCLB:SCLE])  * 0.10, 1))      # Cloud %
-  status.append(round(int(line[SABB:SABE])  * 0.10, 1))      # Abs Press HPa
-  status.append(round(int(line[SCBB:SCBE])  * 0.10, 1))      # Calib HPa
-  status.append(round(int(line[SPCB:SPCE])  * 0.10, 1))      # Current pluviom mm
-  status.append(int(line[SPAB:SPAE]))             # Accumulated pluviom mm
-  status.append(round(int(line[SPYB:SPYE])  * 0.10, 1))      # Pyranomenter %
-  status.append(decodeFreq(line[SPHB:SPHE]))      # Photometer Hz
-  status.append(round(int(line[SATB:SATE]) * 0.10, 1))      # Ambient Temp deg C
-  status.append(round(int(line[SRHB:SRHE]) * 0.10, 1))      # Humidity %
-  status.append(round(int(line[SDPB:SDPE]) * 0.10, 1))      # Dew Point deg C
-  status.append(round(int(line[SACB:SACE]) * 0.10, 1))      # Wind Speed Km/h
-  status.append(int(line[SAAB:SAAE]))             # Wind Speedn 10 min Km/h
-  status.append(int(line[SWDB:SWDE]))             # Wind direction, degrees
-  #status['type']    = STATUS_TYPE[line[SMTB:SMTE]] # status type
-  status.append(int(line[SMFB:SMFE]))             # Flash page number
-  return status
+  status.append(round(ord(line[SPSB])       * 0.10, 1))  # Volts
+  status.append(round(int(line[SRAB:SRAE])  * 0.10, 1))  # Rain %
+  status.append(round(int(line[SCLB:SCLE])  * 0.10, 1))  # Cloud %
+  status.append(round(int(line[SABB:SABE])  * 0.10, 1))  # Abs Press HPa
+  status.append(round(int(line[SCBB:SCBE])  * 0.10, 1))  # Calib Press HPa
+  status.append(round(int(line[SPCB:SPCE])  * 0.10, 1))  # Current pluviom mm
+  status.append(int(line[SPAB:SPAE]))                    # Accumulated pluviom mm
+  status.append(round(int(line[SPYB:SPYE])  * 0.10, 1))  # Pyranomenter %
+  status.append(decodeFreq(line[SPHB:SPHE]))             # Photometer Hz
+  status.append(round(int(line[SATB:SATE]) * 0.10, 1))   # Ambient Temp deg C
+  status.append(round(int(line[SRHB:SRHE]) * 0.10, 1))   # Humidity %
+  status.append(round(int(line[SDPB:SDPE]) * 0.10, 1))   # Dew Point deg C
+  status.append(round(int(line[SACB:SACE]) * 0.10, 1))   # Wind Speed Km/h
+  status.append(int(line[SAAB:SAAE]))                    # Wind Speedn 10 min Km/h
+  status.append(int(line[SWDB:SWDE]))                    # Wind direction, degrees
+  #status['type']    = STATUS_TYPE[line[SMTB:SMTE]]      # status type
+  page = int(line[SMFB:SMFE])                            # Flash page number
+  return status, page
 
-__all__ = [PERIOD, VERSION, decodeAsDict, decodeAsList]
+__all__ = [PERIOD, VERSION, decode]

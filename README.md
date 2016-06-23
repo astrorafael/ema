@@ -104,13 +104,13 @@ On Linux, the log is rotated through the /etc/logrotate.d/ema policy. On Windows
 
 ## MQTT Topics
 
-| Topic                | Description                                         |
+| Topic                | Description                                          |
 |:--------------------:|:-----------------------------------------------------|
 | EMA/register         | Where EMA weather stations declare themselves online |
-| EMA/<channel>/events                | Log for important events, with levels |
-| EMA/<channel>/current/state         | EMA current measurements,every minute |
-| EMA/<channel>/historic/minmax       | Daily minima and maxima, every hour   |
-| EMA/<channel>/historic/dailyaverage | Daily average, every 5 minutes        |
+| EMA/<channel>/events           | Log for important events, with levels      |
+| EMA/<channel>/current/state    | EMA current measurements,every minute      |
+| EMA/<channel>/historic/minmax  | Daily minima and maxima, every hour        |
+| EMA/<channel>/historic/average | Daily average, every 5 minutes             |
 
 <channel> is an intermedaite topic level that aggregates several EMAs into one.
 In the extreme cases, <channel> could be the unique device name or a single constant string for all EMAs.
@@ -125,11 +125,11 @@ All fields are mandatory
 
 | Field name |  Type  | Description                                          |
 |:----------:|:------:|:-----------------------------------------------------|
-| rev        | int    | Payload format revision number (currently 1)
-| who        | string | EMA station emitting this record
-| tstamp     | string | timestamp "YYYY-MM-DDThh:mm:ss", UTC
-| type       | string | one of "critical", error", warning" or "info"
-| msg        | string | Free style string. Recommended max size: 80 chars
+| rev        | int    | Payload format revision number                       |
+| who        | string | EMA station emitting this record                     |
+| tstamp     | string | timestamp "YYYY-MM-DDThh:mm:ss", UTC                 |
+| type       | string | one of "critical", error", warning" or "info"        |
+| msg        | string | Free style string. Recommended max size: 80 chars    |
 
 ***Example:**
 ```
@@ -142,26 +142,10 @@ All fields are mandatory
 
 | Field name |  Type  | Description                                          |
 |:----------:|:------:|:-----------------------------------------------------|
-| rev        | int    | Payload format revision number (currently 1)
+| rev        | int    | Payload format revision number                       |
 | who        | string | EMA station emitting this record                     |
 | tstamp     | string | timestamp "YYYY-MM-DDThh:mm:ss", UTC                 |
-| roof       | string | Roof relay state.  'Closed' or 'Open'
-| aux        | string | Aux relay state.  'Closed' or 'Open'
-| volt       | float  | Power supply current voltage [Volts]
-| rain       | float  | Rain detector current level [%]
-| cloud      | float  | Current Cloud level [%]. 100% totally cloudy
-| abspres    | float  | Current Absolute Pressure [HPa]
-| calpres    | float  | Current Calibrated Pressure [HPa]
-| pluv       | float  | Current pluviometer level [mm]
-| accpluv    | int    | Accumulated pluviomenter since ???? [mm]
-| pyro       | float  | Current pyranometer radiation level [%]
-| phot       | float  | Current photometer frequency [Hz]
-| temp       | float  | Current ambient temperature [ºC]
-| hum        | float  | Current humidity level [%]
-| dew        | float  | Current dew point [ºC]
-| anem       | float  | Current wind speed [Km/h]
-| aveanem    | int    | Average widn speed in 10 mins [Km/h]
-| wind       | int    | Wind orientation [degrees]
+| current    | seq    | Current readings vector                              |
 
 ### Published on EMA/<channel>/historic/minmax
 
@@ -169,19 +153,48 @@ All fields are mandatory
 
 | Field name |  Type  | Description                                          |
 |:----------:|:------:|:-----------------------------------------------------|
-| rev        | int    | Payload format revision number (currently 1)
+| rev        | int    | Payload format revision number                       |
 | who        | string | EMA station emitting this record                     |
 | tstamp     | string | timestamp "YYYY-MM-DDThh:mm:ss", UTC                 |
+| minmax     | seq    | Sequence of 24 tuples [timestamp, max vec, min vec ] |
 
-### Published on EMA/<channel>/historic/dailyaverage
+### Published on EMA/<channel>/historic/average
 
 All fields are mandatory
 
 | Field name |  Type  | Description                                          |
 |:----------:|:------:|:-----------------------------------------------------|
-| rev        | int    | Payload format revision number (currently 1)
+| rev        | int    | Payload format revision number                       |
 | who        | string | EMA station emitting this record                     |
 | tstamp     | string | timestamp "YYYY-MM-DDThh:mm:ss", UTC                 |
+| averages   | seq    | Sequence of 288 tuples [timestamp, average vector]   |
+
+### Readings vector
+
+JSON sequence embedded in messages above, with all instrument readings.
+This vector may contain current, maxima minima or averaged values depending
+on the actual MQTT message being published.
+
+| Index |  Type  | Units | Description                                  |
+|:-----:|:------:|:-----:|:---------------------------------------------|
+|  0    | string |  --   | Roof relay state.  'Closed' or 'Open'        |
+|  1    | string |  --   | Aux relay state.  'Closed' or 'Open'         |
+|  2    | float  | Volts | Power supply voltage                         |
+|  3    | float  |   %   | Rain detector prob (0% dry 100% totally wet) |
+|  4    | float  |   %   | Cloud level. 100.0% = totally cloudy         |
+|  5    | float  |  HPa  | Absolute Pressure                            |
+|  6    | float  |  HPa  | Calibrated Pressure                          |
+|  7    | float  |  mm   | Pluviometer level                            |
+|  8    | int    |  mm   | Accumulated pluviomenter since ????          |
+|  9    | float  |   %   | Pyranometer radiation level                  |
+| 10    | float  |   Hz  | Photometer frequency                         |
+| 11    | float  |   ºC  | Ambient temperature                          |
+| 12    | float  |   %   | Humidity level                               |
+| 13    | float  |   ºC  | Dew point                                    |
+| 14    | float  | Km/h  | Wind speed                                   |
+| 15    | int    | Km/h  | Average windn speed in 10 mins               |
+| 16    | int    | deg   | Wind orientation (0...359)                   |
+
 
 
 

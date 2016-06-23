@@ -30,7 +30,7 @@ from twisted.internet.protocol   import ClientFactory
 # -------------
 
 from ..        import PY2
-from .status   import decodeAsDict, STATLEN
+from .status   import decode, STATLEN
 from .error    import EMATimeoutError
 from .interval import Interval
 from .commands import (
@@ -556,7 +556,7 @@ class EMAProtocol(LineOnlyReceiver):
             return False
 
         if ur['name'] == 'Current status message':
-            curState = decodeAsDict(line)
+            curState, _ = decode(line)
             for callback in self._onStatus:
                 callback(curState, tstamp)
             return True
