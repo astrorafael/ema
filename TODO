@@ -1,3 +1,4 @@
+
 *) Documentar las APIs del EMAProtocol
  - Comunicación al modulo MQTT con Colas deque() para desacoplar el servicio
   MQTT del servicio de lectura.
@@ -16,7 +17,5 @@
    - Ya estoy en linea de nuevo
    - error de registro
    - error en bulk dump
-*) Formato eventos JSON { "name": "foo", "tstamp": "<a tstamp>" "type": "error", "msg": "<a message>"} 
-*) Definir formato JSON MQTT en e README y con Tablas
 *) Servicio MQTTClient para stars4all
 

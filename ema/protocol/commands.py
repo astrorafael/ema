@@ -952,7 +952,8 @@ class Get5MinAveragesDump(BulkDumpCommand):
       '''Computes the end time coresponding to a given page'''
       minutes = page*5 + 5
       hour = (minutes//60) % 24
-      return datetime.time(hour=hour, minute=minutes%60)
+      overflow = (minutes//60) // 24    # One day overflow in the last page
+      return datetime.time(hour=hour, minute=minutes%60), datetime.timedelta(days=overflow)
 
     def accumulate(self, line, matchobj):
         '''Accumulate lines and calculate timestamps on the fly'''
@@ -960,14 +961,14 @@ class Get5MinAveragesDump(BulkDumpCommand):
         yesterday    = today - self.ONE_DAY
         todayPage    = self.toPage(today.time())
         status, page = decodeStatusAsList(line)
-       
         if todayPage < page:
             log.debug("Timestamping with today's day")
-            tstamp = datetime.datetime.combine(today.date(), self.toTime(page))
+            time, _ = self.toTime(page)
+            tstamp = datetime.datetime.combine(today.date(), time)
         else:
             log.debug("Timestamping with yesterday's day")
-            tstamp = datetime.datetime.combine(yesterday.date(), self.toTime(page))
-
+            time, overflow = self.toTime(page)
+            tstamp = datetime.datetime.combine(yesterday.date() + overflow, time)
         self.response[self.iteration].append(tstamp)
         self.response[self.iteration].append(status)
        
