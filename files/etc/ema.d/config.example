@@ -225,22 +225,13 @@ calibration = 124
 
 #------------------------------------------------------------------------#
 # Pyranometer device, measuring solar radiation
-[PYRANOMETER]
-pyr_gain   = 1.6
-pyr_offset = 0
+[pyranometer]
 
-# Where to publish measurements
-# Comma list separated values 
-# Allowed values: html, mqtt  (or just leave a blank line)
-pyr_publish_where = mqtt,html
+# sync parameters
+sync = no
 
-# What to publish: current, average or both
-# comma-separated list 
-pyr_publish_what = current,average
-
-# component log level (debug, info, warn, error, critical)
-pyr_log = INFO
-
+gain   = 1.6
+offset = 0
 
 #------------------------------------------------------------------------#
 

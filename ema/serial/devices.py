@@ -182,7 +182,21 @@ class Pluviometer(Device):
 
 class Pyranometer(Device):
     def __init__(self, parent, options, global_sync=True):
-        pass   
+        Device.__init__(self, parent, options, global_sync)
+        self.PARAMS = [
+            { 
+                'title' : 'Pyranometer Gain',
+                'option': 'gain',
+                'get':   self.parent.protocol.getPyranometerGain,
+                'set':   self.parent.protocol.setPyranometerGain
+            },
+            { 
+                'title' : 'Pyranometer Offset',
+                'option': 'offset',
+                'get':   self.parent.protocol.getPyranometerOffset,
+                'set':   self.parent.protocol.setPyranometerOffset
+            },
+        ] 
 
 
 class RainDetector(Device):
