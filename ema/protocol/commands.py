@@ -29,7 +29,6 @@ from __future__ import division
 
 import re
 import datetime
-import math
 
 # ----------------
 # Twisted  modules
@@ -42,6 +41,7 @@ from twisted.logger import Logger
 # -----------
 
 from .status import decode as decodeStatusAsList
+from .error import EMARangeError, EMAReturnError
 
 
 log = Logger(namespace='serial')
@@ -103,7 +103,15 @@ class Command(object):
         Returns a response.
         Must be called only after decode() returns True
         '''
-        return self.TYPE(int(self.matchobj[self.selindex].group(1)) / self.SCALE)
+        if self.TYPE == str:
+            result = self.MAPPING[int(self.matchobj[self.selindex].group(1))]
+            if result not in self.RANGE: 
+                raise EMAReturnError(self.__class__.__name__, result, self.RANGE)
+        else:
+            result = self.TYPE(int(self.matchobj[self.selindex].group(1)) / self.SCALE)
+            if not (self.RANGE[0] <= result <= self.RANGE[1]): 
+                raise EMAReturnError(self.__class__.__name__, result, self.RANGE)
+        return result
 
    
     def reset(self):
@@ -134,6 +142,13 @@ class SetCommand(Command):
         # Request format
         Command.__init__(self)
         self.value = value if (self.TYPE == datetime.datetime) or (self.TYPE == datetime.time) else self.TYPE(value)
+        if self.TYPE == str:
+            if self.value not in self.RANGE: 
+                raise EMARangeError(self.__class__.__name__, self.value, self.RANGE)
+        else:
+            if not (self.RANGE[0] <= self.value <= self.RANGE[1]): 
+                raise EMARangeError(self.__class__.__name__, self.value, self.RANGE)
+
 
     def encode(self):
         self.encoded = self.CMDFORMAT.format(int(self.value * self.SCALE))
@@ -148,6 +163,7 @@ class SetCommand(Command):
 class GetRTCDateTime(GetCommand):
     '''Get Real Time Clock Date & Time Command'''
     TYPE            = datetime.datetime 
+    RANGE           = [datetime.datetime(2016, 1, 1), datetime.datetime(2100, 12, 31)]
     CMDFORMAT       = '(y)'
     ACK_PATTERNS    = [ '^\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)' ]
     EMA_TIME_FORMAT = '(%H:%M:%S %d/%m/%Y)'
@@ -155,13 +171,17 @@ class GetRTCDateTime(GetCommand):
     TIMEOUT         = {'min': 1, 'max': 128, 'factor': 2}
 
     def getResult(self):
-        return  datetime.datetime.strptime(self.response[0], self.EMA_TIME_FORMAT)
+        result = datetime.datetime.strptime(self.response[0], self.EMA_TIME_FORMAT)
+        if not (self.RANGE[0] <= result <= self.RANGE[1]): 
+                raise EMAReturnError(self.__class__.__name__, result, self.RANGE)
+        return result
 
 # ------------------------------------------------------------------------------
 
 class SetRTCDateTime(SetCommand):
     '''Set Real Time Clock Date & Time Command'''
     TYPE            = datetime.datetime
+    RANGE           = [datetime.datetime(2016, 1, 1), datetime.datetime(2100, 12, 31)]
     CMDFORMAT       = '(Y%d%m%y%H%M%S)'
     ACK_PATTERNS    = [ '\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)']
     EMA_TIME_FORMAT = '(%H:%M:%S %d/%m/%Y)'
@@ -171,10 +191,14 @@ class SetRTCDateTime(SetCommand):
 
     def __init__(self, value):
         self.renew = False
-        SetCommand.__init__(self, value)
+        Command.__init__(self)
         if value is None:
             self.renew = True
             self.value = datetime.datetime.utcnow()+datetime.timedelta(seconds=0.5)
+        else:
+            self.value = value
+        if not (self.RANGE[0] <= self.value <= self.RANGE[1]): 
+            raise EMARangeError(self.__class__.__name__, self.value, self.RANGE)
 
     def reset(self):
         Command.reset(self)
@@ -194,6 +218,7 @@ class SetRTCDateTime(SetCommand):
 class Ping(GetCommand):
     '''Ping'''
     TYPE         = str
+    RANGE        = [ '( )' ]
     CMDFORMAT    = '( )'
     ACK_PATTERNS = [ '^\( \)' ]
     RETRIES      = 0
@@ -207,6 +232,7 @@ class Ping(GetCommand):
 class GetWatchdogPeriod(GetCommand):
     '''Get Watchdog Period Command'''
     TYPE         = int
+    RANGE        = [0, 999]
     CMDFORMAT    = '(t)'
     ACK_PATTERNS = [ '^\(T(\d{3})\)' ]
     ACK_INDEX    = 0
@@ -219,6 +245,7 @@ class GetWatchdogPeriod(GetCommand):
 class SetWatchdogPeriod(SetCommand):
     '''Set Watchdog Period Command'''
     TYPE         = int
+    RANGE        = [0, 999]
     CMDFORMAT    = '(T{:03d})'
     ACK_PATTERNS = [ '^\(T(\d{3})\)' ]
     ACK_INDEX    = 0
@@ -236,6 +263,7 @@ class SetWatchdogPeriod(SetCommand):
 class GetCurrentWindSpeedThreshold(GetCommand):
     '''Get Current Wind Speed Threshold Command'''
     TYPE         = int
+    RANGE        = [0, 999]
     CMDFORMAT    = '(w)'
     ACK_PATTERNS = [ '^\(W(\d{3})\)' ]
     SCALE        = 1
@@ -247,6 +275,7 @@ class GetCurrentWindSpeedThreshold(GetCommand):
 class SetCurrentWindSpeedThreshold(SetCommand):
     '''Set Current Wind Speed Threshold Command'''
     TYPE         = int
+    RANGE        = [0, 999]
     CMDFORMAT    = '(W{:03d})'
     ACK_PATTERNS = [ '^\(W(\d{3})\)' ]
     SCALE        = 1
@@ -260,6 +289,7 @@ class SetCurrentWindSpeedThreshold(SetCommand):
 class GetAverageWindSpeedThreshold(GetCommand):
     '''Get 10min Average Wind Speed Threshold Command'''
     TYPE         = int
+    RANGE        = [0, 999]
     CMDFORMAT    = '(o)'
     ACK_PATTERNS = [ '^\(O(\d{3})\)' ]
     SCALE        = 1
@@ -271,6 +301,7 @@ class GetAverageWindSpeedThreshold(GetCommand):
 class SetAverageWindSpeedThreshold(SetCommand):
     '''Set 10min Average Wind Speed Threshold Command'''
     TYPE         = int
+    RANGE        = [0, 999]
     CMDFORMAT    = '(O{:03d})'
     ACK_PATTERNS = [ '^\(O(\d{3})\)' ]
     SCALE        = 1
@@ -284,6 +315,7 @@ class SetAverageWindSpeedThreshold(SetCommand):
 class GetAnemometerCalibrationConstant(GetCommand):
     '''Get Anemometer Calibration Constant'''
     TYPE         = int
+    RANGE        = [0, 999]
     CMDFORMAT    = '(a)'
     ACK_PATTERNS = [ '^\(A(\d{3})\)' ]
     SCALE        = 1
@@ -295,6 +327,7 @@ class GetAnemometerCalibrationConstant(GetCommand):
 class SetAnemometerCalibrationConstant(SetCommand):
     '''Set Anemometer Calibration Constant'''
     TYPE         = int
+    RANGE        = [0, 999]
     CMDFORMAT    = '(A{:03d})'
     ACK_PATTERNS = [ '^\(A(\d{3})\)' ]
     SCALE        = 1
@@ -307,23 +340,23 @@ class SetAnemometerCalibrationConstant(SetCommand):
 class GetAnemometerModel(GetCommand):
     '''Get Anemometer Model Command'''
     TYPE         = str
+    RANGE        = ['TX20', 'Simple']
     CMDFORMAT    = '(z)'
     ACK_PATTERNS = [ '^\(Z(\d{3})\)' ]
-    MAPPING      = { 1: 'TX20', 0: 'Homemade'}
+    MAPPING      = { 1: 'TX20', 0: 'Simple'}
     RETRIES      = 2
     TIMEOUT      = {'min': 2, 'max': 128, 'factor': 2}
 
-    def getResult(self):
-        return self.MAPPING[int(self.matchobj[0].group(1))]
        
 
 class SetAnemometerModel(SetCommand):
     '''Set Anemometer Model Command'''
     TYPE         = str
+    RANGE        = ['TX20', 'Simple']
     CMDFORMAT    = '(Z{:03d})'
     ACK_PATTERNS = [ '^\(Z(\d{3})\)' ]
-    MAPPING      = {'TX20': 1, 'Homemade': 0 }
-    INV_MAPPING  = { 1: 'TX20', 0: 'Homemade'}
+    MAPPING      = {'TX20': 1, 'Simple': 0 }
+    INV_MAPPING  = { 1: 'TX20', 0: 'Simple'}
     RETRIES      = 2
     TIMEOUT      = {'min': 2, 'max': 128, 'factor': 2}
 
@@ -340,6 +373,7 @@ class SetAnemometerModel(SetCommand):
 class GetBarometerHeight(GetCommand):
     '''Get Barometer Height Command'''
     TYPE         = int
+    RANGE        = [0, 99999]
     CMDFORMAT    = '(m)'
     ACK_PATTERNS = [ '^\(M(\d{5})\)' ]
     SCALE        = 1
@@ -351,6 +385,7 @@ class GetBarometerHeight(GetCommand):
 class SetBarometerHeight(SetCommand):
     '''Set Barometer Height Command'''
     TYPE         = int
+    RANGE        = [0, 99999]
     CMDFORMAT    = '(M{:05d})'
     ACK_PATTERNS = [ '^\(M(\d{5})\)' ]
     SCALE        = 1
@@ -364,6 +399,7 @@ class SetBarometerHeight(SetCommand):
 class GetBarometerOffset(GetCommand):
     '''Get Barometer Offset Command'''
     TYPE         = int
+    RANGE        = [-99, 99]
     CMDFORMAT    = '(b)'
     ACK_PATTERNS = [ '^\(B([+-]\d{2})\)' ]
     SCALE        = 1
@@ -376,6 +412,7 @@ class GetBarometerOffset(GetCommand):
 class SetBarometerOffset(SetCommand):
     '''Set Barometer Offset Command'''
     TYPE         = int
+    RANGE        = [-99, 99]
     CMDFORMAT    = '(B{:+03d})'
     ACK_PATTERNS = [ '^\(B([+-]\d{2})\)' ]
     SCALE        = 1
@@ -391,6 +428,7 @@ class SetBarometerOffset(SetCommand):
 class GetCloudSensorThreshold(GetCommand):
     '''Get Cloud Sensor Threshold Command'''
     TYPE         = int
+    RANGE        = [0, 999]
     CMDFORMAT    = '(n)'
     ACK_PATTERNS = [ '^\(N(\d{3})\)' ]
     ACK_INDEX    = 0
@@ -403,6 +441,7 @@ class GetCloudSensorThreshold(GetCommand):
 class SetCloudSensorThreshold(SetCommand):
     '''Set Cloud Sensor Threshold Command'''
     TYPE         = int
+    RANGE        = [0, 999]
     CMDFORMAT    = '(N{:03d})'
     ACK_PATTERNS = [ '^\(N(\d{3})\)' ]
     SCALE        = 1
@@ -416,6 +455,7 @@ class SetCloudSensorThreshold(SetCommand):
 class GetCloudSensorGain(GetCommand):
     '''Get Cloud Sensor Gain Command'''
     TYPE         = float
+    RANGE        = [0.0, 99.9]
     CMDFORMAT    = '(r)'
     ACK_PATTERNS = [ '^\(R(\d{3})\)' ]
     SCALE        = 10
@@ -427,6 +467,7 @@ class GetCloudSensorGain(GetCommand):
 class SetCloudSensorGain(SetCommand):
     '''Set Cloud Sensor Gain Command'''
     TYPE         = float
+    RANGE        = [0.0, 99.9]
     CMDFORMAT    = '(R{:03d})'
     ACK_PATTERNS = [ '^\(R(\d{3})\)' ]
     SCALE        = 10
@@ -442,6 +483,7 @@ class SetCloudSensorGain(SetCommand):
 class GetPhotometerThreshold(GetCommand):
     '''Get Photometer Threshold Command'''
     TYPE         = float
+    RANGE        = [0.0, 99.9]
     CMDFORMAT    = '(i)'
     ACK_PATTERNS = [ '^\(I(\d{3})\)',  '^\(I([+-]\d{2})\)',  '^\(I(\d{5})\)']
     ACK_INDEX    = 0
@@ -454,6 +496,7 @@ class GetPhotometerThreshold(GetCommand):
 class SetPhotometerThreshold(SetCommand):
     '''Set Photometer Threshold Command'''
     TYPE         = float
+    RANGE        = [0.0, 99.9]
     CMDFORMAT    = '(I{:03d})'
     ACK_PATTERNS = [ '^\(I(\d{3})\)' ]
     SCALE        = 10
@@ -467,6 +510,7 @@ class SetPhotometerThreshold(SetCommand):
 class GetPhotometerOffset(GetCommand):
     '''Get Photometer Gain Offset'''
     TYPE         = float
+    RANGE        = [-99.9, +99.9]
     CMDFORMAT    = '(i)'
     ACK_PATTERNS = [ '^\(I(\d{3})\)',  '^\(I([+-]\d{2})\)',  '^\(I(\d{5})\)']
     ACK_INDEX    = 1
@@ -480,6 +524,7 @@ class GetPhotometerOffset(GetCommand):
 class SetPhotometerOffset(SetCommand):
     '''Set Photometer Gain Offset'''
     TYPE         = float
+    RANGE        = [-99.9, +99.9]
     CMDFORMAT    = '(I{:+03d})'
     ACK_PATTERNS = [ '^\(I([+-]\d{2})\)']
     SCALE        = 10
@@ -495,6 +540,7 @@ class SetPhotometerOffset(SetCommand):
 class GetPluviometerCalibration(GetCommand):
     '''Get Pluviometer Calibration Constant Command'''
     TYPE         = int
+    RANGE        = [0, 999]
     CMDFORMAT    = '(p)'
     ACK_PATTERNS = [ '^\(P(\d{3})\)']
     SCALE        = 1
@@ -506,6 +552,7 @@ class GetPluviometerCalibration(GetCommand):
 class SetPluviometerCalibration(SetCommand):
     '''Set Pluviometer Calibration Constant Command'''
     TYPE         = int
+    RANGE        = [0, 999]
     CMDFORMAT    = '(P{:03d})'
     ACK_PATTERNS = [ '^\(P(\d{3})\)']
     SCALE        = 1
@@ -521,6 +568,7 @@ class SetPluviometerCalibration(SetCommand):
 class GetPyranometerGain(GetCommand):
     '''Get Pyranometer Gain Command'''
     TYPE         = float
+    RANGE        = [0.0, 99.9]
     CMDFORMAT    = '(j)'
     ACK_PATTERNS = [ '^\(J(\d{3})\)']
     SCALE        = 10
@@ -532,6 +580,7 @@ class GetPyranometerGain(GetCommand):
 class SetPyranometerGain(SetCommand):
     '''Set Pyranometer Gain Command'''
     TYPE         = float
+    RANGE        = [0.0, 99.9]
     CMDFORMAT    = '(J{:03d})'
     ACK_PATTERNS = [ '^\(J(\d{3})\)']
     SCALE        = 10
@@ -544,6 +593,7 @@ class SetPyranometerGain(SetCommand):
 class GetPyranometerOffset(GetCommand):
     '''Get Pyranometer Offset Command'''
     TYPE         = int
+    RANGE        = [0, 999]
     CMDFORMAT    = '(u)'
     ACK_PATTERNS = [ '^\(U(\d{3})\)']
     SCALE        = 1
@@ -556,6 +606,7 @@ class GetPyranometerOffset(GetCommand):
 class SetPyranometerOffset(SetCommand):
     '''Get Pyranometer Offset Command'''
     TYPE         = int
+    RANGE        = [0, 999]
     CMDFORMAT    = '(U{:03d})'
     ACK_PATTERNS = [ '^\(U(\d{3})\)']
     SCALE        = 1
@@ -572,6 +623,7 @@ class SetPyranometerOffset(SetCommand):
 class GetRainSensorThreshold(GetCommand):
     '''Get Rain Sensor Threshold Command'''
     TYPE         = int
+    RANGE        = [0, 999]
     CMDFORMAT    = '(l)'
     ACK_PATTERNS = [ '^\(L(\d{3})\)']
     SCALE        = 1
@@ -583,6 +635,7 @@ class GetRainSensorThreshold(GetCommand):
 class SetRainSensorThreshold(SetCommand):
     '''Set Rain Sensor Threshold Command'''
     TYPE         = int
+    RANGE        = [0, 999]
     CMDFORMAT    = '(L{:03d})'
     ACK_PATTERNS = [ '^\(L(\d{3})\)']
     SCALE        = 1
@@ -598,6 +651,7 @@ class SetRainSensorThreshold(SetCommand):
 class GetThermometerDeltaTempThreshold(GetCommand):
     '''Get Thermometer DeltaTemp Threshold Command'''
     TYPE         = int
+    RANGE        = [0, 999]
     CMDFORMAT    = '(c)'
     ACK_PATTERNS = [ '^\(C(\d{3})\)']
     SCALE        = 1
@@ -609,6 +663,7 @@ class GetThermometerDeltaTempThreshold(GetCommand):
 class SetThermometerDeltaTempThreshold(SetCommand):
     '''Set Thermometer DeltaTemp Threshold Command'''
     TYPE         = int
+    RANGE        = [0, 999]
     CMDFORMAT    = '(C{:03d})'
     ACK_PATTERNS = [ '^\(C(\d{3})\)']
     SCALE        = 1
@@ -624,6 +679,7 @@ class SetThermometerDeltaTempThreshold(SetCommand):
 class GetVoltmeterThreshold(GetCommand):
     '''Get Voltmeter Threshold Command'''
     TYPE         = float
+    RANGE        = [0.0, 25.5]
     CMDFORMAT    = '(f)'
     ACK_PATTERNS = [ '^\(F(\d{3})\)', '^\(F([+-]\d{2})\)' ]
     ACK_INDEX    = 0
@@ -636,6 +692,7 @@ class GetVoltmeterThreshold(GetCommand):
 class SetVoltmeterThreshold(SetCommand):
     '''Set Voltmeter Threshold Command'''
     TYPE         = float
+    RANGE        = [0.0, 25.5]
     CMDFORMAT    = '(F{:03d})'
     ACK_PATTERNS = [ '^\(F(\d{3})\)' ]
     SCALE        = 10
@@ -647,6 +704,7 @@ class SetVoltmeterThreshold(SetCommand):
 class GetVoltmeterOffset(GetCommand):
     '''Get Voltmeter Offset Command'''
     TYPE         = float
+    RANGE        = [-99.9, +99.9]
     CMDFORMAT    = '(f)'
     ACK_PATTERNS = [ '^\(F(\d{3})\)', '^\(F([+-]\d{2})\)' ]
     ACK_INDEX    = 1
@@ -659,6 +717,7 @@ class GetVoltmeterOffset(GetCommand):
 class SetVoltmeterOffset(SetCommand):
     '''Set Voltmeter Offset Command'''
     TYPE         = float
+    RANGE        = [-99.9, +99.9]
     CMDFORMAT    = '(F{:+03d})'
     ACK_PATTERNS = [ '^\(F([+-]\d{2})\)' ]
     SCALE        = 10
@@ -675,6 +734,7 @@ class SetVoltmeterOffset(SetCommand):
 class SetRoofRelayMode(SetCommand):
     '''Set Roof Relay Mode Command'''
     TYPE         = str
+    RANGE        = ['Closed', 'Open']
     CMDFORMAT    = '(X{:03d})'
     ACK_PATTERNS = [ '^\(X(\d{3})\)' ,  '^(dummy)' ]
     ACK_INDEX    = 0
@@ -704,7 +764,8 @@ class SetRoofRelayMode(SetCommand):
 
 class GetAuxRelaySwitchOnTime(GetCommand):
     '''Get Aux Relay Switch-On Time Command'''
-    TYPE            = datetime.time 
+    TYPE            = datetime.time
+    RANGE           = [datetime.time(0,0), datetime.time(23,59)]
     CMDFORMAT       = '(s)'
     ACK_PATTERNS    = [ '^\(S\d{3}\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
     ACK_INDEX       = 1
@@ -720,6 +781,7 @@ class GetAuxRelaySwitchOnTime(GetCommand):
 class SetAuxRelaySwitchOnTime(SetCommand):
     '''Set Aux Relay Switch-On Time Command'''
     TYPE            = datetime.time
+    RANGE           = [datetime.time(0,0), datetime.time(23,59)]
     CMDFORMAT       = '(Son{:04d})'
     ACK_PATTERNS    = [ '^\(Son\d{4}\)' ]
     UNITS           = 'HH:MM:00'
@@ -752,6 +814,7 @@ class GetAuxRelaySwitchOffTime(GetCommand):
 class SetAuxRelaySwitchOffTime(SetCommand):
     '''Set Aux Relay Switch-Off Time Command'''
     TYPE            = datetime.time
+    RANGE           = [datetime.time(0,0), datetime.time(23,59)]
     CMDFORMAT       = '(Sof{:04d})'
     ACK_PATTERNS    = [ '^\(Sof\d{4}\)' ]
     UNITS           = 'HH:MM:00'
@@ -769,6 +832,7 @@ class SetAuxRelaySwitchOffTime(SetCommand):
 class GetAuxRelayMode(GetCommand):
     '''Get Aux Relay Mode Command'''
     TYPE         = str
+    RANGE        = ['Auto', 'Closed', 'Open', 'Timer/Off', 'Timer/On']
     CMDFORMAT    = '(s)'
     ACK_PATTERNS = [ '^\(S(\d{3})\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
     ACK_INDEX    = 0
@@ -776,14 +840,12 @@ class GetAuxRelayMode(GetCommand):
     RETRIES      = 2
     TIMEOUT      = {'min': 2, 'max': 128, 'factor': 2}
 
-       
-    def getResult(self):
-        return self.MAPPING[int(self.matchobj[0].group(1))]
     
 
 class SetAuxRelayMode(SetCommand):
     '''Set Aux Relay Mode Command'''
     TYPE         = str
+    RANGE        = ['Auto', 'Closed', 'Open', 'Timer/Off', 'Timer/On']
     CMDFORMAT    = '(S{:03d})'
     ACK_PATTERNS = [ '^\(S(\d{3})\)', '^(dummy)' ]
     ACK_INDEX    = 0

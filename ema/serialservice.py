@@ -194,7 +194,7 @@ class SerialService(ClientService):
             (self.protocol.setCurrentWindSpeedThreshold, 20),
             (self.protocol.setAverageWindSpeedThreshold, 66),
             (self.protocol.setAnemometerCalibrationConstant, 70),
-            (self.protocol.setAnemometerModel, 'Homemade'),
+            (self.protocol.setAnemometerModel, 'Simple'),
             (self.protocol.setBarometerHeight, 711),
             (self.protocol.setBarometerOffset, -10),
             (self.protocol.setCloudSensorThreshold, 67),

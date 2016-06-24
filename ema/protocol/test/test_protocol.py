@@ -151,15 +151,15 @@ class TestEMAProtocol1(unittest.TestCase):
         self.assertEqual(self.transport.value(), '(z)')
         self.transport.clear()
         self.protocol.dataReceived('(Z000)')
-        d.addCallback(self.assertEqual, 'Homemade')
+        d.addCallback(self.assertEqual, 'Simple')
         return d
     
     def test_setAnemometerModel(self):
-        d = self.protocol.setAnemometerModel('Homemade')
+        d = self.protocol.setAnemometerModel('Simple')
         self.assertEqual(self.transport.value(), '(Z000)')
         self.transport.clear()
         self.protocol.dataReceived('(Z000)')
-        d.addCallback(self.assertEqual, 'Homemade')
+        d.addCallback(self.assertEqual, 'Simple')
         return d
 
     # -------------

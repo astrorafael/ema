@@ -1,5 +1,8 @@
+Prioridad alta
+==============
+- devices
+- reorga de subpaquetes por servicios
 
-*) Documentar las APIs del EMAProtocol
  - Comunicación al modulo MQTT con Colas deque() para desacoplar el servicio
   MQTT del servicio de lectura.
 *)  revisar los intervalos window deben ser [0,24)
@@ -18,4 +21,9 @@
    - error de registro
    - error en bulk dump
 *) Servicio MQTTClient para stars4all
+
+
+Prioreidad baja
+===============
+*) Repasar unidades, escala y rango  de los comandos
 
