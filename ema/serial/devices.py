@@ -214,7 +214,35 @@ class RainSensor(Device):
 
 class RealTimeClock(Device):
     def __init__(self, parent, options, global_sync=True):
-        pass    
+        Device.__init__(self, parent, options, global_sync)
+        self.PARAMS = [
+            { 
+                'title' : 'RTC',
+                'option': 'max_drift',
+                'get':   self.parent.protocol.getRTCDateTime,
+                'set':   self.parent.protocol.setRTCDateTime
+            },
+        ]
+
+    @inlineCallbacks
+    def sync(self):
+        '''
+        Synchronizes parameters. 
+        Returns a deferred
+        '''
+        param = self.PARAMS[0]
+        max_drift = self.options[param['option']]
+        value = yield param['get']()
+        now = datetime.datetime.utcnow()
+        if abs((value - now).total_seconds()) > max_drift:
+                log.warn("{title} not synchronized [EMA = {EMA!s}] [Host = {host!s}]", title=param['title'], EMA=value, host=now)
+                if self.options['sync'] and self.global_sync:
+                    log.info("Synchronizing {title}", title=param['title'])
+                    value = yield param['set'](None)
+                    if abs((value - datetime.datetime.utcnow()).total_seconds()) > max_drift:
+                        log.warn("{title} still not synchronized", title=param['title'])
+        else:
+            log.info("{title} already synchronized", title=param['title'])
 
 
 class Thermometer(Device):

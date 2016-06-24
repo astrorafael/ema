@@ -150,7 +150,12 @@ def loadCfgFile(path):
     options['serial']['watchdog']['sync']            = parser.getboolean("watchdog","sync")
     options['serial']['watchdog']['period']          = parser.getint("watchdog","period")
 
+    options['serial']['rtc'] = {}
+    options['serial']['rtc']['sync']               = parser.getboolean("rtc","sync")
+    options['serial']['rtc']['max_drift']          = parser.getint("rtc","max_drift")
 
+
+   
    
     
    

@@ -117,7 +117,9 @@ class SerialService(ClientService):
         self.rainsensor  = RainSensor(self, self.options['rainsensor'])
         self.thermometer = Thermometer(self, self.options['thermometer'])
         self.watchdog    = Watchdog(self, self.options['watchdog'])
+        self.rtc         = RealTimeClock(self, self.options['rtc'])
         self.watchdog.sync()
+        self.rtc.sync()
 
         
        

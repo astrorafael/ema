@@ -274,21 +274,14 @@ period = 200
 
 #------------------------------------------------------------------------#
 
-[RTC]
-# Max difference to synchronize time [seconds].
-# Delays in TX Serial output queue (1 sec, at least) 
-# prevents to have seconds accuarcy
-rtc_delta  = 5
+[rtc]
 
-# Sites to probe for Internet connectivity
-rtc_probe_sites = http://www.google.es,http://www.lua.org,http://www.python.org
+# sync parameters
+sync = yes
 
-# component log level (debug, info, warn, error, critical)
-rtc_log = INFO
-
-
-
-
+# Max difference between EMA and host computer 
+# to synchronize time [seconds].
+max_drift  = 2
 
 #------------------------------------------------------------------------#
 # Thermopile sensor (alternative way to detect clouds)

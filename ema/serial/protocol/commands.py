@@ -167,7 +167,7 @@ class GetRTCDateTime(GetCommand):
     CMDFORMAT       = '(y)'
     ACK_PATTERNS    = [ '^\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)' ]
     EMA_TIME_FORMAT = '(%H:%M:%S %d/%m/%Y)'
-    RETRIES         = 0
+    RETRIES         = 1
     TIMEOUT         = {'min': 1, 'max': 128, 'factor': 2}
 
     def getResult(self):
