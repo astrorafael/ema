@@ -22,10 +22,6 @@ import math
 from twisted.logger               import Logger, LogLevel
 from twisted.internet             import reactor, task
 from twisted.internet.defer       import inlineCallbacks
-from twisted.internet.serialport  import SerialPort
-from twisted.application.service  import Service
-from twisted.application.internet import ClientService, backoffPolicy
-from twisted.internet.endpoints   import clientFromString
 
 
 #--------------
@@ -113,42 +109,57 @@ class Anemometer(Device):
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
 
-class Barometer(object):
+class Barometer(Device):
     def __init__(self, parent, options, global_sync=True):
-        pass
+        Device.__init__(self, parent, options, global_sync)
+        self.PARAMS = [
+            { 
+                'title' : 'Barometer Height',
+                'option': 'height',
+                'get':   self.parent.protocol.getBarometerHeight,
+                'set':   self.parent.protocol.setBarometerHeight
+            },
+            { 
+                'title' : 'Barometer Offset',
+                'option': 'offset',
+                'get':   self.parent.protocol.getBarometerOffset,
+                'set':   self.parent.protocol.setBarometerOffset
+            },
+        ]
 
 
-class CloudDetector(object):
+
+class CloudDetector(Device):
     def __init__(self, parent, options, global_sync=True):
         pass    
 
 
-class Photometer(object):
+class Photometer(Device):
     def __init__(self, parent, options, global_sync=True):
         pass   
 
 
-class Pluviometer(object):
+class Pluviometer(Device):
     def __init__(self, parent, options, global_sync=True):
         pass    
 
 
-class Pyranometer(object):
+class Pyranometer(Device):
     def __init__(self, parent, options, global_sync=True):
         pass   
 
 
-class RainDetector(object):
+class RainDetector(Device):
     def __init__(self, parent, options, global_sync=True):
         pass
 
 
-class RealTimeClock(object):
+class RealTimeClock(Device):
     def __init__(self, parent, options, global_sync=True):
         pass    
 
 
-class Thermopile(object):
+class Thermopile(Device):
     def __init__(self, parent, options, global_sync=True):
         pass    
 
@@ -177,17 +188,17 @@ class Voltmeter(Device):
 
     
     
-class Watchdog(object):
+class Watchdog(Device):
     def __init__(self, parent, options, global_sync=True):
         pass
 
 
-class RoofRelay(object):
+class RoofRelay(Device):
     def __init__(self, parent, options, global_sync=True):
         pass  
 
 
-class AuxiliarRelay(object):
+class AuxiliarRelay(Device):
     def __init__(self, parent, options, global_sync=True):
         pass    
 

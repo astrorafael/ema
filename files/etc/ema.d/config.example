@@ -170,6 +170,20 @@ threshold = 20
 # avergae wind speed > wind_thres10 will close the roof relay
 ave_threshold = 66
 
+#------------------------------------------------------------------------#
+
+[barometer]
+
+# sync parameters
+sync = no
+
+# Observer height above sea level [m]
+height = 700
+
+# Barometer offeset [mBar]
+offset = -19
+
+#------------------------------------------------------------------------#
 
 [WATCHDOG]
 # EMA keep alive limit [seconds]
@@ -179,6 +193,8 @@ keepalive = 200
 
 # component log level (debug, info, warn, error, critical)
 wdog_log = INFO
+
+
 
 #------------------------------------------------------------------------#
 
@@ -196,27 +212,7 @@ rtc_log = INFO
 
 
 
-#------------------------------------------------------------------------#
 
-[BAROMETER]
-
-# Observer height above sea level [m]
-barom_height = 700
-
-# Barometer offeset [mBar]
-barom_offset = -19
-
-# Where to publish measurements
-# Comma list separated values 
-# Allowed values: html, mqtt  (or just leave a blank line)
-barom_publish_where = mqtt,html
-
-# What to publish: current, average or both
-# comma-separated list 
-barom_publish_what = current,average
-
-# component log level (debug, info, warn, error, critical)
-barom_log = INFO
 
 #------------------------------------------------------------------------#
 

@@ -114,6 +114,11 @@ def loadCfgFile(path):
     options['serial']['anemometer']['threshold']       = parser.getint("anemometer","threshold")
     options['serial']['anemometer']['ave_threshold']   = parser.getint("anemometer","ave_threshold")
    
+    options['serial']['barometer'] = {}
+    options['serial']['barometer']['sync']            = parser.getboolean("barometer","sync")
+    options['serial']['barometer']['height']          = parser.getint("barometer","height")
+    options['serial']['barometer']['offset']          = parser.getint("barometer","offset")
+    
    
    
 
