@@ -104,8 +104,8 @@ def loadCfgFile(path):
     options['serial']['voltmeter']['offset']          = parser.getfloat("voltmeter","offset")
     options['serial']['voltmeter']['threshold']       = parser.getfloat("voltmeter","threshold")
     options['serial']['voltmeter']['delta']           = parser.getfloat("voltmeter","delta")
-    options['serial']['voltmeter']['low_volt_script'] = parser.get("voltmeter","low_volt_script")
-    options['serial']['voltmeter']['low_volt_mode']   = parser.get("voltmeter","low_volt_mode")
+    options['serial']['voltmeter']['script']          = parser.get("voltmeter","script")
+    options['serial']['voltmeter']['script_mode']     = parser.get("voltmeter","script_mode")
 
     options['serial']['anemometer'] = {}
     options['serial']['anemometer']['sync']            = parser.getboolean("anemometer","sync")
@@ -153,6 +153,12 @@ def loadCfgFile(path):
     options['serial']['rtc'] = {}
     options['serial']['rtc']['sync']               = parser.getboolean("rtc","sync")
     options['serial']['rtc']['max_drift']          = parser.getint("rtc","max_drift")
+
+    options['serial']['aux_relay'] = {}
+    options['serial']['aux_relay']['sync']          = parser.getboolean("aux_relay","sync")
+    options['serial']['aux_relay']['mode']          = parser.get("aux_relay","mode")
+    options['serial']['aux_relay']['script']        = parser.get("aux_relay","script")
+    options['serial']['aux_relay']['script_mode']   = parser.get("aux_relay","script_mode")
 
 
    

@@ -21,7 +21,7 @@ import math
 
 from twisted.logger               import Logger, LogLevel
 from twisted.internet             import reactor, task
-from twisted.internet.defer       import inlineCallbacks
+from twisted.internet.defer       import inlineCallbacks, returnValue
 
 
 #--------------
@@ -59,18 +59,49 @@ class Device(object):
     def sync(self):
         '''
         Synchronizes parameters. 
-        Returns a deferred
+        Returns a deferred whose success callback value is a flag
+        True = synch process ok, False = synch process went wrong
         '''
+        result = True
         for param in self.PARAMS:
-            value = yield param['get']()
+            try:
+                value = yield param['get']()
+            except EMATimeoutError:
+                result = False
+                log.error("Parameter sync exception => {exception}", exception=e)
+                break
             configured = self.options[param['option']]
             if value != configured:
                 log.warn("{title} not synchronized [read = {read}] [file = {file}]", title=param['title'], read=value, file=configured)
                 if self.options['sync'] and self.global_sync:
                     log.info("Synchronizing {title}", title=param['title'])
-                    yield param['set'](configured)
+                    try:
+                        yield param['set'](configured)
+                    except EMATimeoutError:
+                        log.error("parameter sync exception => {exception}", exception=e)
+                        result = False
+                        break
             else:
                 log.info("{title} already synchronized", title=param['title'])
+        returnValue(result)
+
+
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
+
+class Thermopile(Device):
+    def __init__(self, parent, options, global_sync=True):
+        pass    
+
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
+
+class RoofRelay(Device):
+    def __init__(self, parent, options, global_sync=True):
+        pass
+        
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -105,7 +136,6 @@ class Anemometer(Device):
             },
         ]
 
-
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -128,7 +158,9 @@ class Barometer(Device):
             },
         ]
 
-
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
 
 class CloudSensor(Device):
     def __init__(self, parent, options, global_sync=True):
@@ -148,6 +180,9 @@ class CloudSensor(Device):
             },
         ]    
 
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
 
 class Photometer(Device):
     def __init__(self, parent, options, global_sync=True):
@@ -168,6 +203,10 @@ class Photometer(Device):
         ] 
 
 
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
+
 class Pluviometer(Device):
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
@@ -179,6 +218,11 @@ class Pluviometer(Device):
                 'set':   self.parent.protocol.setPluviometerCalibration
             },
         ] 
+
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
+
 
 class Pyranometer(Device):
     def __init__(self, parent, options, global_sync=True):
@@ -198,6 +242,9 @@ class Pyranometer(Device):
             },
         ] 
 
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
 
 class RainSensor(Device):
     def __init__(self, parent, options, global_sync=True):
@@ -211,6 +258,41 @@ class RainSensor(Device):
             },
         ] 
 
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
+
+class Thermometer(Device):
+    def __init__(self, parent, options, global_sync=True):
+        Device.__init__(self, parent, options, global_sync)
+        self.PARAMS = [
+            { 
+                'title' : 'Thermometer Delta Threshold',
+                'option': 'delta_threshold',
+                'get':   self.parent.protocol.getThermometerDeltaTempThreshold,
+                'set':   self.parent.protocol.setThermometerDeltaTempThreshold
+            },
+        ] 
+
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
+    
+class Watchdog(Device):
+    def __init__(self, parent, options, global_sync=True):
+        Device.__init__(self, parent, options, global_sync)
+        self.PARAMS = [
+            { 
+                'title' : 'Watchdog Period',
+                'option': 'period',
+                'get':   self.parent.protocol.getWatchdogPeriod,
+                'set':   self.parent.protocol.setWatchdogPeriod
+            },
+        ] 
+
+#---------------------------------------------------------------------
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
 
 class RealTimeClock(Device):
     def __init__(self, parent, options, global_sync=True):
@@ -232,34 +314,27 @@ class RealTimeClock(Device):
         '''
         param = self.PARAMS[0]
         max_drift = self.options[param['option']]
-        value = yield param['get']()
+        try:
+            value = yield param['get']()
+        except EMATimeoutError as e:
+            log.error("RTC sync exception => {exception}", exception=e)
+            returnValue(False)
         now = datetime.datetime.utcnow()
         if abs((value - now).total_seconds()) > max_drift:
                 log.warn("{title} not synchronized [EMA = {EMA!s}] [Host = {host!s}]", title=param['title'], EMA=value, host=now)
                 if self.options['sync'] and self.global_sync:
                     log.info("Synchronizing {title}", title=param['title'])
-                    value = yield param['set'](None)
+                    try:
+                        value = yield param['set'](None)
+                    except EMATimeoutError as e:
+                        log.error("RTC sync exception => {exception}", exception=e)
+                        returnValue(False)
                     if abs((value - datetime.datetime.utcnow()).total_seconds()) > max_drift:
                         log.warn("{title} still not synchronized", title=param['title'])
         else:
             log.info("{title} already synchronized", title=param['title'])
+        returnValue(True)
 
-
-class Thermometer(Device):
-    def __init__(self, parent, options, global_sync=True):
-        Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = [
-            { 
-                'title' : 'Thermometer Delta Threshold',
-                'option': 'delta_threshold',
-                'get':   self.parent.protocol.getThermometerDeltaTempThreshold,
-                'set':   self.parent.protocol.setThermometerDeltaTempThreshold
-            },
-        ] 
-
-class Thermopile(Device):
-    def __init__(self, parent, options, global_sync=True):
-        pass    
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -284,28 +359,26 @@ class Voltmeter(Device):
             },
         ]
 
-    
-    
-class Watchdog(Device):
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
+
+class AuxiliarRelay(Device):
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
         self.PARAMS = [
             { 
-                'title' : 'Watchdog Period',
-                'option': 'period',
-                'get':   self.parent.protocol.getWatchdogPeriod,
-                'set':   self.parent.protocol.setWatchdogPeriod
+                'title' : 'Aux Relay Mode',
+                'option': 'mode',
+                'get':   self.parent.protocol.getAuxRelayMode,
+                'set':   self.parent.protocol.setAuxRelayMode
             },
         ] 
 
-class RoofRelay(Device):
-    def __init__(self, parent, options, global_sync=True):
-        pass  
 
-
-class AuxiliarRelay(Device):
-    def __init__(self, parent, options, global_sync=True):
-        pass    
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
 
 __all__ = [
     Anemometer,

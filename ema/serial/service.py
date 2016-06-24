@@ -118,7 +118,7 @@ class SerialService(ClientService):
         self.thermometer = Thermometer(self, self.options['thermometer'])
         self.watchdog    = Watchdog(self, self.options['watchdog'])
         self.rtc         = RealTimeClock(self, self.options['rtc'])
-        self.watchdog.sync()
+        self.aux_relay   = AuxiliarRelay(self, self.options['aux_relay'])
         self.rtc.sync()
 
         

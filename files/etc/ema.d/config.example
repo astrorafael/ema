@@ -142,12 +142,12 @@ delta = 0.2
 # List of comma separated scripts to execute on low voltage 
 # Each script should show the full path. 
 # leave empty if not used
-low_volt_script = /home/pi/nto/ema/scripts/volt-script
+script = /home/pi/nto/ema/scripts/volt-script
 
 # Script mode: (Never, Once, Many)
 # When launched mutiple times, EMA server does not lauch a script
 # till the previous run is over
-low_volt_mode = Once
+script_mode = Once
 
 #------------------------------------------------------------------------#
 # Mechanical Anemometer
@@ -283,6 +283,34 @@ sync = yes
 # to synchronize time [seconds].
 max_drift  = 2
 
+
+#------------------------------------------------------------------------#
+# Auxiliar relay
+[aux_relay]
+
+# sync parameters
+sync = no
+
+# Flag. Open/close relay mode 
+# 'Auto'   = automatic based on dew point
+# 'Manual' = manual, by explicit commands
+# 'Timer/On'   = Timed, with On/Off hour:minute
+# 'Timer/Off'  = Timed, with On/Off hour:minute
+mode = Manual
+
+
+# List of comma separated scripts to execute  
+# on change of aux relay switch 
+# Each script should show the full path. 
+# leave empty if not used
+script = /path/to/my/script
+
+# Script mode: (Never, Once, Many)
+# When launched mutiple times, EMA server does not lauch a script
+# till the previous run is over
+script_mode = Never
+
+
 #------------------------------------------------------------------------#
 # Thermopile sensor (alternative way to detect clouds)
 [THERMOPILE]
@@ -326,39 +354,3 @@ roof_relay_publish_where = mqtt,html
 # What to publish: current, average or both
 # comma-separated list 
 roof_relay_publish_what = current        
-
-#------------------------------------------------------------------------#
-# Auxiliar relay
-[AUX_RELAY]
-# Flag. Open/close relay mode 
-# 'Auto'   = automatic based on dew point
-# 'Manual' = manual, by explicit commands
-# 'Timed'  = Timed, with On/Off hour:minute
-aux_mode = Manual
-
-# Synchronize aux relay parameters
-aux_sync = yes
-
-# List of comma separated scripts to execute  
-# on change of aux relay switch 
-# Each script should show the full path. 
-# leave empty if not used
-aux_relay_script = /path/to/my/script
-
-# Script mode: (Never, Once, Many)
-# When launched mutiple times, EMA server does not lauch a script
-# till the previous run is over
-aux_relay_mode = Never
-
-# Where to publish relay state
-# Comma list separated values 
-# Allowed values: html, mqtt  (or just leave a blank line)
-aux_relay_publish_where = mqtt,html
-
-# What to publish: current, average or both 
-# comma-separated list 
-aux_relay_publish_what = current
-
-# component log level (debug, info, warn, error, critical)
-# shared with roof_relay
-aux_relay_log = INFO
