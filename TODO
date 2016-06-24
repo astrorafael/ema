@@ -2,6 +2,7 @@ Prioridad alta
 ==============
 - devices
 - reorga de subpaquetes por servicios
+- servicio de sonda (probe) como subpaquete
 
  - Comunicación al modulo MQTT con Colas deque() para desacoplar el servicio
   MQTT del servicio de lectura.
@@ -21,6 +22,21 @@ Prioridad alta
    - error de registro
    - error en bulk dump
 *) Servicio MQTTClient para stars4all
+
+
+mport json
+import datetime
+import re
+
+
+class DateTimeEncoder(json.JSONEncoder):
+
+    def default(self, o):
+        if  isinstance(o, datetime.datetime):
+            return o.strftime("%Y-%m-%dT%H:%M:%S")
+
+        # Let the base class default method raise the TypeError
+        return json.JSONEncoder.default(self, o)
 
 
 Prioreidad baja
