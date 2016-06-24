@@ -1,7 +1,9 @@
 Prioridad alta
 ==============
-- devices
-- reorga de subpaquetes por servicios
+- Peculiaridades de algunos devices
+ - Voltmeter: scripts y tracking de voltage
+ - Roofrelay : cambio de stado y scripst
+ - AuxRelay : cambio de estado y script
 - servicio de sonda (probe) como subpaquete
 
  - Comunicación al modulo MQTT con Colas deque() para desacoplar el servicio

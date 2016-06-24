@@ -101,6 +101,9 @@ class SerialService(ClientService):
             ClientService.startService(self)
 
 
+    def printParameters(self, result, obj):
+        log.info("RESULT = {r}, VALUES = {v!s}", r=result, v=obj.parameters())
+
     def gotProtocol(self, protocol):
         log.debug("got Protocol")
         self.protocol  = protocol
@@ -120,6 +123,7 @@ class SerialService(ClientService):
         self.rtc         = RealTimeClock(self, self.options['rtc'])
         self.aux_relay   = AuxiliarRelay(self, self.options['aux_relay'])
         self.rtc.sync()
+        self.anemometer.sync().addCallback(self.printParameters, self.anemometer)
 
         
        
