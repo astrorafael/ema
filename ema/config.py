@@ -118,6 +118,21 @@ def loadCfgFile(path):
     options['serial']['barometer']['sync']            = parser.getboolean("barometer","sync")
     options['serial']['barometer']['height']          = parser.getint("barometer","height")
     options['serial']['barometer']['offset']          = parser.getint("barometer","offset")
+
+    options['serial']['cloudsensor'] = {}
+    options['serial']['cloudsensor']['sync']            = parser.getboolean("cloudsensor","sync")
+    options['serial']['cloudsensor']['threshold']       = parser.getint("cloudsensor","threshold")
+    options['serial']['cloudsensor']['gain']            = parser.getfloat("cloudsensor","gain")
+
+    options['serial']['photometer'] = {}
+    options['serial']['photometer']['sync']            = parser.getboolean("photometer","sync")
+    options['serial']['photometer']['threshold']       = parser.getfloat("photometer","threshold")
+    options['serial']['photometer']['offset']          = parser.getfloat("photometer","offset")
+
+    options['serial']['pluviometer'] = {}
+    options['serial']['pluviometer']['sync']            = parser.getboolean("pluviometer","sync")
+    options['serial']['pluviometer']['calibration']     = parser.getint("pluviometer","calibration")
+   
     
    
    

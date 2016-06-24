@@ -183,6 +183,65 @@ height = 700
 # Barometer offeset [mBar]
 offset = -19
 
+
+#------------------------------------------------------------------------#
+
+# Peltier-based cloud sensor
+[cloudsensor]
+
+# sync parameters
+sync = no
+
+# Adj. Gain
+gain = 1.0
+
+# Threshold to close roof relay [%]
+threshold = 67
+
+#------------------------------------------------------------------------#
+
+# Unihedron-like, wide field photometer measuring night visual magnitude.
+[photometer]
+
+# sync parameters
+sync = no
+
+# Calibration offset [visual mag.]
+offset = -0.5
+
+# Threshold to close roof relay [visual mag.]
+threshold  = 10.5
+
+
+#------------------------------------------------------------------------#
+# Pluviometer (Rain Gauge) sensor
+[pluviometer]
+
+# sync parameters
+sync = no
+
+# Constant to give readiongs in litres.
+calibration = 124
+
+#------------------------------------------------------------------------#
+# Pyranometer device, measuring solar radiation
+[PYRANOMETER]
+pyr_gain   = 1.6
+pyr_offset = 0
+
+# Where to publish measurements
+# Comma list separated values 
+# Allowed values: html, mqtt  (or just leave a blank line)
+pyr_publish_where = mqtt,html
+
+# What to publish: current, average or both
+# comma-separated list 
+pyr_publish_what = current,average
+
+# component log level (debug, info, warn, error, critical)
+pyr_log = INFO
+
+
 #------------------------------------------------------------------------#
 
 [WATCHDOG]
@@ -234,27 +293,6 @@ rain_publish_what = current,average
 # component log level (debug, info, warn, error, critical)
 rain_log = INFO
 
-#------------------------------------------------------------------------#
-
-# Peltier-based cloud sensor
-[CLOUD]
-# Adj. Gain
-pelt_gain = 1.0
-
-# Threshold to close roof relay [%]
-pelt_thres = 67
-
-# Where to publish measurements
-# Comma list separated values 
-# Allowed values: html, mqtt  (or just leave a blank line)
-pelt_publish_where = mqtt,html
-
-# What to publish: current, average or both
-# comma-separated list 
-pelt_publish_what = current,average
-
-# component log level (debug, info, warn, error, critical)
-pelt_log = INFO
 
 #------------------------------------------------------------------------#
 # Pyranometer device, measuring solar radiation
@@ -274,27 +312,7 @@ pyr_publish_what = current,average
 # component log level (debug, info, warn, error, critical)
 pyr_log = INFO
 
-#------------------------------------------------------------------------#
 
-# Unihedron-like, wide field photometer measuring night visual magnitude.
-[PHOTOMETER]
-# Calibration offset [visual mag.]
-phot_offset = -0.5
-
-# Threshold to close roof relay [visual mag.]
-phot_thres  = 10.5
-
-# Where to publish measurements
-# Comma list separated values 
-# Allowed values: html, mqtt  (or just leave a blank line)
-phot_publish_where = mqtt,html
-
-# What to publish: current, average or both
-# comma-separated list 
-phot_publish_what = current,average
-
-# component log level (debug, info, warn, error, critical)
-phot_log = INFO
 
 #------------------------------------------------------------------------#
 
@@ -320,24 +338,6 @@ thermo_log = INFO
 
 
 
-
-#------------------------------------------------------------------------#
-# Pluviometer (Rain Gauge) sensor
-[PLUVIOMETER]
-# Contsant to give readiongs in litres.
-pluv_calib = 124
-
-# Where to publish measurements
-# Comma list separated values 
-# Allowed values: html, mqtt  (or just leave a blank line)
-pluv_publish_where = mqtt,html
-
-# What to publish: current, average or both
-# comma-separated list 
-pluv_publish_what = current,average
-
-# component log level (debug, info, warn, error, critical)
-pluv_log = INFO
 
 
 #------------------------------------------------------------------------#

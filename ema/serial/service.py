@@ -35,7 +35,7 @@ from twisted.internet.endpoints   import clientFromString
 from ..logger   import setLogLevel
 from ..utils    import chop
 from .protocol  import EMAProtocol, EMAProtocolFactory, EMARangeError, EMAReturnError, EMATimeoutError
-from .devices   import Voltmeter, Anemometer, Barometer
+from .devices   import Voltmeter, Anemometer, Barometer, CloudSensor, Photometer, Pluviometer
 
 
 # ----------------
@@ -104,10 +104,13 @@ class SerialService(ClientService):
         self.pingTask  = task.LoopingCall(self.ping)
         self.pingTask.start(100, now=False)
         #self.syncTask  = self.protocol.callLater(10, self.sync)
-        self.voltmeter  = Voltmeter(self, self.options['voltmeter'])
-        self.anemometer = Anemometer(self, self.options['anemometer'])
-        self.barometer  = Barometer(self, self.options['barometer'])
-        self.barometer.sync()
+        self.voltmeter   = Voltmeter(self, self.options['voltmeter'])
+        self.anemometer  = Anemometer(self, self.options['anemometer'])
+        self.barometer   = Barometer(self, self.options['barometer'])
+        self.cloudsensor = CloudSensor(self, self.options['cloudsensor'])
+        self.photometer  = Photometer(self, self.options['photometer'])
+        self.pluviometer = Pluviometer(self, self.options['pluviometer'])
+        self.pluviometer.sync()
 
         
        

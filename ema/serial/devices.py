@@ -65,11 +65,12 @@ class Device(object):
             value = yield param['get']()
             configured = self.options[param['option']]
             if value != configured:
-                log.warn("{title} [read = {read}] [file = {file}]", title=param['title'], read=value, file=configured)
+                log.warn("{title} not synchronized [read = {read}] [file = {file}]", title=param['title'], read=value, file=configured)
                 if self.options['sync'] and self.global_sync:
                     log.info("Synchronizing {title}", title=param['title'])
                     yield param['set'](configured)
-
+            else:
+                log.info("{title} already synchronized", title=param['title'])
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -129,20 +130,55 @@ class Barometer(Device):
 
 
 
-class CloudDetector(Device):
+class CloudSensor(Device):
     def __init__(self, parent, options, global_sync=True):
-        pass    
+        Device.__init__(self, parent, options, global_sync)
+        self.PARAMS = [
+            { 
+                'title' : 'Cloud Sensor Threshold',
+                'option': 'threshold',
+                'get':   self.parent.protocol.getCloudSensorThreshold,
+                'set':   self.parent.protocol.setCloudSensorThreshold
+            },
+            { 
+                'title' : 'Cloud Sensor Gain',
+                'option': 'gain',
+                'get':   self.parent.protocol.getCloudSensorGain,
+                'set':   self.parent.protocol.setCloudSensorGain
+            },
+        ]    
 
 
 class Photometer(Device):
     def __init__(self, parent, options, global_sync=True):
-        pass   
+        Device.__init__(self, parent, options, global_sync)
+        self.PARAMS = [
+            { 
+                'title' : 'Photometer Threshold',
+                'option': 'threshold',
+                'get':   self.parent.protocol.getPhotometerThreshold,
+                'set':   self.parent.protocol.getPhotometerThreshold
+            },
+            { 
+                'title' : 'Photometer Offset',
+                'option': 'offset',
+                'get':   self.parent.protocol.getPhotometerOffset,
+                'set':   self.parent.protocol.setPhotometerOffset
+            },
+        ] 
 
 
 class Pluviometer(Device):
     def __init__(self, parent, options, global_sync=True):
-        pass    
-
+        Device.__init__(self, parent, options, global_sync)
+        self.PARAMS = [
+            { 
+                'title' : 'Pluviometer Calibration',
+                'option': 'calibration',
+                'get':   self.parent.protocol.getPluviometerCalibration,
+                'set':   self.parent.protocol.setPluviometerCalibration
+            },
+        ] 
 
 class Pyranometer(Device):
     def __init__(self, parent, options, global_sync=True):
@@ -205,7 +241,7 @@ class AuxiliarRelay(Device):
 __all__ = [
     Anemometer,
     Barometer,
-    CloudDetector,
+    CloudSensor,
     Photometer,
     Pluviometer,
     Pyranometer,
