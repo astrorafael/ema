@@ -10,6 +10,8 @@ from __future__ import division
 # System wide imports
 # -------------------
 
+import sys
+
 # ---------------
 # Twisted imports
 # ---------------
@@ -18,15 +20,16 @@ from __future__ import division
 # local imports
 # -------------
 
-from .base import EMAProtocol, EMAProtocolFactory
-
 # ----------------
 # Module constants
 # ----------------
+
+PY2 = sys.version_info[0] == 2
 
 # -----------------------
 # Module global variables
 # -----------------------
 
-
-__all__ = [EMAProtocol, EMAProtocolFactory]
+_all__ = [
+	
+]

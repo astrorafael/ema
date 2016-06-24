@@ -31,7 +31,7 @@ from .logger import setLogLevel
 
 #from .mqttservice import MQTTService
 
-from .serialservice import SerialService
+from .serial.service import SerialService
 
 
 # ----------------

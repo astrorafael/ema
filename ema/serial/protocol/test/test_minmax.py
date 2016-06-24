@@ -28,8 +28,8 @@ from twisted.internet.defer import inlineCallbacks
 # local imports
 # -------------
 
-from ..base   import EMAProtocol, EMAProtocolFactory
-from ...logger import setLogLevel
+from ..base      import EMAProtocol, EMAProtocolFactory
+from  ....logger import setLogLevel
 
 
 class TestEMAProtocol1(unittest.TestCase):

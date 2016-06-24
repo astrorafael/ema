@@ -32,10 +32,10 @@ from twisted.internet.endpoints   import clientFromString
 # local imports
 # -------------
 
-from .logger   import setLogLevel
-from .utils    import chop
-from .protocol import EMAProtocol, EMAProtocolFactory
-from .error    import EMATimeoutError
+from ..logger   import setLogLevel
+from ..utils    import chop
+from .protocol  import EMAProtocol, EMAProtocolFactory, EMARangeError, EMAReturnError, EMATimeoutError
+
 
 # ----------------
 # Module constants
@@ -45,13 +45,6 @@ from .error    import EMATimeoutError
 # Global functions
 # -----------------
 
-def chop(string, sep=None):
-    '''Chop a list of strings, separated by sep and 
-    strips individual string items from leading and trailing blanks'''
-    chopped = [ elem.strip() for elem in string.split(sep) ]
-    if len(chopped) == 1 and chopped[0] == '':
-        chopped = []
-    return chopped
 
 # -----------------------
 # Module global variables

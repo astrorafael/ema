@@ -786,9 +786,10 @@ class EMAProtocol(LineOnlyReceiver):
         Transmit/Retransmit the oldest request
         '''
         request = self._queue[0]
-        request.alarm = self.callLater(request.interval(), self._responseTimeout)
-        log.debug("-> {request.name} (retries={request.retries}/{request.nretries})", 
-            request=request)
+        t = request.interval()
+        request.alarm = self.callLater(t, self._responseTimeout)
+        log.info("Executing -> {request.name} (retries={request.retries}/{request.nretries}) [Timeout={t}]", 
+            request=request, t=t)
         self.sendLine(str(request.encoded) if PY2 else bytes(request.encoded))
 
 
@@ -822,6 +823,8 @@ class EMAProtocol(LineOnlyReceiver):
         request = self._queue[0]
         handled, finished = request.decode(line)
         if finished:
+            log.info("Completed -> {request.name} (retries={request.retries}/{request.nretries})", 
+            request=request)
             self._queue.popleft()
             request.alarm.cancel()
             if len(self._queue):    # Fires next command if any
