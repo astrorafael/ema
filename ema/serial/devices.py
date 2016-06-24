@@ -199,15 +199,35 @@ class Pyranometer(Device):
         ] 
 
 
-class RainDetector(Device):
+class RainSensor(Device):
     def __init__(self, parent, options, global_sync=True):
-        pass
+        Device.__init__(self, parent, options, global_sync)
+        self.PARAMS = [
+            { 
+                'title' : 'Rain Sensor Threshold',
+                'option': 'threshold',
+                'get':   self.parent.protocol.getRainSensorThreshold,
+                'set':   self.parent.protocol.setRainSensorThreshold
+            },
+        ] 
 
 
 class RealTimeClock(Device):
     def __init__(self, parent, options, global_sync=True):
         pass    
 
+
+class Thermometer(Device):
+    def __init__(self, parent, options, global_sync=True):
+        Device.__init__(self, parent, options, global_sync)
+        self.PARAMS = [
+            { 
+                'title' : 'Thermometer Delta Threshold',
+                'option': 'delta_threshold',
+                'get':   self.parent.protocol.getThermometerDeltaTempThreshold,
+                'set':   self.parent.protocol.setThermometerDeltaTempThreshold
+            },
+        ] 
 
 class Thermopile(Device):
     def __init__(self, parent, options, global_sync=True):
@@ -259,8 +279,9 @@ __all__ = [
     Photometer,
     Pluviometer,
     Pyranometer,
-    RainDetector,
+    RainSensor,
     RealTimeClock,
+    Thermometer,
     Thermopile,
     Voltmeter,
     Watchdog,

@@ -137,6 +137,15 @@ def loadCfgFile(path):
     options['serial']['pyranometer']['sync']            = parser.getboolean("pyranometer","sync")
     options['serial']['pyranometer']['gain']            = parser.getfloat("pyranometer","gain")
     options['serial']['pyranometer']['offset']          = parser.getint("pyranometer","offset")
+
+    options['serial']['rainsensor'] = {}
+    options['serial']['rainsensor']['sync']            = parser.getboolean("rainsensor","sync")
+    options['serial']['rainsensor']['threshold']       = parser.getint("rainsensor","threshold")
+
+    options['serial']['thermometer'] = {}
+    options['serial']['thermometer']['sync']            = parser.getboolean("thermometer","sync")
+    options['serial']['thermometer']['delta_threshold'] = parser.getfloat("thermometer","delta_threshold")
+
    
     
    

@@ -233,6 +233,33 @@ sync = no
 gain   = 1.6
 offset = 0
 
+
+#------------------------------------------------------------------------#
+
+# Rain detection sensor
+[rainsensor]
+
+# sync parameters
+sync = no
+
+# Rain threshold to close roof (0..9) [%]
+threshold = 1
+
+
+#------------------------------------------------------------------------#
+
+# Themometer measuring ambient Temperature and dew point 
+[thermometer]
+
+# sync parameters
+sync = no
+
+# Threshold temperature above dew point.
+# If ambient temperature < (dew point + delta_threshold)
+# the roof relay will close.
+delta_threshold = 5.0
+
+
 #------------------------------------------------------------------------#
 
 [WATCHDOG]
@@ -259,73 +286,6 @@ rtc_probe_sites = http://www.google.es,http://www.lua.org,http://www.python.org
 
 # component log level (debug, info, warn, error, critical)
 rtc_log = INFO
-
-
-
-
-
-#------------------------------------------------------------------------#
-
-# Rain detection sensor
-[RAIN]
-
-# Rain threshold to close roof (0..9) [%]
-rain_thres = 1
-
-# Where to publish measurements
-# Comma list separated values 
-# Allowed values: html, mqtt  (or just leave a blank line)
-rain_publish_where = mqtt,html
-
-# What to publish: current, average or both
-# comma-separated list 
-rain_publish_what = current,average
-
-# component log level (debug, info, warn, error, critical)
-rain_log = INFO
-
-
-#------------------------------------------------------------------------#
-# Pyranometer device, measuring solar radiation
-[PYRANOMETER]
-pyr_gain   = 1.6
-pyr_offset = 0
-
-# Where to publish measurements
-# Comma list separated values 
-# Allowed values: html, mqtt  (or just leave a blank line)
-pyr_publish_where = mqtt,html
-
-# What to publish: current, average or both
-# comma-separated list 
-pyr_publish_what = current,average
-
-# component log level (debug, info, warn, error, critical)
-pyr_log = INFO
-
-
-
-#------------------------------------------------------------------------#
-
-# Themometer measuring ambient Temperature and dew point 
-[THERMOMETER]
-
-# Threshold temperature above dew point.
-# If ambient temperature < (dew point + delta_thres)
-# the roof relay will close.
-delta_thres = 5.0
-
-# Where to publish measurements
-# Comma list separated values 
-# Allowed values: html, mqtt  (or just leave a blank line)
-thermo_publish_where = mqtt,html
-
-# What to publish: current, average or both
-# comma-separated list 
-thermo_publish_what = current,average
-
-# component log level (debug, info, warn, error, critical)
-thermo_log = INFO
 
 
 
