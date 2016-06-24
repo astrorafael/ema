@@ -36,7 +36,8 @@ from ..logger   import setLogLevel
 from ..utils    import chop
 from .protocol  import EMAProtocol, EMAProtocolFactory, EMARangeError, EMAReturnError, EMATimeoutError
 from .devices   import (
-    Voltmeter, Anemometer, Barometer, CloudSensor, Photometer, Pluviometer, Pyranometer, RainSensor, Thermometer, RealTimeClock, Watchdog, RoofRelay, AuxiliarRelay,
+    Voltmeter, Anemometer, Barometer, CloudSensor, Photometer, Pluviometer, Pyranometer, RainSensor, 
+    Thermometer, RealTimeClock, Watchdog, RoofRelay, AuxiliarRelay,
 )
 
 
@@ -114,8 +115,9 @@ class SerialService(ClientService):
         self.pluviometer = Pluviometer(self, self.options['pluviometer'])
         self.pyranometer = Pyranometer(self, self.options['pyranometer'])
         self.rainsensor  = RainSensor(self, self.options['rainsensor'])
-        self.thermometer  = Thermometer(self, self.options['thermometer'])
-        self.thermometer.sync()
+        self.thermometer = Thermometer(self, self.options['thermometer'])
+        self.watchdog    = Watchdog(self, self.options['watchdog'])
+        self.watchdog.sync()
 
         
        

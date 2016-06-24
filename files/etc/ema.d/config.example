@@ -262,16 +262,15 @@ delta_threshold = 5.0
 
 #------------------------------------------------------------------------#
 
-[WATCHDOG]
+[watchdog]
+
+# sync parameters
+sync = no
+
 # EMA keep alive limit [seconds]
 # When times out, the roof relay is switched off
-# The program sends a keepalive message every keepalive/2 seconds
-keepalive = 200
-
-# component log level (debug, info, warn, error, critical)
-wdog_log = INFO
-
-
+# The program sends a keepalive message every period/2 seconds
+period = 200
 
 #------------------------------------------------------------------------#
 

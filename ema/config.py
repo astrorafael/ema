@@ -146,6 +146,11 @@ def loadCfgFile(path):
     options['serial']['thermometer']['sync']            = parser.getboolean("thermometer","sync")
     options['serial']['thermometer']['delta_threshold'] = parser.getfloat("thermometer","delta_threshold")
 
+    options['serial']['watchdog'] = {}
+    options['serial']['watchdog']['sync']            = parser.getboolean("watchdog","sync")
+    options['serial']['watchdog']['period']          = parser.getint("watchdog","period")
+
+
    
     
    

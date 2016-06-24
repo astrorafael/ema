@@ -260,8 +260,15 @@ class Voltmeter(Device):
     
 class Watchdog(Device):
     def __init__(self, parent, options, global_sync=True):
-        pass
-
+        Device.__init__(self, parent, options, global_sync)
+        self.PARAMS = [
+            { 
+                'title' : 'Watchdog Period',
+                'option': 'period',
+                'get':   self.parent.protocol.getWatchdogPeriod,
+                'set':   self.parent.protocol.setWatchdogPeriod
+            },
+        ] 
 
 class RoofRelay(Device):
     def __init__(self, parent, options, global_sync=True):
