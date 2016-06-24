@@ -57,6 +57,7 @@ class Device(object):
         self.options     = options
         self.parent      = parent
         self.global_sync = global_sync
+        self.PARAMS      = []
 
     @inlineCallbacks
     def sync(self):
@@ -72,6 +73,7 @@ class Device(object):
                 if self.options['sync'] and self.global_sync:
                     log.info("Synchronizing {title}", title=param['title'])
                     yield param['set'](configured)
+
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
