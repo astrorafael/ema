@@ -99,13 +99,33 @@ def loadCfgFile(path):
     options['serial']['log_level']  = parser.get("serial","log_level")
     options['serial']['log_messages']  = parser.getboolean("serial","log_messages")
 
+    options['serial']['voltmeter'] = {}
+    options['serial']['voltmeter']['sync']            = parser.getboolean("voltmeter","sync")
+    options['serial']['voltmeter']['offset']          = parser.getfloat("voltmeter","offset")
+    options['serial']['voltmeter']['threshold']       = parser.getfloat("voltmeter","threshold")
+    options['serial']['voltmeter']['delta']           = parser.getfloat("voltmeter","delta")
+    options['serial']['voltmeter']['low_volt_script'] = parser.get("voltmeter","low_volt_script")
+    options['serial']['voltmeter']['low_volt_mode']   = parser.get("voltmeter","low_volt_mode")
+
+    options['serial']['anemometer'] = {}
+    options['serial']['anemometer']['sync']            = parser.getboolean("anemometer","sync")
+    options['serial']['anemometer']['calibration']     = parser.getint("anemometer","calibration")
+    options['serial']['anemometer']['model']           = parser.get("anemometer","model")
+    options['serial']['anemometer']['threshold']       = parser.getint("anemometer","threshold")
+    options['serial']['anemometer']['ave_threshold']   = parser.getint("anemometer","ave_threshold")
+   
+   
+   
+
     options['mqtt'] = {}
-    options['mqtt']['id']             = parser.get("mqtt","id")
+    options['mqtt']['channel']        = parser.get("mqtt","channel")
     options['mqtt']['log_level']      = parser.get("mqtt","log_level")
     options['mqtt']['broker']         = parser.get("mqtt","broker")
     options['mqtt']['username']       = parser.get("mqtt","username")
     options['mqtt']['password']       = parser.get("mqtt","password")
     options['mqtt']['keepalive']      = parser.getint("mqtt","keepalive")
+
+   
 
 
     return options

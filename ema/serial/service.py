@@ -35,6 +35,7 @@ from twisted.internet.endpoints   import clientFromString
 from ..logger   import setLogLevel
 from ..utils    import chop
 from .protocol  import EMAProtocol, EMAProtocolFactory, EMARangeError, EMAReturnError, EMATimeoutError
+from .devices   import Voltmeter, Anemometer
 
 
 # ----------------
@@ -63,13 +64,10 @@ class SerialService(ClientService):
         protocol_level  = 'debug' if options['log_messages'] else 'info'
         setLogLevel(namespace='serial', levelStr=options['log_level'])
         setLogLevel(namespace='protoc', levelStr=protocol_level)
-       
         self.factory   = EMAProtocolFactory()
         self.serport   = None
-
+        self.protocol  = None
         self.resetCounters()
-        
-        
         self.goSerial = self._decide()
 
 
@@ -103,9 +101,13 @@ class SerialService(ClientService):
     def gotProtocol(self, protocol):
         log.debug("got Protocol")
         self.protocol  = protocol
-        self.pingTask   = task.LoopingCall(self.ping)
+        self.pingTask  = task.LoopingCall(self.ping)
         self.pingTask.start(100, now=False)
-        self.syncTask  = self.protocol.callLater(10, self.sync)
+        #self.syncTask  = self.protocol.callLater(10, self.sync)
+        self.voltmeter  = Voltmeter(self, self.options['voltmeter'])
+        self.anemometer = Anemometer(self, self.options['anemometer'])
+        self.anemometer.sync()
+
         
        
     @inlineCallbacks

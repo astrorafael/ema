@@ -43,7 +43,9 @@ log_level = debug
 #------------------------------------------------------------------------#
 
 [serial]
-# Serial Port Settings. Baud rate supported only 9600 & 57600
+# Serial Port Settings. 
+
+# Baud rate supported only 9600 & 57600
 # As an alternative a tcp:<host>:port can be specified
 # Not reloadable property
 endpoint = serial:/dev/ttyUSB0:9600
@@ -56,13 +58,12 @@ log_messages = yes
 
 #------------------------------------------------------------------------#
 
+[mqtt]
 # MQTT Client config
 
-[mqtt]
-
-# The unique id string used as the station id in topics (i.e EMA/<mqtt_id>/#)
+# The channel string used as the station id in topics (i.e EMA/<channel>/#)
 # and also as part of the client_id when connecting to the broker.
-id = foo
+channel = foo
 
 # Username/password credentials
 # leave blank if not needed
@@ -76,22 +77,6 @@ keepalive = 60
 
 # Broker to connect
 broker = tcp:test.mosquitto.org:1883
-
-
-# Publish historic data (24h)
-# in each active interval defined in TOD_Timer section
-mqtt_publish_history = yes
-
-# Overlap factor (%) for redundant historic data dumps
-# 0% = no overlap, 100%=full dayly historic data each time
-mqtt_history_overlap = 25
-
-# Publish Raw EMA status Line
-mqtt_publish_status = yes
-
-# What raw EMA status line to publish: current, average or both status lines
-# comma-separated list 
-mqtt_publish_what = current,average
 
 # component log level (debug, info, warn, error, critical)
 log_level = debug
@@ -130,6 +115,62 @@ tod_log = INFO
 #                      Sensor configuration Data                         #
 #========================================================================#
 
+#------------------------------------------------------------------------#
+
+[voltmeter]
+# sync parameters
+sync = no
+
+# Volt offset [V]
+# Offset to ADC for proper calibration
+offset = 0.0
+
+# Low voltage threshold [V]
+# This threshold is managed by the EMA hardware and closes relays
+# if relays are set in automatic mode
+threshold = 11.8 
+
+# The EMA service will execute a script if the average voltage
+# value reported by EMA in status messages during 'volt_time' 
+# seconds falls below 'volt_thres' + 'volt_delta'
+
+# Low voltage thrshold delta [V]
+# Volts above vlot_threshold to allow a safety marging for
+# emeregency actions before relays switch off
+delta = 0.2
+
+# List of comma separated scripts to execute on low voltage 
+# Each script should show the full path. 
+# leave empty if not used
+low_volt_script = /home/pi/nto/ema/scripts/volt-script
+
+# Script mode: (Never, Once, Many)
+# When launched mutiple times, EMA server does not lauch a script
+# till the previous run is over
+low_volt_mode = Once
+
+#------------------------------------------------------------------------#
+# Mechanical Anemometer
+[anemometer]
+
+# sync parameters
+sync = no
+
+# Calibration value to yield readings in Km/h or arm length [mm] in simple
+calibration = 36
+
+# Anemometer type. Allowed values: (TX20, Simple)
+model = TX20
+
+# Theshold for instataneous wind speed [Km/h]
+# instantaneous wind speed > wind_thres will close the roof relay
+threshold = 20
+
+# Theshold for average wind speed [Km/h] made on 10 min. period
+# avergae wind speed > wind_thres10 will close the roof relay
+ave_threshold = 66
+
+
 [WATCHDOG]
 # EMA keep alive limit [seconds]
 # When times out, the roof relay is switched off
@@ -153,53 +194,7 @@ rtc_probe_sites = http://www.google.es,http://www.lua.org,http://www.python.org
 # component log level (debug, info, warn, error, critical)
 rtc_log = INFO
 
-#------------------------------------------------------------------------#
 
-[VOLTMETER]
-
-# Volt offset [V]
-# Offset to ADC for proper calibration
-volt_offset = 0.0
-
-# Low voltage threshold [V]
-# This threshold is managed by the EMA hardware and closes relays
-# if relays are set in automatic mode
-volt_thres = 11.8 
-
-# The EMA service will execute a script if the average voltage
-# value reported by EMA in status messages during 'volt_time' 
-# seconds falls below 'volt_thres' + 'volt_delta'
-
-# Low voltage thrshold delta [V]
-# Volts above vlot_threshold to allow a safety marging for
-# emeregency actions before relays switch off
-volt_delta = 0.2
-
-# Time [seconds] to average voltage readings.
-# Note 'volt_time' should be less than 'upload_period' (see above)
-volt_time = 30
-
-# List of comma separated scripts to execute on low voltage 
-# Each script should show the full path. 
-# leave empty if not used
-low_volt_script = /home/pi/nto/ema/scripts/volt-script
-
-# Script mode: (Never, Once, Many)
-# When launched mutiple times, EMA server does not lauch a script
-# till the previous run is over
-low_volt_mode = Once
-
-# Where to publish measurements
-# Comma list separated values 
-# Allowed values: html, mqtt  (or just leave a blank line)
-volt_publish_where = mqtt,html
-
-# What to publish: current, average or both
-# comma-separated list 
-volt_publish_what = current,average
-
-# component log level (debug, info, warn, error, critical)
-volt_log = INFO
 
 #------------------------------------------------------------------------#
 
@@ -328,35 +323,6 @@ thermo_publish_what = current,average
 thermo_log = INFO
 
 
-#------------------------------------------------------------------------#
-# Mechanical Anemometer
-[ANEMOMETER]
-
-# Calibration value to yield readings in Km/h [units?]
-anem_calib = 36
-
-# Anemometer type. Allowed values: (TX20, Simple)
-anem_type = TX20
-
-# Theshold for instataneous wind speed [Km/h]
-# instantaneous wind speed > wind_thres will close the roof relay
-wind_thres = 20
-
-# Theshold for average wind speed [Km/h] made on 10 min. period
-# avergae wind speed > wind_thres10 will close the roof relay
-wind_thres10 = 66
-
-# Where to publish measurements
-# Comma list separated values 
-# Allowed values: html, mqtt  (or just leave a blank line)
-anem_publish_where = mqtt,html
-
-# What to publish: current, average or both
-# comma-separated list 
-anem_publish_what = current,average
-
-# component log level (debug, info, warn, error, critical)
-anem_log = INFO
 
 
 #------------------------------------------------------------------------#
