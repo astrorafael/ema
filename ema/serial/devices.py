@@ -97,14 +97,6 @@ class Device(object):
 class Thermopile(Device):
     def __init__(self, parent, options, global_sync=True):
         pass    
-
-# --------------------------------------------------------------------
-# --------------------------------------------------------------------
-# --------------------------------------------------------------------
-
-class RoofRelay(Device):
-    def __init__(self, parent, options, global_sync=True):
-        pass
         
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -293,41 +285,6 @@ class Thermometer(Device):
             },
         } 
 
-# --------------------------------------------------------------------
-# --------------------------------------------------------------------
-# --------------------------------------------------------------------
-    
-class Watchdog(Device):
-    def __init__(self, parent, options, global_sync=True):
-        Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = {
-            'period': { 
-                'title' : 'Watchdog Period',
-                'value' : None,
-                'invariant': False,
-                'get':   self.parent.protocol.getWatchdogPeriod,
-                'set':   self.parent.protocol.setWatchdogPeriod
-            },
-        } 
-
-#---------------------------------------------------------------------
-# --------------------------------------------------------------------
-# --------------------------------------------------------------------
-
-
-class AuxiliarRelay(Device):
-    def __init__(self, parent, options, global_sync=True):
-        Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = {
-            'mode': { 
-                'title' : 'Aux Relay Mode',
-                'value' : None,
-                'invariant': False,
-                'get':   self.parent.protocol.getAuxRelayMode,
-                'set':   self.parent.protocol.setAuxRelayMode
-            },
-        } 
-
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -343,7 +300,4 @@ __all__ = [
     RainSensor,
     Thermometer,
     Thermopile,
-    Watchdog,
-    RoofRelay,
-    AuxiliarRelay,
 ]

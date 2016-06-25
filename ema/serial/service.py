@@ -37,11 +37,12 @@ from ..utils    import chop
 from .protocol  import EMAProtocol, EMAProtocolFactory, EMARangeError, EMAReturnError, EMATimeoutError
 from .devices   import (
     Anemometer, Barometer, CloudSensor, Photometer, Pluviometer, Pyranometer, RainSensor, 
-    Thermometer, Watchdog, RoofRelay, AuxiliarRelay,
+    Thermometer, 
 )
 from .voltmeter import Voltmeter
 from .rtc       import RealTimeClock
-
+from .watchdog  import Watchdog
+from .relays    import RoofRelay, AuxiliarRelay
 
 
 # ----------------
