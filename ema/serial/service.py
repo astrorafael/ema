@@ -124,18 +124,30 @@ class SerialService(ClientService):
 
 
     def _buildDevices(self):
-        self.voltmeter   = Voltmeter(self, self.options['voltmeter'])
-        self.anemometer  = Anemometer(self, self.options['anemometer'])
-        self.barometer   = Barometer(self, self.options['barometer'])
-        self.cloudsensor = CloudSensor(self, self.options['cloudsensor'])
-        self.photometer  = Photometer(self, self.options['photometer'])
-        self.pluviometer = Pluviometer(self, self.options['pluviometer'])
-        self.pyranometer = Pyranometer(self, self.options['pyranometer'])
-        self.rainsensor  = RainSensor(self, self.options['rainsensor'])
-        self.thermometer = Thermometer(self, self.options['thermometer'])
-        self.watchdog    = Watchdog(self, self.options['watchdog'])
         self.rtc         = RealTimeClock(self, self.options['rtc'])
-        self.aux_relay   = AuxiliarRelay(self, self.options['aux_relay'])
+        self.voltmeter   = Voltmeter(self, self.options['voltmeter'],
+                            upload_period=self.options['upload_period'], 
+                            global_sync=self.options['sync'])
+        self.anemometer  = Anemometer(self, self.options['anemometer'],
+                            global_sync=self.options['sync'])
+        self.barometer   = Barometer(self, self.options['barometer'],
+                            global_sync=self.options['sync'])
+        self.cloudsensor = CloudSensor(self, self.options['cloudsensor'],
+                            global_sync=self.options['sync'])
+        self.photometer  = Photometer(self, self.options['photometer'],
+                            global_sync=self.options['sync'])
+        self.pluviometer = Pluviometer(self, self.options['pluviometer'],
+                            global_sync=self.options['sync'])
+        self.pyranometer = Pyranometer(self, self.options['pyranometer'],
+                            global_sync=self.options['sync'])
+        self.rainsensor  = RainSensor(self, self.options['rainsensor'],
+                            global_sync=self.options['sync'])
+        self.thermometer = Thermometer(self, self.options['thermometer'],
+                            global_sync=self.options['sync'])
+        self.watchdog    = Watchdog(self, self.options['watchdog'],
+                            global_sync=self.options['sync'])
+        self.aux_relay   = AuxiliarRelay(self, self.options['aux_relay'],
+                            global_sync=self.options['sync'])
         self.devices     = [self.rtc, self.voltmeter, self.anemometer, self.barometer, self.cloudsensor,
                             self.photometer,self.pluviometer,self.pyranometer,self.rainsensor,
                             self.watchdog, self.aux_relay, ]

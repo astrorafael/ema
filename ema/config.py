@@ -95,10 +95,11 @@ def loadCfgFile(path):
     options['ema']['log_level']  = parser.get("ema","log_level")
 
     options['serial'] = {}
-    options['serial']['endpoint']     = parser.get("serial","endpoint")
-    options['serial']['log_level']    = parser.get("serial","log_level")
-    options['serial']['log_messages'] = parser.getboolean("serial","log_messages")
-    options['serial']['sync']         = parser.getboolean("serial","sync")
+    options['serial']['endpoint']      = parser.get("serial","endpoint")
+    options['serial']['log_level']     = parser.get("serial","log_level")
+    options['serial']['log_messages']  = parser.getboolean("serial","log_messages")
+    options['serial']['sync']          = parser.getboolean("serial","sync")
+    options['serial']['upload_period'] = parser.getint("serial","upload_period")
 
     options['serial']['voltmeter'] = {}
     options['serial']['voltmeter']['sync']            = parser.getboolean("voltmeter","sync")

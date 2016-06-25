@@ -16,6 +16,8 @@ import datetime
 import json
 import math
 
+from   collections import deque
+
 # ---------------
 # Twisted imports
 # ---------------
@@ -59,7 +61,7 @@ log = Logger(namespace='serial')
 
 class Voltmeter(Device):
 
-    def __init__(self, parent, options, global_sync=True):
+    def __init__(self, parent, options, upload_period, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
         self.PARAMS = {
             'threshold': { 
@@ -78,6 +80,8 @@ class Voltmeter(Device):
                 'set':   self.parent.protocol.setVoltmeterOffset
             },
         }
+        self.values = deque(maxlen=(upload_period//EMA_PERIOD))
+
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
