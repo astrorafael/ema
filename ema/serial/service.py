@@ -36,9 +36,10 @@ from ..logger   import setLogLevel
 from ..utils    import chop
 from .protocol  import EMAProtocol, EMAProtocolFactory, EMARangeError, EMAReturnError, EMATimeoutError
 from .devices   import (
-    Voltmeter, Anemometer, Barometer, CloudSensor, Photometer, Pluviometer, Pyranometer, RainSensor, 
+    Anemometer, Barometer, CloudSensor, Photometer, Pluviometer, Pyranometer, RainSensor, 
     Thermometer, RealTimeClock, Watchdog, RoofRelay, AuxiliarRelay,
 )
+from .voltmeter import Voltmeter
 
 
 # ----------------

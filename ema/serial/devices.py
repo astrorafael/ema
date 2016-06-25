@@ -362,32 +362,6 @@ class RealTimeClock(Device):
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
 
-class Voltmeter(Device):
-
-    def __init__(self, parent, options, global_sync=True):
-        Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = {
-            'threshold': { 
-                'title' : 'Threshold',
-                'value' : None,
-                'invariant': False,
-                'get':   self.parent.protocol.getVoltmeterThreshold,
-                'set':   self.parent.protocol.setVoltmeterThreshold
-            },
-            'offset': { 
-                'title' : 'Offset',
-                'option': 'offset',
-                'value' : None,
-                'invariant': True,
-                'get':   self.parent.protocol.getVoltmeterOffset,
-                'set':   self.parent.protocol.setVoltmeterOffset
-            },
-        }
-
-# --------------------------------------------------------------------
-# --------------------------------------------------------------------
-# --------------------------------------------------------------------
-
 class AuxiliarRelay(Device):
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
@@ -417,7 +391,6 @@ __all__ = [
     RealTimeClock,
     Thermometer,
     Thermopile,
-    Voltmeter,
     Watchdog,
     RoofRelay,
     AuxiliarRelay,
