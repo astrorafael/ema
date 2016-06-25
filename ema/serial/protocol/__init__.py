@@ -18,8 +18,9 @@ from __future__ import division
 # local imports
 # -------------
 
-from .base import  EMAProtocol,   EMAProtocolFactory
-from .error import EMARangeError, EMAReturnError, EMATimeoutError
+from .base   import EMAProtocol,   EMAProtocolFactory
+from .error  import EMARangeError, EMAReturnError, EMATimeoutError
+from .status import PERIOD
 
 # ----------------
 # Module constants
@@ -35,5 +36,6 @@ __all__ = [
 	EMAProtocolFactory,
 	EMATimeoutError,
 	EMARangeError, 
-	EMAReturnError
+	EMAReturnError,
+	PERIOD
 ]

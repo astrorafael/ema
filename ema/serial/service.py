@@ -34,7 +34,11 @@ from twisted.internet.endpoints   import clientFromString
 
 from ..logger   import setLogLevel
 from ..utils    import chop
-from .protocol  import EMAProtocol, EMAProtocolFactory, EMARangeError, EMAReturnError, EMATimeoutError
+from .protocol  import (
+    EMAProtocol, EMAProtocolFactory, 
+    EMARangeError, EMAReturnError, EMATimeoutError,
+    )
+
 from .devices   import (
     Anemometer, Barometer, CloudSensor, Photometer, Pluviometer, Pyranometer, RainSensor, 
     Thermometer, 

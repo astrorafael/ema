@@ -29,8 +29,12 @@ from twisted.internet.defer       import inlineCallbacks, returnValue
 # -------------
 
 from ..logger   import setLogLevel
-from .protocol  import EMAProtocol, EMAProtocolFactory, EMARangeError, EMAReturnError, EMATimeoutError
 from .devices   import Device
+from .protocol  import (
+    EMAProtocol, EMAProtocolFactory, 
+    EMARangeError, EMAReturnError, EMATimeoutError,
+    PERIOD as EMA_PERIOD
+)
 
 # ----------------
 # Module constants
