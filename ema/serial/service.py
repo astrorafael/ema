@@ -113,10 +113,14 @@ class SerialService(ClientService):
 
 
     def printParameters(self, result):
-        mydict = {}
+        with open("/sys/class/net/eth0/address",'r') as fd:
+            mac = fd.readline().rstrip('\r\n')
+        mydict = { 'mac': mac }
+
         for device in self.devices:
             mydict.update(device.parameters())
         log.info("PARAMETERS = {p}", p=mydict)
+
 
     def gotProtocol(self, protocol):
         log.debug("got Protocol")
