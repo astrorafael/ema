@@ -119,6 +119,26 @@ In the extreme cases, <channel> could be the unique device name or a single cons
 
 All payloads are in JSON format
 
+### Published on EMA/register
+
+| Field name              |  Type  | Description                             |
+|:-----------------------:|:------:|:----------------------------------------|
+| rev                     | int    | Payload format revision number          |
+| who                     | string | EMA station emitting this record        |
+| tstamp                  | string | timestamp "YYYY-MM-DDThh:mm:ss", UTC    |
+| mac                     | string | MAC address "AA:BB:CC:DD:EE:FF"         |
+| anemometer_model        | string | Either 'Simple' or 'TX20'               |
+| anemometer_calibration  | int    | [Km/h] or [mm] depending on model       |
+| barometer_height        | int    | Barometer height [m]                    |
+| barometer_offset        | int    | Barometer offset [mBar]                 |
+| cloudsensor_gain        | float  | Cloud sensor gain                       |
+| photometer_offset       | float  | Photometer offset [mag/arcsec²]         |
+| pyranometer_gain        | float  | Pyranometer gain                        |
+| pyranometer_offset      | int    | Pyranometer offset                      |
+| pluviometer_calibration | int    | Pluviometer calibration                 |
+| voltmeter_offset        | float  | ADC Voltage offset [V]                  |
+ 
+
 ### Published on EMA/<channel>/events
 
 All fields are mandatory
