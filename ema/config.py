@@ -107,7 +107,7 @@ def loadCfgFile(path):
     options['serial']['voltmeter']['threshold']       = parser.getfloat("voltmeter","threshold")
     options['serial']['voltmeter']['delta']           = parser.getfloat("voltmeter","delta")
     options['serial']['voltmeter']['script']          = parser.get("voltmeter","script")
-    options['serial']['voltmeter']['script_mode']     = parser.get("voltmeter","script_mode")
+    options['serial']['voltmeter']['mode']            = parser.get("voltmeter","mode")
 
     options['serial']['anemometer'] = {}
     options['serial']['anemometer']['sync']            = parser.getboolean("anemometer","sync")

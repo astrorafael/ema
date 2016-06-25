@@ -210,6 +210,17 @@ class SerialService(ClientService):
     # EMA API
     # -------------
 
+    def addScript(self, kind, script, mode):
+        '''
+        Register a script coming from Voltmeter,AuxRelay or RoofRelay
+        '''
+        pass
+
+    def onLovVoltage(self, voltage, threshold, n):
+        '''
+        Event Handlr coming from the Voltmeter
+        '''
+        pass
     
 
 

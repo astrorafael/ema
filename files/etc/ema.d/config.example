@@ -150,7 +150,7 @@ script = /home/pi/nto/ema/scripts/volt-script
 # Script mode: (Never, Once, Many)
 # When launched mutiple times, EMA server does not lauch a script
 # till the previous run is over
-script_mode = Once
+mode = Once
 
 #------------------------------------------------------------------------#
 # Mechanical Anemometer

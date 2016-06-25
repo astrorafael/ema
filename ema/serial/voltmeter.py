@@ -83,31 +83,26 @@ class Voltmeter(Device):
             },
         }
         self.voltage = deque(maxlen=(upload_period//EMA_PERIOD))
-        self.parent.protocol.addStatusCallback(self.onStatus)
         scripts = chop(options["script"], ',')
         for script in scripts:
-            pass
-            #self.parent.notifier.addScript('VoltageLow', options['mode'], script)
+            self.parent.addScript('VoltageLow', script, options['mode'])
+        self.parent.protocol.addStatusCallback(self.onStatus)
 
 
     def onStatus(self, message, timestamp):
+        '''
+        EMA status message handler
+        '''
         self.voltage.append(message[POWER_VOLT])
-        accum = sum(self.voltage)
-        n     = len(self.voltage)
-        average = accum / n
-        if  self.PARAMS['threshold'] is None:
+        n       = len(self.voltage)
+        average = sum(self.voltage) / n
+        if  self.PARAMS['threshold']['value'] is None:
             log.debug("No thershold value yet from EMA")
             return
-        lowvolt = self.options['delta'] + self.PARAMS['threshold']
-        if average < lowvolt:
-            pass
-            log.warn("Low voltage detected")
-            #self.parent.notifier.onEventExecute('VoltageLow', 
-            #    '--voltage', "{0:.1f}".format(average), 
-            #    '--threshold', "{0:.1f}".format(lowvolt), 
-            #    '--size' , str(n))
-
-
+        threshold = self.options['delta'] + self.PARAMS['threshold']['value']
+        if average < threshold:
+            self.parent.onLowVoltage(average, threshold, n)
+            
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------

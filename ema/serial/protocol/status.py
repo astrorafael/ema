@@ -193,8 +193,8 @@ def decode(line):
   '''Decode an EMA status line'''
   #status = { 'rev': VERSION, 'tstamp': timestamp.strftime(TSTAMP_FORMAT) }
   status            = []
-  status.append('Closed' if line[SRRB] == 'C' else 'Open')  # Roof
-  status.append('Open' if line[SARB] == 'E' or line[SARB] == 'e' else 'Closed') # Aux Relay
+  status.append(line[SRRB])                              # Roof Relay state character
+  status.append(line[SARB])                              # Aux Relay state character
   status.append(round(ord(line[SPSB])       * 0.10, 1))  # Volts
   status.append(round(int(line[SRAB:SRAE])  * 0.10, 1))  # Rain %
   status.append(round(int(line[SCLB:SCLE])  * 0.10, 1))  # Cloud %
