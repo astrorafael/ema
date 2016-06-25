@@ -121,13 +121,7 @@ class SerialService(ClientService):
             mydict.update(device.parameters())
         log.info("PARAMETERS = {p}", p=mydict)
 
-
-    def gotProtocol(self, protocol):
-        log.debug("got Protocol")
-        self.protocol  = protocol
-        self.pingTask  = task.LoopingCall(self.ping)
-        self.pingTask.start(100, now=False)
-        #self.syncTask  = self.protocol.callLater(10, self.sync)
+    def _buildDevices(self):
         self.voltmeter   = Voltmeter(self, self.options['voltmeter'])
         self.anemometer  = Anemometer(self, self.options['anemometer'])
         self.barometer   = Barometer(self, self.options['barometer'])
@@ -140,9 +134,18 @@ class SerialService(ClientService):
         self.watchdog    = Watchdog(self, self.options['watchdog'])
         self.rtc         = RealTimeClock(self, self.options['rtc'])
         self.aux_relay   = AuxiliarRelay(self, self.options['aux_relay'])
-        self.devices     = [self.voltmeter, self.anemometer, self.barometer, self.cloudsensor,
+        self.devices     = [self.rtc, self.voltmeter, self.anemometer, self.barometer, self.cloudsensor,
                             self.photometer,self.pluviometer,self.pyranometer,self.rainsensor,
-                            self.watchdog, self.aux_relay, self.rtc]
+                            self.watchdog, self.aux_relay, ]
+
+
+    def gotProtocol(self, protocol):
+        log.debug("got Protocol")
+        self.protocol  = protocol
+        self.pingTask  = task.LoopingCall(self.ping)
+        self.pingTask.start(100, now=False)
+        #self.syncTask  = self.protocol.callLater(10, self.sync)
+        self._buildDevices()
 
         self.sync().addCallback(self.printParameters)
         

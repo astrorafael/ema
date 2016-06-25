@@ -26,13 +26,7 @@
 #========================================================================#
 [ema]
 
-# Perform syncronization of calibration constants at startup
-# (except RTC and Aux Relay)
-sync = True
 
-# Upload period (in seconds).
-# EMA measurements are accumulated and averaged during this period
-upload_period = 60
 
 # Log File settings
 log_file = /var/log/ema.log
@@ -49,6 +43,15 @@ log_level = debug
 # As an alternative a tcp:<host>:port can be specified
 # Not reloadable property
 endpoint = serial:/dev/ttyUSB0:9600
+
+# Perform syncronization of calibration constants at startup
+# (except RTC and Aux Relay)
+sync = True
+
+# Upload period (in seconds).
+# EMA current state measurements upload period
+# Intermediate samples are discarded.
+upload_period = 60
 
 # component log level (debug, info, warn, error, critical)
 log_level = debug
