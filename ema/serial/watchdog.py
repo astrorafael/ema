@@ -8,6 +8,8 @@
 # System wide imports
 # -------------------
 
+from __future__ import division
+
 import os
 import errno
 import sys
@@ -64,7 +66,21 @@ class Watchdog(Device):
                 'get':   self.parent.protocol.getWatchdogPeriod,
                 'set':   self.parent.protocol.setWatchdogPeriod
             },
-        } 
+        }
+        self.pingTask  = task.LoopingCall(self.ping)
+
+    def start(self):
+        self.pingTask.start(self.options['period']//2, now=False)
+
+    def stop(self):
+        self.pingTask.stop()
+
+    @inlineCallbacks
+    def ping(self):
+        try:
+            res = yield self.parent.protocol.ping()
+        except EMATimeoutError as e:
+            pass
 
 
 # --------------------------------------------------------------------

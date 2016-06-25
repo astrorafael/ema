@@ -4,11 +4,11 @@
 # See the LICENSE file for details
 # ----------------------------------------------------------------------
 
-from __future__ import division
-
 #--------------------
 # System wide imports
 # -------------------
+
+from __future__ import division
 
 # ---------------
 # Twisted imports

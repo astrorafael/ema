@@ -20,12 +20,11 @@
 # The use of Class variables as constants, not even referenced in the base class
 # allows us to define commands in an extremely compatc way
 
-
-from __future__ import division
-
 # ----------------
 # Standard modules
-# ----------------
+# ---------------
+
+from __future__ import division
 
 import re
 import datetime

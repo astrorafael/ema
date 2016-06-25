@@ -8,6 +8,8 @@
 # System wide imports
 # -------------------
 
+from __future__ import division
+
 import os
 import errno
 import sys

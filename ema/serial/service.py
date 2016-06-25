@@ -8,6 +8,8 @@
 # System wide imports
 # -------------------
 
+from __future__ import division
+
 import os
 import errno
 import sys
@@ -112,14 +114,14 @@ class SerialService(ClientService):
             ClientService.startService(self)
 
 
-    def printParameters(self, result):
+    def parameters(self, result):
         with open("/sys/class/net/eth0/address",'r') as fd:
             mac = fd.readline().rstrip('\r\n')
         mydict = { 'mac': mac }
-
         for device in self.devices:
             mydict.update(device.parameters())
         log.info("PARAMETERS = {p}", p=mydict)
+
 
     def _buildDevices(self):
         self.voltmeter   = Voltmeter(self, self.options['voltmeter'])
@@ -142,12 +144,9 @@ class SerialService(ClientService):
     def gotProtocol(self, protocol):
         log.debug("got Protocol")
         self.protocol  = protocol
-        self.pingTask  = task.LoopingCall(self.ping)
-        self.pingTask.start(100, now=False)
-        #self.syncTask  = self.protocol.callLater(10, self.sync)
         self._buildDevices()
-
-        self.sync().addCallback(self.printParameters)
+        self.sync().addCallback(self.parameters)
+        self.watchdog.start()
         
        
     @inlineCallbacks
@@ -199,14 +198,7 @@ class SerialService(ClientService):
     # EMA API
     # -------------
 
-    @inlineCallbacks
-    def ping(self):
-        try:
-            res = yield self.protocol.ping()
-        except EMATimeoutError as e:
-            log.error("{excp!s}", excp=e)
-        else:
-            log.debug("PINGED. Result = {result}", result=res)
+    
 
 
     # -------------
