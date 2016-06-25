@@ -34,7 +34,6 @@ from twisted.internet.defer       import inlineCallbacks, returnValue
 from ..logger   import setLogLevel
 from .devices   import Device
 from .protocol  import (
-    EMAProtocol, EMAProtocolFactory, 
     EMARangeError, EMAReturnError, EMATimeoutError,
     PERIOD as EMA_PERIOD, POWER_VOLT
 )
@@ -83,9 +82,9 @@ class Voltmeter(Device):
             },
         }
         self.voltage = deque(maxlen=(upload_period//EMA_PERIOD))
-        scripts = chop(options["script"], ',')
-        for script in scripts:
-            self.parent.addScript('VoltageLow', script, options['mode'])
+        #scripts = chop(options["script"], ',')
+        #for script in scripts:
+        #    self.parent.addScript('VoltageLow', script, options['mode'])
         self.parent.protocol.addStatusCallback(self.onStatus)
 
 
@@ -101,8 +100,7 @@ class Voltmeter(Device):
             return
         threshold = self.options['delta'] + self.PARAMS['threshold']['value']
         if average < threshold:
-            self.parent.onLowVoltage(average, threshold, n)
-            
+            self.parent.onEventExecute('VoltageLow', average, threshold, n)
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------

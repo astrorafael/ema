@@ -286,8 +286,10 @@ sync = yes
 # to synchronize time [seconds].
 max_drift  = 2
 
+#========================================================================#
+#                      Actuator configuration Data                       #
+#========================================================================#
 
-#------------------------------------------------------------------------#
 # Auxiliar relay
 [aux_relay]
 
@@ -313,7 +315,24 @@ script = /path/to/my/script
 # till the previous run is over
 script_mode = Never
 
+#------------------------------------------------------------------------#
+# Roof relay
+[roof_relay]
 
+# sync parameters
+sync = no
+
+# List of comma separated scripts to execute  
+# on change of roof relay switch 
+# Each script should show the full path. 
+# leave empty if not used
+script = /home/pi/nto/ema/scripts/roof-script
+
+# Script mode: (Never, Once, Many)
+# When launched mutiple times, EMA server does not lauch a script
+# till the previous run is over
+script_mode = Many
+ 
 #------------------------------------------------------------------------#
 # Thermopile sensor (alternative way to detect clouds)
 [THERMOPILE]
@@ -330,30 +349,3 @@ thermop_publish_what = current,average
 # component log level (debug, info, warn, error, critical)
 thermop_log = INFO
 
-#========================================================================#
-#                      Actuator configuration Data                       #
-#========================================================================#
-
-#------------------------------------------------------------------------#
-# Roof relay
-[ROOF_RELAY]
-
-# List of comma separated scripts to execute  
-# on change of roof relay switch 
-# Each script should show the full path. 
-# leave empty if not used
-roof_relay_script = /home/pi/nto/ema/scripts/roof-script
-
-# Script mode: (Never, Once, Many)
-# When launched mutiple times, EMA server does not lauch a script
-# till the previous run is over
-roof_relay_mode = Many
-
-# Where to publish relay state
-# Comma list separated values 
-# Allowed values: html, mqtt  (or just leave a blank line)
-roof_relay_publish_where = mqtt,html
-
-# What to publish: current, average or both
-# comma-separated list 
-roof_relay_publish_what = current        

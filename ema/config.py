@@ -162,6 +162,13 @@ def loadCfgFile(path):
     options['serial']['aux_relay']['script']        = parser.get("aux_relay","script")
     options['serial']['aux_relay']['script_mode']   = parser.get("aux_relay","script_mode")
 
+    options['serial']['roof_relay'] = {}
+    options['serial']['roof_relay']['sync']          = parser.getboolean("roof_relay","sync")
+    options['serial']['roof_relay']['script']        = parser.get("roof_relay","script")
+    options['serial']['roof_relay']['script_mode']   = parser.get("roof_relay","script_mode")
+
+
+
 
    
    

@@ -121,6 +121,7 @@ class SerialService(ClientService):
         for device in self.devices:
             mydict.update(device.parameters())
         log.info("PARAMETERS = {p}", p=mydict)
+        reactor.callLater(30, self.protocol.setRoofRelayMode, 'Closed')
 
 
     def _buildDevices(self):
@@ -148,9 +149,10 @@ class SerialService(ClientService):
                             global_sync=self.options['sync'])
         self.aux_relay   = AuxiliarRelay(self, self.options['aux_relay'],
                             global_sync=self.options['sync'])
+        self.roof_relay  = RoofRelay(self, self.options['roof_relay'], global_sync=False)
         self.devices     = [self.rtc, self.voltmeter, self.anemometer, self.barometer, self.cloudsensor,
                             self.photometer,self.pluviometer,self.pyranometer,self.rainsensor,
-                            self.watchdog, self.aux_relay, ]
+                            self.watchdog, self.aux_relay, self.roof_relay]
 
 
     def gotProtocol(self, protocol):
@@ -210,17 +212,12 @@ class SerialService(ClientService):
     # EMA API
     # -------------
 
-    def addScript(self, kind, script, mode):
-        '''
-        Register a script coming from Voltmeter,AuxRelay or RoofRelay
-        '''
-        pass
-
-    def onLovVoltage(self, voltage, threshold, n):
+    
+    def onEventExecute(self, event, *args):
         '''
         Event Handlr coming from the Voltmeter
         '''
-        pass
+        log.info("ON EVENT EXECUTE {event} {rest!r}", event=event, rest=args)
     
 
 
