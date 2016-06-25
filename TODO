@@ -1,7 +1,5 @@
 Prioridad alta
 ==============
-- Estado de los reles con los códigos originales
-  - Retocar los test
 - servicio de scrip lee las configraciones de scripts
   no el voltimetro ni los reles
 - Peculiaridades de algunos devices

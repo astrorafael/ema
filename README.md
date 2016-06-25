@@ -197,8 +197,8 @@ on the actual MQTT message being published.
 
 | Index |  Type  | Units | Description                                  |
 |:-----:|:------:|:-----:|:---------------------------------------------|
-|  0    | string |  --   | Roof relay state.  'Closed' or 'Open'        |
-|  1    | string |  --   | Aux relay state.  'Closed' or 'Open'         |
+|  0    | string |  --   | Roof relay state 1 char code. See Note 1     |
+|  1    | string |  --   | Auxiliar relay state 1 char code. See Note 2 |
 |  2    | float  | Volts | Power supply voltage                         |
 |  3    | float  |   %   | Rain detector prob (0% dry 100% totally wet) |
 |  4    | float  |   %   | Cloud level. 100.0% = totally cloudy         |
@@ -215,7 +215,15 @@ on the actual MQTT message being published.
 | 15    | int    | Km/h  | Average windn speed in 10 mins               |
 | 16    | int    | deg   | Wind orientation (0...359)                   |
 
+***Note 1: Roof relay codes:***
+- 'C' : Switched Off
+- 'A' : Switched On
+- 'a' : Switched On with thresholds override
 
-
-
+***Note 2: Auxiliar relay codes:***
+- 'A' : Switched Off automatically (heaters off)
+- 'E' : Switched On  automatically (heaters on)
+- 'a' : Switched Off (Manual or by timer)
+- 'e' : Switched On (Manual or by timer)
+- '!' : Switched Off by humidity sensor read error.
 
