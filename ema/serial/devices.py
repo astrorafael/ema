@@ -50,6 +50,7 @@ log = Logger(namespace='serial')
 
 class Device(object):
     def __init__(self, parent, options, global_sync):
+        self.name        = self.__class__.__name__ 
         self.options     = options
         self.parent      = parent
         self.global_sync = global_sync
@@ -60,7 +61,8 @@ class Device(object):
         '''
         Return a dictionary of current parameter values
         '''
-        return { (self.__class__.__name__ + '_' + p['option']).lower(): p['value'] for p in self.PARAMS if p['invariant']}
+        return { (self.name + '_' + name).lower(): param['value'] 
+            for name, param in self.PARAMS.iteritems() if param['invariant']}
 
 
     def paramEquals(self, value, target,  threshold=0.001):
@@ -75,10 +77,10 @@ class Device(object):
         Synchronizes parameters. 
         Returns a deferred whose success callback value None
         '''
-        for param in self.PARAMS:
+        for name, param in self.PARAMS.iteritems():
             value = yield param['get']()
             param['value'] = value
-            configured = self.options[param['option']]
+            configured = self.options[name]
             if not self.paramEquals(value, configured):
                 log.warn("{title} values do not match [EMA = {read}] [file = {file}]", title=param['title'], read=value, file=configured)
                 if self.options['sync'] and self.global_sync:
@@ -111,40 +113,36 @@ class RoofRelay(Device):
 class Anemometer(Device):
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = [
-            { 
+        self.PARAMS = {
+            'threshold': { 
                 'title' : 'Current Wind Speed Threshold',
-                'option': 'threshold',
                 'value' : None,
                 'invariant': False,
                 'get':   self.parent.protocol.getCurrentWindSpeedThreshold,
                 'set':   self.parent.protocol.setCurrentWindSpeedThreshold,
             },
-            { 
+            'ave_threshold': { 
                 'title' : 'Average Wind Speed Threshold',
-                'option': 'ave_threshold',
                 'value' : None,
                 'invariant': False,
                 'get':   self.parent.protocol.getAverageWindSpeedThreshold,
                 'set':   self.parent.protocol.setAverageWindSpeedThreshold
             },
-            { 
+            'calibration': { 
                 'title' : 'Calibration Constant',
-                'option': 'calibration',
                 'value' : None,
                 'invariant': True,
                 'get':   self.parent.protocol.getAnemometerCalibrationConstant,
                 'set':   self.parent.protocol.setAnemometerCalibrationConstant
             },
-            { 
+            'model': { 
                 'title' : 'Model',
-                'option': 'model',
                 'value' : None,
                 'invariant': True,
                 'get':   self.parent.protocol.getAnemometerModel,
                 'set':   self.parent.protocol.setAnemometerModel
             },
-        ]
+        }
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -153,24 +151,22 @@ class Anemometer(Device):
 class Barometer(Device):
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = [
-            { 
+        self.PARAMS = {
+            'height': { 
                 'title' : 'Barometer Height',
-                'option': 'height',
                 'value' : None,
                 'invariant': True,
                 'get':   self.parent.protocol.getBarometerHeight,
                 'set':   self.parent.protocol.setBarometerHeight
             },
-            { 
+            'offset': { 
                 'title' : 'Barometer Offset',
-                'option': 'offset',
                 'value' : None,
                 'invariant': True,
                 'get':   self.parent.protocol.getBarometerOffset,
                 'set':   self.parent.protocol.setBarometerOffset
             },
-        ]
+        }
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -179,24 +175,22 @@ class Barometer(Device):
 class CloudSensor(Device):
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = [
-            { 
+        self.PARAMS = {
+            'threshold': { 
                 'title' : 'Cloud Sensor Threshold',
-                'option': 'threshold',
                 'value' : None,
                 'invariant': False,
                 'get':   self.parent.protocol.getCloudSensorThreshold,
                 'set':   self.parent.protocol.setCloudSensorThreshold
             },
-            { 
+            'gain': { 
                 'title' : 'Cloud Sensor Gain',
-                'option': 'gain',
                 'value' : None,
                 'invariant': True,
                 'get':   self.parent.protocol.getCloudSensorGain,
                 'set':   self.parent.protocol.setCloudSensorGain
             },
-        ]    
+        }   
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -205,24 +199,22 @@ class CloudSensor(Device):
 class Photometer(Device):
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = [
-            { 
+        self.PARAMS = {
+            'threshold': { 
                 'title' : 'Photometer Threshold',
-                'option': 'threshold',
                 'value' : None,
                 'invariant': False,
                 'get':   self.parent.protocol.getPhotometerThreshold,
                 'set':   self.parent.protocol.getPhotometerThreshold
             },
-            { 
+            'offset': { 
                 'title' : 'Photometer Offset',
-                'option': 'offset',
                 'value' : None,
                 'invariant': True,
                 'get':   self.parent.protocol.getPhotometerOffset,
                 'set':   self.parent.protocol.setPhotometerOffset
             },
-        ] 
+        } 
 
 
 # --------------------------------------------------------------------
@@ -232,16 +224,15 @@ class Photometer(Device):
 class Pluviometer(Device):
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = [
-            { 
+        self.PARAMS = {
+            'calibration': { 
                 'title' : 'Pluviometer Calibration',
-                'option': 'calibration',
                 'value' : None,
                 'invariant': True,
                 'get':   self.parent.protocol.getPluviometerCalibration,
                 'set':   self.parent.protocol.setPluviometerCalibration
             },
-        ] 
+        } 
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -251,23 +242,22 @@ class Pluviometer(Device):
 class Pyranometer(Device):
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = [
-            { 
+        self.PARAMS = {
+            'gain': { 
                 'title' : 'Pyranometer Gain',
-                'option': 'gain',
                 'value' : None,
                 'invariant': True,
                 'get':   self.parent.protocol.getPyranometerGain,
                 'set':   self.parent.protocol.setPyranometerGain
             },
-            { 
+            'offset': { 
                 'title' : 'Pyranometer Offset',
-                'option': 'offset',
                 'value' : True,
+                'invariant': True,
                 'get':   self.parent.protocol.getPyranometerOffset,
                 'set':   self.parent.protocol.setPyranometerOffset
             },
-        ] 
+        } 
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -276,16 +266,15 @@ class Pyranometer(Device):
 class RainSensor(Device):
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = [
-            { 
+        self.PARAMS = {
+            'threshold': { 
                 'title' : 'Rain Sensor Threshold',
-                'option': 'threshold',
                 'value' : None,
                 'invariant': False,
                 'get':   self.parent.protocol.getRainSensorThreshold,
                 'set':   self.parent.protocol.setRainSensorThreshold
             },
-        ] 
+        } 
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -294,16 +283,15 @@ class RainSensor(Device):
 class Thermometer(Device):
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = [
-            { 
+        self.PARAMS = {
+            'delta_threshold': { 
                 'title' : 'Thermometer Delta Threshold',
-                'option': 'delta_threshold',
                 'value' : None,
                 'invariant': False,
                 'get':   self.parent.protocol.getThermometerDeltaTempThreshold,
                 'set':   self.parent.protocol.setThermometerDeltaTempThreshold
             },
-        ] 
+        } 
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -312,16 +300,15 @@ class Thermometer(Device):
 class Watchdog(Device):
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = [
-            { 
+        self.PARAMS = {
+            'period': { 
                 'title' : 'Watchdog Period',
-                'option': 'period',
                 'value' : None,
                 'invariant': False,
                 'get':   self.parent.protocol.getWatchdogPeriod,
                 'set':   self.parent.protocol.setWatchdogPeriod
             },
-        ] 
+        } 
 
 #---------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -330,16 +317,15 @@ class Watchdog(Device):
 class RealTimeClock(Device):
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = [
-            { 
+        self.PARAMS = {
+            'max_drift': { 
                 'title' : 'RTC',
-                'option': 'max_drift',
                 'value' : None,
                 'invariant': False,
                 'get':   self.parent.protocol.getRTCDateTime,
                 'set':   self.parent.protocol.setRTCDateTime
             },
-        ]
+        }
 
     @inlineCallbacks
     def sync(self):
@@ -348,8 +334,8 @@ class RealTimeClock(Device):
         Returns a deferred whose success callback value is a flag
         True = synch process ok, False = synch process went wrong
         '''
-        param = self.PARAMS[0]
-        max_drift = self.options[param['option']]
+        param     = self.PARAMS['max_drift']
+        max_drift = self.options['max_drift']
         try:
             value = yield param['get']()
         except EMATimeoutError as e:
@@ -380,16 +366,15 @@ class Voltmeter(Device):
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = [
-            { 
+        self.PARAMS = {
+            'threshold': { 
                 'title' : 'Threshold',
-                'option': 'threshold',
                 'value' : None,
                 'invariant': False,
                 'get':   self.parent.protocol.getVoltmeterThreshold,
                 'set':   self.parent.protocol.setVoltmeterThreshold
             },
-            { 
+            'offset': { 
                 'title' : 'Offset',
                 'option': 'offset',
                 'value' : None,
@@ -397,7 +382,7 @@ class Voltmeter(Device):
                 'get':   self.parent.protocol.getVoltmeterOffset,
                 'set':   self.parent.protocol.setVoltmeterOffset
             },
-        ]
+        }
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -406,16 +391,15 @@ class Voltmeter(Device):
 class AuxiliarRelay(Device):
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = [
-            { 
+        self.PARAMS = {
+            'mode': { 
                 'title' : 'Aux Relay Mode',
-                'option': 'mode',
                 'value' : None,
                 'invariant': False,
                 'get':   self.parent.protocol.getAuxRelayMode,
                 'set':   self.parent.protocol.setAuxRelayMode
             },
-        ] 
+        } 
 
 
 # --------------------------------------------------------------------

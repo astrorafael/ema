@@ -104,8 +104,11 @@ class SerialService(ClientService):
             ClientService.startService(self)
 
 
-    def printParameters(self, result, obj):
-        log.info("RESULT = {r}, VALUES = {v!s}", r=result, v=obj.parameters())
+    def printParameters(self, result):
+        mydict = {}
+        for device in self.devices:
+            mydict.update(device.parameters())
+        log.info("PARAMETERS = {p}", p=mydict)
 
     def gotProtocol(self, protocol):
         log.debug("got Protocol")
@@ -129,7 +132,7 @@ class SerialService(ClientService):
                             self.photometer,self.pluviometer,self.pyranometer,self.rainsensor,
                             self.watchdog, self.aux_relay, self.rtc]
 
-        self.sync()     # Esto es temporal
+        self.sync().addCallback(self.printParameters)
         
        
     @inlineCallbacks
