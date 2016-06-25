@@ -60,42 +60,32 @@ class Device(object):
         '''
         Return a dictionary of current parameter values
         '''
-        return { (self.__class__.__name__ + '_' + p['option']).lower(): p['value'] for p in self.PARAMS }
+        return { (self.__class__.__name__ + '_' + p['option']).lower(): p['value'] for p in self.PARAMS if p['invariant']}
 
+
+    def paramEquals(self, value, target,  threshold=0.001):
+        if type(value) == float:
+            return math.fabs(value - target) < threshold
+        else:
+            return value == target
 
     @inlineCallbacks
     def sync(self):
         '''
         Synchronizes parameters. 
-        Returns a deferred whose success callback value is a flag
-        True = synch process ok, False = synch process went wrong
+        Returns a deferred whose success callback value None
         '''
-        result = True
         for param in self.PARAMS:
-            try:
-                value = yield param['get']()
-            except EMATimeoutError:
-                result = False
-                log.error("Parameter sync exception => {exception}", exception=e)
-                break
-            else:
-                 param['value'] = value
+            value = yield param['get']()
+            param['value'] = value
             configured = self.options[param['option']]
-            if value != configured:
-                log.warn("{title} not synchronized [read = {read}] [file = {file}]", title=param['title'], read=value, file=configured)
+            if not self.paramEquals(value, configured):
+                log.warn("{title} values do not match [EMA = {read}] [file = {file}]", title=param['title'], read=value, file=configured)
                 if self.options['sync'] and self.global_sync:
                     log.info("Synchronizing {title}", title=param['title'])
-                    try:
-                        value = yield param['set'](configured)
-                    except EMATimeoutError:
-                        log.error("parameter sync exception => {exception}", exception=e)
-                        result = False
-                        break
-                    else:
-                         param['value'] = value
+                    param['value'] = yield param['set'](configured)
             else:
                 log.info("{title} already synchronized", title=param['title'])
-        returnValue(result)
 
 
 # --------------------------------------------------------------------
@@ -126,6 +116,7 @@ class Anemometer(Device):
                 'title' : 'Current Wind Speed Threshold',
                 'option': 'threshold',
                 'value' : None,
+                'invariant': False,
                 'get':   self.parent.protocol.getCurrentWindSpeedThreshold,
                 'set':   self.parent.protocol.setCurrentWindSpeedThreshold,
             },
@@ -133,6 +124,7 @@ class Anemometer(Device):
                 'title' : 'Average Wind Speed Threshold',
                 'option': 'ave_threshold',
                 'value' : None,
+                'invariant': False,
                 'get':   self.parent.protocol.getAverageWindSpeedThreshold,
                 'set':   self.parent.protocol.setAverageWindSpeedThreshold
             },
@@ -140,6 +132,7 @@ class Anemometer(Device):
                 'title' : 'Calibration Constant',
                 'option': 'calibration',
                 'value' : None,
+                'invariant': True,
                 'get':   self.parent.protocol.getAnemometerCalibrationConstant,
                 'set':   self.parent.protocol.setAnemometerCalibrationConstant
             },
@@ -147,6 +140,7 @@ class Anemometer(Device):
                 'title' : 'Model',
                 'option': 'model',
                 'value' : None,
+                'invariant': True,
                 'get':   self.parent.protocol.getAnemometerModel,
                 'set':   self.parent.protocol.setAnemometerModel
             },
@@ -164,6 +158,7 @@ class Barometer(Device):
                 'title' : 'Barometer Height',
                 'option': 'height',
                 'value' : None,
+                'invariant': True,
                 'get':   self.parent.protocol.getBarometerHeight,
                 'set':   self.parent.protocol.setBarometerHeight
             },
@@ -171,6 +166,7 @@ class Barometer(Device):
                 'title' : 'Barometer Offset',
                 'option': 'offset',
                 'value' : None,
+                'invariant': True,
                 'get':   self.parent.protocol.getBarometerOffset,
                 'set':   self.parent.protocol.setBarometerOffset
             },
@@ -188,6 +184,7 @@ class CloudSensor(Device):
                 'title' : 'Cloud Sensor Threshold',
                 'option': 'threshold',
                 'value' : None,
+                'invariant': False,
                 'get':   self.parent.protocol.getCloudSensorThreshold,
                 'set':   self.parent.protocol.setCloudSensorThreshold
             },
@@ -195,6 +192,7 @@ class CloudSensor(Device):
                 'title' : 'Cloud Sensor Gain',
                 'option': 'gain',
                 'value' : None,
+                'invariant': True,
                 'get':   self.parent.protocol.getCloudSensorGain,
                 'set':   self.parent.protocol.setCloudSensorGain
             },
@@ -212,6 +210,7 @@ class Photometer(Device):
                 'title' : 'Photometer Threshold',
                 'option': 'threshold',
                 'value' : None,
+                'invariant': False,
                 'get':   self.parent.protocol.getPhotometerThreshold,
                 'set':   self.parent.protocol.getPhotometerThreshold
             },
@@ -219,6 +218,7 @@ class Photometer(Device):
                 'title' : 'Photometer Offset',
                 'option': 'offset',
                 'value' : None,
+                'invariant': True,
                 'get':   self.parent.protocol.getPhotometerOffset,
                 'set':   self.parent.protocol.setPhotometerOffset
             },
@@ -237,6 +237,7 @@ class Pluviometer(Device):
                 'title' : 'Pluviometer Calibration',
                 'option': 'calibration',
                 'value' : None,
+                'invariant': True,
                 'get':   self.parent.protocol.getPluviometerCalibration,
                 'set':   self.parent.protocol.setPluviometerCalibration
             },
@@ -255,13 +256,14 @@ class Pyranometer(Device):
                 'title' : 'Pyranometer Gain',
                 'option': 'gain',
                 'value' : None,
+                'invariant': True,
                 'get':   self.parent.protocol.getPyranometerGain,
                 'set':   self.parent.protocol.setPyranometerGain
             },
             { 
                 'title' : 'Pyranometer Offset',
                 'option': 'offset',
-                'value' : None,
+                'value' : True,
                 'get':   self.parent.protocol.getPyranometerOffset,
                 'set':   self.parent.protocol.setPyranometerOffset
             },
@@ -279,6 +281,7 @@ class RainSensor(Device):
                 'title' : 'Rain Sensor Threshold',
                 'option': 'threshold',
                 'value' : None,
+                'invariant': False,
                 'get':   self.parent.protocol.getRainSensorThreshold,
                 'set':   self.parent.protocol.setRainSensorThreshold
             },
@@ -296,6 +299,7 @@ class Thermometer(Device):
                 'title' : 'Thermometer Delta Threshold',
                 'option': 'delta_threshold',
                 'value' : None,
+                'invariant': False,
                 'get':   self.parent.protocol.getThermometerDeltaTempThreshold,
                 'set':   self.parent.protocol.setThermometerDeltaTempThreshold
             },
@@ -313,6 +317,7 @@ class Watchdog(Device):
                 'title' : 'Watchdog Period',
                 'option': 'period',
                 'value' : None,
+                'invariant': False,
                 'get':   self.parent.protocol.getWatchdogPeriod,
                 'set':   self.parent.protocol.setWatchdogPeriod
             },
@@ -330,6 +335,7 @@ class RealTimeClock(Device):
                 'title' : 'RTC',
                 'option': 'max_drift',
                 'value' : None,
+                'invariant': False,
                 'get':   self.parent.protocol.getRTCDateTime,
                 'set':   self.parent.protocol.setRTCDateTime
             },
@@ -379,6 +385,7 @@ class Voltmeter(Device):
                 'title' : 'Threshold',
                 'option': 'threshold',
                 'value' : None,
+                'invariant': False,
                 'get':   self.parent.protocol.getVoltmeterThreshold,
                 'set':   self.parent.protocol.setVoltmeterThreshold
             },
@@ -386,6 +393,7 @@ class Voltmeter(Device):
                 'title' : 'Offset',
                 'option': 'offset',
                 'value' : None,
+                'invariant': True,
                 'get':   self.parent.protocol.getVoltmeterOffset,
                 'set':   self.parent.protocol.setVoltmeterOffset
             },
@@ -403,6 +411,7 @@ class AuxiliarRelay(Device):
                 'title' : 'Aux Relay Mode',
                 'option': 'mode',
                 'value' : None,
+                'invariant': False,
                 'get':   self.parent.protocol.getAuxRelayMode,
                 'set':   self.parent.protocol.setAuxRelayMode
             },

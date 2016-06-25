@@ -798,7 +798,7 @@ class EMAProtocol(LineOnlyReceiver):
         Handle lack of response from EMA by retries or raising a Failure
         '''
         request = self._queue[0]
-        log.error("Command {request.name} {timeout}", request=request, timeout="timeout")
+        log.error("{timeout} {request.name}", request=request, timeout="Timeout")
         if request.retries == request.nretries:
             request.deferred.errback(EMATimeoutError(request.name))
             request.deferred = None

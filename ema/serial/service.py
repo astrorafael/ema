@@ -70,6 +70,9 @@ class SerialService(ClientService):
         self.factory   = EMAProtocolFactory()
         self.serport   = None
         self.protocol  = None
+        self.devices   = []
+        self.synchroComplete = False
+        self.synchroError    = False
         self.resetCounters()
         self.goSerial = self._decide()
 
@@ -122,11 +125,32 @@ class SerialService(ClientService):
         self.watchdog    = Watchdog(self, self.options['watchdog'])
         self.rtc         = RealTimeClock(self, self.options['rtc'])
         self.aux_relay   = AuxiliarRelay(self, self.options['aux_relay'])
-        self.rtc.sync()
-        self.anemometer.sync().addCallback(self.printParameters, self.anemometer)
+        self.devices     = [self.voltmeter, self.anemometer, self.barometer, self.cloudsensor,
+                            self.photometer,self.pluviometer,self.pyranometer,self.rainsensor,
+                            self.watchdog, self.aux_relay, self.rtc]
 
+        self.sync()     # Esto es temporal
         
        
+    @inlineCallbacks
+    def sync(self):
+        '''
+        Devices synchronization.
+        Cannot send EMA MQTT registration until not sucessfully synchronized
+        '''
+        self.synchroError    = False
+        self.synchroComplete = False
+        for device in self.devices:
+            try:
+                yield device.sync()
+            except (EMARangeError, EMATimeoutError) as e:
+                log.error("Synchronization error => {error}", error=e)
+                self.parent.logMQTTEvent(msg="Synchronization error", kind="error")
+                self.synchroError = True
+                break
+        self.synchroComplete = True
+
+
     @inlineCallbacks
     def stopService(self):
         try:
@@ -166,88 +190,6 @@ class SerialService(ClientService):
         else:
             log.debug("PINGED. Result = {result}", result=res)
 
-
-    @inlineCallbacks
-    def sync(self):
-        '''
-        Asynchronous Parameter syncronization process
-        Returns a Deferred when all synchronization is complete
-        '''
-        getFuncs = [ 
-            self.protocol.getRTCDateTime,
-            self.protocol.getCurrentWindSpeedThreshold,
-            self.protocol.getAverageWindSpeedThreshold,
-            self.protocol.getAnemometerCalibrationConstant,
-            self.protocol.getAnemometerModel,
-            self.protocol.getBarometerHeight,
-            self.protocol.getBarometerOffset,
-            self.protocol.getCloudSensorThreshold,
-            self.protocol.getCloudSensorGain,
-            self.protocol.getPhotometerThreshold,
-            self.protocol.getPhotometerOffset,
-            self.protocol.getPluviometerCalibration ,
-            self.protocol.getPyranometerGain ,
-            self.protocol.getPyranometerOffset ,
-            self.protocol.getRainSensorThreshold ,
-            self.protocol.getThermometerDeltaTempThreshold,
-            self.protocol.getVoltmeterThreshold,
-            self.protocol.getVoltmeterOffset,
-            self.protocol.getAuxRelaySwitchOnTime,
-            self.protocol.getAuxRelaySwitchOffTime,
-            self.protocol.getAuxRelayMode,
-            self.protocol.getWatchdogPeriod,
-        ]
-
-        getFuncs = [ 
-           self.protocol.get5MinAveragesDump
-        ]
-
-        setFuncs = [ 
-            (self.protocol.setCurrentWindSpeedThreshold, 20),
-            (self.protocol.setAverageWindSpeedThreshold, 66),
-            (self.protocol.setAnemometerCalibrationConstant, 70),
-            (self.protocol.setAnemometerModel, 'Simple'),
-            (self.protocol.setBarometerHeight, 711),
-            (self.protocol.setBarometerOffset, -10),
-            (self.protocol.setCloudSensorThreshold, 67),
-            (self.protocol.setCloudSensorGain, 1.0),
-            (self.protocol.setPhotometerThreshold, 10.5),
-            (self.protocol.setPhotometerOffset, 0),
-            (self.protocol.setPluviometerCalibration, 124),
-            (self.protocol.setPyranometerGain, 14),
-            (self.protocol.setPyranometerOffset, 0),
-            (self.protocol.setRainSensorThreshold, 1),
-            (self.protocol.setThermometerDeltaTempThreshold, 5),
-            (self.protocol.setVoltmeterThreshold, 0),
-            (self.protocol.setVoltmeterOffset, -1.4),
-            (self.protocol.setAuxRelaySwitchOnTime,  datetime.time(hour=6)),
-            (self.protocol.setAuxRelaySwitchOffTime, datetime.time(hour=9)),
-            (self.protocol.setAuxRelayMode, 'Timer/On'),
-            (self.protocol.setWatchdogPeriod, 200),
-            (self.protocol.setRTCDateTime, None),
-            (self.protocol.setRoofRelayMode, 'Closed'),
-
-        ]
-
-        setFuncs = [ 
-        ]
-
-        if True:
-            for getter in getFuncs:
-                try:
-                    res = yield getter()
-                    log.debug("Result = {result}", result=res)
-                except EMATimeoutError as e:
-                    log.error("{excp!s}", excp=e)
-                    continue
-        if True:
-            for setter in setFuncs:
-                try:
-                    res = yield setter[0](setter[1])
-                    log.debug("Result = {result}", result=res)
-                except EMATimeoutError as e:
-                    log.error("{excp!s}", excp=e)
-                    continue
 
     # -------------
     # log stats API

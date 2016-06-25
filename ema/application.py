@@ -11,6 +11,7 @@ from __future__ import division
 # -------------------
 
 import sys
+import datetime
 from collections import deque
 
 # ---------------
@@ -141,6 +142,15 @@ class EMAApplication(object):
         #self.mqttService.startService()
         #self.statsTask.start(self.T_STAT, now=False) # call every T seconds
     
+    # -------------
+    # MQTT API
+    # -------------
+
+    def logMQTTEvent(self, msg, kind='info'):
+        '''Resets stat counters'''
+        record = { 'tstamp': datetime.datetime.utcnow(), 'type': kind, 'msg': msg}
+        # aqui falta encolarlo y que el MQTT service leponga el who
+
     # -------------
     # log stats API
     # -------------

@@ -4,6 +4,7 @@ Prioridad alta
  - Voltmeter: scripts y tracking de voltage
  - Roofrelay : cambio de stado y scripst
  - AuxRelay : cambio de estado y script
+ - Watchog : task para hacer el ping
 - servicio de sonda (probe) como subpaquete
 
  - Comunicación al modulo MQTT con Colas deque() para desacoplar el servicio
