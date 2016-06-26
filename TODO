@@ -2,11 +2,7 @@ Prioridad alta
 ==============
 - servicio de scrip lee las configraciones de scripts
   no el voltimetro ni los reles
-- Peculiaridades de algunos devices
- - Voltmeter: scripts y tracking de voltage
- - Roofrelay : cambio de stado y scripst
- - AuxRelay : cambio de estado y script
- - Watchog : task para hacer el ping
+- auxrelay co,andos especiales para programar el tON y tOFF
 - servicio de sonda (probe) como subpaquete
 
  - Comunicación al modulo MQTT con Colas deque() para desacoplar el servicio
