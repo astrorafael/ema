@@ -20,7 +20,7 @@ from collections import deque
 # ---------------
 
 from twisted.logger   import Logger, LogLevel
-from twisted.internet import task
+from twisted.internet import task, reactor
 from twisted.internet.defer  import inlineCallbacks, returnValue
 from twisted.internet.threads import deferToThread
 
@@ -144,11 +144,19 @@ class EMAApplication(object):
  
     def start(self):
         log.info('starting {ema}', ema=VERSION_STRING)
+        try:
+            self.scriptsService.startService()
+        except Exception as e:
+            log.critical("{excp}",excp=e)
+            log.critical("Exiting ...")
+            sys.exit(1)
         self.serialService.startService()
         self.internetService.startService()
-        self.scriptsService.startService()
-        #self.mqttService.startService()
-        #self.statsTask.start(self.T_STAT, now=False) # call every T seconds
+            
+            #self.mqttService.startService()
+            #self.statsTask.start(self.T_STAT, now=False) # call every T seconds
+       
+       
     
     # -------------
     # MQTT API

@@ -150,12 +150,16 @@ def loadCfgFile(path):
   
     options['scripts'] = {}
     options['scripts']['roof_relay']       = parser.get("scripts","roof_relay")
+    options['scripts']['roof_relay_args']  = parser.get("scripts","roof_relay_args")
     options['scripts']['roof_relay_mode']  = parser.get("scripts","roof_relay_mode")
     options['scripts']['aux_relay']        = parser.get("scripts","aux_relay")
+    options['scripts']['aux_relay_args']   = parser.get("scripts","aux_relay_args")
     options['scripts']['aux_relay_mode']   = parser.get("scripts","aux_relay_mode")
     options['scripts']['low_voltage']      = parser.get("scripts","low_voltage")
+    options['scripts']['low_voltage_args'] = parser.get("scripts","low_voltage_args")
     options['scripts']['low_voltage_mode'] = parser.get("scripts","low_voltage_mode")
     options['scripts']['no_internet']      = parser.get("scripts","no_internet")
+    options['scripts']['no_internet_args'] = parser.get("scripts","no_internet_args")
     options['scripts']['no_internet_mode'] = parser.get("scripts","no_internet_mode")
     options['scripts']['log_level']        = parser.get("scripts","log_level")
    

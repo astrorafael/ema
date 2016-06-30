@@ -12,11 +12,8 @@
 from __future__ import division
 
 import os
-import errno
-import sys
-import datetime
-import json
-import math
+import os.path
+import shlex
 
 # ---------------
 # Twisted imports
@@ -35,6 +32,7 @@ from twisted.application.service  import Service
 
 from .logger   import setLogLevel
 from .utils    import chop
+from .error    import AlreadyExecutedScript, AlreadyBeingExecutedScript, ScriptNotFound
 
 # ----------------
 # Module constants
@@ -44,6 +42,8 @@ from .utils    import chop
 # Global functions
 # -----------------
 
+def is_exe(path):
+    return os.path.isfile(path) and os.access(path, os.X_OK)
 
 # -----------------------
 # Module global variables
@@ -168,23 +168,7 @@ class ScriptProtocol(ProcessProtocol):
 
 
 
-class AlreadyExecutedScript(Exception):
-    '''Script has already been executed'''
-    def __str__(self):
-        s = self.__doc__
-        if self.args:
-            s = "{0}: '{1}'".format(s, self.args[0])
-        s = '{0}.'.format(s)
-        return s
 
-class AlreadyBeingExecutedScript(Exception):
-    '''Script is stil being executed'''
-    def __str__(self):
-        s = self.__doc__
-        if self.args:
-            s = "{0}: '{1}'".format(s, self.args[0])
-        s = '{0}.'.format(s)
-        return s
 
 class Script(object):
     '''
@@ -200,9 +184,10 @@ class Script(object):
     # mappping from strings to numbers
     MODES = { 'Never' : NEVER, 'Once' : ONCE, 'Many' : MANY }
 
-    def __init__(self,  cfg):
-        self.mode        = self.MODES[cfg[1]]
-        self.path        = cfg[0]
+    def __init__(self,  path, mode, fmt):
+        self.mode        = self.MODES[mode]
+        self.path        = path
+        self.fmt         = fmt
         self.name        = os.path.basename(self.path)
         self.terminated  = True
         self.protocol    = None
@@ -213,14 +198,13 @@ class Script(object):
         Raises AlreadyExecutedScript exception if already run
         Otherwise, spawns the script
         '''
-        # 
-        # otherwise, spawn it
+        args = shlex.split(self.path + ' ' + self.fmt % args)
         if self.protocol is not None:
-            raise AlreadyExecutedScript(self.name, *args)
+            raise AlreadyExecutedScript(self.name, args)
         # If not running, spawn it
         self.protocol = ScriptProtocol(self)
+        reactor.spawnProcess(self.protocol, self.path, args, {})
         self.terminated = False
-        reactor.spawnProcess(self.protocol, self.path, [self.path] + list(args), {})
        
 
 
@@ -230,11 +214,12 @@ class Script(object):
         If scrip is already running raise AlreadyBeingExecutedScript.
         Otherwise, spawns the script
         '''
+        args = shlex.split(self.path + ' ' + self.fmt % args)
         if not self.terminated:
             raise AlreadyBeingExecutedScript(self.name, *args)
         self.protocol = ScriptProtocol(self)
+        reactor.spawnProcess(self.protocol, self.path, args, {})
         self.terminated = False
-        reactor.spawnProcess(self.protocol, self.path, [self.path] + list(args), {})
        
 
    
@@ -264,14 +249,13 @@ class ScriptsService(Service):
         self.options    = options
         setLogLevel(namespace='script', levelStr=options['log_level'])
         self.scripts   = {}
+    
+    def startService(self):
+        log.info("starting Scripts Service")
         self.addScript('low_voltage')
         self.addScript('aux_relay')
         self.addScript('roof_relay')
         self.addScript('no_internet')
-
-    
-    def startService(self):
-        log.info("starting Scripts Service")
         Service.startService(self)
 
 
@@ -323,12 +307,15 @@ class ScriptsService(Service):
         '''
         *_script are tuples of (path, mode)
         '''
-        modekey = event + '_mode'
-        mode    = self.options[modekey]
+        mode    = self.options[event + '_mode']
+        fmt     = self.options[event + '_args']
         scripts = chop(self.options[event], ',')
         aList = self.scripts.get(event, [] )
         for path in scripts:
-            aList.append(Script( (path, mode) ))
+            if is_exe(path):
+                aList.append(Script(path, mode, fmt))
+            else:
+                raise ScriptNotFound(path)
         self.scripts[event] = aList
 
 

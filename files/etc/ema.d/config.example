@@ -87,6 +87,9 @@ log_level = debug
 # Leave empty if not used
 roof_relay = 
 
+# Format string for the script arguments
+roof_relay_args = "--status %s --reason %s"
+
 # Script mode: (Never, Once, Many)
 # When launched mutiple times, EMA server does not lauch a script
 # till the previous run is over
@@ -98,6 +101,9 @@ roof_relay_mode = Many
 # Leave empty if not used
 aux_relay = 
 
+# Format string for the script arguments
+aux_relay_args = "--status %s --reason %s"
+
 # Script mode: (Never, Once, Many)
 # When launched mutiple times, EMA server does not lauch a script
 # till the previous run is over
@@ -107,6 +113,9 @@ aux_relay_mode = Never
 # Each script should show the full path. 
 # Leave empty if not used
 low_voltage = /home/pi/nto/ema/scripts/volt-script
+
+# Format string for the script arguments
+low_voltage_args = '--voltage %.1f --threshold %.1f --size %d'
 
 # Script mode: (Never, Once, Many)
 # When launched mutiple times, EMA server does not lauch a script
@@ -118,6 +127,9 @@ low_voltage_mode = Once
 # Each script should show the full path. 
 # Leave empty if not used
 no_internet =
+
+# Format string for the script arguments
+no_internet_args = ''
 
 # Script mode: (Never, Once, Many)
 # When launched mutiple times, EMA server does not lauch a script
