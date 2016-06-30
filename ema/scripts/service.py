@@ -22,8 +22,6 @@ import shlex
 from twisted.logger               import Logger, LogLevel
 from twisted.internet             import reactor, task
 from twisted.internet.defer       import inlineCallbacks
-from twisted.application.service  import Service
-
 
 #--------------
 # local imports
@@ -33,6 +31,7 @@ from ..utils   import chop
 from ..logger  import setLogLevel
 from .error    import AlreadyExecutedScript, AlreadyBeingExecutedScript, ScriptNotFound
 from .script   import Script
+from ..service import ReloadableService
 
 # ----------------
 # Module constants
@@ -54,7 +53,7 @@ log = Logger(namespace='script')
 
 
 
-class ScriptsService(Service):
+class ScriptsService(ReloadableService):
 
  
     def __init__(self, parent, options, **kargs):
@@ -69,13 +68,13 @@ class ScriptsService(Service):
         self.addScript('aux_relay')
         self.addScript('roof_relay')
         self.addScript('no_internet')
-        Service.startService(self)
+        ReloadableService.startService(self)
 
 
     @inlineCallbacks
     def stopService(self):
         try:
-            yield Service.stopService(self)
+            yield ReloadableService.stopService(self)
         except Exception as e:
             log.error("Exception {excp!s}", excp=e)
 
@@ -88,12 +87,6 @@ class ScriptsService(Service):
         log.info("new log level is {lvl}", lvl=new_options['log_level'])
         self.options = new_options
         
-
-    def pauseService(self):
-        pass
-
-    def resumeService(self):
-        pass
 
     # -------------
     # EMA API
