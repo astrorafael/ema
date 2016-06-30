@@ -27,7 +27,7 @@ from twisted.internet.defer       import DeferredList
 # local imports
 # -------------
 
-from .logger import setLogLevel
+from ..logger import setLogLevel
 
 # ----------------
 # Module constants
@@ -150,4 +150,6 @@ class InternetService(Service):
         return self.quorum
 
 
-__all__ = [InternetService]
+__all__ = [
+    InternetService
+]
