@@ -76,7 +76,7 @@ if os.name == "posix":
           url              = 'http://github.com/astrorafael/ema/',
           classifiers      = classifiers,
           packages         = ["ema"],
-          install_requires = ['twisted >= 16.2.0','twisted-mqtt','pyserial'],
+          install_requires = ['twisted >= 16.2.0','twisted-mqtt','pyserial', 'service-identity'],
           data_files       = [ 
               ('/etc/init.d' ,     ['files/init.d/ema']),
               ('/etc/default',     ['files/etc/default/ema']),
@@ -108,7 +108,7 @@ elif os.name == "nt":
           url              = 'http://github.com/astrorafael/ema/',
           classifiers      = classifiers,
           packages         = ["ema"],
-          install_requires = ['twisted >= 16.2.0','twisted-mqtt','pyserial'],
+          install_requires = ['twisted >= 16.2.0','twisted-mqtt','pyserial', 'service-identity'],
           data_files       = [ 
             (r'C:\ema',          [r'files\winnt\ema.bat',r'files\winnt\winreload.py']),
             (r'C:\ema\log',      [r'files\winnt\placeholder.txt']),

@@ -100,7 +100,7 @@ class Voltmeter(Device):
             return
         threshold = self.options['delta'] + self.PARAMS['threshold']['value']
         if average < threshold:
-            self.parent.onEventExecute('VoltageLow', average, threshold, n)
+            self.parent.onEventExecute('low_voltage', average, threshold, n)
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------

@@ -26,8 +26,6 @@
 #========================================================================#
 [ema]
 
-
-
 # Log File settings
 log_file = /var/log/ema.log
 
@@ -58,6 +56,77 @@ log_level = debug
 
 # log serial protocol messages from/to EMA ?
 log_messages = yes
+
+#------------------------------------------------------------------------#
+[internet]
+# Internet connectivity detection
+# It is useful to know when the program has no internet connectivity
+# If no network connectivity, then the program:
+# - will synchronize its clock from EMA RTC (insteado of the other way round)
+# - will execute an script (i.e. probably to shut the host down)
+
+site1 = http://www.google.es
+site2 = http://www.facebook.es
+site3 = http://www.twitter.es
+
+
+# component log level (debug, info, warn, error, critical)
+log_level = debug
+
+#------------------------------------------------------------------------#
+[scripts]
+# Internet connectivity detection
+# It is useful to know when the program has no internet connectivity
+# If no network connectivity, then the program:
+# - will synchronize its clock from EMA RTC (insteado of the other way round)
+# - will execute an script (i.e. probably to shut the host down)
+
+
+# List of comma separated scripts to execute on change of roof relay switch 
+# Each script should show the full path. 
+# Leave empty if not used
+roof_relay = 
+
+# Script mode: (Never, Once, Many)
+# When launched mutiple times, EMA server does not lauch a script
+# till the previous run is over
+roof_relay_mode = Many
+
+
+# List of comma separated scripts to execute on change of aux relay switch 
+# Each script should show the full path. 
+# Leave empty if not used
+aux_relay = 
+
+# Script mode: (Never, Once, Many)
+# When launched mutiple times, EMA server does not lauch a script
+# till the previous run is over
+aux_relay_mode = Never
+
+# List of comma separated scripts to execute on low voltage 
+# Each script should show the full path. 
+# Leave empty if not used
+low_voltage = /home/pi/nto/ema/scripts/volt-script
+
+# Script mode: (Never, Once, Many)
+# When launched mutiple times, EMA server does not lauch a script
+# till the previous run is over
+low_voltage_mode = Once
+
+# List of comma separated scripts to execute when
+# no internet connection has been detected 
+# Each script should show the full path. 
+# Leave empty if not used
+no_internet =
+
+# Script mode: (Never, Once, Many)
+# When launched mutiple times, EMA server does not lauch a script
+# till the previous run is over
+no_internet_mode = Once
+
+
+# component log level (debug, info, warn, error, critical)
+log_level = debug
 
 #------------------------------------------------------------------------#
 
@@ -141,16 +210,6 @@ threshold = 11.8
 # Volts above vlot_threshold to allow a safety marging for
 # emeregency actions before relays switch off
 delta = 0.2
-
-# List of comma separated scripts to execute on low voltage 
-# Each script should show the full path. 
-# leave empty if not used
-script = /home/pi/nto/ema/scripts/volt-script
-
-# Script mode: (Never, Once, Many)
-# When launched mutiple times, EMA server does not lauch a script
-# till the previous run is over
-mode = Once
 
 #------------------------------------------------------------------------#
 # Mechanical Anemometer
@@ -304,17 +363,6 @@ sync = no
 mode = Manual
 
 
-# List of comma separated scripts to execute  
-# on change of aux relay switch 
-# Each script should show the full path. 
-# leave empty if not used
-script = /path/to/my/script
-
-# Script mode: (Never, Once, Many)
-# When launched mutiple times, EMA server does not lauch a script
-# till the previous run is over
-script_mode = Never
-
 #------------------------------------------------------------------------#
 # Roof relay
 [roof_relay]
@@ -322,16 +370,6 @@ script_mode = Never
 # sync parameters
 sync = no
 
-# List of comma separated scripts to execute  
-# on change of roof relay switch 
-# Each script should show the full path. 
-# leave empty if not used
-script = /home/pi/nto/ema/scripts/roof-script
-
-# Script mode: (Never, Once, Many)
-# When launched mutiple times, EMA server does not lauch a script
-# till the previous run is over
-script_mode = Many
  
 #------------------------------------------------------------------------#
 # Thermopile sensor (alternative way to detect clouds)

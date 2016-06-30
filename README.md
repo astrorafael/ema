@@ -28,6 +28,8 @@ host computer if needed. A Respberry Pi with **internal RTC is strongly recommen
 
 ### Linux
 
+**Warning** You need Debian package libffi-dev to install Pip 'service-identity' requirement
+
   `sudo pip install ema`
 
   or from GitHub:

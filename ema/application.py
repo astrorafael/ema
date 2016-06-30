@@ -34,6 +34,9 @@ from .logger import setLogLevel
 #from .mqttservice import MQTTService
 
 from .serial.service import SerialService
+from .internet       import InternetService
+from .scripts        import ScriptsService
+
 
 
 # ----------------
@@ -72,7 +75,9 @@ class EMAApplication(object):
         #self.reportTask   = task.LoopingCall(self.reporter)
         #self.statsTask    = task.LoopingCall(self.logCounters)
         #self.mqttService  = MQTTService(self, config_opts['mqtt'])
-        self.serialService = SerialService(self, config_opts['serial'])
+        self.serialService   = SerialService(self, config_opts['serial'])
+        self.internetService = InternetService(self, config_opts['internet'])
+        self.scriptsService  = ScriptsService(self, config_opts['scripts'])
         setLogLevel(namespace='ema', levelStr=config_opts['ema']['log_level'])
         self.reloadTask.start(self.T, now=False) # call every T seconds
 
@@ -140,6 +145,8 @@ class EMAApplication(object):
     def start(self):
         log.info('starting {ema}', ema=VERSION_STRING)
         self.serialService.startService()
+        self.internetService.startService()
+        self.scriptsService.startService()
         #self.mqttService.startService()
         #self.statsTask.start(self.T_STAT, now=False) # call every T seconds
     
@@ -151,6 +158,15 @@ class EMAApplication(object):
         '''Resets stat counters'''
         record = { 'tstamp': datetime.datetime.utcnow(), 'type': kind, 'msg': msg}
         # aqui falta encolarlo y que el MQTT service leponga el who
+
+    # ----------
+    # Events API
+    # ----------
+    def onEventExecute(self, event, *args):
+        '''
+        Event Handlr coming from the Voltmeter
+        '''
+        self.scriptsService.onEventExecute(event, *args)
 
     # -------------
     # log stats API

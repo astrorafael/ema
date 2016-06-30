@@ -121,7 +121,8 @@ class SerialService(ClientService):
         for device in self.devices:
             mydict.update(device.parameters())
         log.info("PARAMETERS = {p}", p=mydict)
-        reactor.callLater(30, self.protocol.setRoofRelayMode, 'Closed')
+        reactor.callLater(5, self.protocol.setRoofRelayMode, 'Closed')
+        reactor.callLater(10, self.protocol.setRoofRelayMode, 'Open')
 
 
     def _buildDevices(self):
@@ -212,15 +213,17 @@ class SerialService(ClientService):
     # EMA API
     # -------------
 
-    
+    # ----------
+    # Events API
+    # ----------
+
     def onEventExecute(self, event, *args):
         '''
         Event Handlr coming from the Voltmeter
         '''
-        log.info("ON EVENT EXECUTE {event} {rest!r}", event=event, rest=args)
+        self.parent.onEventExecute(event, *args)
     
-
-
+  
     # -------------
     # log stats API
     # -------------

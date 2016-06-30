@@ -100,80 +100,70 @@ def loadCfgFile(path):
     options['serial']['log_messages']  = parser.getboolean("serial","log_messages")
     options['serial']['sync']          = parser.getboolean("serial","sync")
     options['serial']['upload_period'] = parser.getint("serial","upload_period")
-
     options['serial']['voltmeter'] = {}
     options['serial']['voltmeter']['sync']            = parser.getboolean("voltmeter","sync")
     options['serial']['voltmeter']['offset']          = parser.getfloat("voltmeter","offset")
     options['serial']['voltmeter']['threshold']       = parser.getfloat("voltmeter","threshold")
     options['serial']['voltmeter']['delta']           = parser.getfloat("voltmeter","delta")
-    options['serial']['voltmeter']['script']          = parser.get("voltmeter","script")
-    options['serial']['voltmeter']['mode']            = parser.get("voltmeter","mode")
-
     options['serial']['anemometer'] = {}
     options['serial']['anemometer']['sync']            = parser.getboolean("anemometer","sync")
     options['serial']['anemometer']['calibration']     = parser.getint("anemometer","calibration")
     options['serial']['anemometer']['model']           = parser.get("anemometer","model")
     options['serial']['anemometer']['threshold']       = parser.getint("anemometer","threshold")
     options['serial']['anemometer']['ave_threshold']   = parser.getint("anemometer","ave_threshold")
-   
     options['serial']['barometer'] = {}
     options['serial']['barometer']['sync']            = parser.getboolean("barometer","sync")
     options['serial']['barometer']['height']          = parser.getint("barometer","height")
     options['serial']['barometer']['offset']          = parser.getint("barometer","offset")
-
     options['serial']['cloudsensor'] = {}
     options['serial']['cloudsensor']['sync']            = parser.getboolean("cloudsensor","sync")
     options['serial']['cloudsensor']['threshold']       = parser.getint("cloudsensor","threshold")
     options['serial']['cloudsensor']['gain']            = parser.getfloat("cloudsensor","gain")
-
     options['serial']['photometer'] = {}
     options['serial']['photometer']['sync']            = parser.getboolean("photometer","sync")
     options['serial']['photometer']['threshold']       = parser.getfloat("photometer","threshold")
     options['serial']['photometer']['offset']          = parser.getfloat("photometer","offset")
-
     options['serial']['pluviometer'] = {}
     options['serial']['pluviometer']['sync']            = parser.getboolean("pluviometer","sync")
     options['serial']['pluviometer']['calibration']     = parser.getint("pluviometer","calibration")
-
     options['serial']['pyranometer'] = {}
     options['serial']['pyranometer']['sync']            = parser.getboolean("pyranometer","sync")
     options['serial']['pyranometer']['gain']            = parser.getfloat("pyranometer","gain")
     options['serial']['pyranometer']['offset']          = parser.getint("pyranometer","offset")
-
     options['serial']['rainsensor'] = {}
     options['serial']['rainsensor']['sync']            = parser.getboolean("rainsensor","sync")
     options['serial']['rainsensor']['threshold']       = parser.getint("rainsensor","threshold")
-
     options['serial']['thermometer'] = {}
     options['serial']['thermometer']['sync']            = parser.getboolean("thermometer","sync")
     options['serial']['thermometer']['delta_threshold'] = parser.getfloat("thermometer","delta_threshold")
-
     options['serial']['watchdog'] = {}
     options['serial']['watchdog']['sync']            = parser.getboolean("watchdog","sync")
     options['serial']['watchdog']['period']          = parser.getint("watchdog","period")
-
     options['serial']['rtc'] = {}
     options['serial']['rtc']['sync']               = parser.getboolean("rtc","sync")
     options['serial']['rtc']['max_drift']          = parser.getint("rtc","max_drift")
-
     options['serial']['aux_relay'] = {}
     options['serial']['aux_relay']['sync']          = parser.getboolean("aux_relay","sync")
     options['serial']['aux_relay']['mode']          = parser.get("aux_relay","mode")
-    options['serial']['aux_relay']['script']        = parser.get("aux_relay","script")
-    options['serial']['aux_relay']['script_mode']   = parser.get("aux_relay","script_mode")
-
     options['serial']['roof_relay'] = {}
     options['serial']['roof_relay']['sync']          = parser.getboolean("roof_relay","sync")
-    options['serial']['roof_relay']['script']        = parser.get("roof_relay","script")
-    options['serial']['roof_relay']['script_mode']   = parser.get("roof_relay","script_mode")
-
-
-
-
+  
+    options['scripts'] = {}
+    options['scripts']['roof_relay']       = parser.get("scripts","roof_relay")
+    options['scripts']['roof_relay_mode']  = parser.get("scripts","roof_relay_mode")
+    options['scripts']['aux_relay']        = parser.get("scripts","aux_relay")
+    options['scripts']['aux_relay_mode']   = parser.get("scripts","aux_relay_mode")
+    options['scripts']['low_voltage']      = parser.get("scripts","low_voltage")
+    options['scripts']['low_voltage_mode'] = parser.get("scripts","low_voltage_mode")
+    options['scripts']['no_internet']      = parser.get("scripts","no_internet")
+    options['scripts']['no_internet_mode'] = parser.get("scripts","no_internet_mode")
+    options['scripts']['log_level']        = parser.get("scripts","log_level")
    
-   
-    
-   
+    options['internet'] = {}
+    options['internet']['site1']         = parser.get("internet","site1")
+    options['internet']['site2']         = parser.get("internet","site2")
+    options['internet']['site3']         = parser.get("internet","site3")
+    options['internet']['log_level']     = parser.get("internet","log_level")
    
 
     options['mqtt'] = {}

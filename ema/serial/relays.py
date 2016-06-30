@@ -79,9 +79,9 @@ class RoofRelay(Device):
             return
         diff = self.switchon[0] - self.switchon[1]
         if diff < 0:    # Transition Off -> On
-            self.parent.onEventExecute('RoofRelaySwitch', 'On' , code)
+            self.parent.onEventExecute('roof_relay', 'On' , code)
         elif diff > 0:  # Transition On -> Off
-            self.parent.onEventExecute('RoofRelaySwitch', 'Off' , code)
+            self.parent.onEventExecute('roof_relay', 'Off' , code)
         else:
             pass
 
@@ -119,9 +119,9 @@ class AuxiliarRelay(Device):
             return
         diff = self.switchon[0] - self.switchon[1]
         if diff < 0:    # Transition Off -> On
-            self.parent.onEventExecute('AuxRelaySwitch', 'On' , code)
+            self.parent.onEventExecute('aux_relay', 'On' , code)
         elif diff > 0:  # Transition On -> Off
-            self.parent.onEventExecute('AuxRelaySwitch', 'Off' , code)
+            self.parent.onEventExecute('aux_relay', 'Off' , code)
         else:
             pass
 
