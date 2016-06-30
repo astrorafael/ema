@@ -35,7 +35,7 @@ from .logger import setLogLevel
 
 from .serial.service import SerialService
 from .internet       import InternetService
-from .scripts        import ScriptsService
+from .scripts        import ScriptsService, AlreadyExecutedScript, AlreadyBeingExecutedScript, ScriptNotFound
 
 
 

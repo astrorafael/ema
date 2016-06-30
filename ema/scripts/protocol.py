@@ -11,28 +11,18 @@
 
 from __future__ import division
 
-import os
-import os.path
-import shlex
 
 # ---------------
 # Twisted imports
 # ---------------
 
-from twisted.logger               import Logger, LogLevel
-from twisted.internet             import reactor, task
+from twisted.logger               import Logger
 from twisted.internet.protocol    import ProcessProtocol
-from twisted.internet.defer       import inlineCallbacks
-from twisted.application.service  import Service
-
 
 #--------------
 # local imports
 # -------------
 
-from .logger   import setLogLevel
-from .utils    import chop
-from .error    import AlreadyExecutedScript, AlreadyBeingExecutedScript, ScriptNotFound
 
 # ----------------
 # Module constants
@@ -42,8 +32,6 @@ from .error    import AlreadyExecutedScript, AlreadyBeingExecutedScript, ScriptN
 # Global functions
 # -----------------
 
-def is_exe(path):
-    return os.path.isfile(path) and os.access(path, os.X_OK)
 
 # -----------------------
 # Module global variables
@@ -88,8 +76,7 @@ class ScriptProtocol(ProcessProtocol):
 
     def __init__(self, parent):
         #ProcessProtocol.__init__(self)
-        self.parent = parent
-
+        self.parent  = parent
 
     def connectionMade(self):
         '''
@@ -170,154 +157,4 @@ class ScriptProtocol(ProcessProtocol):
 
 
 
-class Script(object):
-    '''
-    Notifier creates Script wrapper objects, representing scripts to be launched.
-    Instances of these running scripts are controlled by the ScriptProtcol class
-    '''
-
-    # modes as constants
-    NEVER = 0
-    ONCE  = 1
-    MANY  = 2
-
-    # mappping from strings to numbers
-    MODES = { 'Never' : NEVER, 'Once' : ONCE, 'Many' : MANY }
-
-    def __init__(self,  path, mode, fmt):
-        self.mode        = self.MODES[mode]
-        self.path        = path
-        self.fmt         = fmt
-        self.name        = os.path.basename(self.path)
-        self.terminated  = True
-        self.protocol    = None
-
-    def runOnce(self, *args):
-        '''
-        Run only once in the whole server lifetime.
-        Raises AlreadyExecutedScript exception if already run
-        Otherwise, spawns the script
-        '''
-        args = shlex.split(self.path + ' ' + self.fmt % args)
-        if self.protocol is not None:
-            raise AlreadyExecutedScript(self.name, args)
-        # If not running, spawn it
-        self.protocol = ScriptProtocol(self)
-        reactor.spawnProcess(self.protocol, self.path, args, {})
-        self.terminated = False
-       
-
-
-    def runMany(self, *args):
-        '''
-        Run one more time, if previous run completed
-        If scrip is already running raise AlreadyBeingExecutedScript.
-        Otherwise, spawns the script
-        '''
-        args = shlex.split(self.path + ' ' + self.fmt % args)
-        if not self.terminated:
-            raise AlreadyBeingExecutedScript(self.name, *args)
-        self.protocol = ScriptProtocol(self)
-        reactor.spawnProcess(self.protocol, self.path, args, {})
-        self.terminated = False
-       
-
-   
-    def run(self, *args):
-        '''
-        Launch a script, depending on the launch mode.
-        Skip if no script is configured
-        '''
-        if not self.path:
-            return
-        if self.mode == Script.ONCE:
-            self.runOnce(*args)
-        elif self.mode == Script.MANY:
-            self.runMany(*args)
-
-      
-# ----------------------------------------------------------------------
-# ----------------------------------------------------------------------
-# ----------------------------------------------------------------------
-
-
-class ScriptsService(Service):
-
- 
-    def __init__(self, parent, options, **kargs):
-        self.parent     = parent
-        self.options    = options
-        setLogLevel(namespace='script', levelStr=options['log_level'])
-        self.scripts   = {}
-    
-    def startService(self):
-        log.info("starting Scripts Service")
-        self.addScript('low_voltage')
-        self.addScript('aux_relay')
-        self.addScript('roof_relay')
-        self.addScript('no_internet')
-        Service.startService(self)
-
-
-    @inlineCallbacks
-    def stopService(self):
-        try:
-            yield Service.stopService(self)
-        except Exception as e:
-            log.error("Exception {excp!s}", excp=e)
-
-    #---------------------
-    # Extended Service API
-    # --------------------
-
-    def reloadService(self, new_options):
-        setLogLevel(namespace='script', levelStr=new_options['log_level'])
-        log.info("new log level is {lvl}", lvl=new_options['log_level'])
-        self.options = new_options
-        
-
-    def pauseService(self):
-        pass
-
-    def resumeService(self):
-        pass
-
-    # -------------
-    # EMA API
-    # -------------
-
-    def onEventExecute(self, event, *args):
-        '''
-        Event Handlr coming from the Voltmeter
-        '''
-        log.info("ON EVENT EXECUTE {event} {rest!r}", event=event, rest=args)
-        for script in self.scripts[event]:
-            try:
-                script.run(*args)
-            except (AlreadyExecutedScript, AlreadyBeingExecutedScript) as e:
-                log.warn("On event {event} executed script => {excp} ", event=event, excp=e)
-                continue
-
-    
-    # --------------
-    # Helper methods
-    # ---------------
-
-    def addScript(self, event):
-        '''
-        *_script are tuples of (path, mode)
-        '''
-        mode    = self.options[event + '_mode']
-        fmt     = self.options[event + '_args']
-        scripts = chop(self.options[event], ',')
-        aList = self.scripts.get(event, [] )
-        for path in scripts:
-            if is_exe(path):
-                aList.append(Script(path, mode, fmt))
-            else:
-                raise ScriptNotFound(path)
-        self.scripts[event] = aList
-
-
-
-__all__ = [ScriptsService]
+__all__ = [ScriptProtocol]
