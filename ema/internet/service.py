@@ -60,17 +60,13 @@ class InternetService(Service):
 
     
     def startService(self):
-        log.info("starting Internet Service")
         Service.startService(self)
+        log.info("starting Internet Service")
         self._asyncHasConnectivity()
        
-
-    @inlineCallbacks
+    
     def stopService(self):
-        try:
-            yield Service.stopService(self)
-        except Exception as e:
-            log.error("Exception {excp!s}", excp=e)
+        Service.stopService(self)
 
 
     def hasConnectivity(self):

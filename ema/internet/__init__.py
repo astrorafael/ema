@@ -18,7 +18,7 @@ from __future__ import division
 # local imports
 # -------------
 
-from .internet import InternetService
+from .service import InternetService
 
 # ----------------
 # Module constants

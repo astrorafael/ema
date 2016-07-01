@@ -72,12 +72,9 @@ class ScriptsService(Service):
         Service.startService(self)
 
 
-    @inlineCallbacks
     def stopService(self):
-        try:
-            yield Service.stopService(self)
-        except Exception as e:
-            log.error("Exception {excp!s}", excp=e)
+        Service.stopService(self)
+      
 
     #---------------------
     # Extended Service API

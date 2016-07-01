@@ -185,11 +185,14 @@ class SerialService(ClientService):
 
     @inlineCallbacks
     def stopService(self):
-        try:
-            yield ClientService.stopService(self)
-        except Exception as e:
-            log.error("Exception {excp!s}", excp=e)
-            reactor.stop()
+        if not self.goSerial:
+            try:
+                yield ClientService.stopService(self)
+            except Exception as e:
+                log.error("Exception {excp!s}", excp=e)
+                raise 
+        else:
+            Service.stopService(self)
 
     #---------------------
     # Extended Service API
