@@ -214,4 +214,4 @@ def decode(line):
   page = int(line[SMFB:SMFE])                            # Flash page number
   return status, page
 
-__all__ = [PERIOD, VERSION, decode]
+__all__ = ["PERIOD", "VERSION", "decode"]

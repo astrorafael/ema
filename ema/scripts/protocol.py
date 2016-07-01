@@ -157,4 +157,4 @@ class ScriptProtocol(ProcessProtocol):
 
 
 
-__all__ = [ScriptProtocol]
+__all__ = ["ScriptProtocol"]

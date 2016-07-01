@@ -39,4 +39,4 @@ def chop(string, sep=None):
     return chopped
 
 
-__all__ = [chop]
+__all__ = ["chop"]

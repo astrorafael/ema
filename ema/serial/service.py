@@ -255,4 +255,4 @@ class SerialService(ClientService):
         pass
 
 
-__all__ = [SerialService]
+__all__ = ["SerialService"]

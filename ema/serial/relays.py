@@ -132,6 +132,6 @@ class AuxiliarRelay(Device):
 
 __all__ = [
 
-    RoofRelay,
-    AuxiliarRelay,
+    "RoofRelay",
+    "AuxiliarRelay",
 ]

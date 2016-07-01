@@ -34,6 +34,15 @@ from __future__ import division
 
 from __future__ import division
 
+class BadScriptMode(ValueError):
+    '''Script mode is not 'Once', 'Many' or 'None'''
+    def __str__(self):
+        s = self.__doc__
+        if self.args:
+            s = "{0}: '{1}'".format(s, self.args[0])
+        s = '{0}.'.format(s)
+        return s
+
 class AlreadyExecutedScript(Exception):
     '''Script has already been executed'''
     def __str__(self):
@@ -63,7 +72,7 @@ class ScriptNotFound(IOError):
 
 
 __all__ = [
-    AlreadyExecutedScript,
-    AlreadyBeingExecutedScript,
-    ScriptNotFound,
+    "AlreadyExecutedScript",
+    "AlreadyBeingExecutedScript",
+    "ScriptNotFound",
 ]

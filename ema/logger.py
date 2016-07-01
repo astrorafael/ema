@@ -93,4 +93,4 @@ else:
     sysLogError = syslog.syslog
 
 
-__all__ = [startLogging, setLogLevel, sysLogError, sysLogInfo]
+__all__ = ["startLogging", "setLogLevel", "sysLogError", "sysLogInfo"]

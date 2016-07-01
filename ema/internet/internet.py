@@ -21,13 +21,13 @@ from twisted.internet.defer       import inlineCallbacks
 from twisted.web.client           import Agent
 from twisted.web.http_headers     import Headers
 from twisted.internet.defer       import DeferredList
-
+from twisted.application.service  import Service
 #--------------
 # local imports
 # -------------
 
 from ..logger import setLogLevel
-from ..service import ReloadableService
+#from ..service import ReloadableService
 
 # ----------------
 # Module constants
@@ -46,7 +46,7 @@ log = Logger(namespace='inet')
 
 
 
-class InternetService(ReloadableService):
+class InternetService(Service):
 
 
     def __init__(self, parent, options, **kargs):
@@ -61,14 +61,14 @@ class InternetService(ReloadableService):
     
     def startService(self):
         log.info("starting Internet Service")
-        ReloadableService.startService(self)
+        Service.startService(self)
         self._asyncHasConnectivity()
        
 
     @inlineCallbacks
     def stopService(self):
         try:
-            yield ReloadableService.stopService(self)
+            yield Service.stopService(self)
         except Exception as e:
             log.error("Exception {excp!s}", excp=e)
 
@@ -151,5 +151,5 @@ class InternetService(ReloadableService):
 
 
 __all__ = [
-    InternetService
+    "InternetService"
 ]

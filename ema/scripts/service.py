@@ -22,6 +22,7 @@ import shlex
 from twisted.logger               import Logger, LogLevel
 from twisted.internet             import reactor, task
 from twisted.internet.defer       import inlineCallbacks
+from twisted.application.service  import Service
 
 #--------------
 # local imports
@@ -29,9 +30,9 @@ from twisted.internet.defer       import inlineCallbacks
 
 from ..utils   import chop
 from ..logger  import setLogLevel
-from .error    import AlreadyExecutedScript, AlreadyBeingExecutedScript, ScriptNotFound
+from .error    import AlreadyExecutedScript, AlreadyBeingExecutedScript, ScriptNotFound, BadScriptMode
 from .script   import Script
-from ..service import ReloadableService
+#from ..service import ReloadableService
 
 # ----------------
 # Module constants
@@ -53,7 +54,7 @@ log = Logger(namespace='script')
 
 
 
-class ScriptsService(ReloadableService):
+class ScriptsService(Service):
 
  
     def __init__(self, parent, options, **kargs):
@@ -68,13 +69,13 @@ class ScriptsService(ReloadableService):
         self.addScript('aux_relay')
         self.addScript('roof_relay')
         self.addScript('no_internet')
-        ReloadableService.startService(self)
+        Service.startService(self)
 
 
     @inlineCallbacks
     def stopService(self):
         try:
-            yield ReloadableService.stopService(self)
+            yield Service.stopService(self)
         except Exception as e:
             log.error("Exception {excp!s}", excp=e)
 
@@ -114,6 +115,8 @@ class ScriptsService(ReloadableService):
         *_script are tuples of (path, mode)
         '''
         mode    = self.options[event + '_mode']
+        if not mode in ['Once', 'Many', 'Never']:
+            raise BadScriptMode(mode)
         fmt     = self.options[event + '_args']
         scripts = chop(self.options[event], ',')
         aList = self.scripts.get(event, [] )
@@ -126,4 +129,4 @@ class ScriptsService(ReloadableService):
 
 
 
-__all__ = [ScriptsService]
+__all__ = ["ScriptsService"]

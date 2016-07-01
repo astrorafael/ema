@@ -293,13 +293,13 @@ class Thermometer(Device):
 # --------------------------------------------------------------------
 
 __all__ = [
-    Anemometer,
-    Barometer,
-    CloudSensor,
-    Photometer,
-    Pluviometer,
-    Pyranometer,
-    RainSensor,
-    Thermometer,
-    Thermopile,
+    "Anemometer",
+    "Barometer",
+    "CloudSensor",
+    "Photometer",
+    "Pluviometer",
+    "Pyranometer",
+    "RainSensor",
+    "Thermometer",
+    "Thermopile",
 ]

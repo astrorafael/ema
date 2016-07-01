@@ -184,4 +184,4 @@ def loadCfgFile(path):
     return options
 
 
-__all__ = [VERSION_STRING, loadCfgFile, cmdline]
+__all__ = ["VERSION_STRING", "loadCfgFile", "cmdline"]
