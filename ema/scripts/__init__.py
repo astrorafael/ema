@@ -30,8 +30,9 @@ from .service import ScriptsService
 # -----------------------
 
 _all__ = [
-	AlreadyExecutedScript,
-	AlreadyBeingExecutedScript,
-	ScriptNotFound,
-	ScriptsService
+	"AlreadyExecutedScript",
+	"AlreadyBeingExecutedScript",
+	"ScriptNotFound",
+	"BadScriptMode",
+	"ScriptsService"
 ]

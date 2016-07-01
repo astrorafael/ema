@@ -29,5 +29,5 @@ from .internet import InternetService
 # -----------------------
 
 _all__ = [
-	InternetService
+	"InternetService"
 ]
