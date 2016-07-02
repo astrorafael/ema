@@ -24,7 +24,7 @@ from .config import VERSION_STRING, cmdline, loadCfgFile
 
 #from .mqttservice import MQTTService
 
-from .ema            import EMAService
+from .emaservice     import EMAService
 
 from .serial.service import SerialService
 from .internet       import InternetService
