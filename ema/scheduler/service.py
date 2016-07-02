@@ -83,13 +83,13 @@ class SchedulerService(Service):
     # --------------------
 
     def reloadService(self):
-        Service.__init__(self)
-        setLogLevel(namespace='inet', levelStr=new_options['log_level'])
-        log.info("new log level is {lvl}", lvl=new_options['log_level'])
-        if self.deferred:
+        log.info("new log level is {lvl}", lvl=self.new_options['log_level'])
+        setLogLevel(namespace='inet', levelStr=self.new_options['log_level'])
+        if self.periodicTask:
             log.debug("cancelling previous poll")
-            self.deferred.cancel()
-        self.options = new_options
+            self.periodicTask.cancel()
+            self.periodicTask = None    # ESTO HAY QUE REVISARLO QUE NOS QUDAMOS SIN TAREA !!!!
+        self.options = self.new_options
 
     # --------------
     # Helper methods

@@ -84,9 +84,9 @@ class ScriptsService(Service):
     # --------------------
 
     def reloadService(self):
-        setLogLevel(namespace='script', levelStr=new_options['log_level'])
-        log.info("new log level is {lvl}", lvl=new_options['log_level'])
-        self.options = new_options
+        setLogLevel(namespace='script', levelStr=self.new_options['log_level'])
+        log.info("new log level is {lvl}", lvl=self.new_options['log_level'])
+        self.options = self.new_options
         
 
     # -------------

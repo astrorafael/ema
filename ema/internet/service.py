@@ -79,8 +79,8 @@ class InternetService(Service):
     # --------------------
 
     def reloadService(self):
-        setLogLevel(namespace='inet', levelStr=new_options['log_level'])
-        log.info("new log level is {lvl}", lvl=new_options['log_level'])
+        setLogLevel(namespace='inet', levelStr=self.new_options['log_level'])
+        log.info("new log level is {lvl}", lvl=self.new_options['log_level'])
         if self.deferred:
             log.debug("cancelling previous poll")
             self.deferred.cancel()

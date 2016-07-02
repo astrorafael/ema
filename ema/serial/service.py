@@ -201,11 +201,11 @@ class SerialService(ClientService):
     # --------------------
 
     def reloadService(self):
-        protocol_level  = 'debug' if new_options['log_messages'] else 'info'
-        setLogLevel(namespace='serial', levelStr=new_options['log_level'])
+        protocol_level  = 'debug' if self.new_options['log_messages'] else 'info'
+        setLogLevel(namespace='serial', levelStr=self.new_options['log_level'])
         setLogLevel(namespace='protoc', levelStr=protocol_level)
-        log.info("new log level is {lvl}", lvl=new_options['log_level'])
-        self.options = new_options
+        log.info("new log level is {lvl}", lvl=self.new_options['log_level'])
+        self.options = self.new_options
         
 
     def pauseService(self):

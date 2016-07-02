@@ -109,33 +109,33 @@ class MultiService(BaseMultiService):
     # ----------------------------------------
 
     def reloadService(self):
-        Service.reloadService(self)
         dl = []
         services = list(self)
         services.reverse()
+        print("EJECUTANDO RELOAD PARA %s" % ([ s.name for s in services ]) )
         for service in services:
             dl.append(defer.maybeDeferred(service.reloadService))
-        return defer.DeferredList(l)
+        return defer.DeferredList(dl)
 
 
     def pauseService(self):
-        Service.pauseService(self)
+        paused = 1
         dl = []
         services = list(self)
         services.reverse()
         for service in services:
             dl.append(defer.maybeDeferred(service.pauseService))
-        return defer.DeferredList(l)
+        return defer.DeferredList(dl)
 
 
     def resumeService(self):
-        Service.resumeService(self)
+        paused = 0
         dl = []
         services = list(self)
         services.reverse()
         for service in services:
             dl.append(defer.maybeDeferred(service.resumeService))
-        return defer.DeferredList(l)
+        return defer.DeferredList(dl)
         
 # --------------------------------------------------------------
 # --------------------------------------------------------------
@@ -183,13 +183,13 @@ class TopLevelService(MultiService):
         '''
         if self.sigpause:
             self.sigpause = False
-            self.pause()
+            self.pauseService()
         if self.sigresume:
             self.sigresume = False
-            self.resume()
+            self.resumeService()
         if self.sigreload:
             self.sigreload = False
-            self.reload()
+            self.reloadService()
         
         
 # --------------------------------------------------------------

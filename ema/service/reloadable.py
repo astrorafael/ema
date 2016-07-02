@@ -94,7 +94,7 @@ class MultiService(BaseMultiService):
         services.reverse()
         for service in services:
             dl.append(defer.maybeDeferred(service.reloadService))
-        return defer.DeferredList(l)
+        return defer.DeferredList(dl)
 
 # --------------------------------------------------------------
 # --------------------------------------------------------------
@@ -138,7 +138,7 @@ class TopLevelService(MultiService):
         '''
         if self.sigreload:
             self.sigreload = False
-            self.reload()
+            self.reloadService()
         
 
 # --------------------------------------------------------------

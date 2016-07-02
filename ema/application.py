@@ -24,7 +24,7 @@ from .config import VERSION_STRING, cmdline, loadCfgFile
 
 #from .mqttservice import MQTTService
 
-from .emaservice     import EMAService
+from .ema.service    import EMAService
 
 from .serial.service import SerialService
 from .internet       import InternetService
@@ -37,35 +37,43 @@ from .scheduler      import SchedulerService
 cmdline_opts = cmdline()
 config_file = cmdline_opts.config
 if config_file:
-   config_opts  = loadCfgFile(config_file)
+   options  = loadCfgFile(config_file)
 else:
-   config_opts = None
+   options = None
 
 # Start the logging subsystem
-log_file = config_opts['ema']['log_file']
+log_file = options['ema']['log_file']
 startLogging(console=cmdline_opts.console, filepath=log_file)
 
-
+# ------------------------------------------------
 # Assemble application from its service components
+# ------------------------------------------------
+
 application = Application("ema")
-emaService  = EMAService(config_opts['ema'])
+
+emaService  = EMAService(options['ema'],config_file)
+emaService.setName('emaService')
 emaService.setServiceParent(application)
-schedulerService = SchedulerService(config_opts['scheduler'])
+
+schedulerService = SchedulerService(options['scheduler'])
+schedulerService.setName('schedulerService')
 schedulerService.setServiceParent(emaService)
-internetService = InternetService(config_opts['internet'])
+
+internetService = InternetService(options['internet'])
+internetService.setName('internetService')
 internetService.setServiceParent(emaService)
-scriptsService = ScriptsService(config_opts['scripts'])
+
+scriptsService = ScriptsService(options['scripts'])
+scriptsService.setName('scriptsService')
 scriptsService.setServiceParent(emaService)
-serialService = SerialService(config_opts['serial'])
+
+serialService = SerialService(options['serial'])
+serialService.setName('serialService')
 serialService.setServiceParent(emaService)
 
-
-
+# --------------------------------------------------------
 # Store direct links to subservices in our manager service
-emaService.schedulerService = schedulerService
-emaService.internetService  = internetService
-emaService.scriptsService   = scriptsService
-emaService.serialService    = serialService
+# --------------------------------------------------------
 
 
 __all__ = [ "application" ]

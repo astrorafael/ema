@@ -40,10 +40,11 @@ from twisted.logger import Logger, LogLevel
 
 from .  import __version__
 
-from .logger import sysLogInfo
-from .config import VERSION_STRING
-from .service.relopausable import sigreload, sigpause, sigresume
+from .logger               import sysLogInfo
+from .config               import VERSION_STRING
 from .application          import application
+from .service.relopausable import sigreload, sigpause, sigresume
+
 # ----------------
 # Module constants
 # ----------------
