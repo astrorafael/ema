@@ -3,6 +3,9 @@ Prioridad alta
 
 - auxrelay co,andos especiales para programar el tON y tOFF
 
+- EL README esta hecho unos zorros
+
+
  - Comunicación al modulo MQTT con Colas deque() para desacoplar el servicio
   MQTT del servicio de lectura.
 *)  revisar los intervalos window deben ser [0,24)
@@ -23,7 +26,7 @@ Prioridad alta
 *) Servicio MQTTClient para stars4all
 
 
-mport json
+import json
 import datetime
 import re
 
