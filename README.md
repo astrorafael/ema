@@ -7,19 +7,17 @@ This is a new version using [Python Twisted Asynchronous I/O framweork](https://
 
 | Table of Contents                                                          |
 |:---------------------------------------------------------------------------|
-| * [Description](README.md#Description) |
-| * [Installation](README.md#Installation) |
-|   1. [Linux](README.md#Linux) |
-|   1. [Windows](README.md#Windows) |
-|   1. [Startup and verification](README.md#Startup and verification) |
-| * [Configuration](README.md#Configuration) |
-| * [Publishing Data](README.md#Publishing Data) |
-|   1. [MQTT](README.md#MQTT) |
-| * [Scheduler](README.md#Scheduler) |
-| * [Scripts](README.md#Scripts) |
+| [Description](README.md#Description) |
+| [Installation](README.md#Installation) |
+| [Start/Stop/Reload/Pause]((README.md#StartStopReloadPause)
+| [Configuration](README.md#Configuration) |
+| [Parameter Synchronization] 
+| [Publishing MQTT Data](README.md#Publishing Data) |
+| [MQTT](README.md#MQTT) |
+| [Scheduler](README.md#Scheduler) |
+| [Events and Scripts](README.md#Scripts) |
 
 ## <a name="Description"> Description
-
 
 **ema** is a software package that talks to the EMA Weather Station through a serial port or TCP port. Since EMA hardware is rather smart, the server has really very little processing to do, so it can run happily on a Raspberry Pi. 
 
@@ -62,6 +60,16 @@ Type `sudo update-rc.d emad defaults` to install it at boot time
 
 ### <a name="Windows"> Windows
 
+#### Requirements
+
+(Tested on Windows XP SP1 & python 2.7.10)
+* Have [Python 2.7 for Windows](https://www.python.org/downloads/windows/) installed.
+* Have [PythonWin extensions](http://sourceforge.net/projects/pywin32/files/pywin32/) installed. select the latest build
+fpr the **Pyhton2.7 version**
+* Have the [Microsoft Visual C++ Compiler for Python 2.7](https://www.microsoft.com/en-us/download/details.aspx?id=44266) installed. Thos is necessary to install `twisted` later on. Systems requirements state for Windows 7+, but it works fine for Windows XP, 32bits. 
+
+#### Steps
+
 The Windows python 2.7 distro comes with the pip utility included. 
 
 1. Open a `CMD.exe` console, **with Administrator privileges for Windows 7 and higher**
@@ -90,9 +98,6 @@ and type:
 * The following required PIP packages will be automatically installed:
     - twisted,
     - twisted-mqtt
-
-    
-### <a name="Start up and Verification"> Start up and Verification
 
 In the same CMD console, type`.\ema.bat`to start it in forground and verify that it starts without errors or exceptions.
 
