@@ -108,12 +108,12 @@ class IntervalList(object):
             raise OverlappedIntervalList(w1, w2)
    
    def find(self, tNow):
-      '''Find out whether time tNow is in any of the intervals.
+      '''Find out which interval contains tNow.
       Return True, index if found or False, None if not found'''
       if not self.windows[-1].isReversed():
          log.debug("last interval is not reversed")
          for i in range(0,len(self.windows)):
-            if self.windows[i].isInside(tNow):
+            if self.windows[i].contains(tNow):
                log.debug("found interval %d = %s", i, self.windows[i])
                return True, i
          log.debug("No interval found")
@@ -121,13 +121,13 @@ class IntervalList(object):
       else:
          log.debug("last interval is reversed")
          for i in range(0, len(self.windows)-1):
-            if self.windows[i].isInside(tNow):
+            if self.windows[i].contains(tNow):
                log.debug("found interval %d = %s", i, self.windows[i])
                return True, i
          log.debug("Checking border intervals")
          i1 = Interval([self.windows[-1].t0, datetime.time.max])
          i2 = Interval([datetime.time.min, self.windows[0].t0])
-         if i1.isInside(tNow) or i2.isInside(tNow):
+         if i1.contains(tNow) or i2.contains(tNow):
             log.debug("found interval in borders i1=%s, i2=%s", i1, i2)
             return True, len(self.windows)-1
          log.debug("No interval found")

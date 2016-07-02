@@ -162,14 +162,16 @@ class Interval(object):
         '''detect interval inverted'''
         return self.T[0] > self.T[1]
 
-    def isInside(self, dt):
-        '''Returns a Boolean a given datetime.datetime 
-        is in a given interval'''
+    def contains(self, dt):
+        '''
+        Find if interval contains timestamp.
+        Returns True if so'
+        '''
         dt = dt.replace(year=2001,month=1, day=1)
         return dt >= self.T[0] and dt < self.T[1]
 
     def duration(self):
-        '''Returns time interval in seconds'''
+        '''Returns interval duration in seconds'''
         if self.T[1] < self.T[0]:
             delta = datetime.timedelta(hours=24)
         else:
@@ -179,17 +181,18 @@ class Interval(object):
     def slice(self, percent=0.5):
         '''
         Slices an interval into two new intervals
-        Returns two intervals
+        Returns two Intervals, left and right
         '''
-        totalLen = self.duration()
-        l1 = int(round(totalLen * percent, 0))
-        tinter = self.T[0] + datetime.timedelta(seconds=l1)
-        return Interval(self.T[0], tinter),  Interval(tinter, self.T[1]),
+        total = self.duration()
+        l1 = int(round(total * percent, 0))
+        tslice = self.T[0] + datetime.timedelta(seconds=l1)
+        return Interval(self.T[0], tslice),  Interval(tslice, self.T[1]),
 
 
     def midpoint(self):
         '''Find the interval midpoint. 
-        Returns a datetime.time object'''
+        Returns a datetime.time object ready to be combined
+        with the current datetime.date'''
         left, right = self.slice(0.5)
         return left.T[1].time()
 
