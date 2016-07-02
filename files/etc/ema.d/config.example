@@ -167,19 +167,13 @@ log_level = debug
 
 #------------------------------------------------------------------------#
 
-[TOD_TIMER]
-# Time of day timer keeps a list of active window to do things like
+[scheduler]
+# The scheduler keeps a list of active window to do things like
 # sending historic 24 data and programming the aux relay for
 # powering on/off
 # At minimun, one active interval should be defined and should be at least 
 # 15 minutes long
 
-# Publish current active or inactive interval
-tod_publish_what = current
-
-# Where to publish intervals
-# Comma list separated values with no single or double quotes
-tod_publish_where = mqtt
 
 # List of comma-separated intervals hh1:mm1-hh2:mm2
 # Historic data is dumped at the interval midpoint
@@ -189,10 +183,10 @@ tod_publish_where = mqtt
 #    sudo service ema restart poweroff
 #
 # Time given in UTC Time.
-tod_intervals = 12:00-12:15,20:00-20:15
+intervals = 12:00-12:15,20:00-20:15
 
 # component log level (debug, info, warn, error, critical)
-tod_log = INFO
+log_level = INFO
 
 
 #========================================================================#

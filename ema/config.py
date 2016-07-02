@@ -168,6 +168,10 @@ def loadCfgFile(path):
     options['internet']['site2']         = parser.get("internet","site2")
     options['internet']['site3']         = parser.get("internet","site3")
     options['internet']['log_level']     = parser.get("internet","log_level")
+
+    options['scheduler'] = {}
+    options['scheduler']['intervals']     = parser.get("scheduler","intervals")
+    options['scheduler']['log_level']     = parser.get("scheduler","log_level")
    
 
     options['mqtt'] = {}

@@ -85,6 +85,6 @@ startLogging(console=cmdline_opts.console, filepath=log_file)
 
 sysLogInfo("Starting {0}".format(VERSION_STRING))
 application = EMAApplication(config_file, config_opts)
-application.start()
+application.startService()
 reactor.run()
 sysLogInfo("Stopped {0}".format(VERSION_STRING))

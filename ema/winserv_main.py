@@ -140,7 +140,7 @@ class TESSWindowsService(win32serviceutil.ServiceFramework):
 		log_file=self.config_opts['log']['path']
 		startLogging(console=False, filepath=log_file)
 		application = EMAApplication(CONFIG_FILE, self.config_opts)
-		application.start()
+		application.startService()
 		reactor.run(installSignalHandlers=0)
 		sysLogInfo("ema Windows service stopped {0}".format( __version__ ))
 

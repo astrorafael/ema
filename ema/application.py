@@ -36,7 +36,7 @@ from .logger import setLogLevel
 from .serial.service import SerialService
 from .internet       import InternetService
 from .scripts        import ScriptsService, AlreadyExecutedScript, AlreadyBeingExecutedScript, ScriptNotFound
-
+from .scheduler      import SchedulerService
 
 
 # ----------------
@@ -78,6 +78,7 @@ class EMAApplication(object):
         self.serialService   = SerialService(self, config_opts['serial'])
         self.internetService = InternetService(self, config_opts['internet'])
         self.scriptsService  = ScriptsService(self, config_opts['scripts'])
+        self.schedulerService = SchedulerService(self, config_opts['scheduler'])
         setLogLevel(namespace='ema', levelStr=config_opts['ema']['log_level'])
         self.reloadTask.start(self.T, now=False) # call every T seconds
 
@@ -142,8 +143,9 @@ class EMAApplication(object):
            
     
  
-    def start(self):
+    def startService(self):
         log.info('starting {ema}', ema=VERSION_STRING)
+        self.schedulerService.startService()
         try:
             self.scriptsService.startService()
         except Exception as e:
