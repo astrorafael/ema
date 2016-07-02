@@ -18,7 +18,7 @@ This is a new version using [Python Twisted Asynchronous I/O framweork](https://
 | 1. [Scheduler](README.md#Scheduler) |
 | 1. [Scripts](README.md#Scripts) |
 
-## Description
+## <a name="Description"> Description
 
 
 **ema** is a software package that talks to the EMA Weather Station through a serial port or TCP port. Since EMA hardware is rather smart, the server has really very little processing to do, so it can run happily on a Raspberry Pi. 
@@ -37,9 +37,9 @@ Main features:
 host computer if needed. A Respberry Pi with **internal RTC is strongly recommended**.
 
 
-## Instalation
+## <a name="Instalation"> Instalation
 
-### Linux
+### <a name="Linux"> Linux
 
 **Warning** You need Debian package libffi-dev to install Pip 'service-identity' requirement
 
@@ -60,7 +60,7 @@ An available startup service script for debian-based systems is provided.
 Type `sudo service ema start` to start it
 Type `sudo update-rc.d emad defaults` to install it at boot time
 
-### Windows
+### <a name="Windows"> Windows
 
 The Windows python 2.7 distro comes with the pip utility included. 
 
@@ -92,13 +92,13 @@ and type:
     - twisted-mqtt
 
     
-### Start up and Verification
+### <a name="Start up and Verification"> Start up and Verification
 
 In the same CMD console, type`.\ema.bat`to start it in forground and verify that it starts without errors or exceptions.
 
 Go to the Services Utility and start the TESSDB database service.
 
-### EMA Server Configuation ###
+### <a name="EMA Server Configuation"> EMA Server Configuation ###
 
 By default, file `/etc/ema.d/config` provides the configuration options needed.
 This file is self explanatory. 
@@ -109,7 +109,7 @@ In both cases, you need to create a new `config` or `config.ini` file from the e
 
 Some parameters are defined as *reloadable*. Type `sudo service ema reload` for the new configuration to apply without stopping the service.
 
-### Logging ###
+### <a name="Logging"> Logging ###
 
 Log file is placed under `/var/log/ema.log` (Linux) or `C:\ema\log\ema.log` (Windows). 
 Default log level is `info`. It generates very litte logging at this level.
