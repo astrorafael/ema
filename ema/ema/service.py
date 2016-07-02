@@ -87,10 +87,10 @@ class EMAService(MultiService):
             log.error("Error trying to reload: {excp!s}", excp=e)
         else:
             self.new_options                  = new_options['ema']
-            self.schedulerService.new_options = new_options['scheduler']
-            self.internetService.new_options  = new_options['internet']
-            self.scriptsService.new_options   = new_options['scripts']
-            self.serialService.new_options    = new_options['serial']
+            self.getServiceNamed('schedulerService').new_options = new_options['scheduler']
+            self.getServiceNamed('internetService').new_options  = new_options['internet']
+            self.getServiceNamed('scriptsService').new_options   = new_options['scripts']
+            self.getServiceNamed('serialService').new_options    = new_options['serial']
             MultiService.reloadService(self)
            
     

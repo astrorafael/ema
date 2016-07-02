@@ -112,7 +112,6 @@ class MultiService(BaseMultiService):
         dl = []
         services = list(self)
         services.reverse()
-        print("EJECUTANDO RELOAD PARA %s" % ([ s.name for s in services ]) )
         for service in services:
             dl.append(defer.maybeDeferred(service.reloadService))
         return defer.DeferredList(dl)

@@ -72,7 +72,8 @@ class InternetService(Service):
         '''
         Returns a deferred that when triggered returns True or False
         '''
-        return self.__asyncHasConnectivity()
+        self.deferred = self.__asyncHasConnectivity()
+        return self.deferred
 
     #---------------------
     # Extended Service API
@@ -84,7 +85,8 @@ class InternetService(Service):
         if self.deferred:
             log.debug("cancelling previous poll")
             self.deferred.cancel()
-        self.options = new_options
+            self.deferred = None
+        self.options = self.new_options
     
     # --------------
     # Helper methods

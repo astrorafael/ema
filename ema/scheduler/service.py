@@ -67,7 +67,7 @@ class SchedulerService(Service):
         
 
     def stopService(self):
-        self.periodicTask.cancel()
+        self.periodicTask.stop()
         Service.stopService(self)
 
     def addActivity( func, tstamp ):
@@ -86,9 +86,7 @@ class SchedulerService(Service):
         log.info("new log level is {lvl}", lvl=self.new_options['log_level'])
         setLogLevel(namespace='inet', levelStr=self.new_options['log_level'])
         if self.periodicTask:
-            log.debug("cancelling previous poll")
-            self.periodicTask.cancel()
-            self.periodicTask = None    # ESTO HAY QUE REVISARLO QUE NOS QUDAMOS SIN TAREA !!!!
+            self.periodicTask.reset()   # ESTO HAY QUE VERLO, A LO MEJOR HAY QUE CREAR OTRA TAREA
         self.options = self.new_options
 
     # --------------
@@ -100,7 +98,6 @@ class SchedulerService(Service):
         Runs a schedule cycle.
         '''
         ts = datetime.datetime.utcnow().replace(microsecond=0)
-        log.debug("CUCU")
 
     
 
