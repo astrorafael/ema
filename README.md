@@ -5,6 +5,19 @@ Windows/Linux service and command line tool for [Cristobal Garcia's EMA Weather 
 
 This is a new version using [Python Twisted Asynchronous I/O framweork](https://twistedmatrix.com/)
 
+| Table of Contents                                                          |
+|:---------------------------------------------------------------------------|
+| 1. [Description](README.md#Description)
+| 1. [Installation](README.md#Installation)
+|   1. [Linux](README.md#Linux)
+|   1. [Windows](README.md#Windows)
+|   1. [Startup and verification](README.md#Startup and verification)
+| 1. [Configuration](README.md#Configuration)
+| 1. [Publishing Data](README.md#Publishing Data)
+|   1. [MQTT](README.md#MQTT)
+| 1. [Scheduler](README.md#Scheduler)
+| 1. [Scripts](README.md#Scripts)
+
 ## Description
 
 
