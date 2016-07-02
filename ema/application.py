@@ -4,193 +4,68 @@
 # See the LICENSE file for details
 # ----------------------------------------------------------------------
 
-
 #--------------------
 # System wide imports
 # -------------------
-
-from __future__ import division
-
-import sys
-import datetime
-from collections import deque
 
 # ---------------
 # Twisted imports
 # ---------------
 
-from twisted.logger   import Logger, LogLevel
 from twisted.internet import task, reactor
-from twisted.internet.defer  import inlineCallbacks, returnValue
-from twisted.internet.threads import deferToThread
 
 #--------------
 # local imports
 # -------------
 
-from .config import VERSION_STRING, loadCfgFile
-from .logger import setLogLevel
+from .service.relopausable import Service, MultiService, Application
+from .logger import sysLogInfo,  startLogging
+from .config import VERSION_STRING, cmdline, loadCfgFile
 
 #from .mqttservice import MQTTService
 
+from .ema            import EMAService
+
 from .serial.service import SerialService
 from .internet       import InternetService
-from .scripts        import ScriptsService, AlreadyExecutedScript, AlreadyBeingExecutedScript, ScriptNotFound
+from .scripts        import ScriptsService 
 from .scheduler      import SchedulerService
 
 
-# ----------------
-# Module constants
-# ----------------
 
-# -----------------------
-# Module global variables
-# -----------------------
+# Read the command line arguments and config file options
+cmdline_opts = cmdline()
+config_file = cmdline_opts.config
+if config_file:
+   config_opts  = loadCfgFile(config_file)
+else:
+   config_opts = None
 
-log = Logger(namespace='ema')
-
-
-
-class EMAApplication(object):
-
-    # Pointer to self
-    instance = None
-
-    # Signal handler polling period
-    T = 1
-
-    # Periodic task in seconds
-    TLOG = 60
+# Start the logging subsystem
+log_file = config_opts['ema']['log_file']
+startLogging(console=cmdline_opts.console, filepath=log_file)
 
 
-    def __init__(self, cfgFilePath, config_opts):
-        
-        EMAApplication.instance = self
-        self.cfgFilePath = cfgFilePath
-        self.queue  = { 'status':  deque() , 'ave5min':   deque(), 'ave1h': deque() }
-        self.sigreload  = False
-        self.sigpause   = False
-        self.sigresume  = False
-        self.reloadTask   = task.LoopingCall(self.sighandler)
-        #self.reportTask   = task.LoopingCall(self.reporter)
-        #self.statsTask    = task.LoopingCall(self.logCounters)
-        #self.mqttService  = MQTTService(self, config_opts['mqtt'])
-        self.serialService   = SerialService(self, config_opts['serial'])
-        self.internetService = InternetService(self, config_opts['internet'])
-        self.scriptsService  = ScriptsService(self, config_opts['scripts'])
-        self.schedulerService = SchedulerService(self, config_opts['scheduler'])
-        setLogLevel(namespace='ema', levelStr=config_opts['ema']['log_level'])
-        self.reloadTask.start(self.T, now=False) # call every T seconds
-
-    def reporter(self):
-        '''
-        Periodic task to log queue size
-        '''
-        log.info("Readings queue size is {size}", size=len(self.queue['tess_readings']))
+# Assemble application from its service components
+application = Application("ema")
+emaService  = EMAService(config_opts['ema'])
+emaService.setServiceParent(application)
+schedulerService = SchedulerService(config_opts['scheduler'])
+schedulerService.setServiceParent(emaService)
+internetService = InternetService(config_opts['internet'])
+internetService.setServiceParent(emaService)
+scriptsService = ScriptsService(config_opts['scripts'])
+scriptsService.setServiceParent(emaService)
+serialService = SerialService(config_opts['serial'])
+serialService.setServiceParent(emaService)
 
 
-    def sighandler(self):
-        '''
-        Periodic task to check for signal events
-        '''
-        if self.sigreload:
-            self.sigreload = False
-            self.reload()
-        if self.sigpause:
-            self.sigpause = False
-            self.pause()
-        if self.sigresume:
-            self.sigresume = False
-            self.resume()
+
+# Store direct links to subservices in our manager service
+emaService.schedulerService = schedulerService
+emaService.internetService  = internetService
+emaService.scriptsService   = scriptsService
+emaService.serialService    = serialService
 
 
-    def pause(self):
-        '''
-        Pause application
-        '''
-        pass
-        #self.dbaseService.pauseService()
-        #if not self.reportTask.running:
-        #    self.reportTask.start(self.TLOG, now=True) # call every T seconds
-
-
-    def resume(self):
-        '''
-        Resume application
-        '''
-        pass
-        #self.dbaseService.resumeService()
-        #if self.reportTask.running:
-        #    self.reportTask.stop()
-
-
-    def reload(self):
-        '''
-        Reload application parameters
-        '''
-        log.warn("{ema} config being reloaded", ema=VERSION_STRING)
-        try:
-            config_opts  = yield deferToThread(loadCfgFile, self.cfgFilePath)
-        except Exception as e:
-            log.error("Error trying to reload: {excp!s}", excp=e)
-        else:
-            pass
-            #self.mqttService.reloadService(config_opts['mqtt'])
-            #self.dbaseService.reloadService(config_opts['dbase'])
-            level = config_opts['ema']['log_level']
-            setLogLevel(namespace='ema', levelStr=level)
-            log.info("new log level is {lvl}", lvl=level)
-           
-    
- 
-    def startService(self):
-        log.info('starting {ema}', ema=VERSION_STRING)
-        self.schedulerService.startService()
-        try:
-            self.scriptsService.startService()
-        except Exception as e:
-            log.critical("{excp}",excp=e)
-            log.critical("Exiting ...")
-            sys.exit(1)
-        self.serialService.startService()
-        self.internetService.startService()
-            
-            #self.mqttService.startService()
-            #self.statsTask.start(self.T_STAT, now=False) # call every T seconds
-       
-       
-    
-    # -------------
-    # MQTT API
-    # -------------
-
-    def logMQTTEvent(self, msg, kind='info'):
-        '''Resets stat counters'''
-        record = { 'tstamp': datetime.datetime.utcnow(), 'type': kind, 'msg': msg}
-        # aqui falta encolarlo y que el MQTT service leponga el who
-
-    # ----------
-    # Events API
-    # ----------
-    def onEventExecute(self, event, *args):
-        '''
-        Event Handlr coming from the Voltmeter
-        '''
-        self.scriptsService.onEventExecute(event, *args)
-
-    # -------------
-    # log stats API
-    # -------------
-
-    def resetCounters(self):
-        '''Resets stat counters'''
-        pass
-        #self.mqttService.resetCounters()
-        #self.dbaseService.resetCounters()
-
-    def logCounters(self):
-        '''log stat counters'''
-        pass
-        #self.mqttService.logCounters()
-        #yield self.dbaseService.logCounters()
-        self.resetCounters()
+__all__ = [ "application" ]

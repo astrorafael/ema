@@ -32,7 +32,7 @@ from ..utils   import chop
 from ..logger  import setLogLevel
 from .error    import AlreadyExecutedScript, AlreadyBeingExecutedScript, ScriptNotFound, BadScriptMode
 from .script   import Script
-#from ..service import ReloadableService
+from ..service.relopausable import Service
 
 # ----------------
 # Module constants
@@ -57,19 +57,22 @@ log = Logger(namespace='script')
 class ScriptsService(Service):
 
  
-    def __init__(self, parent, options, **kargs):
-        self.parent     = parent
-        self.options    = options
-        setLogLevel(namespace='script', levelStr=options['log_level'])
-        self.scripts   = {}
+    def __init__(self, options):
+        Service.__init__(self)
+        self.options = options
+        self.scripts = {}
+        setLogLevel(namespace='script', levelStr=self.options['log_level'])
     
     def startService(self):
-        log.info("starting Scripts Service")
-        self.addScript('low_voltage')
-        self.addScript('aux_relay')
-        self.addScript('roof_relay')
-        self.addScript('no_internet')
         Service.startService(self)
+        log.info("starting Scripts Service")
+        try:
+            self.addScript('low_voltage')
+            self.addScript('aux_relay')
+            self.addScript('roof_relay')
+            self.addScript('no_internet')
+        except Exception as e:
+            log.error("{excp}", excp=e)
 
 
     def stopService(self):
@@ -80,7 +83,7 @@ class ScriptsService(Service):
     # Extended Service API
     # --------------------
 
-    def reloadService(self, new_options):
+    def reloadService(self):
         setLogLevel(namespace='script', levelStr=new_options['log_level'])
         log.info("new log level is {lvl}", lvl=new_options['log_level'])
         self.options = new_options

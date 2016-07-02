@@ -27,7 +27,7 @@ from twisted.application.service  import Service
 # -------------
 
 from ..logger import setLogLevel
-#from ..service import ReloadableService
+from ..service.relopausable import Service
 
 # ----------------
 # Module constants
@@ -49,19 +49,18 @@ log = Logger(namespace='inet')
 class InternetService(Service):
 
 
-    def __init__(self, parent, options, **kargs):
-        self.parent     = parent
-        self.options    = options
-        setLogLevel(namespace='inet', levelStr=options['log_level'])
-        setLogLevel(namespace='twisted.web.client._HTTP11ClientFactory', levelStr='warn')
+    def __init__(self, options):
+        self.options  = options
         self.agent    = Agent(reactor)
         self.deferred = None
         self.quorum   = False
+        setLogLevel(namespace='inet', levelStr=self.options['log_level'])
+        setLogLevel(namespace='twisted.web.client._HTTP11ClientFactory', levelStr='warn')
 
     
     def startService(self):
-        Service.startService(self)
         log.info("starting Internet Service")
+        Service.startService(self)
         self._asyncHasConnectivity()
        
     
@@ -79,22 +78,14 @@ class InternetService(Service):
     # Extended Service API
     # --------------------
 
-    def reloadService(self, new_options):
+    def reloadService(self):
         setLogLevel(namespace='inet', levelStr=new_options['log_level'])
         log.info("new log level is {lvl}", lvl=new_options['log_level'])
         if self.deferred:
             log.debug("cancelling previous poll")
             self.deferred.cancel()
         self.options = new_options
-        
-
-    def pauseService(self):
-        pass
-
-    def resumeService(self):
-        pass
-        
-
+    
     # --------------
     # Helper methods
     # ---------------

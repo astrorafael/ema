@@ -38,12 +38,12 @@ from twisted.logger import Logger, LogLevel
 # local imports
 # -------------
 
-from .logger import sysLogInfo, startLogging
-
 from .  import __version__
-from .config import VERSION_STRING, CONFIG_FILE, cmdline, loadCfgFile
-from .application import EMAApplication
 
+from .logger import sysLogInfo
+from .config import VERSION_STRING
+from .service.relopausable import sigreload, sigpause, sigresume
+from .application          import application
 # ----------------
 # Module constants
 # ----------------
@@ -59,24 +59,6 @@ SERVICE_CONTROL_RELOAD = 128
 # ------------------------
 # Module Utility Functions
 # ------------------------
-
-def sigreload():
-   '''
-   Signal handler emulator SIGHUP)
-   '''
-   EMAApplication.instance.sigreload = True
-
-def sigpause():
-   '''
-   Signal handler emulator (SIGUSR1)
-   '''
-   EMAApplication.instance.sigpause = True
-
-def sigresume():
-   '''
-   Signal handler emulator (SIGUSR2)
-   '''
-   EMAApplication.instance.sigresume = True
 
 
 # ----------
@@ -94,7 +76,6 @@ class TESSWindowsService(win32serviceutil.ServiceFramework):
 
 	def __init__(self, args):
 		win32serviceutil.ServiceFramework.__init__(self, args)
-		self.config_opts  = loadCfgFile(CONFIG_FILE)
 		
 
 	def SvcStop(self):
@@ -137,10 +118,7 @@ class TESSWindowsService(win32serviceutil.ServiceFramework):
 		'''Service Run entry point'''
 		# initialize your services here
 		sysLogInfo("Starting {0}".format(VERSION_STRING))
-		log_file=self.config_opts['log']['path']
-		startLogging(console=False, filepath=log_file)
-		application = EMAApplication(CONFIG_FILE, self.config_opts)
-		application.startService()
+		IService(application).startService()
 		reactor.run(installSignalHandlers=0)
 		sysLogInfo("ema Windows service stopped {0}".format( __version__ ))
 

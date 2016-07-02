@@ -14,6 +14,7 @@
 
 from __future__ import division
 
+import os
 import signal
 
 # ---------------
@@ -25,7 +26,7 @@ from zope.interface import implementer, Interface
 from twisted.persisted import sob
 from twisted.python import components
 from twisted.internet import defer, task
-from twisted.application.service  import Service, MultiService, Process
+from twisted.application.service import IService, Service as BaseService, MultiService as BaseMultiService, Process
 
 #--------------
 # local imports
@@ -42,34 +43,52 @@ from .interfaces import IReloadable
 # -----------------
 
 
+def sigreload(signum, frame):
+   '''
+   Signal handler (SIGHUP)
+   '''
+   TopLevelService.instance.sigreload = True
+   
+
+if os.name != "nt":
+    # Install this signal handlers
+    signal.signal(signal.SIGHUP,  sigreload)
+
 # -----------------------
 # Module global variables
 # -----------------------
 
 
+# --------------------------------------------------------------
+# --------------------------------------------------------------
+# --------------------------------------------------------------
+
 @implementer(IReloadable)
-class ReloadableService(Service):
+class Service(BaseService):
 
     #--------------------------------
-    # Extended Reloadable Service API
+    # Extended Service API
     # -------------------------------
 
     def reloadService(self):
-        return defer.succeed(None)
+        pass
 
+# --------------------------------------------------------------
+# --------------------------------------------------------------
+# --------------------------------------------------------------
 
 @implementer(IReloadable)
-class ReloadableMultiService(MultiService):
+class MultiService(BaseMultiService):
     '''
     Container for reloadable services
     '''
 
     #--------------------------------
-    # Extended Reloadable Service API
+    # Extended Service API
     # -------------------------------
        
     def reloadService(self):
-        ReloadableService.reloadService(self)
+        Service.reloadService(self)
         dl = []
         services = list(self)
         services.reverse()
@@ -77,24 +96,27 @@ class ReloadableMultiService(MultiService):
             dl.append(defer.maybeDeferred(service.reloadService))
         return defer.DeferredList(l)
 
+# --------------------------------------------------------------
+# --------------------------------------------------------------
+# --------------------------------------------------------------
 
 
-class TopLevelService(ReloadableMultiService):    
+class TopLevelService(MultiService):    
     '''
-    This one is for use with the ReloadableApplication below
+    This one is for use with the Application below
     '''    
     instance = None
     T = 1
 
     def __init__(self):
-        ReloadableMultiService.__init__(self)
+        MultiService.__init__(self)
         TopLevelService.instance = self
         self.sigreload  = False
         self.periodicTask   = task.LoopingCall(self._sighandler)
 
     def __getstate__(self):
         '''I don't know if this makes sense'''
-        dic = Service.__getstate__(self)
+        dic = BaseService.__getstate__(self)
         if "sigreload" in dic:
             del dic['sigreload']
         if "periodicTask" in dic:
@@ -103,11 +125,11 @@ class TopLevelService(ReloadableMultiService):
 
     def startService(self):
         self.periodicTask.start(self.T, now=False) # call every T seconds
-        MultiService.startService()
+        BaseMultiService.startService(self)
 
     def stopService(self):
         self.periodicTask.cancel() # call every T seconds
-        return MultiService.stopService()
+        return BaseMultiService.stopService(self)
 
 
     def _sighandler(self):
@@ -118,23 +140,11 @@ class TopLevelService(ReloadableMultiService):
             self.sigreload = False
             self.reload()
         
-# ---------------
-# SIGNAL HANDLERS
-# ---------------
 
-def sigreload(signum, frame):
-   '''
-   Signal handler (SIGHUP)
-   '''
-   TopLevelService.instance.sigreload = True
-   
+# --------------------------------------------------------------
+# --------------------------------------------------------------
+# --------------------------------------------------------------
 
-# Install signal handlers
-signal.signal(signal.SIGHUP,  sigreload)
-
-# -----------
-# APPLICATION
-# -----------
 
 def Application(name, uid=None, gid=None):
     """
@@ -154,8 +164,9 @@ def Application(name, uid=None, gid=None):
     return ret  
 
 __all__ = [
-    "ReloadableService",
-    "ReloadableMultiService",
+    "Service",
+    "MultiService",
     "TopLevelService",
-    "Application"
+    "Application",
+    "sigreload"
 ]

@@ -4,25 +4,22 @@
 # See the LICENSE file for details
 # ----------------------------------------------------------------------
 
-
 #--------------------
 # System wide imports
 # -------------------
-
-from __future__ import division
-
-import os
-import sys
 
 # ---------------
 # Twisted imports
 # ---------------
 
+from twisted.internet import reactor
+from twisted.application.service import IService
+
 #--------------
 # local imports
 # -------------
 
-from .config import cmdline
+from .application import application
 
 # ----------------
 # Module constants
@@ -32,16 +29,11 @@ from .config import cmdline
 # Module global variables
 # -----------------------
 
-options = cmdline()
+
+# ------------------------
+# Module Utility Functions
+# ------------------------
 
 
-if os.name == "nt":
-	if not options.interactive:
-		import main_winserv
-	else:
-		import main_win
-elif os.name == "posix":
-	import main_posix
-else:
-	print("ERROR: unsupported OS")
-	sys.exit(1)
+IService(application).startService()
+reactor.run()

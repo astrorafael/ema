@@ -10,6 +10,7 @@
 
 from __future__ import division
 
+import datetime
 
 # ---------------
 # Twisted imports
@@ -18,7 +19,7 @@ from __future__ import division
 from twisted.logger               import Logger, LogLevel
 from twisted.internet             import reactor, task
 from twisted.internet.defer       import inlineCallbacks
-from twisted.application.service  import Service
+#from twisted.application.service  import Service
 
 #--------------
 # local imports
@@ -26,7 +27,7 @@ from twisted.application.service  import Service
 
 from ..logger import setLogLevel
 from .intervallist import IntervalList
-#from ..service import ReloadableService
+from ..service.relopausable import Service
 
 
 # ----------------
@@ -50,12 +51,12 @@ class SchedulerService(Service):
 
     T = 9
 
-    def __init__(self, parent, options, **kargs):
-        self.parent     = parent
-        self.options    = options
-        setLogLevel(namespace='sched', levelStr=options['log_level'])
+    def __init__(self, options):
+        Service.__init__(self)
+        self.options = options
         self.periodicTask = task.LoopingCall(self._schedule)
         self.callables = dict()
+        setLogLevel(namespace='sched', levelStr=self.options['log_level'])
 
     
     def startService(self):
@@ -64,13 +65,12 @@ class SchedulerService(Service):
         self.windows  = IntervalList.parse(self.options['intervals'], 15)
         self.periodicTask.start(self.T, now=False) # call every T seconds
         
-       
 
     def stopService(self):
         self.periodicTask.cancel()
         Service.stopService(self)
 
-    def addActivity( func, tstamp )
+    def addActivity( func, tstamp ):
         '''
         Ads and activity ( a function) to be called at a given datetime.datetime.timestamp.
         '''
@@ -82,21 +82,14 @@ class SchedulerService(Service):
     # Extended Service API
     # --------------------
 
-    def reloadService(self, new_options):
+    def reloadService(self):
+        Service.__init__(self)
         setLogLevel(namespace='inet', levelStr=new_options['log_level'])
         log.info("new log level is {lvl}", lvl=new_options['log_level'])
         if self.deferred:
             log.debug("cancelling previous poll")
             self.deferred.cancel()
         self.options = new_options
-        
-
-    def pauseService(self):
-        pass
-
-    def resumeService(self):
-        pass
-        
 
     # --------------
     # Helper methods
@@ -106,9 +99,8 @@ class SchedulerService(Service):
         '''
         Runs a schedule cycle.
         '''
-        ts = datetime.datetime.utcnow().replace(microseconds=0)
-        for f in sorted(self.callables.keys()):
-            pass
+        ts = datetime.datetime.utcnow().replace(microsecond=0)
+        log.debug("CUCU")
 
     
 

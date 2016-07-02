@@ -21,6 +21,8 @@ import math
 # Twisted imports
 # ---------------
 
+from zope.interface import implementer
+
 from twisted.logger               import Logger, LogLevel
 from twisted.internet             import reactor, task
 from twisted.internet.defer       import inlineCallbacks
@@ -34,6 +36,7 @@ from twisted.internet.endpoints   import clientFromString
 # local imports
 # -------------
 
+from ..service.interfaces import IReloadable, IPausable
 from ..logger   import setLogLevel
 from ..utils    import chop
 from .protocol  import (
@@ -67,16 +70,15 @@ from .relays    import RoofRelay, AuxiliarRelay
 log = Logger(namespace='serial')
 
 
-
+@implementer(IPausable, IReloadable)
 class SerialService(ClientService):
 
 
-    def __init__(self, parent, options, **kargs):
-        self.parent     = parent
-        self.options    = options
-        protocol_level  = 'debug' if options['log_messages'] else 'info'
-        setLogLevel(namespace='serial', levelStr=options['log_level'])
+    def __init__(self, options):
+        self.options    = options    
+        protocol_level  = 'debug' if self.options['log_messages'] else 'info'
         setLogLevel(namespace='protoc', levelStr=protocol_level)
+        setLogLevel(namespace='serial', levelStr=self.options['log_level'])
         self.factory   = EMAProtocolFactory()
         self.serport   = None
         self.protocol  = None
@@ -198,7 +200,7 @@ class SerialService(ClientService):
     # Extended Service API
     # --------------------
 
-    def reloadService(self, new_options):
+    def reloadService(self):
         protocol_level  = 'debug' if new_options['log_messages'] else 'info'
         setLogLevel(namespace='serial', levelStr=new_options['log_level'])
         setLogLevel(namespace='protoc', levelStr=protocol_level)
