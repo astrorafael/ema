@@ -17,7 +17,8 @@ from __future__ import division
 
 from twisted.logger               import Logger, LogLevel
 from twisted.internet             import reactor, task
-from twisted.internet.defer       import inlineCallbacks
+from twisted.internet.defer       import inlineCallbacks, returnValue
+from twisted.internet.task        import deferLater
 from twisted.web.client           import Agent
 from twisted.web.http_headers     import Headers
 from twisted.internet.defer       import DeferredList
@@ -56,7 +57,8 @@ class InternetService(Service):
         self.options  = options
         self.agent    = Agent(reactor)
         self.deferred = None
-        self.quorum   = False
+        self.T        = options['interval']
+        self.N        = options['attempts']
         setLogLevel(namespace='inet', levelStr=self.options['log_level'])
         setLogLevel(namespace='twisted.web.client._HTTP11ClientFactory', levelStr='warn')
 
@@ -64,19 +66,27 @@ class InternetService(Service):
     def startService(self):
         log.info("starting {name}", name=self.name)
         Service.startService(self)
-        self._asyncHasConnectivity()
        
     
     def stopService(self):
         Service.stopService(self)
 
-
+    @inlineCallbacks
     def hasConnectivity(self):
         '''
         Returns a deferred that when triggered returns True or False
         '''
-        self.deferred = self.__asyncHasConnectivity()
-        return self.deferred
+        i = 1
+        quorum = False
+        while i <= self.N:
+            log.info("probe attempt {i}/{N}", i=i, N=self.N)
+            quorum = yield self.probe()
+            if quorum:
+               break
+            else:
+                yield deferLater(reactor, self.T, lambda: None)
+                i += 1
+        returnValue(quorum)
 
     #---------------------
     # Extended Service API
@@ -86,23 +96,10 @@ class InternetService(Service):
         options = options['internet']
         setLogLevel(namespace='inet', levelStr=options['log_level'])
         log.info("new log level is {lvl}", lvl=options['log_level'])
-        if self.deferred:
-            log.debug("cancelling previous poll")
-            self.deferred.cancel()
-            self.deferred = None
         self.options = options
     
-    # --------------
-    # Helper methods
-    # ---------------
 
-    def _syncHasConnectivity(self):
-        '''
-        Returns last cached quorum state.
-        '''
-        return self.quorum
-
-    def _asyncHasConnectivity(self):
+    def probe(self):
         '''
         Returns a deferred that when triggered returns True or False
         '''
@@ -132,15 +129,19 @@ class InternetService(Service):
         log.debug("from {response.request.absoluteURI}: {response.code}", response=response)
         return True
 
+    # --------------
+    # Helper methods
+    # --------------
+
     def _quourm(self, result):
         '''
         Perform a voting between three results. Majority wins.
         Receices a list of 3 tuples each with (success,value)
         Value is either the value returned by _logResponse or _logFailure
         '''
-        self.quorum = (result[0][0] and result[1][0]) or (result[0][0] and result[2][0]) or (result[1][0] and result[2][0])
-        log.info("Internet connectivity = {quorum}", quorum=self.quorum)
-        return self.quorum
+        quorum = (result[0][0] and result[1][0]) or (result[0][0] and result[2][0]) or (result[1][0] and result[2][0])
+        log.info("Internet connectivity = {quorum}", quorum=quorum)
+        return quorum
 
 
 __all__ = [

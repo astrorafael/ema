@@ -65,10 +65,16 @@ log_messages = yes
 # - will synchronize its clock from EMA RTC (insteado of the other way round)
 # - will execute an script (i.e. probably to shut the host down)
 
+# 3 Sites to probe (no more, no less)
 site1 = http://www.google.es
 site2 = http://www.facebook.es
 site3 = http://www.twitter.es
 
+# Number of probes
+attempts = 3
+
+# Interval (seconds) between probes
+interval = 30
 
 # component log level (debug, info, warn, error, critical)
 log_level = debug

@@ -102,7 +102,8 @@ class EMAService(MultiService):
         self.internetService  = self.getServiceNamed(InternetService.NAME)
         self.serialService    = self.getServiceNamed(SerialService.NAME)
         self.schedulerService = self.getServiceNamed(SchedulerService.NAME)
-        MultiService.startService(self)
+        #MultiService.startService(self)
+        d = self.internetService.hasConnectivity()
        
        
     

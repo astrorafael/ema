@@ -1,7 +1,7 @@
 
-# EMA
+# EMAd
 
-Windows/Linux service and command line tool for [Cristobal Garcia's EMA Weather Station](http://www.observatorioremoto.com/emav2/meteoen.htm)
+Windows/Linux service for [Cristobal Garcia's EMA Weather Station](http://www.observatorioremoto.com/emav2/meteoen.htm)
 
 This is a new version using [Python Twisted Asynchronous I/O framweork](https://twistedmatrix.com/)
 
@@ -11,11 +11,14 @@ This is a new version using [Python Twisted Asynchronous I/O framweork](https://
 | [Installation](README.md#Installation) |
 | [Start/Stop/Reload/Pause]((README.md#StartStopReloadPause)
 | [Configuration](README.md#Configuration) |
+| [Features](README.md#Features) |
+| [RTC Synchronization](Readme.md#RTC) |
 | [Parameter Synchronization] 
 | [Publishing MQTT Data](README.md#Publishing Data) |
 | [MQTT](README.md#MQTT) |
 | [Scheduler](README.md#Scheduler) |
 | [Events and Scripts](README.md#Scripts) |
+
 
 ## <a name="Description"> Description
 
@@ -120,7 +123,43 @@ Log file is placed under `/var/log/ema.log` (Linux) or `C:\ema\log\ema.log` (Win
 Default log level is `info`. It generates very litte logging at this level.
 On Linux, the log is rotated through the /etc/logrotate.d/ema policy. On Windows, there is no such policy.
 
-# DESIGN
+# FEATURES
+
+## <a name="RTC"> Logging Real Time Clock synchronization
+
+EMA has a built-in Real Time Clock (RTC) module. The host computer may or may not have an RTC module. The prototypical case would be an out-of-the-box Raspberry Pi connected to EMA via an USB-to-Serial adapter. In addition, the host computer may or may not have Internet connection at the moment EMAd starts. This may happen if the Raspberry Pi has 3G/4G prepaid SIM Internet Access.
+
+It is important for this software to properly identify the master RTC and synchronize the slave to the master. The table below shows the synchronization policy. 
+
+|                        | Host RTC available      |  Host RTC not available  |
+|:-----------------------|:------------------------|:-------------------------|
+| Internet connection    | Host RTC -> EMA RTC     | Host RTC -> EMA RTC      |
+| No Internet connection | Host RTC -> EMA RTC     | EMA RTC  -> Host RTC     |
+
+In sumary, the EMA RTC is the clock master when the host computer has not a built-in RTC module and there is no internet access.
+
+## <a name="Parameters"> Parameter synchronization
+
+The EMA hardware can be viewed as an ensemble of the following "instruments":
+* Thermometer
+* Anemometer
+* Barometer
+* Cloud Sensor
+* Photometer
+* Pluviometer
+* Rain Detector Sensor
+* Pyranometer
+* Power Supply Monitor
+* Roof Relay
+* Auxiliar Relay
+* Watchdog
+
+Each instrument may have:
+1. calibration constants to give proper, meaningful readings
+2. thresholds values for automated actions (i.e. Low voltage power supply, etc.)
+
+Calibration constants are set once for all and are seldom changed, if any.
+Threshold values may change at convenience. All of these reside in the configuration file. Each virtual instrument may be individualy synchronized (or not) with the file contents.
 
 ## MQTT Topics
 

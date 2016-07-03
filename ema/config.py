@@ -167,6 +167,8 @@ def loadCfgFile(path):
     options['internet']['site1']         = parser.get("internet","site1")
     options['internet']['site2']         = parser.get("internet","site2")
     options['internet']['site3']         = parser.get("internet","site3")
+    options['internet']['interval']      = parser.getint("internet","interval")
+    options['internet']['attempts']      = parser.getint("internet","attempts")
     options['internet']['log_level']     = parser.get("internet","log_level")
 
     options['scheduler'] = {}
