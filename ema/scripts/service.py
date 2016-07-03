@@ -76,7 +76,9 @@ class ScriptsService(Service):
             self.addScript('roof_relay')
             self.addScript('no_internet')
         except Exception as e:
-            log.error("{excp}", excp=e)
+            log.failure("{excp}", excp=e)
+            raise
+            
 
 
     def stopService(self):
