@@ -58,6 +58,7 @@ from .relays    import RoofRelay, AuxiliarRelay
 # Module constants
 # ----------------
 
+
 # ----------------
 # Global functions
 # -----------------
@@ -72,6 +73,9 @@ log = Logger(namespace='serial')
 
 @implementer(IPausable, IReloadable)
 class SerialService(ClientService):
+
+    # Service name
+    NAME = 'Serial Service'
 
 
     def __init__(self, options):
@@ -200,12 +204,13 @@ class SerialService(ClientService):
     # Extended Service API
     # --------------------
 
-    def reloadService(self):
-        protocol_level  = 'debug' if self.new_options['log_messages'] else 'info'
-        setLogLevel(namespace='serial', levelStr=self.new_options['log_level'])
+    def reloadService(self, options):
+        options = options['serial']
+        protocol_level  = 'debug' if options['log_messages'] else 'info'
+        setLogLevel(namespace='serial', levelStr=options['log_level'])
         setLogLevel(namespace='protoc', levelStr=protocol_level)
-        log.info("new log level is {lvl}", lvl=self.new_options['log_level'])
-        self.options = self.new_options
+        log.info("new log level is {lvl}", lvl=options['log_level'])
+        self.options = options
         
 
     def pauseService(self):

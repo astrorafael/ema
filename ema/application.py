@@ -25,10 +25,9 @@ from .config import VERSION_STRING, cmdline, loadCfgFile
 #from .mqttservice import MQTTService
 
 from .ema.service    import EMAService
-
-from .serial.service import SerialService
-from .internet       import InternetService
-from .scripts        import ScriptsService 
+from .serial.service import SerialService    
+from .internet       import InternetService  
+from .scripts        import ScriptsService   
 from .scheduler      import SchedulerService
 
 
@@ -49,26 +48,26 @@ startLogging(console=cmdline_opts.console, filepath=log_file)
 # Assemble application from its service components
 # ------------------------------------------------
 
-application = Application("ema")
+application = Application("EMA")
 
 emaService  = EMAService(options['ema'],config_file)
-emaService.setName('emaService')
+emaService.setName(EMAService.NAME)
 emaService.setServiceParent(application)
 
 schedulerService = SchedulerService(options['scheduler'])
-schedulerService.setName('schedulerService')
+schedulerService.setName(SchedulerService.NAME)
 schedulerService.setServiceParent(emaService)
 
 internetService = InternetService(options['internet'])
-internetService.setName('internetService')
+internetService.setName(InternetService.NAME)
 internetService.setServiceParent(emaService)
 
 scriptsService = ScriptsService(options['scripts'])
-scriptsService.setName('scriptsService')
+scriptsService.setName(ScriptsService.NAME )
 scriptsService.setServiceParent(emaService)
 
 serialService = SerialService(options['serial'])
-serialService.setName('serialService')
+serialService.setName(SerialService.NAME)
 serialService.setServiceParent(emaService)
 
 # --------------------------------------------------------

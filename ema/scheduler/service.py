@@ -34,6 +34,8 @@ from ..service.relopausable import Service
 # Module constants
 # ----------------
 
+
+
 # ----------------
 # Global functions
 # -----------------
@@ -49,6 +51,9 @@ log = Logger(namespace='sched')
 
 class SchedulerService(Service):
 
+    # Service name
+    NAME = 'Scheduler Service'
+    
     T = 9
 
     def __init__(self, options):
@@ -60,8 +65,8 @@ class SchedulerService(Service):
 
     
     def startService(self):
+        log.info("starting {name}", name=self.name)
         Service.startService(self)
-        log.info("starting Scheduler Service")
         self.windows  = IntervalList.parse(self.options['intervals'], 15)
         self.periodicTask.start(self.T, now=False) # call every T seconds
         
@@ -82,12 +87,13 @@ class SchedulerService(Service):
     # Extended Service API
     # --------------------
 
-    def reloadService(self):
-        log.info("new log level is {lvl}", lvl=self.new_options['log_level'])
-        setLogLevel(namespace='inet', levelStr=self.new_options['log_level'])
+    def reloadService(self, options):
+        options = options['scheduler']
+        log.info("new log level is {lvl}", lvl=options['log_level'])
+        setLogLevel(namespace='inet', levelStr=options['log_level'])
         if self.periodicTask:
             self.periodicTask.reset()   # ESTO HAY QUE VERLO, A LO MEJOR HAY QUE CREAR OTRA TAREA
-        self.options = self.new_options
+        self.options = options
 
     # --------------
     # Helper methods

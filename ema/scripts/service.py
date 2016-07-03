@@ -38,6 +38,8 @@ from ..service.relopausable import Service
 # Module constants
 # ----------------
 
+
+
 # ----------------
 # Global functions
 # -----------------
@@ -56,6 +58,8 @@ log = Logger(namespace='script')
 
 class ScriptsService(Service):
 
+    # Service name
+    NAME = 'Scripts Service'
  
     def __init__(self, options):
         Service.__init__(self)
@@ -64,8 +68,8 @@ class ScriptsService(Service):
         setLogLevel(namespace='script', levelStr=self.options['log_level'])
     
     def startService(self):
+        log.info("starting {name}", name=self.name)
         Service.startService(self)
-        log.info("starting Scripts Service")
         try:
             self.addScript('low_voltage')
             self.addScript('aux_relay')
@@ -83,10 +87,11 @@ class ScriptsService(Service):
     # Extended Service API
     # --------------------
 
-    def reloadService(self):
-        setLogLevel(namespace='script', levelStr=self.new_options['log_level'])
-        log.info("new log level is {lvl}", lvl=self.new_options['log_level'])
-        self.options = self.new_options
+    def reloadService(self, options):
+        options = options['scripts']
+        setLogLevel(namespace='script', levelStr=options['log_level'])
+        log.info("new log level is {lvl}", lvl=options['log_level'])
+        self.options = options
         
 
     # -------------

@@ -70,7 +70,7 @@ class Service(BaseService):
     # Extended Service API
     # -------------------------------
 
-    def reloadService(self):
+    def reloadService(self, options=None):
         pass
 
 # --------------------------------------------------------------
@@ -87,13 +87,12 @@ class MultiService(BaseMultiService):
     # Extended Service API
     # -------------------------------
        
-    def reloadService(self):
-        Service.reloadService(self)
+    def reloadService(self, options=None):
         dl = []
         services = list(self)
         services.reverse()
         for service in services:
-            dl.append(defer.maybeDeferred(service.reloadService))
+            dl.append(defer.maybeDeferred(service.reloadService, options))
         return defer.DeferredList(dl)
 
 # --------------------------------------------------------------

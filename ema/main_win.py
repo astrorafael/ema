@@ -19,6 +19,7 @@ from twisted.application.service import IService
 # local imports
 # -------------
 
+from .  import __version__
 from .application import application
 
 # ----------------
@@ -34,6 +35,8 @@ from .application import application
 # Module Utility Functions
 # ------------------------
 
-
+print("Starting {0} {1} Windows program".format(IService(application).name, __version__ ))
 IService(application).startService()
 reactor.run()
+print("{0} {1} Windows program stopped".format( IService(application).name, __version__ ))
+

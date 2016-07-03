@@ -33,6 +33,7 @@ from ..service.relopausable import Service
 # Module constants
 # ----------------
 
+
 # ----------------
 # Global functions
 # -----------------
@@ -48,6 +49,8 @@ log = Logger(namespace='inet')
 
 class InternetService(Service):
 
+    # Service name
+    NAME = 'Internet Service'
 
     def __init__(self, options):
         self.options  = options
@@ -59,7 +62,7 @@ class InternetService(Service):
 
     
     def startService(self):
-        log.info("starting Internet Service")
+        log.info("starting {name}", name=self.name)
         Service.startService(self)
         self._asyncHasConnectivity()
        
@@ -79,14 +82,15 @@ class InternetService(Service):
     # Extended Service API
     # --------------------
 
-    def reloadService(self):
-        setLogLevel(namespace='inet', levelStr=self.new_options['log_level'])
-        log.info("new log level is {lvl}", lvl=self.new_options['log_level'])
+    def reloadService(self, options):
+        options = options['internet']
+        setLogLevel(namespace='inet', levelStr=options['log_level'])
+        log.info("new log level is {lvl}", lvl=options['log_level'])
         if self.deferred:
             log.debug("cancelling previous poll")
             self.deferred.cancel()
             self.deferred = None
-        self.options = self.new_options
+        self.options = options
     
     # --------------
     # Helper methods

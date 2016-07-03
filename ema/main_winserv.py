@@ -41,7 +41,6 @@ from twisted.logger import Logger, LogLevel
 from .  import __version__
 
 from .logger               import sysLogInfo
-from .config               import VERSION_STRING
 from .application          import application
 from .service.relopausable import sigreload, sigpause, sigresume
 
@@ -71,7 +70,7 @@ class TESSWindowsService(win32serviceutil.ServiceFramework):
 	Windows service for the TESS database.
 	"""
 	_svc_name_         = "ema"
-	_svc_display_name_ = "EMA service {0}".format( __version__)
+	_svc_display_name_ = "{0} Windows service {1}".format( IService(application).name , __version__)
 	_svc_description_  = "A MQTT publisher Client for EMA astronomical weather station"
 
 
@@ -83,14 +82,14 @@ class TESSWindowsService(win32serviceutil.ServiceFramework):
 		'''Service Stop entry point'''
 		self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING)
 		reactor.callFromThread(reactor.stop)
-		sysLogInfo("Stopping  ema {0} Windows service".format( __version__ ))
+		sysLogInfo("Stopping {0} {1} Windows service".format( IService(application).name, __version__ ))
 
 
 	def SvcPause(self):
 		'''Service Pause entry point'''
 		self.ReportServiceStatus(win32service.SERVICE_PAUSE_PENDING)
 		reactor.callFromThread(sigpause)
-		sysLogInfo("Pausing ema {0} Windows service".format( __version__ ))
+		sysLogInfo("Pausing {0} {1} Windows service".format( IService(application).name, __version__ ))
 		self.ReportServiceStatus(win32service.SERVICE_PAUSED)
 		
 
@@ -98,7 +97,7 @@ class TESSWindowsService(win32serviceutil.ServiceFramework):
 		'''Service Continue entry point'''
 		self.ReportServiceStatus(win32service.SERVICE_CONTINUE_PENDING)
 		reactor.callFromThread(sigresume)
-		sysLogInfo("Resuming ema {0} Windows service".format( __version__ ))
+		sysLogInfo("Resuming {0} {1} Windows service".format( IService(application).name, __version__ ))
 		self.ReportServiceStatus(win32service.SERVICE_RUNNING)
 		
 
@@ -111,17 +110,17 @@ class TESSWindowsService(win32serviceutil.ServiceFramework):
 
 
 	def SvcDoReload(self):
-		sysLogInfo("Reloading ema {0} Windows service".format( __version__ ))
+		sysLogInfo("Reloading {0} {1} Windows service".format( IService(application).name, __version__ ))
 		reactor.callFromThread(sigreload)
 
 
 	def SvcDoRun(self):
 		'''Service Run entry point'''
 		# initialize your services here
-		sysLogInfo("Starting {0}".format(VERSION_STRING))
+		sysLogInfo("Starting {0} {1}".format(IService(application).name, __version__))
 		IService(application).startService()
 		reactor.run(installSignalHandlers=0)
-		sysLogInfo("ema Windows service stopped {0}".format( __version__ ))
+		sysLogInfo("{0} {1} Windows service stopped".format( IService(application).name, __version__ ))
 
      
 def ctrlHandler(ctrlType):

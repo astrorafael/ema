@@ -33,17 +33,20 @@ from ..logger import setLogLevel
 
 from ..service.relopausable import MultiService
 
-#from ..mqtt.service import MQTTService
+#from ..mqtt.service import MQTTService, NAME as MQTT_NAME
 
 from ..serial.service import SerialService
-from ..internet       import InternetService
-from ..scripts        import ScriptsService, AlreadyExecutedScript, AlreadyBeingExecutedScript, ScriptNotFound
+from ..scripts        import ScriptsService
 from ..scheduler      import SchedulerService
-
+from ..internet       import InternetService
+from ..scripts        import AlreadyExecutedScript, AlreadyBeingExecutedScript, ScriptNotFound
 
 # ----------------
 # Module constants
 # ----------------
+
+# Service name
+NAME = 'EMA'
 
 # -----------------------
 # Module global variables
@@ -54,6 +57,9 @@ log = Logger(namespace='ema')
 
 
 class EMAService(MultiService):
+
+    # Service name
+    NAME = 'EMA'
 
     # Periodic task in seconds
     TLOG = 60
@@ -76,26 +82,26 @@ class EMAService(MultiService):
 
 
     @inlineCallbacks
-    def reloadService(self):
+    def reloadService(self, options):
         '''
         Reload application parameters
         '''
         log.warn("{ema} config being reloaded", ema=VERSION_STRING)
         try:
-            new_options  = yield deferToThread(loadCfgFile, self.cfgFilePath)
+            options  = yield deferToThread(loadCfgFile, self.cfgFilePath)
         except Exception as e:
             log.error("Error trying to reload: {excp!s}", excp=e)
         else:
-            self.new_options                  = new_options['ema']
-            self.getServiceNamed('schedulerService').new_options = new_options['scheduler']
-            self.getServiceNamed('internetService').new_options  = new_options['internet']
-            self.getServiceNamed('scriptsService').new_options   = new_options['scripts']
-            self.getServiceNamed('serialService').new_options    = new_options['serial']
-            MultiService.reloadService(self)
+            self.options                  = options['ema']
+            MultiService.reloadService(self, options)
            
     
     def startService(self):
-        log.info('starting {ema}', ema=VERSION_STRING)
+        log.info('starting {name}', name=self.name)
+        self.scriptsService   = self.getServiceNamed(ScriptsService.NAME)
+        self.internetService  = self.getServiceNamed(InternetService.NAME)
+        self.serialService    = self.getServiceNamed(SerialService.NAME)
+        self.schedulerService = self.getServiceNamed(SchedulerService.NAME)
         MultiService.startService(self)
        
        
@@ -116,7 +122,7 @@ class EMAService(MultiService):
         '''
         Event Handlr coming from the Voltmeter
         '''
-        self.getServiceName['scriptsService'].onEventExecute(event, *args)
+        self.scriptsService.onEventExecute(event, *args)
 
     # -------------
     # log stats API

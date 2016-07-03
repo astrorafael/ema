@@ -23,7 +23,6 @@ from twisted.application.service import IService
 from .  import __version__
 from .application import application
 from .logger      import sysLogInfo
-from .config      import VERSION_STRING
 
 # ----------------
 # Module constants
@@ -38,7 +37,7 @@ from .config      import VERSION_STRING
 # Module Utility Functions
 # ------------------------
 
-sysLogInfo("Starting {0}".format(VERSION_STRING))
+sysLogInfo("Starting {0} {1} Linux service".format(IService(application).name, __version__ ))
 IService(application).startService()
 reactor.run()
-sysLogInfo("ema Linux service stopped {0}".format( __version__ ))
+sysLogInfo("{0} {1} Linux service stopped".format(IService(application).name, __version__ ))
