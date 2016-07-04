@@ -40,27 +40,6 @@ from .interfaces import IPausable, IReloadable
 # -----------------
 
 
-def sigpause(signum, frame):
-   '''
-   Signal handler (SIGUSR1)
-   '''
-   TopLevelService.instance.sigpause = True
-
-def sigresume(signum, frame):
-   '''
-   Signal handler (SIGUSR2)
-   '''
-   TopLevelService.instance.sigresume = True
-
-def sigreload(signum, frame):
-   '''
-   Signal handler (SIGHUP)
-   '''
-   TopLevelService.instance.sigreload = True
-   
-
-
-
 # --------------------------------------------------------------
 # --------------------------------------------------------------
 # --------------------------------------------------------------
