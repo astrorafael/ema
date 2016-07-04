@@ -45,15 +45,24 @@ def chop(string, sep=None):
 
 
 
-def _win_set_time(time_tuple):
+def _win_set_time(dati):
+    '''
+    dati is a datetime.datetime object
+    '''
     
     # http://timgolden.me.uk/pywin32-docs/win32api__SetSystemTime_meth.html
     # pywin32.SetSystemTime(year, month , dayOfWeek , day , hour , minute , second , millseconds )
-    dayOfWeek = datetime.datetime(time_tuple).isocalendar()[2]
+    ##dayOfWeek = datetime.datetime(time_tuple).isocalendar()[2]
+    ##pywin32.SetSystemTime( time_tuple[:2] + (dayOfWeek,) + time_tuple[2:])
+    time_tuple = dati.timetuple()
+    dayOfWeek = dati.isocalendar()[2]
     pywin32.SetSystemTime( time_tuple[:2] + (dayOfWeek,) + time_tuple[2:])
 
 
-def _linux_set_time(time_tuple):
+def _linux_set_time(dati):
+    '''
+    dati is a datetime.datetime object
+    '''
     # /usr/include/linux/time.h:
     #
     # define CLOCK_REALTIME                     0
@@ -73,7 +82,8 @@ def _linux_set_time(time_tuple):
     librt = ctypes.CDLL(ctypes.util.find_library("rt"))
 
     ts = timespec()
-    ts.tv_sec = int( time.mktime( datetime.datetime( *time_tuple[:6]).timetuple() ) )
+    time_tuple = dati.timetuple()
+    ts.tv_sec = int( time.mktime( dati )) 
     ts.tv_nsec = time_tuple[6] * 1000000 # Millisecond to nanosecond
 
     # http://linux.die.net/man/3/clock_settime

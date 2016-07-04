@@ -1,5 +1,6 @@
 Prioridad alta
 ==============
+- Probar la sincronizacion del PC y la Pi
 
 - auxrelay co,andos especiales para programar el tON y tOFF
 
@@ -9,8 +10,6 @@ Prioridad alta
  - Comunicación al modulo MQTT con Colas deque() para desacoplar el servicio
   MQTT del servicio de lectura.
 *)  revisar los intervalos window deben ser [0,24)
-*) nuevo modulo ema/devices.py para la sincronización
-  - sincronizacion configurable individualmente por dispositivo, que tendrá varios parametros
 *) Una unica EMA no se registra al MQTT si sus parametros seleccionados de registro no han podido
    obtenerse
 *) Topic MQTT
