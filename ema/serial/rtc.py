@@ -71,7 +71,7 @@ class RealTimeClock(Device):
     @inlineCallbacks
     def sync(self):
         '''
-        Synchronizes parameters. 
+        Synchronizes EMA RTC Clock to Host Clock. 
         Returns a deferred whose success callback value is a flag
         True = synch process ok, False = synch process went wrong
         '''
@@ -97,6 +97,15 @@ class RealTimeClock(Device):
         else:
             log.info("{title} already synchronized", title=param['title'])
         returnValue(True)
+
+    @inlineCallbacks
+    def inverseSync(self):
+        '''
+        Synchronizes Host Clock Clock from EMA RTC as master clock. 
+        Returns a deferred whose success callback value is a flag
+        True = synch process ok, False = synch process went wrong
+        '''
+        pass
 
 
 # --------------------------------------------------------------------

@@ -79,12 +79,12 @@ class InternetService(Service):
         i = 1
         quorum = False
         while i <= self.N:
+            yield deferLater(reactor, self.T, lambda: None)
             log.info("probe attempt {i}/{N}", i=i, N=self.N)
             quorum = yield self.probe()
             if quorum:
                break
             else:
-                yield deferLater(reactor, self.T, lambda: None)
                 i += 1
         returnValue(quorum)
 
@@ -140,7 +140,7 @@ class InternetService(Service):
         Value is either the value returned by _logResponse or _logFailure
         '''
         quorum = (result[0][0] and result[1][0]) or (result[0][0] and result[2][0]) or (result[1][0] and result[2][0])
-        log.info("Internet connectivity = {quorum}", quorum=quorum)
+        log.debug("sites quorum = {quorum}", quorum=quorum)
         return quorum
 
 

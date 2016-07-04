@@ -93,6 +93,7 @@ def loadCfgFile(path):
     options['ema'] = {}
     options['ema']['log_file']   = parser.get("ema","log_file")
     options['ema']['log_level']  = parser.get("ema","log_level")
+    options['ema']['host_rtc']   = parser.getboolean("ema","host_rtc")
 
     options['serial'] = {}
     options['serial']['endpoint']      = parser.get("serial","endpoint")

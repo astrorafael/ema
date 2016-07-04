@@ -25,7 +25,7 @@ from zope.interface import implementer
 
 from twisted.logger               import Logger, LogLevel
 from twisted.internet             import reactor, task
-from twisted.internet.defer       import inlineCallbacks
+from twisted.internet.defer       import inlineCallbacks, returnValue
 from twisted.internet.serialport  import SerialPort
 from twisted.application.service  import Service
 from twisted.application.internet import ClientService, backoffPolicy
@@ -89,7 +89,6 @@ class SerialService(ClientService):
         self.devices   = []
         self.synchroComplete = False
         self.synchroError    = False
-        self.resetCounters()
         self.goSerial = self._decide()
 
 
@@ -110,14 +109,15 @@ class SerialService(ClientService):
     def startService(self):
         log.info("starting Serial Service")
         if self.goSerial:
+            Service.startService(self)
             if self.serport is None:
                 self.protocol  = self.factory.buildProtocol(0)
                 self.serport      = SerialPort(self.protocol, self.endpoint[0], reactor, baudrate=self.endpoint[1])
-            Service.startService(self)
             self.gotProtocol(self.protocol)
         else:
-            self.whenConnected().addCallback(self.gotProtocol)
             ClientService.startService(self)
+            self.whenConnected().addCallback(self.gotProtocol)
+            
 
 
     def parameters(self, result):
@@ -157,7 +157,7 @@ class SerialService(ClientService):
         self.aux_relay   = AuxiliarRelay(self, self.options['aux_relay'],
                             global_sync=self.options['sync'])
         self.roof_relay  = RoofRelay(self, self.options['roof_relay'], global_sync=False)
-        self.devices     = [self.rtc, self.voltmeter, self.anemometer, self.barometer, self.cloudsensor,
+        self.devices     = [self.voltmeter, self.anemometer, self.barometer, self.cloudsensor,
                             self.photometer,self.pluviometer,self.pyranometer,self.rainsensor,
                             self.watchdog, self.aux_relay, self.roof_relay]
 
@@ -166,10 +166,22 @@ class SerialService(ClientService):
         log.debug("got Protocol")
         self.protocol  = protocol
         self._buildDevices()
-        self.sync().addCallback(self.parameters)
+        #self.sync().addCallback(self.parameters)
         self.watchdog.start()
+
         
-       
+    @inlineCallbacks
+    def detectEMA(self):
+        '''
+        Returns True if EMA responds
+        '''
+        try:
+            res = yield self.protocol.ping(nretries=3)
+        except EMATimeoutError as e:
+            returnValue(False)
+        else:
+            returnValue(True)
+
     @inlineCallbacks
     def sync(self):
         '''
@@ -188,6 +200,26 @@ class SerialService(ClientService):
                 break
         self.synchroComplete = True
 
+
+    @inlineCallbacks
+    def syncEMARTC(self):
+        try:
+            res = yield self.rtc.sync()
+        except EMATimeoutError as e:
+            returnValue(False)
+        else:
+            returnValue(True)
+        
+
+    @inlineCallbacks
+    def syncHostRTC(self):
+        try:
+            res = yield self.rtc.inverseSync()
+        except EMATimeoutError as e:
+            returnValue(False)
+        else:
+            returnValue(True)
+        
 
     @inlineCallbacks
     def stopService(self):
@@ -213,11 +245,7 @@ class SerialService(ClientService):
         self.options = options
         
 
-    def pauseService(self):
-        pass
-
-    def resumeService(self):
-        pass
+   
 
     # -------------
     # EMA API
@@ -234,22 +262,6 @@ class SerialService(ClientService):
         self.parent.onEventExecute(event, *args)
     
   
-    # -------------
-    # log stats API
-    # -------------
-
-    def resetCounters(self):
-        '''Resets stat counters'''
-        pass
-        
-
-    def getCounters(self):
-        return [ ]
-
-    def logCounters(self):
-        '''log stat counters'''
-        pass
-        
 
     # --------------
     # Helper methods

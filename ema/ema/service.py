@@ -21,7 +21,7 @@ from collections import deque
 
 from twisted.logger   import Logger, LogLevel
 from twisted.internet import task, reactor
-from twisted.internet.defer  import inlineCallbacks, returnValue
+from twisted.internet.defer  import inlineCallbacks, returnValue, DeferredList
 from twisted.internet.threads import deferToThread
 
 #--------------
@@ -97,13 +97,24 @@ class EMAService(MultiService):
            
     
     def startService(self):
+        '''
+        Starts only two services and see if we can continue.
+        '''
+
+        
+
+
         log.info('starting {name}', name=self.name)
         self.scriptsService   = self.getServiceNamed(ScriptsService.NAME)
         self.internetService  = self.getServiceNamed(InternetService.NAME)
         self.serialService    = self.getServiceNamed(SerialService.NAME)
         self.schedulerService = self.getServiceNamed(SchedulerService.NAME)
-        #MultiService.startService(self)
-        d = self.internetService.hasConnectivity()
+        self.internetService.startService()
+        self.serialService.startService()
+        d1 = self.serialService.detectEMA()
+        d2 = self.internetService.hasConnectivity()
+        dl = DeferredList([d1,d2], consumeErrors=True)
+        dl.addCallback(self._maybeExit)
        
        
     
@@ -125,21 +136,21 @@ class EMAService(MultiService):
         '''
         self.scriptsService.onEventExecute(event, *args)
 
-    # -------------
-    # log stats API
-    # -------------
+    # ----------------
+    # Helper functions
+    # ----------------
 
-    def resetCounters(self):
-        '''Resets stat counters'''
-        pass
-        #self.mqttService.resetCounters()
-        #self.dbaseService.resetCounters()
-
-    def logCounters(self):
-        '''log stat counters'''
-        pass
-        #self.mqttService.logCounters()
-        #yield self.dbaseService.logCounters()
-        self.resetCounters()
+    def _maybeExit(self, results):
+        log.debug("results = {results!r}", results=results)
+        if results[0][1] == False:
+            log.critical("No EMA detected. Exiting gracefully")
+            reactor.stop()
+        if results[1][1] == True and self.options['host_rtc']:
+            log.debug("synchronizing EMA Clock from Host Clock")
+        if results[1][1] == True and not self.options['host_rtc']:
+            log.debug("synchronizing EMA Clock from Host Clock")
+        else:
+            log.debug("synchronizing Host Clock from EMA Clock")
+        self.schedulerService.startService()
 
 __all__ = [ "EMAService" ]

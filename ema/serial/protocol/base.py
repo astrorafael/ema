@@ -242,14 +242,14 @@ class EMAProtocol(LineOnlyReceiver):
     # EMA Watchdog
     # ------------
 
-    def ping(self):
+    def ping(self, nretries=Ping.RETRIES):
         '''
         Send a keepalive message to EMA.
         See Ping (commands.py) for returned value type, range and units.
         Retuns a Deferred whose success callback returns this value.
         An errback may be invoked with EMATimeoutError after nretries have been made.
         '''
-        return self._enqueue(Ping(), nretries=Ping.RETRIES)
+        return self._enqueue(Ping(), nretries=nretries)
 
 
     def getWatchdogPeriod(self, nretries=GetWatchdogPeriod.RETRIES):

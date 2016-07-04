@@ -32,6 +32,9 @@ log_file = /var/log/ema.log
 # component log level (debug, info, warn, error, critical)
 log_level = debug
 
+# The host computer (i.ea Raspberry Pi)  has an RTC
+host_rtc = no
+
 #------------------------------------------------------------------------#
 
 [serial]
