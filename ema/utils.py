@@ -40,7 +40,7 @@ def chop(string, sep=None):
     strips individual string items from leading and trailing blanks'''
     chopped = [ elem.strip() for elem in string.split(sep) ]
     if len(chopped) == 1 and chopped[0] == '':
-    	chopped = []
+        chopped = []
     return chopped
 
 
@@ -92,12 +92,12 @@ def _linux_set_time(time_tuple):
 
 
 if sys.platform=='linux2':
-	import ctypes
+    import ctypes
     import ctypes.util
     import time
-	setSystemTime =  _linux_set_time
+    setSystemTime =  _linux_set_time
 elif sys.platform=='win32':
-	import pywin32
+    import pywin32
     setSystemTime = _win_set_time
 
 

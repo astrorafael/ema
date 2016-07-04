@@ -59,8 +59,8 @@ class SchedulerService(Service):
     def __init__(self, options):
         Service.__init__(self)
         self.options = options
-        self.periodicTask = task.LoopingCall(self._schedule)
         self.callables = dict()
+        self.periodicTask = None
         setLogLevel(namespace='sched', levelStr=self.options['log_level'])
 
     
@@ -68,6 +68,7 @@ class SchedulerService(Service):
         log.info("starting {name}", name=self.name)
         Service.startService(self)
         self.windows  = IntervalList.parse(self.options['intervals'], 15)
+        self.periodicTask = task.LoopingCall(self._schedule)
         self.periodicTask.start(self.T, now=False) # call every T seconds
         
 

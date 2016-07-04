@@ -127,21 +127,21 @@ class TopLevelService(MultiService):
         '''
         Signal handler (SIGHUP)
         '''
-        TopLevelService.instance.sigreload = True
+        TopLevelService.instance.sigreloaded = True
 
     @staticmethod
     def sigpause(signum, frame):
         '''
         Signal handler (SIGUSR1)
         '''
-        TopLevelService.instance.sigpause = True
+        TopLevelService.instance.sigpaused = True
 
     @staticmethod
     def sigresume(signum, frame):
         '''
         Signal handler (SIGUSR2)
         '''
-        TopLevelService.instance.sigresume = True
+        TopLevelService.instance.sigresumed = True
 
     def __init__(self):
         MultiService.__init__(self)
