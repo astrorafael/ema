@@ -43,16 +43,6 @@ from .interfaces import IReloadable
 # -----------------
 
 
-def sigreload(signum, frame):
-   '''
-   Signal handler (SIGHUP)
-   '''
-   TopLevelService.instance.sigreload = True
-   
-
-if os.name != "nt":
-    # Install this signal handlers
-    signal.signal(signal.SIGHUP,  sigreload)
 
 # -----------------------
 # Module global variables
@@ -107,17 +97,27 @@ class TopLevelService(MultiService):
     instance = None
     T = 1
 
+
+    @staticmethod
+    def sigreload(signum, frame):
+        '''
+        Signal handler (SIGHUP)
+        '''
+        TopLevelService.instance.sigreloaded = True
+
     def __init__(self):
         MultiService.__init__(self)
         TopLevelService.instance = self
-        self.sigreload  = False
+        self.sigreloaded  = False
         self.periodicTask   = task.LoopingCall(self._sighandler)
 
     def __getstate__(self):
         '''I don't know if this makes sense'''
         dic = BaseService.__getstate__(self)
-        if "sigreload" in dic:
-            del dic['sigreload']
+        if "instance" in dic:
+            del dic['instance']
+        if "sigreloaded" in dic:
+            del dic['sigreloaded']
         if "periodicTask" in dic:
             del dic['periodicTask']
         return dic
@@ -135,10 +135,13 @@ class TopLevelService(MultiService):
         '''
         Periodic task to check for signal events
         '''
-        if self.sigreload:
-            self.sigreload = False
+        if self.sigreloaded:
+            self.sigreloaded = False
             self.reloadService()
         
+if os.name != "nt":
+    # Install this signal handlers
+    signal.signal(signal.SIGHUP,  TopLevelService.sigreload)
 
 # --------------------------------------------------------------
 # --------------------------------------------------------------
@@ -167,5 +170,4 @@ __all__ = [
     "MultiService",
     "TopLevelService",
     "Application",
-    "sigreload"
 ]

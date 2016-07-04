@@ -42,7 +42,7 @@ from .  import __version__
 
 from .logger               import sysLogInfo
 from .application          import application
-from .service.relopausable import sigreload, sigpause, sigresume
+from .service.relopausable import TopLevelService
 
 # ----------------
 # Module constants
@@ -88,7 +88,7 @@ class TESSWindowsService(win32serviceutil.ServiceFramework):
 	def SvcPause(self):
 		'''Service Pause entry point'''
 		self.ReportServiceStatus(win32service.SERVICE_PAUSE_PENDING)
-		reactor.callFromThread(sigpause)
+		reactor.callFromThread(TopLevelService.sigpause)
 		sysLogInfo("Pausing {0} {1} Windows service".format( IService(application).name, __version__ ))
 		self.ReportServiceStatus(win32service.SERVICE_PAUSED)
 		
@@ -96,7 +96,7 @@ class TESSWindowsService(win32serviceutil.ServiceFramework):
 	def SvcContinue(self):
 		'''Service Continue entry point'''
 		self.ReportServiceStatus(win32service.SERVICE_CONTINUE_PENDING)
-		reactor.callFromThread(sigresume)
+		reactor.callFromThread(TopLevelService.sigresume)
 		sysLogInfo("Resuming {0} {1} Windows service".format( IService(application).name, __version__ ))
 		self.ReportServiceStatus(win32service.SERVICE_RUNNING)
 		
@@ -111,7 +111,7 @@ class TESSWindowsService(win32serviceutil.ServiceFramework):
 
 	def SvcDoReload(self):
 		sysLogInfo("Reloading {0} {1} Windows service".format( IService(application).name, __version__ ))
-		reactor.callFromThread(sigreload)
+		reactor.callFromThread(TopLevelService.sigreload)
 
 
 	def SvcDoRun(self):

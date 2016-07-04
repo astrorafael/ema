@@ -1,0 +1,1 @@
+python -m ema --interactive --console --config "C:\ema\config\config.ini"

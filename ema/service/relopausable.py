@@ -59,11 +59,7 @@ def sigreload(signum, frame):
    TopLevelService.instance.sigreload = True
    
 
-if os.name != "nt":
-    # Install these signal handlers
-    signal.signal(signal.SIGHUP,  sigreload)
-    signal.signal(signal.SIGUSR1, sigpause)
-    signal.signal(signal.SIGUSR2, sigresume)
+
 
 # --------------------------------------------------------------
 # --------------------------------------------------------------
@@ -147,23 +143,46 @@ class TopLevelService(MultiService):
     instance = None
     T = 1
 
+    @staticmethod
+    def sigreload(signum, frame):
+        '''
+        Signal handler (SIGHUP)
+        '''
+        TopLevelService.instance.sigreload = True
+
+    @staticmethod
+    def sigpause(signum, frame):
+        '''
+        Signal handler (SIGUSR1)
+        '''
+        TopLevelService.instance.sigpause = True
+
+    @staticmethod
+    def sigresume(signum, frame):
+        '''
+        Signal handler (SIGUSR2)
+        '''
+        TopLevelService.instance.sigresume = True
+
     def __init__(self):
         MultiService.__init__(self)
         TopLevelService.instance = self
-        self.sigreload = False
-        self.sigpause  = False
-        self.sigresume = False
+        self.sigreloaded = False
+        self.sigpaused   = False
+        self.sigresumed  = False
         self.periodicTask = task.LoopingCall(self._sighandler)
 
     def __getstate__(self):
         '''I don't know if this makes sense'''
         dic = Service.__getstate__(self)
-        if "sigpause" in dic:
-            del dic['sigreload']
-        if "sigresume" in dic:
-            del dic['sigreload']
-        if "sigreload" in dic:
-            del dic['sigreload']
+        if "instance" in dic:
+            del dic['instance']
+        if "sigpaused" in dic:
+            del dic['sigpaused']
+        if "sigresumed" in dic:
+            del dic['sigresumed']
+        if "sigreloaded" in dic:
+            del dic['sigreloaded']
         if "periodicTask" in dic:
             del dic['periodicTask']
         return dic
@@ -180,17 +199,22 @@ class TopLevelService(MultiService):
         '''
         Periodic task to check for signal events
         '''
-        if self.sigpause:
-            self.sigpause = False
+        if self.sigpaused:
+            self.sigpaused = False
             self.pauseService()
-        if self.sigresume:
-            self.sigresume = False
+        if self.sigresumed:
+            self.sigresumed = False
             self.resumeService()
-        if self.sigreload:
-            self.sigreload = False
+        if self.sigreloaded:
+            self.sigreloaded = False
             self.reloadService()
         
-        
+if os.name != "nt":
+    # Install these signal handlers
+    signal.signal(signal.SIGHUP,  TopLevelService.sigreload)
+    signal.signal(signal.SIGUSR1, TopLevelService.sigpause)
+    signal.signal(signal.SIGUSR2, TopLevelService.sigresume)
+
 # --------------------------------------------------------------
 # --------------------------------------------------------------
 # --------------------------------------------------------------
@@ -218,7 +242,4 @@ __all__ = [
     "MultiService",
     "TopLevelService",
     "Application",
-    "sigpasue",
-    "sigresume",
-    "sigreload"
 ]

@@ -40,24 +40,7 @@ from .interfaces import IPausable
 # -----------------
 
 
-def sigpause(signum, frame):
-   '''
-   Signal handler (SIGUSR1)
-   '''
-   TopLevelService.instance.sigpause = True
 
-
-def sigresume(signum, frame):
-   '''
-   Signal handler (SIGUSR2)
-   '''
-   TopLevelService.instance.sigresume = True
-
-
-if os.name != "nt":
-    # Install these signal handlers
-    signal.signal(signal.SIGUSR1, sigpause)
-    signal.signal(signal.SIGUSR2, sigresume)
 
 # --------------------------------------------------------------
 # --------------------------------------------------------------
@@ -130,20 +113,36 @@ class TopLevelService(MultiService):
     instance = None
     T = 1
 
+    @staticmethod
+    def sigpause(signum, frame):
+        '''
+        Signal handler (SIGUSR1)
+        '''
+        TopLevelService.instance.sigpaused = True
+
+    @staticmethod
+    def sigresume(signum, frame):
+        '''
+        Signal handler (SIGUSR2)
+        '''
+        TopLevelService.instance.sigresumed = True
+
     def __init__(self):
         MultiService.__init__(self)
         TopLevelService.instance = self
-        self.sigpause  = False
-        self.sigresume = False
+        self.sigpaused  = False
+        self.sigresumed = False
         self.periodicTask = task.LoopingCall(self._sighandler)
 
     def __getstate__(self):
         '''I don't know if this makes sense'''
         dic = Service.__getstate__(self)
-        if "sigpause" in dic:
-            del dic['sigreload']
-        if "sigresume" in dic:
-            del dic['sigreload']
+        if "instance" in dic:
+            del dic['instance']
+        if "sigpaused" in dic:
+            del dic['sigpaused']
+        if "sigresumed" in dic:
+            del dic['sigresumed']
         if "periodicTask" in dic:
             del dic['periodicTask']
         return dic
@@ -160,12 +159,18 @@ class TopLevelService(MultiService):
         '''
         Periodic task to check for signal events
         '''
-        if self.sigpause:
-            self.sigpause = False
+        if self.sigpaused:
+            self.sigpaused = False
             self.pauseService()
-        if self.sigresume:
-            self.sigresume = False
+        if self.sigresumed:
+            self.sigresumed = False
             self.resumeService()
+
+
+if os.name != "nt":
+    # Install these signal handlers
+    signal.signal(signal.SIGUSR1, TopLevelService.sigpause)
+    signal.signal(signal.SIGUSR2, TopLevelService.sigresume)
 
 # --------------------------------------------------------------
 # --------------------------------------------------------------
@@ -193,6 +198,4 @@ __all__ = [
     "MultiService",
     "TopLevelService",
     "Application",
-    "sigpause",
-    "sigresume"
 ]
