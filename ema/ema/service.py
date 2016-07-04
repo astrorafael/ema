@@ -140,17 +140,30 @@ class EMAService(MultiService):
     # Helper functions
     # ----------------
 
+    @inlineCallbacks
     def _maybeExit(self, results):
         log.debug("results = {results!r}", results=results)
         if results[0][1] == False:
             log.critical("No EMA detected. Exiting gracefully")
             reactor.stop()
+            return
         if results[1][1] == True and self.options['host_rtc']:
             log.debug("synchronizing EMA Clock from Host Clock")
-        if results[1][1] == True and not self.options['host_rtc']:
+            syncResult = yield self.serialService.rtc.sync()
+        elif results[1][1] == True and not self.options['host_rtc']:
             log.debug("synchronizing EMA Clock from Host Clock")
+            syncResult = yield self.serialService.rtc.sync()
         else:
             log.debug("synchronizing Host Clock from EMA Clock")
+            syncResult = yield self.serialService.rtc.reverseSync()
+        if not syncResult:
+            log.critical("could not sync RTCs. Existing gracefully")
+            reactor.stop()
+            return
         self.schedulerService.startService()
+       
+
+
+        
 
 __all__ = [ "EMAService" ]

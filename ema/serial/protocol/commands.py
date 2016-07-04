@@ -39,8 +39,9 @@ from twisted.logger import Logger
 # Own modules
 # -----------
 
+from ..      import PY2
 from .status import decode as decodeStatusAsList
-from .error import EMARangeError, EMAReturnError
+from .error  import EMARangeError, EMAReturnError
 
 
 log = Logger(namespace='serial')
@@ -75,6 +76,14 @@ class Command(object):
         '''
         self.encoded = self.CMDFORMAT
 
+
+    def getEncoded(self):
+        '''
+        Default implementation is to return the cached result
+        '''
+        return str(self.encoded) if PY2 else bytes(self.encoded)
+
+
     def decode(self, line):
         '''
         Generic decoding algorithm for commands
@@ -96,6 +105,7 @@ class Command(object):
             handled = True; finished = True
             log.debug("Matched {command.name} response, command complete", command=self)
         return handled, finished
+
 
     def getResult(self):
         '''
@@ -166,7 +176,7 @@ class GetRTCDateTime(GetCommand):
     CMDFORMAT       = '(y)'
     ACK_PATTERNS    = [ '^\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)' ]
     EMA_TIME_FORMAT = '(%H:%M:%S %d/%m/%Y)'
-    RETRIES         = 0
+    RETRIES         = 2
     TIMEOUT         = {'min': 1, 'max': 128, 'factor': 2}
 
     def getResult(self):
@@ -184,7 +194,7 @@ class SetRTCDateTime(SetCommand):
     CMDFORMAT       = '(Y%d%m%y%H%M%S)'
     ACK_PATTERNS    = [ '\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)']
     EMA_TIME_FORMAT = '(%H:%M:%S %d/%m/%Y)'
-    RETRIES         = 0
+    RETRIES         = 2
     TIMEOUT         = {'min': 1, 'max': 128, 'factor': 2}
 
 
@@ -199,13 +209,14 @@ class SetRTCDateTime(SetCommand):
         if not (self.RANGE[0] <= self.value <= self.RANGE[1]): 
             raise EMARangeError(self.__class__.__name__, self.value, self.RANGE)
 
-    def reset(self):
-        Command.reset(self)
-        if self.renew:
-            self.value = datetime.datetime.utcnow()+datetime.timedelta(seconds=0.5)
-
     def encode(self):
         self.encoded = self.value.strftime(self.CMDFORMAT)
+
+    def getEncoded(self):
+        if self.renew:
+            self.value = datetime.datetime.utcnow()+datetime.timedelta(seconds=0.5)
+            self.encoded = self.value.strftime(self.CMDFORMAT)
+        return self.encoded
 
     def getResult(self):
         return  datetime.datetime.strptime(self.response[0], self.EMA_TIME_FORMAT)

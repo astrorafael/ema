@@ -45,16 +45,6 @@ def chop(string, sep=None):
 
 
 
-
-time_tuple = ( 2012, # Year
-                  9, # Month
-                  6, # Day
-                  0, # Hour
-                 38, # Minute
-                  0, # Second
-                  0, # Millisecond
-              )
-
 def _win_set_time(time_tuple):
     
     # http://timgolden.me.uk/pywin32-docs/win32api__SetSystemTime_meth.html

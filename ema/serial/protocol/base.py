@@ -29,7 +29,6 @@ from twisted.internet.protocol   import ClientFactory
 # local imports
 # -------------
 
-from ..        import PY2
 from .status   import decode, STATLEN
 from .error    import EMATimeoutError
 from .interval import Interval
@@ -790,7 +789,7 @@ class EMAProtocol(LineOnlyReceiver):
         request.alarm = self.callLater(t, self._responseTimeout)
         log.info("Executing -> {request.name} (retries={request.retries}/{request.nretries}) [Timeout={t}]", 
             request=request, t=t)
-        self.sendLine(str(request.encoded) if PY2 else bytes(request.encoded))
+        self.sendLine(request.getEncoded())
 
 
     def _responseTimeout(self):
