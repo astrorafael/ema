@@ -4,7 +4,7 @@ Prioridad alta
 - auxrelay co,andos especiales para programar el tON y tOFF
 
 - EL README esta hecho unos zorros
-
+- ema => emad (script de servicio y comando -k)
 
  - Comunicación al modulo MQTT con Colas deque() para desacoplar el servicio
   MQTT del servicio de lectura.
