@@ -26,14 +26,14 @@ from zope.interface import implementer, Interface
 from twisted.persisted import sob
 from twisted.python    import components
 from twisted.internet  import defer, task
-from twisted.application.service import IService, Service as BaseService, MultiService as BaseMultiService, Process
+from twisted.application.service import IService, Process
 
 #--------------
 # local imports
 # -------------
 
-from .interfaces import IPausable, IReloadable
-
+import reloadable
+import pausable
 
 # ----------------
 # Global functions
@@ -44,155 +44,61 @@ from .interfaces import IPausable, IReloadable
 # --------------------------------------------------------------
 # --------------------------------------------------------------
 
-@implementer(IPausable, IReloadable)
-class Service(BaseService):
+class Service(reloadable.Service, pausable.Service):
+    '''
+    Pausable & Reloadable service
+    '''
 
-    paused = 0
+    def __init__(self):
+        super(Service, self).__init__()
 
     def __getstate__(self):
         '''I don't know if this makes sense'''
-        dic = BaseService.__getstate__(self)
-        if "paused" in dic:
-            del dic['paused']
-        return dic
-
-    #--------------------------------
-    # Extended Service API
-    # -------------------------------
-
-    def reloadService(self, options=None):
-        pass
-
-    def pauseService(self):
-        paused = 1
-        
-    def resumeService(self):
-        paused = 0
+        reloadable.Service.__getstate__(self)
+        return pausable.Service.__getstate__(self)
+       
         
 # --------------------------------------------------------------
 # --------------------------------------------------------------
 # --------------------------------------------------------------
 
-@implementer(IPausable, IReloadable)
-class MultiService(BaseMultiService):
+class MultiService(reloadable.MultiService, pausable.MultiService): 
     '''
     Container for pausable & reloadable services
     '''
 
-    #-----------------------------------------
-    # Extended Pausable-Reloadable BaseService API
-    # ----------------------------------------
+    def __init__(self):
+        super(MultiService, self).__init__()
+   
 
-    def reloadService(self, options=None):
-        dl = []
-        services = list(self)
-        services.reverse()
-        for service in services:
-            dl.append(defer.maybeDeferred(service.reloadService, options))
-        return defer.DeferredList(dl)
-
-
-    def pauseService(self):
-        paused = 1
-        dl = []
-        services = list(self)
-        services.reverse()
-        for service in services:
-            dl.append(defer.maybeDeferred(service.pauseService))
-        return defer.DeferredList(dl)
-
-
-    def resumeService(self):
-        paused = 0
-        dl = []
-        services = list(self)
-        services.reverse()
-        for service in services:
-            dl.append(defer.maybeDeferred(service.resumeService))
-        return defer.DeferredList(dl)
         
 # --------------------------------------------------------------
 # --------------------------------------------------------------
 # --------------------------------------------------------------     
 
-class TopLevelService(MultiService):    
+class TopLevelService(reloadable.TopLevelService, pausable.TopLevelService):    
     '''
-    This one is for use with the Application below
-    '''    
-    instance = None
-    T = 1
-
-    @staticmethod
-    def sigreload(signum, frame):
-        '''
-        Signal handler (SIGHUP)
-        '''
-        TopLevelService.instance.sigreloaded = True
-
-    @staticmethod
-    def sigpause(signum, frame):
-        '''
-        Signal handler (SIGUSR1)
-        '''
-        TopLevelService.instance.sigpaused = True
-
-    @staticmethod
-    def sigresume(signum, frame):
-        '''
-        Signal handler (SIGUSR2)
-        '''
-        TopLevelService.instance.sigresumed = True
+    Top level container for pausable & reloadable services.
+    Handles the signals for pasue/resume & reload.
+    '''
 
     def __init__(self):
-        MultiService.__init__(self)
-        TopLevelService.instance = self
-        self.sigreloaded = False
-        self.sigpaused   = False
-        self.sigresumed  = False
-        self.periodicTask = task.LoopingCall(self._sighandler)
-
+        super(TopLevelService, self).__init__()
+       
     def __getstate__(self):
         '''I don't know if this makes sense'''
-        dic = Service.__getstate__(self)
-        if "instance" in dic:
-            del dic['instance']
-        if "sigpaused" in dic:
-            del dic['sigpaused']
-        if "sigresumed" in dic:
-            del dic['sigresumed']
-        if "sigreloaded" in dic:
-            del dic['sigreloaded']
-        if "periodicTask" in dic:
-            del dic['periodicTask']
-        return dic
-
-    def startService(self):
-        self.periodicTask.start(self.T, now=False) # call every T seconds
-        BaseMultiService.startService(self)
-
-    def stopService(self):
-        self.periodicTask.cancel() # call every T seconds
-        return BaseMultiService.stopService(self)
-
+        reloadable.TopLevelService.__getstate__(self)
+        return pausable.TopLevelService.__getstate__(self)
+        
     def _sighandler(self):
         '''
         Periodic task to check for signal events
         '''
-        if self.sigpaused:
-            self.sigpaused = False
-            self.pauseService()
-        if self.sigresumed:
-            self.sigresumed = False
-            self.resumeService()
-        if self.sigreloaded:
-            self.sigreloaded = False
-            self.reloadService()
+        reloadable.TopLevelService._sighandler(self)
+        pausable.TopLevelService._sighandler(self)
+    
         
-if os.name != "nt":
-    # Install these signal handlers
-    signal.signal(signal.SIGHUP,  TopLevelService.sigreload)
-    signal.signal(signal.SIGUSR1, TopLevelService.sigpause)
-    signal.signal(signal.SIGUSR2, TopLevelService.sigresume)
+ 
 
 # --------------------------------------------------------------
 # --------------------------------------------------------------

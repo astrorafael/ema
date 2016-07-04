@@ -106,10 +106,10 @@ class TopLevelService(MultiService):
         TopLevelService.instance.sigreloaded = True
 
     def __init__(self):
-        MultiService.__init__(self)
+        super(TopLevelService, self).__init__()
         TopLevelService.instance = self
         self.sigreloaded  = False
-        self.periodicTask   = task.LoopingCall(self._sighandler)
+        self.periodicTask = task.LoopingCall(self._sighandler)
 
     def __getstate__(self):
         '''I don't know if this makes sense'''

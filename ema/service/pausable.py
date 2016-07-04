@@ -63,10 +63,10 @@ class Service(BaseService):
     # -------------------------------
 
     def pauseService(self):
-        paused = 1
+        self.paused = 1
 
     def resumeService(self):
-        paused = 0
+        self.paused = 0
 
 # --------------------------------------------------------------
 # --------------------------------------------------------------
@@ -84,7 +84,7 @@ class MultiService(BaseMultiService):
 
 
     def pauseService(self):
-        paused = 1
+        self.paused = 1
         dl = []
         services = list(self)
         services.reverse()
@@ -94,7 +94,7 @@ class MultiService(BaseMultiService):
 
 
     def resumeService(self):
-        paused = 0
+        self.paused = 0
         dl = []
         services = list(self)
         services.reverse()
@@ -128,7 +128,7 @@ class TopLevelService(MultiService):
         TopLevelService.instance.sigresumed = True
 
     def __init__(self):
-        MultiService.__init__(self)
+        super(TopLevelService, self).__init__()
         TopLevelService.instance = self
         self.sigpaused  = False
         self.sigresumed = False
