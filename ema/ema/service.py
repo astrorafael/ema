@@ -110,7 +110,13 @@ class EMAService(MultiService):
         self.serialService    = self.getServiceNamed(SerialService.NAME)
         self.schedulerService = self.getServiceNamed(SchedulerService.NAME)
         self.internetService.startService()
-        self.serialService.startService()
+        try:
+            self.serialService.startService()
+        except Exception as e:
+            log.error("{excp}", excp=e)
+            log.critical("Problems initializing serial service. Exiting gracefully")
+            sys.exit(1)
+
         d1 = self.serialService.detectEMA()
         d2 = self.internetService.hasConnectivity()
         dl = DeferredList([d1,d2], consumeErrors=True)
