@@ -25,9 +25,10 @@ from twisted.internet.defer       import inlineCallbacks
 # local imports
 # -------------
 
-from ..logger import setLogLevel
-from .intervallist import IntervalList
 from ..service.relopausable import Service
+from ..logger   import setLogLevel
+from .intervals import Interval, IntervalList
+from .error    import BadSlice
 
 
 # ----------------
@@ -53,6 +54,10 @@ class SchedulerService(Service):
 
     # Service name
     NAME = 'Scheduler Service'
+
+    # Interval constants
+    ACTIVE    = "active"
+    INACTIVE  = "inactive"
     
     T = 9
 
@@ -68,21 +73,26 @@ class SchedulerService(Service):
         log.info("starting {name}", name=self.name)
         Service.startService(self)
         self.windows  = IntervalList.parse(self.options['intervals'], 15)
+        self.gaps     = ~ self.windows
         self.periodicTask = task.LoopingCall(self._schedule)
         self.periodicTask.start(self.T, now=False) # call every T seconds
-        
+      
 
     def stopService(self):
         self.periodicTask.stop()
         Service.stopService(self)
 
-    def addActivity( func, tstamp ):
+
+    def addActivity(self, func, sliceperc):
         '''
-        Ads and activity ( a function) to be called at a given datetime.datetime.timestamp.
+        Add and activity (a callable) to be called at the current or next active window.
         '''
-        li =  self.callables.get(tstamp, []) 
-        li.append(func)
-        self.callables[tstamp] = li
+        if sliceperc not in [10, 30, 50, 70, 90]:
+            raise BadSlice(sliceperc)
+        active, inactive, where = self.findCurrentInterval()
+        tPerc = (active.t0 + datetime.timedelta(seconds=int(active.duration()*sliceperc/100))).time()
+        log.debug("Interval = {interval}, tPerc = {tPerc}", interval=active, tPerc=tPerc)
+       
 
     #---------------------
     # Extended Service API
@@ -106,8 +116,27 @@ class SchedulerService(Service):
         '''
         ts = datetime.datetime.utcnow().replace(microsecond=0)
 
-    
-
+    def findCurrentInterval(self):
+        '''Find the current interval'''     
+        tNow = datetime.datetime.utcnow()
+        log.debug("checking active intervals {active}", active=self.windows)
+        found, i = self.windows.find(tNow)
+        if found:
+            where    = self.ACTIVE
+            active   = self.windows[i]
+            inactive = self.gaps[i]
+            log.info("now {now} we are in the active window {window}", now=tNow.strftime("%H:%M:%S"), window=active)
+            log.info("Next inactive gap will be {gap}",  gap=inactive)
+        else:
+            log.debug("checking inactive intervals {inactive}", inactive=self.gaps)
+            where = self.INACTIVE
+            found, i = self.gaps.find(tNow)
+            inactive = self.gaps[i]
+            active   = self.windows[i+1 % len(self.windows)]
+            log.info("now {now} we are in the inactive window {gap}", now=tNow.strftime("%H:%M:%S"), gap=inactive)
+            log.info("Next active gap will be {window}", window=active)
+        return active, inactive, where
+           
 __all__ = [
     "ScheduleService"
 ]

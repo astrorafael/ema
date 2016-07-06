@@ -161,6 +161,9 @@ class EMAService(MultiService):
         returnValue(syncResult)
 
 
+    def foo(self):
+        log.debug("   => HOLA, SOY FOO <=")
+
     @inlineCallbacks
     def _maybeExit(self, results):
         log.debug("results = {results!r}", results=results)
@@ -174,6 +177,7 @@ class EMAService(MultiService):
             reactor.stop()
             return
         self.schedulerService.startService()
+        self.schedulerService.addActivity(self.foo, 10)
        
 
 

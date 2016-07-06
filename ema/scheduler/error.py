@@ -60,7 +60,15 @@ class TooShortInterval(Exception):
             s = "{0}: {1} => {2} min".format(s, self.args[0], self.args[1])
         s = '{0}.'.format(s)
         return s
-   
+ 
+class BadSlice(ValueError):
+    '''Interval Slice is not [10%, 30%, 50%, 70%, 90%]'''
+    def __str__(self):
+        s = self.__doc__
+        if self.args:
+            s = "{0}: '{1}'".format(s, self.args[0])
+        s = '{0}.'.format(s)
+        return s  
 
 __all__ = [
     "ReversedInterval",
