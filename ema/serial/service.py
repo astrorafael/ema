@@ -24,11 +24,11 @@ import math
 from zope.interface import implementer
 
 from twisted.logger               import Logger, LogLevel
-from twisted.internet             import reactor, task
+from twisted.internet             import reactor, task, defer
 from twisted.internet.defer       import inlineCallbacks, returnValue
 from twisted.internet.serialport  import SerialPort
 from twisted.application.service  import Service
-from twisted.application.internet import ClientService, backoffPolicy
+from twisted.application.internet import ClientService
 from twisted.internet.endpoints   import clientFromString
 
 
@@ -83,6 +83,7 @@ class SerialService(ClientService):
         protocol_level  = 'debug' if self.options['log_messages'] else 'info'
         setLogLevel(namespace='protoc', levelStr=protocol_level)
         setLogLevel(namespace='serial', levelStr=self.options['log_level'])
+        setLogLevel(namespace='ema.serial.protocol.base.EMAProtocolFactory', levelStr='error')
         self.factory   = EMAProtocolFactory()
         self.serport   = None
         self.protocol  = None
@@ -94,6 +95,17 @@ class SerialService(ClientService):
 
     def _decide(self):
         '''Decide which endpoint must be built, either TCP or Serial'''
+
+        def backoffPolicy(initialDelay=4.0, maxDelay=60.0, factor=2):
+            '''Custom made backoff policy to exit after a number of reconnection attempts'''
+            def policy(attempt):
+                delay = min(initialDelay * (factor ** attempt), maxDelay)
+                if attempt > 3:
+                    self.stopService()
+                return delay
+            return policy
+
+
         parts = chop(self.options['endpoint'], sep=':')
         if parts[0] == 'serial':
             self.endpoint = parts[1:]
@@ -101,22 +113,27 @@ class SerialService(ClientService):
             return True
         else:
             self.endpoint = clientFromString(reactor, self.options['endpoint'])
-            ClientService.__init__(self, self.endpoint, self.factory, 
-                retryPolicy=backoffPolicy(initialDelay=2, factor=2, maxDelay=300))
+            ClientService.__init__(self, self.endpoint, self.factory, retryPolicy=backoffPolicy())
             return False
 
     
     def startService(self):
+        '''
+        Starts the Serial Service that takls to EMA
+        By exception, this returns a deferred that is handled by emaservice
+        '''
         log.info("starting Serial Service")
         if self.goSerial:
             Service.startService(self)
             if self.serport is None:
-                self.protocol  = self.factory.buildProtocol(0)
-                self.serport      = SerialPort(self.protocol, self.endpoint[0], reactor, baudrate=self.endpoint[1])
+                self.protocol = self.factory.buildProtocol(0)
+                self.serport  = SerialPort(self.protocol, self.endpoint[0], reactor, baudrate=self.endpoint[1])
             self.gotProtocol(self.protocol)
         else:
             ClientService.startService(self)
-            self.whenConnected().addCallback(self.gotProtocol)
+            d = self.whenConnected()
+            d.addCallback(self.gotProtocol)
+            return d
             
 
 

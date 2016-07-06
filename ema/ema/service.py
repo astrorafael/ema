@@ -20,7 +20,7 @@ from collections import deque
 # ---------------
 
 from twisted.logger   import Logger, LogLevel
-from twisted.internet import task, reactor
+from twisted.internet import task, reactor, defer
 from twisted.internet.defer  import inlineCallbacks, returnValue, DeferredList
 from twisted.internet.threads import deferToThread
 
@@ -95,32 +95,28 @@ class EMAService(MultiService):
             self.options                  = options['ema']
             MultiService.reloadService(self, options)
            
-    
+    @inlineCallbacks
     def startService(self):
         '''
         Starts only two services and see if we can continue.
         '''
-
-        
-
-
         log.info('starting {name}', name=self.name)
         self.scriptsService   = self.getServiceNamed(ScriptsService.NAME)
         self.internetService  = self.getServiceNamed(InternetService.NAME)
         self.serialService    = self.getServiceNamed(SerialService.NAME)
         self.schedulerService = self.getServiceNamed(SchedulerService.NAME)
-        self.internetService.startService()
         try:
-            self.serialService.startService()
+            yield defer.maybeDeferred(self.serialService.startService)
         except Exception as e:
             log.error("{excp}", excp=e)
-            log.critical("Problems initializing serial service. Exiting gracefully")
-            sys.exit(1)
-
-        d1 = self.serialService.detectEMA()
-        d2 = self.internetService.hasConnectivity()
-        dl = DeferredList([d1,d2], consumeErrors=True)
-        dl.addCallback(self._maybeExit)
+            log.critical("Problems initializing {name}. Exiting gracefully", name=self.serialService.name)
+            reactor.callLater(0,reactor.stop)
+        else:
+            self.internetService.startService()
+            d1 = self.serialService.detectEMA()
+            d2 = self.internetService.hasConnectivity()
+            dl = DeferredList([d1,d2], consumeErrors=True)
+            dl.addCallback(self._maybeExit)
        
        
     
