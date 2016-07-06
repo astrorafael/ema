@@ -140,6 +140,25 @@ class EMAService(MultiService):
     # Helper functions
     # ----------------
 
+
+    @inlineCallbacks
+    def syncRTCActivity(self, skipInternet = False):
+        '''
+        Sync RTC activity to be programmed under the scheduler
+        '''
+        if not skipInternet:
+            internet = yield self.internetService.hasConnectivity()
+        else:
+            internet = True
+        if internet and self.options['host_rtc']:
+            syncResult = yield self.serialService.syncRTC()
+        elif internet and not self.options['host_rtc']:
+            syncResult = yield self.serialService.syncRTC()
+        else:
+            syncResult = yield self.serialService.syncHostRTC()
+        returnValue(syncResult)
+
+
     @inlineCallbacks
     def _maybeExit(self, results):
         log.debug("results = {results!r}", results=results)
@@ -147,15 +166,7 @@ class EMAService(MultiService):
             log.critical("No EMA detected. Exiting gracefully")
             reactor.stop()
             return
-        if results[1][1] == True and self.options['host_rtc']:
-            log.debug("synchronizing EMA Clock from Host Clock")
-            syncResult = yield self.serialService.syncRTC()
-        elif results[1][1] == True and not self.options['host_rtc']:
-            log.debug("synchronizing EMA Clock from Host Clock")
-            syncResult = yield self.serialService.syncRTC()
-        else:
-            log.debug("synchronizing Host Clock from EMA Clock")
-            syncResult = yield self.serialService.syncHostRTC()
+        syncResult = yield self.syncRTCActivity(skipInternet = True)
         if not syncResult:
             log.critical("could not sync RTCs. Existing gracefully")
             reactor.stop()

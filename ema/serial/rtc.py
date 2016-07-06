@@ -61,7 +61,7 @@ class RealTimeClock(Device):
         Device.__init__(self, parent, options, global_sync)
         self.PARAMS = {
             'max_drift': { 
-                'title' : 'RTC',
+                'title' : 'EMA RTC',
                 'value' : None,
                 'invariant': False,
                 'get':   self.parent.protocol.getRTCDateTime,
@@ -78,24 +78,25 @@ class RealTimeClock(Device):
         '''
         param     = self.PARAMS['max_drift']
         max_drift = self.options['max_drift']
+        log.info("Synchronizing {title} from Host RTC", title=param['title'])
         try:
             value = yield param['get']()
         except EMATimeoutError as e:
-            log.error("RTC sync exception => {exception}", exception=e)
+            log.error("EMA RTC sync exception => {exception}", exception=e)
             returnValue(False)
         now = datetime.datetime.utcnow()
         if abs((value - now).total_seconds()) > max_drift:
             log.warn("{title} not synchronized [EMA = {EMA!s}] [Host = {host!s}]", title=param['title'], EMA=value, host=now)
-            log.info("Synchronizing {title}", title=param['title'])
+            log.info("Synchronizing {title} to Host RTC", title=param['title'])
             try:
                 value = yield param['set'](None)
             except EMATimeoutError as e:
                 log.error("RTC sync exception => {exception}", exception=e)
                 returnValue(False)
             if abs((value - datetime.datetime.utcnow()).total_seconds()) > max_drift:
-                log.warn("{title} still not synchronized", title=param['title'])
+                log.warn("{title} still not synchronized to Host RTC", title=param['title'])
         else:
-            log.info("{title} already synchronized", title=param['title'])
+            log.info("{title} already synchronized to Host RTC", title=param['title'])
         returnValue(True)
 
     @inlineCallbacks
@@ -105,6 +106,7 @@ class RealTimeClock(Device):
         Returns a deferred whose success callback value is a flag
         True = synch process ok, False = synch process went wrong
         '''
+        log.info("Synchronizing Host RTC from EMA RTC")
         max_drift = self.options['max_drift']
         try:
             utvalue = yield self.parent.protocol.getRTCDateTime()
@@ -114,10 +116,10 @@ class RealTimeClock(Device):
 
         utnow = datetime.datetime.utcnow()
         if abs((utvalue - utnow).total_seconds()) <= max_drift:
-            log.info("{title} already synchronized", title=param['title'])
+            log.info("Host RTC already synchronized from EMA RTC")
             returnValue(True)
 
-        log.warn("Host computer not synchronized with EMA[EMA = {EMA!s}] [Host = {host!s}]",  EMA=utvalue, host=utnow)
+        log.warn("Host computer not synchronized from EMA [EMA = {EMA!s}] [Host = {host!s}]",  EMA=utvalue, host=utnow)
         
         try:
             log.info("Synchronizing Host computer from EMA RTC")

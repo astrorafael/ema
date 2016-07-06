@@ -32,7 +32,7 @@ log_file = /var/log/ema.log
 # component log level (debug, info, warn, error, critical)
 log_level = debug
 
-# The host computer (i.ea Raspberry Pi)  has an RTC
+# The host computer (i.ea Raspberry Pi)  has a buli-in RTC
 host_rtc = no
 
 #------------------------------------------------------------------------#
@@ -352,9 +352,6 @@ period = 200
 #------------------------------------------------------------------------#
 
 [rtc]
-
-# sync parameters
-sync = yes
 
 # Max difference between EMA and host computer 
 # to synchronize time [seconds].
