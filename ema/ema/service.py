@@ -149,13 +149,13 @@ class EMAService(MultiService):
             return
         if results[1][1] == True and self.options['host_rtc']:
             log.debug("synchronizing EMA Clock from Host Clock")
-            syncResult = yield self.serialService.rtc.sync()
+            syncResult = yield self.serialService.syncRTC()
         elif results[1][1] == True and not self.options['host_rtc']:
             log.debug("synchronizing EMA Clock from Host Clock")
-            syncResult = yield self.serialService.rtc.sync()
+            syncResult = yield self.serialService.syncRTC()
         else:
             log.debug("synchronizing Host Clock from EMA Clock")
-            syncResult = yield self.serialService.rtc.reverseSync()
+            syncResult = yield self.serialService.syncHostRTC()
         if not syncResult:
             log.critical("could not sync RTCs. Existing gracefully")
             reactor.stop()

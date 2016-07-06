@@ -201,24 +201,12 @@ class SerialService(ClientService):
         self.synchroComplete = True
 
 
-    @inlineCallbacks
-    def syncEMARTC(self):
-        try:
-            res = yield self.rtc.sync()
-        except EMATimeoutError as e:
-            returnValue(False)
-        else:
-            returnValue(True)
+    def syncRTC(self):
+        return self.rtc.sync()
         
 
-    @inlineCallbacks
     def syncHostRTC(self):
-        try:
-            res = yield self.rtc.inverseSync()
-        except EMATimeoutError as e:
-            returnValue(False)
-        else:
-            returnValue(True)
+        return self.rtc.inverseSync()
         
 
     @inlineCallbacks

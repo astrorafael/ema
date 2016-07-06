@@ -107,28 +107,29 @@ class RealTimeClock(Device):
         '''
         max_drift = self.options['max_drift']
         try:
-            value = yield self.parent.protocol.getRTCDateTime()
+            utvalue = yield self.parent.protocol.getRTCDateTime()
         except EMATimeoutError as e:
             log.error("RTC inverseSync exception => {exception}", exception=e)
             returnValue(False)
 
-        now = datetime.datetime.utcnow()
-        if abs((value - now).total_seconds()) <= max_drift:
+        utnow = datetime.datetime.utcnow()
+        if abs((utvalue - utnow).total_seconds()) <= max_drift:
             log.info("{title} already synchronized", title=param['title'])
             returnValue(True)
 
-        log.warn("Host computer not synchronized with EMA[EMA = {EMA!s}] [Host = {host!s}]",  EMA=value, host=now)
+        log.warn("Host computer not synchronized with EMA[EMA = {EMA!s}] [Host = {host!s}]",  EMA=utvalue, host=utnow)
         
         try:
-            # Assume Host Compuer works in UTC
-            setSystemTime(value.timetuple())
-            value = yield self.parent.protocol.getRTCDateTime()
+            log.info("Synchronizing Host computer from EMA RTC")
+            # Assume Host Compuer works in UTC !!!
+            setSystemTime(utvalue.timetuple())
+            utvalue = yield self.parent.protocol.getRTCDateTime()
         except Exception as e:
             log.error("RTC inverseSync exception => {exception}", exception=e)
             returnValue(False)    
         # This may fail if the host compuer is not set in UTC.
-        if abs((value - datetime.datetime.utcnow()).total_seconds()) > max_drift:
-            log.warn("{title} still not synchronized", title=param['title'])
+        if abs((utvalue - datetime.datetime.utcnow()).total_seconds()) > max_drift:
+            log.warn("Host Computer RTC still not synchronized")
             returnValue(False)
         
         returnValue(True)

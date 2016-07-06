@@ -79,14 +79,14 @@ class InternetService(Service):
         i = 1
         quorum = False
         while i <= self.N:
-            log.info("waiting {s} seconds to probe", s=self.T)
-            yield deferLater(reactor, self.T, lambda: None)
             log.info("probe attempt {i}/{N}", i=i, N=self.N)
             quorum = yield self.probe()
             if quorum:
                break
-            else:
-                i += 1
+            i += 1
+            if i == self.N:
+                log.info("waiting {s} seconds to probe", s=self.T)
+                yield deferLater(reactor, self.T, lambda: None)
         returnValue(quorum)
 
     #---------------------
