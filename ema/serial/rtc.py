@@ -129,7 +129,10 @@ class RealTimeClock(Device):
         except Exception as e:
             log.error("RTC inverseSync exception => {exception}", exception=e)
             returnValue(False)    
-        # This may fail if the host compuer is not set in UTC.
+        # This may fail if the host compuer is not set in UTC timezone.
+        # This is unlikely to happen in the foreseen usage but
+        # for a proper way to do it, see 
+        # http://stackoverflow.com/questions/1681143/how-to-get-tz-info-object-corresponding-to-current-timezone
         if abs((utvalue - datetime.datetime.utcnow()).total_seconds()) > max_drift:
             log.warn("Host Computer RTC still not synchronized")
             returnValue(False)
