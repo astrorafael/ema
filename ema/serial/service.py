@@ -188,12 +188,12 @@ class SerialService(ClientService):
 
         
     @inlineCallbacks
-    def detectEMA(self):
+    def detectEMA(self, nretries=3):
         '''
         Returns True if EMA responds
         '''
         try:
-            res = yield self.protocol.ping(nretries=3)
+            res = yield self.protocol.ping(nretries)
         except EMATimeoutError as e:
             returnValue(False)
         else:

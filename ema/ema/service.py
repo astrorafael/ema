@@ -113,7 +113,7 @@ class EMAService(MultiService):
             reactor.callLater(0,reactor.stop)
         else:
             self.internetService.startService()
-            d1 = self.serialService.detectEMA()
+            d1 = self.serialService.detectEMA(nretries=0)
             d2 = self.internetService.hasConnectivity()
             dl = DeferredList([d1,d2], consumeErrors=True)
             dl.addCallback(self._maybeExit)
