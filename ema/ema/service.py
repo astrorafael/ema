@@ -207,13 +207,13 @@ class EMAService(MultiService):
         log.debug("results = {results!r}", results=results)
         if results[0][1] == False:
             log.critical("No EMA detected. Exiting gracefully")
-            reactor.stop()
-            return
+            #reactor.stop()
+            #return
         syncResult = yield self.syncRTCActivity(skipInternet = True)
         if not syncResult:
             log.critical("could not sync RTCs. Existing gracefully")
-            reactor.stop()
-            return
+            #reactor.stop()
+            #return
         self.schedulerService.startService()
         self.addActivities()
        
