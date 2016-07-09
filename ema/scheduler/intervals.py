@@ -34,7 +34,7 @@ HHMMSS = r'\s*(\d{1,2}):(\d{1,2}):(\d{1,2})'
 # Module global variables
 # -----------------------
 
-log = Logger(namespace='sched')
+log2 = Logger(namespace='interv')
 
 pat1 = re.compile(HH)
 pat2 = re.compile(HHMM)
@@ -52,6 +52,11 @@ def clipHour(hh,mm,ss):
       hh = 0; mm = 0; ss = 0
   return hh, mm, ss, carry
 
+
+def toRefDate(ts):
+    '''
+    Sets the datetome.datetime object ts to the given reference date'''
+    return ts.replace(year=2000, month=1, day=1, microsecond=0)
 
 
 def toDateTime(strtime):
@@ -109,14 +114,14 @@ class Interval(object):
       if type(lowTime) == str and type(highTime) == str:
         return Interval(toDateTime(lowTime), toDateTime(highTime))
       if type(lowTime) == str and type(highTime) == datetime.datetime:
-        highTime = highTime.replace(year=2001,month=1, day=1)
+        highTime = toRefDate(highTime)
         return Interval(toDateTime(lowTime), highTime) 
       if type(lowTime) == datetime.datetime and type(highTime) == str:
-        lowTime = lowTime.replace(year=2001,month=1, day=1)
+        lowTime = toRefDate(lowTime)
         return Interval(lowTime, toDateTime(highTime)) 
       if type(lowTime) == datetime.datetime and type(highTime) == datetime.datetime:
-        lowTime = lowTime.replace(year=2001,month=1, day=1)
-        highTime = highTime.replace(year=2001,month=1, day=1)
+        highTime = toRefDate(highTime)
+        lowTime = toRefDate(lowTime)
         return Interval(lowTime, highTime) 
         
 
@@ -275,24 +280,21 @@ class IntervalList(object):
    def find(self, tNow):
       '''Find out which interval contains tNow (a datitime stamp).
       Return True, index if found or False, None if not found'''
-      tNow = tNow.replace(year=2000,month=1, day=1, microsecond=0)
-      log.debug("finding if tNow={t} is in any interval", t=tNow)
+      tNow = toRefDate(tNow)
+      log2.debug("finding if tNow={t} is in any interval", t=tNow)
       if not self.windows[-1].isReversed():
-         log.debug("last interval is not reversed")
-         for i in range(0,len(self.windows)):
-            if self.windows[i].contains(tNow):
-               log.debug("found interval index {i} = {window}", i=i, window=self.windows[i])
-               return True, i
-         log.debug("No interval found")
-         return False, None
+         log2.debug("last interval is not reversed")
+         N = len(self.windows)
       else:
-         log.debug("last interval is reversed")
-         for i in range(0, len(self.windows)-1):
-            if self.windows[i].contains(tNow):
-               log.debug("found interval index {i} = {window}", i=i, window=self.windows[i])
-               return True, i
-         log.debug("No interval found")
-         return False, None
+         log2.debug("last interval is reversed")
+         N = len(self.windows) - 1
+
+      for i in range(0,N):
+         if self.windows[i].contains(tNow):
+            log2.debug("found interval index {i} = {window}", i=i, window=self.windows[i])
+            return True, i
+      return False, None
+      
 
 
 ##########################################################################
