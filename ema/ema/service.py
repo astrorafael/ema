@@ -195,7 +195,6 @@ class EMAService(MultiService):
             log.debug("   => HOLA, END   FOO 90 <=")
 
         active, inactive = self.schedulerService.findCurrentInterval()
-
         self.schedulerService.addActivity(foo10, 10, active, inactive)
         self.schedulerService.addActivity(foo30, 30, active, inactive)
         self.schedulerService.addActivity(foo50, 50, active, inactive)
