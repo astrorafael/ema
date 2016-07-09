@@ -161,8 +161,47 @@ class EMAService(MultiService):
         returnValue(syncResult)
 
 
-    def foo(self):
-        log.debug("   => HOLA, SOY FOO <=")
+    def addActivities(self):
+
+
+        @inlineCallbacks
+        def foo10(*args):
+            log.debug("   => HOLA, BEGIN FOO 10 <=")
+            yield task.deferLater(reactor, 305, lambda: None)
+            log.debug("   => HOLA, END   FOO 10 <=")
+
+        @inlineCallbacks
+        def foo30(*args):
+            log.debug("   => HOLA, BEGIN FOO 30 <=")
+            yield task.deferLater(reactor, 323, lambda: None)
+            log.debug("   => HOLA, END   FOO 30 <=")
+
+        @inlineCallbacks
+        def foo50(*args):
+            log.debug("   => HOLA, BEGIN FOO 50 <=")
+            yield task.deferLater(reactor, 334, lambda: None)
+            log.debug("   => HOLA, END   FOO 50 <=")
+
+        @inlineCallbacks    
+        def foo70(*args):
+            log.debug("   => HOLA, BEGIN FOO 70 <=")
+            yield task.deferLater(reactor, 351, lambda: None)
+            log.debug("   => HOLA, END   FOO 70 <=")
+
+        @inlineCallbacks
+        def foo90(*args):
+            log.debug("   => HOLA, BEGIN FOO 90 <=")
+            yield task.deferLater(reactor, 302, lambda: None)
+            log.debug("   => HOLA, END   FOO 90 <=")
+
+        active, inactive = self.schedulerService.findCurrentInterval()
+
+        self.schedulerService.addActivity(foo10, 10, active, inactive)
+        self.schedulerService.addActivity(foo30, 30, active, inactive)
+        self.schedulerService.addActivity(foo50, 50, active, inactive)
+        self.schedulerService.addActivity(foo70, 70, active, inactive)
+        self.schedulerService.addActivity(foo90, 90, active, inactive)
+
 
     @inlineCallbacks
     def _maybeExit(self, results):
@@ -177,7 +216,7 @@ class EMAService(MultiService):
             reactor.stop()
             return
         self.schedulerService.startService()
-        self.schedulerService.addActivity(self.foo, 10)
+        self.addActivities()
        
 
 
