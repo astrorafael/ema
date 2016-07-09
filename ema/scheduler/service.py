@@ -68,7 +68,7 @@ class SchedulerService(Service):
     def __init__(self, options):
         Service.__init__(self)
         self.options = options
-        self.callables = dict()
+        self.activities = dict()
         self.periodicTask = None
         setLogLevel(namespace='sched', levelStr=self.options['log_level'])
 
@@ -93,13 +93,13 @@ class SchedulerService(Service):
         '''
         if sliceperc not in [10, 30, 50, 70, 90]:
             raise BadSlice(sliceperc)
-        tPerc = (active.t0 + datetime.timedelta(seconds=int(active.duration()*sliceperc/100))).time()
+        tPerc = (active.t0 + datetime.timedelta(seconds=int(active.duration()*sliceperc/100)))
         log.debug("Adding activity to interval = {interval}, tPerc = {tPerc}", interval=active, tPerc=tPerc)
-        values = self.callables.get(tPerc, list())
-        self.callables[tPerc] = values
+        values = self.activities.get(tPerc, list())
+        self.activities[tPerc] = values
         # register non duplicate activities in order
         if (func, active, inactive) not in values:
-            self.callables[tPerc].append((func, active, inactive))
+            self.activities[tPerc].append((func, active, inactive))
        
 
     #---------------------
@@ -124,7 +124,7 @@ class SchedulerService(Service):
         Runs a schedule cycle.
         '''
         now = toRefDate(datetime.datetime.utcnow())
-        tstamps = [ datetime.datetime.combine(now.date(), t) for t in sorted(self.callables.keys(), reverse=False) ]
+        tstamps = sorted(self.activities.keys(), reverse=False)
         if len(tstamps) == 0:
             log.debug("Registering all activities again")
             self.parent.addActivities()
@@ -135,15 +135,15 @@ class SchedulerService(Service):
             log.debug("target = {target}, delta={delta}", target=target, delta=delta)
             if 0<= delta < self.T:
                 yield task.deferLater(reactor, delta, lambda: None)
-                info = self.callables[target.time()]
-                del self.callables[target.time()]
+                info = self.activities[target]
+                del self.activities[target]
                 for item in info: 
                     item[0](item[1], item[2])
                 break
             elif delta < 0 and self.findActiveInactive(now) == self.ACTIVE:
                 log.debug("deleting OBSOLETE activity at {target}", target=target)
-                info = self.callables[target.time()]
-                del self.callables[target.time()]
+                info = self.activities[target]
+                del self.activities[target]
                
 
     def findCurrentInterval(self):

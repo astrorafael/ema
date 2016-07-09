@@ -188,23 +188,8 @@ class Interval(object):
             delta = datetime.timedelta(hours=0)
         return int((self.T[1] + delta - self.T[0]).total_seconds())
 
-    def slice(self, percent=0.5):
-        '''
-        Slices an interval into two new intervals
-        Returns two Intervals, left and right
-        '''
-        total = self.duration()
-        l1 = int(round(total * percent, 0))
-        tslice = self.T[0] + datetime.timedelta(seconds=l1)
-        return Interval(self.T[0], tslice),  Interval(tslice, self.T[1]),
 
 
-    def midpoint(self):
-        '''Find the interval midpoint. 
-        Returns a datetime.time object ready to be combined
-        with the current datetime.date'''
-        left, right = self.slice(0.5)
-        return left.T[1].time()
 
 # ===================
 # Interval List Class
