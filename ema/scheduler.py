@@ -9,6 +9,7 @@
 # -------------------
 
 from __future__ import division
+
 import datetime
 import re
 
@@ -17,10 +18,16 @@ import re
 # ---------------
 
 from twisted.logger               import Logger, LogLevel
+from twisted.internet             import reactor, task
+from twisted.internet.defer       import inlineCallbacks, returnValue
 
 #--------------
 # local imports
 # -------------
+
+from .service.relopausable import Service
+from .logger   import setLogLevel
+
 
 # ----------------
 # Module constants
@@ -30,15 +37,16 @@ HH     = r'\s*(\d{1,2})'
 HHMM   = r'\s*(\d{1,2}):(\d{1,2})'
 HHMMSS = r'\s*(\d{1,2}):(\d{1,2}):(\d{1,2})'
 
-# -----------------------
-# Module global variables
-# -----------------------
+# ----------------
+# Global functions
+# -----------------
 
-log2 = Logger(namespace='interv')
+def toRefDate(ts):
+    '''
+    Set the datetome.datetime object ts to the given reference date
+    '''
+    return ts.replace(year=2000, month=1, day=1, microsecond=0)
 
-pat1 = re.compile(HH)
-pat2 = re.compile(HHMM)
-pat3 = re.compile(HHMMSS)
 
 def clipHour(hh,mm,ss):
   '''
@@ -53,16 +61,10 @@ def clipHour(hh,mm,ss):
   return hh, mm, ss, carry
 
 
-def toRefDate(ts):
-    '''
-    Sets the datetome.datetime object ts to the given reference date'''
-    return ts.replace(year=2000, month=1, day=1, microsecond=0)
-
-
 def toDateTime(strtime):
   '''
   Parses a string time for HH, HH:MM or HH:MM:SS format
-  and returns a datetime object
+  and returns a datetime.datetime object
   '''
   matchobj = pat3.search(strtime)
   if matchobj:
@@ -92,6 +94,58 @@ def toString(dt):
     return "24:00" if dt.second == 0 else "24:00:00"
   else:
     return "%02d:%02d" % (dt.hour, dt.minute) if dt.second == 0 else  "%02d:%02d:%02d" % (dt.hour, dt.minute, dt.second) 
+
+
+# -----------------------
+# Module global variables
+# -----------------------
+
+log = Logger(namespace='sched')
+log2 = Logger(namespace='interv')
+
+pat1 = re.compile(HH)
+pat2 = re.compile(HHMM)
+pat3 = re.compile(HHMMSS)
+
+# ----------
+# Exceptions
+# ----------
+
+class ReversedInterval(Exception):
+    '''Interval is reversed'''
+    def __str__(self):
+        s = self.__doc__
+        if self.args:
+            s = "{0}: '{1}'".format(s, self.args[0])
+        s = '{0}.'.format(s)
+        return s
+
+class OverlappedIntervals(Exception):
+    '''Signals overlapped intervals'''
+    def __str__(self):
+        s = self.__doc__
+        if self.args:
+            s = "{0}: {1} with {2}".format(s, self.args[0], self.args[1])
+        s = '{0}.'.format(s)
+        return s
+
+class TooShortInterval(Exception):
+    '''Interval is too short'''
+    def __str__(self):
+        s = self.__doc__
+        if self.args:
+            s = "{0}: {1} => {2} min".format(s, self.args[0], self.args[1])
+        s = '{0}.'.format(s)
+        return s
+ 
+class BadSlice(ValueError):
+    '''Interval Slice is not [10%, 30%, 50%, 70%, 90%]'''
+    def __str__(self):
+        s = self.__doc__
+        if self.args:
+            s = "{0}: '{1}'".format(s, self.args[0])
+        s = '{0}.'.format(s)
+        return s  
 
 # ==============
 # Interval Class
@@ -189,8 +243,6 @@ class Interval(object):
         return int((self.T[1] + delta - self.T[0]).total_seconds())
 
 
-
-
 # ===================
 # Interval List Class
 # ===================
@@ -280,47 +332,134 @@ class IntervalList(object):
             return True, i
       return False, None
       
+# =======================
+# Scheduler Service Class
+# =======================
+
+class SchedulerService(Service):
+
+    # Service name
+    NAME = 'Scheduler Service'
+
+    # Interval constants
+    ACTIVE    = "active"
+    INACTIVE  = "inactive"
+    
+    T = 9
+
+    def __init__(self, options):
+        Service.__init__(self)
+        self.options = options
+        self.activities = dict()
+        self.periodicTask = None
+        setLogLevel(namespace='sched', levelStr=self.options['log_level'])
+
+    
+    def startService(self):
+        log.info("starting {name}", name=self.name)
+        Service.startService(self)
+        self.windows  = IntervalList.parse(self.options['intervals'], 15)
+        self.gaps     = ~ self.windows
+        self.periodicTask = task.LoopingCall(self._schedule)
+        self.periodicTask.start(self.T, now=False) # call every T seconds
+      
+
+    def stopService(self):
+        self.periodicTask.stop()
+        Service.stopService(self)
 
 
-##########################################################################
+    def addActivity(self, func, sliceperc, active, inactive):
+        '''
+        Add and activity (a callable) to be called active window.
+        '''
+        if sliceperc not in [10, 30, 50, 70, 90]:
+            raise BadSlice(sliceperc)
+        tPerc = (active.t0 + datetime.timedelta(seconds=int(active.duration()*sliceperc/100)))
+        log.debug("Adding activity to interval = {interval}, tPerc = {tPerc}", interval=active, tPerc=tPerc)
+        values = self.activities.get(tPerc, list())
+        self.activities[tPerc] = values
+        # register non duplicate activities in order
+        if (func, active, inactive) not in values:
+            self.activities[tPerc].append((func, active, inactive))
+       
+
+    #---------------------
+    # Extended Service API
+    # --------------------
+
+    def reloadService(self, options):
+        options = options['scheduler']
+        log.info("new log level is {lvl}", lvl=options['log_level'])
+        setLogLevel(namespace='inet', levelStr=options['log_level'])
+        if self.periodicTask:
+            self.periodicTask.reset()   # ESTO HAY QUE VERLO, A LO MEJOR HAY QUE CREAR OTRA TAREA
+        self.options = options
+
+    # --------------
+    # Helper methods
+    # ---------------
+
+    @inlineCallbacks
+    def _schedule(self):
+        '''
+        Runs a schedule cycle.
+        '''
+        now = toRefDate(datetime.datetime.utcnow())
+        tstamps = sorted(self.activities.keys(), reverse=False)
+        if len(tstamps) == 0:
+            log.debug("Registering all activities again")
+            self.parent.addActivities()
+            returnValue(None)
+
+        for target in tstamps:
+            delta = (target - now).total_seconds()
+            log.debug("target = {target}, delta={delta}", target=target, delta=delta)
+            if 0<= delta < self.T:
+                yield task.deferLater(reactor, delta, lambda: None)
+                info = self.activities[target]
+                del self.activities[target]
+                for item in info: 
+                    item[0](item[1], item[2])
+                break
+            elif delta < 0 and self.findActiveInactive(now) == self.ACTIVE:
+                log.debug("deleting OBSOLETE activity at {target}", target=target)
+                info = self.activities[target]
+                del self.activities[target]
+               
+
+    def findCurrentInterval(self):
+        '''Find the current interval'''     
+        tNow = datetime.datetime.utcnow()
+        found, i = self.windows.find(tNow)
+        if found:
+            active   = self.windows[i]
+            inactive = self.gaps[i]
+            log.debug("now {now} we are in the active window {window}", now=tNow.strftime("%H:%M:%S"), window=active)
+            log.debug("Next inactive gap will be {gap}",  gap=inactive)
+        else:
+            found, i = self.gaps.find(tNow)
+            inactive = self.gaps[i]
+            active   = self.windows[i+1 % len(self.windows)]
+            log.debug("now {now} we are in the inactive window {gap}", now=tNow.strftime("%H:%M:%S"), gap=inactive)
+            log.debug("Next active gap will be {window}", window=active)
+        return active, inactive
 
 
+    def findActiveInactive(self, tNow):
+        '''A shorter version which only returns ACTIVE or INACTIVE state'''
+        found, i = self.windows.find(tNow)
+        if found:
+            where = self.ACTIVE
+        else:
+            where = self.INACTIVE
+        return where
+           
 
-if __name__ == "__main__":
 
-  print toDateTime("24")
-  print toDateTime("3")
-  print toDateTime("22")
-  print toDateTime("24:00")
-  print toDateTime("3:5")
-  print toDateTime("22:23")
-  print toDateTime("24:00:00")
-  print toDateTime("23:45:56")
-  print toDateTime("24:23:45")
-
-  print Interval.create("23:45:56", "24:00:00")
-  print Interval.create("23:45:56", "24:00:00").isReversed()
-  print Interval.create("23:45:56", "00:00:00").isReversed()
-  print ~Interval.create("23:45:56", "00:00:00")
-  print ~Interval.create("23:45:56", "24:00:00")
-
-  aux_window = "23:00-23:05,23:10-23:15,23:20-23:25,23:30-23:35,23:40-23:45,23:50-23:55,11:00-11:05,11:10-11:15,11:20-11:25,11:30-11:35,11:40-11:45,11:50-11:55,12:00-12:05,12:10-12:15,12:20-12:25,12:30-12:35,12:40-12:45,12:50-12:55,13:00-13:05,13:10-13:15,13:20-13:25,13:30-13:35,13:40-13:45,13:50-13:55,14:00-14:05,14:10-14:15,14:20-14:25,14:30-14:35,14:40-14:45,14:50-14:55,15:00-15:05,15:10-15:15,15:20-15:25,15:30-15:35,15:40-15:45,15:50-15:55,16:00-16:05,16:10-16:15,16:20-16:25,16:30-16:35,16:40-16:45,16:50-16:55,17:00-17:05,17:10-17:15,17:20-17:25,17:30-17:35,17:40-17:45,17:50-17:55,18:00-18:05,18:10-18:15,18:20-18:25,18:30-18:35,18:40-18:45,18:50-18:55,19:00-19:05,19:10-19:15,19:20-19:25,19:30-19:35,19:40-19:45,19:50-19:55,20:00-20:05,20:10-20:15,20:20-20:25,20:30-20:35,20:40-20:45,20:50-20:55,21:00-21:05,21:10-21:15,21:20-21:25,21:30-21:35,21:40-21:45,21:50-21:55,22:00-22:05,22:10-22:15,22:20-22:25,22:30-22:35,22:40-22:45,22:50-22:55"
-
-  w = IntervalList.parse(aux_window)
-  print(w)
-  print
-  print "SORTING"
-  print
-  print(str(w.sorted()))
-  print
-    #print "INVERTING"
-    #print
-    #print( str( ~w.sorted() ) )
-  flag, i = w.find(now())
-  if flag:
-    print flag
-    print(str(w[i]))
-  else:
-    print flag
- 
- 
+__all__ = [
+    "ScheduleService",
+    "ReversedInterval",
+    "OverlappedIntervals",
+    "TooShortInterval",
+]

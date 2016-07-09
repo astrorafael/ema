@@ -27,8 +27,8 @@ from twisted.application.service  import Service
 # local imports
 # -------------
 
-from ..logger import setLogLevel
-from ..service.relopausable import Service
+from .logger import setLogLevel
+from .service.relopausable import Service
 
 # ----------------
 # Module constants

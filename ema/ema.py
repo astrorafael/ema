@@ -28,18 +28,17 @@ from twisted.internet.threads import deferToThread
 # local imports
 # -------------
 
-from ..config import VERSION_STRING, loadCfgFile
-from ..logger import setLogLevel
+from .config import VERSION_STRING, loadCfgFile
+from .logger import setLogLevel
 
-from ..service.relopausable import MultiService
+from .service.relopausable import MultiService
 
 #from ..mqtt.service import MQTTService, NAME as MQTT_NAME
 
-from ..serial.service import SerialService
-from ..scripts        import ScriptsService
-from ..scheduler      import SchedulerService
-from ..internet       import InternetService
-from ..scripts        import AlreadyExecutedScript, AlreadyBeingExecutedScript, ScriptNotFound
+from .serial.service import SerialService
+from .scripts        import ScriptsService, AlreadyExecutedScript, AlreadyBeingExecutedScript, ScriptNotFound
+from .scheduler      import SchedulerService
+from .internet       import InternetService
 
 # ----------------
 # Module constants
