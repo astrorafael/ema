@@ -35,6 +35,10 @@ log_level = debug
 # The host computer (i.ea Raspberry Pi)  has a buli-in RTC
 host_rtc = no
 
+# Number of retries to detect an EMA
+# Usually set to 3, set to 0 for debugging purposes
+nretries = 0
+
 #------------------------------------------------------------------------#
 
 [serial]
