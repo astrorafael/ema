@@ -422,7 +422,10 @@ class SchedulerService(Service):
                 del self.activities[target]
                 for item in info: 
                     item[0](item[1], item[2])
-                self.parent.onEventExecute(item[3], str(item[1].t0.time()), str(item[1].t1.time()))
+                self.parent.onEventExecute(item[3], now.time(),
+                    str(item[1].t0.time()), str(item[1].t1.time()),
+                    str(item[2].t0.time()), str(item[2].t1.time())
+                    )
                 break
             elif delta < 0 and self.findActiveInactive(now) == self.ACTIVE:
                 log.debug("deleting OBSOLETE activity at {target}", target=target)

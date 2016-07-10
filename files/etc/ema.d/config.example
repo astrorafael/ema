@@ -164,15 +164,15 @@ active90 =
 # When launched mutiple times, EMA server does not lauch a script
 # till the previous run is over
 active10_mode = Once
-active10_args = '--start %s --end %s'
+active10_args = '--now %s --active-start %s --active-end %s --inactive-start %s --inactive-end %s'
 active30_mode = Once
-active30_args = '--start %s --end %s'
+active30_args = '--now %s --active-start %s --active-end %s --inactive-start %s --inactive-end %s'
 active50_mode = Once
-active50_args = '--start %s --end %s'
+active50_args = '--now %s --active-start %s --active-end %s --inactive-start %s --inactive-end %s'
 active70_mode = Once
-active70_args = '--start %s --end %s'
+active70_args = '--now %s --active-start %s --active-end %s --inactive-start %s --inactive-end %s'
 active90_mode = Once
-active90_args = '--start %s --end %s'
+active90_args = '--now %s --active-start %s --active-end %s --inactive-start %s --inactive-end %s'
 
 # component log level (debug, info, warn, error, critical)
 log_level = debug
