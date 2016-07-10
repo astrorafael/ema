@@ -1,12 +1,10 @@
 Prioridad alta
 ==============
-- Refactorizar modulos para quitar ficheros (ema service, internet service scheduler service)
 
 - EL README esta hecho unos zorros
 
 - documentar el SCHEDULER en el README
 
-- ema => emad (script de servicio y comando -k)
 
  - Comunicación al modulo MQTT con Colas deque() para desacoplar el servicio
   MQTT del servicio de lectura.
@@ -44,5 +42,6 @@ class DateTimeEncoder(json.JSONEncoder):
 Prioreidad baja
 ===============
 *) API REST de telegestion por HTTP (Usar klein?)
+mirar diseño de API en http://dev.enchant.com/api/v1
 *) Repasar unidades, escala y rango  de los comandos
 

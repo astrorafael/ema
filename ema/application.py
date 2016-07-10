@@ -22,13 +22,13 @@ from .service.relopausable import Service, MultiService, Application
 from .logger import sysLogInfo,  startLogging
 from .config import VERSION_STRING, cmdline, loadCfgFile
 
-#from .mqttservice import MQTTService
+#from .mqtt     import MQTTService
 
-from .ema            import EMAService
-from .serial.service import SerialService    
-from .internet       import InternetService  
-from .scripts        import ScriptsService   
-from .scheduler      import SchedulerService
+from .ema       import EMAService
+from .serial    import SerialService    
+from .internet  import InternetService  
+from .scripts   import ScriptsService   
+from .scheduler import SchedulerService
 
 
 

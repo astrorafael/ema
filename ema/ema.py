@@ -35,7 +35,7 @@ from .service.relopausable import MultiService
 
 #from ..mqtt.service import MQTTService, NAME as MQTT_NAME
 
-from .serial.service import SerialService
+from .serial         import SerialService
 from .scripts        import ScriptsService, AlreadyExecutedScript, AlreadyBeingExecutedScript, ScriptNotFound
 from .scheduler      import SchedulerService
 from .internet       import InternetService
