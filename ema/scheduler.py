@@ -375,13 +375,14 @@ class SchedulerService(Service):
         '''
         if sliceperc not in [10, 30, 50, 70, 90]:
             raise BadSlice(sliceperc)
+        event = 'active{0}'.format(sliceperc) 
         tPerc = (active.t0 + datetime.timedelta(seconds=int(active.duration()*sliceperc/100)))
         log.debug("Adding activity to interval = {interval}, tPerc = {tPerc}", interval=active, tPerc=tPerc)
         values = self.activities.get(tPerc, list())
         self.activities[tPerc] = values
         # register non duplicate activities in order
-        if (func, active, inactive) not in values:
-            self.activities[tPerc].append((func, active, inactive))
+        if (func, active, inactive, event) not in values:
+            self.activities[tPerc].append((func, active, inactive, event))
        
 
     #---------------------
@@ -421,6 +422,7 @@ class SchedulerService(Service):
                 del self.activities[target]
                 for item in info: 
                     item[0](item[1], item[2])
+                self.parent.onEventExecute(item[3], str(item[1].t0.time()), str(item[1].t1.time()))
                 break
             elif delta < 0 and self.findActiveInactive(now) == self.ACTIVE:
                 log.debug("deleting OBSOLETE activity at {target}", target=target)

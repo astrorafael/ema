@@ -150,6 +150,30 @@ no_internet_args = ''
 no_internet_mode = Once
 
 
+# List of comma separated scripts to execute when
+# the current time reaches the 10%, 30%, 50%, 70%, 90% active interval
+# Each script should show the full path. 
+# Leave empty if not used
+active10 =
+active30 =
+active50 =
+active70 =
+active90 =
+
+# Script mode: (Never, Once, Many)
+# When launched mutiple times, EMA server does not lauch a script
+# till the previous run is over
+active10_mode = Once
+active10_args = '--start %s --end %s'
+active30_mode = Once
+active30_args = '--start %s --end %s'
+active50_mode = Once
+active50_args = '--start %s --end %s'
+active70_mode = Once
+active70_args = '--start %s --end %s'
+active90_mode = Once
+active90_args = '--start %s --end %s'
+
 # component log level (debug, info, warn, error, critical)
 log_level = debug
 

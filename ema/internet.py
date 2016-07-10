@@ -86,6 +86,8 @@ class InternetService(Service):
             i += 1
             log.info("waiting {s} seconds for next probe", s=self.T)
             yield deferLater(reactor, self.T, lambda: None)
+        if not quorum:
+            self.parent.onEventExecute('no_internet')
         returnValue(quorum)
 
     #---------------------

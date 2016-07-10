@@ -45,3 +45,32 @@ Prioreidad baja
 mirar diseño de API en http://dev.enchant.com/api/v1
 *) Repasar unidades, escala y rango  de los comandos
 
+
+PILLAR ERROR CUANDO FALTA MUY PPOCO QUE MPIECEUN INTERVALO ACTIVO
+
+2016-07-10T08:57:42+0000 [sched#info] starting Scheduler Service
+2016-07-10T08:57:42+0000 [twisted.internet.defer#critical] Unhandled error in Deferred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python2.7/dist-packages/twisted/internet/defer.py", line 393, in callback
+    self._startRunCallbacks(result)
+  File "/usr/local/lib/python2.7/dist-packages/twisted/internet/defer.py", line 501, in _startRunCallbacks
+    self._runCallbacks()
+  File "/usr/local/lib/python2.7/dist-packages/twisted/internet/defer.py", line 588, in _runCallbacks
+    current.result = callback(current.result, *args, **kw)
+  File "/usr/local/lib/python2.7/dist-packages/twisted/internet/defer.py", line 1184, in gotResult
+    _inlineCallbacks(r, g, deferred)
+--- <exception caught here> ---
+  File "/usr/local/lib/python2.7/dist-packages/twisted/internet/defer.py", line 1128, in _inlineCallbacks
+    result = g.send(result)
+  File "ema/ema.py", line 217, in _maybeExit
+    self.addActivities()
+  File "ema/ema.py", line 196, in addActivities
+    active, inactive = self.schedulerService.findCurrentInterval()
+  File "ema/scheduler.py", line 444, in findCurrentInterval
+    inactive = self.gaps[i]
+  File "ema/scheduler.py", line 270, in __getitem__
+    return self.windows[i]
+exceptions.TypeError: list indices must be integers, not NoneType
+^C2016-07-10T08:57:48+0000 [-] Received SIGINT, shutting down.
+2016-07-10T08:57:48+0000 [-] Main loop terminated.

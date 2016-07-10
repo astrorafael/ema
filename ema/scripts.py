@@ -140,6 +140,7 @@ class ScriptProtocol(ProcessProtocol):
         the stdin pipe (using self.transport.write )
         '''
         log.debug("connectionMade!")
+        self.transport.closeStdin()
         
     def outReceived(self, data):
         '''
@@ -300,6 +301,11 @@ class ScriptsService(Service):
             self.addScript('aux_relay')
             self.addScript('roof_relay')
             self.addScript('no_internet')
+            self.addScript('active10')
+            self.addScript('active30')
+            self.addScript('active50')
+            self.addScript('active70')
+            self.addScript('active90')
         except Exception as e:
             log.failure("{excp}", excp=e)
             raise
@@ -325,7 +331,7 @@ class ScriptsService(Service):
         '''
         Event Handlr coming from the Voltmeter
         '''
-        log.info("ON EVENT EXECUTE {event} {rest!r}", event=event, rest=args)
+        log.info("On event {event} executing script with args{rest!r}", event=event, rest=args)
         for script in self.scripts[event]:
             try:
                 script.run(*args)

@@ -105,6 +105,7 @@ class EMAService(MultiService):
         self.serialService    = self.getServiceNamed(SerialService.NAME)
         self.schedulerService = self.getServiceNamed(SchedulerService.NAME)
         try:
+            self.scriptsService.startService()
             yield defer.maybeDeferred(self.serialService.startService)
         except Exception as e:
             log.error("{excp}", excp=e)
