@@ -252,7 +252,7 @@ def match(line):
             return UNSOLICITED_RESPONSES[UNSOLICITED_PATTERNS.index(regexp)]
     return None
 
-def decode(line):
+def decodeStatus(line):
   '''Decode an EMA status line'''
   #status = { 'rev': VERSION, 'tstamp': timestamp.strftime(TSTAMP_FORMAT) }
   status            = []
@@ -1228,6 +1228,12 @@ class BulkDumpCommand(object):
         '''
         self.encoded = self.CMDFORMAT
 
+    def getEncoded(self):
+        '''
+        Default implementation is to return the cached result
+        '''
+        return str(self.encoded) if PY2 else bytes(self.encoded)
+
     def decodeOneIteration(self, line):
         '''
         Generic decoding algorithm for one iteration of commands
@@ -1309,7 +1315,7 @@ class GetDailyMinMaxDump(BulkDumpCommand):
         '''Default implementation, maybe overriden in subclasses'''
 
         if self.i < 2:
-            vec, _ = decodeStatusAsList(line)
+            vec, _ = decodeStatus(line)
             self.response[self.iteration].append(vec)
         else:
             tstamp = datetime.datetime.strptime(line, self.EMA_TIME_FORMAT)
@@ -1346,7 +1352,7 @@ class Get5MinAveragesDump(BulkDumpCommand):
         today        = datetime.datetime.utcnow()
         yesterday    = today - self.ONE_DAY
         todayPage    = self.toPage(today.time())
-        status, page = decodeStatusAsList(line)
+        status, page = decodeStatus(line)
         if todayPage < page:
             log.debug("Timestamping with today's day")
             time, _ = self.toTime(page)
