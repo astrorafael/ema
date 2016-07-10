@@ -100,7 +100,7 @@ def toString(dt):
 # Module global variables
 # -----------------------
 
-log = Logger(namespace='sched')
+log  = Logger(namespace='sched')
 log2 = Logger(namespace='interv')
 
 pat1 = re.compile(HH)
@@ -159,11 +159,14 @@ class Interval(object):
     [00:00:00-24:00:00] is the time interval from 0H 0m 0s to 23:59:59
     '''
 
+    MIN = datetime.datetime(2000,1,1,0,0,0)
+    MAX = datetime.datetime(2000,1,2,0,0,0)
+
     @staticmethod
     def create(lowTime, highTime):
       '''
       Builds an interval given two strings, datetime objects or anything in between
-      Datetimes are first normalized to 2001 jan, 1
+      Datetimes are first normalized to 2000 jan, 1
       '''
       if type(lowTime) == str and type(highTime) == str:
         return Interval(toDateTime(lowTime), toDateTime(highTime))
@@ -232,7 +235,9 @@ class Interval(object):
         Find if interval contains timestamp.
         Returns True if so'
         '''
-        return self.T[0] <= dt < self.T[1]
+        result = self.T[0] <= dt < self.T[1]
+        #log2.debug("{t0} <= {dt} < {t1} => {result}", t0=self.T[0], dt=dt, t1=self.T[1], result=result)
+        return result
 
     def duration(self):
         '''Returns interval duration in seconds'''
@@ -317,16 +322,22 @@ class IntervalList(object):
    def find(self, tNow):
       '''Find out which interval contains tNow (a datitime stamp).
       Return True, index if found or False, None if not found'''
+      N = len(self.windows)  
       tNow = toRefDate(tNow)
-      log2.debug("finding if tNow={t} is in any interval", t=tNow)
-      if not self.windows[-1].isReversed():
-         log2.debug("last interval is not reversed")
-         N = len(self.windows)
-      else:
+      if self.windows[-1].isReversed():
+         N -= 1
          log2.debug("last interval is reversed")
-         N = len(self.windows) - 1
-
+         interval1 = Interval(self.windows[-1].t0, Interval.MAX)
+         interval2 = Interval( Interval.MIN, self.windows[-1].t0)
+         log2.debug("checking {tNow} against interval {interval}", tNow=tNow.time(), interval=interval1)
+         if interval1.contains(tNow):
+            return True, N
+         log2.debug("checking {tNow} against interval {interval}", tNow=tNow.time(), interval=interval2)
+         if interval2.contains(tNow):
+            return True, N
+         
       for i in range(0,N):
+         log2.debug("checking {tNow} against interval {interval}", tNow=tNow.time(), interval=self.windows[i])
          if self.windows[i].contains(tNow):
             log2.debug("found interval index {i} = {window}", i=i, window=self.windows[i])
             return True, i
@@ -352,7 +363,8 @@ class SchedulerService(Service):
         self.options = options
         self.activities = dict()
         self.periodicTask = None
-        setLogLevel(namespace='sched', levelStr=self.options['log_level'])
+        setLogLevel(namespace='sched',  levelStr=self.options['log_level'])
+        setLogLevel(namespace='interv', levelStr='info')
 
     
     def startService(self):
@@ -362,6 +374,8 @@ class SchedulerService(Service):
         self.gaps     = ~ self.windows
         self.periodicTask = task.LoopingCall(self._schedule)
         self.periodicTask.start(self.T, now=False) # call every T seconds
+        log.debug("Active   intervals = {windows!s}", windows=self.windows)
+        log.debug("Inactive intervals = {gaps!s}", gaps=self.gaps)
       
 
     def stopService(self):
