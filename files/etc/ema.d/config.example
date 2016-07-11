@@ -29,8 +29,6 @@
 # Log File settings
 log_file = /var/log/ema.log
 
-# component log level (debug, info, warn, error, critical)
-log_level = debug
 
 # The host computer (i.ea Raspberry Pi)  has a buli-in RTC
 host_rtc = no
@@ -38,6 +36,27 @@ host_rtc = no
 # Number of retries to detect an EMA
 # Usually set to 3, set to 0 for debugging purposes
 nretries = 0
+
+# EMA sends status mesaages every 5 seconds
+# We may not wish to publish all the messages
+# so we subsample.
+# This si the subsample period in seconds
+# can be no less than 5 seconds
+period = 60
+
+# Flag: shuts down this program when 90% active time interval been reached
+# Warning: This does not shut down the computer. 
+# An script at 90% activity should do it.
+shutdown = yes
+
+# Flag: Program EMA Aux Relay switch on/off power supply 
+# with the next activity interval set in the scheduler.
+# Warning: This does not shut down the computer. 
+# An script at 90% activity should do it.
+relay_shutdown = yes
+
+# component log level (debug, info, warn, error, critical)
+log_level = debug
 
 #------------------------------------------------------------------------#
 

@@ -152,7 +152,7 @@ class ScriptProtocol(ProcessProtocol):
         To do it properly, outReceived ought to simply accumulate the
         data and put off doing anything with it until the process has finished.
         '''
-        log.info("script sent => {data}", data=data)
+        log.info("{data}", data=data.rstrip('\r\n'))
        
 
     def errReceived(self, data):
@@ -160,7 +160,7 @@ class ScriptProtocol(ProcessProtocol):
         This is called with data from the process’ stderr pipe. 
         It behaves just like outReceived().
         '''
-        log.info("error from script => {data}", data=data)
+        log.info("{data}", data=data.rstrip('\r\n'))
 
     def inConnectionLost(self):
         '''

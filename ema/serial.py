@@ -16,6 +16,7 @@ import sys
 import datetime
 import json
 import math
+import random
 
 from collections import deque
 
@@ -369,6 +370,19 @@ class AuxiliarRelay(Device):
         else:
             pass
 
+    def mode(self, value):
+        '''
+        Program Auxiliar Relay Mode
+        Either 'Auto','Open', 'Close', 'Timer/On', 'Timer/Off'
+        Returns a deferred
+        '''
+        return self.parent.protocol.setAuxRelayMode(value)
+
+    @inlineCallbacks
+    def nextRelayCycle(self, inactiveInterval):
+        yield self.parent.protocol.setAuxRelaySwitchOffTime(inactiveInterval.t0.time())
+        yield self.parent.protocol.setAuxRelaySwitchOnTime(inactiveInterval.t1.time())
+
 #---------------------------------------------------------------------
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -521,7 +535,7 @@ class Watchdog(Device):
         self.pingTask  = task.LoopingCall(self.ping)
 
     def start(self):
-        self.pingTask.start(self.options['period']//2, now=False)
+        self.pingTask.start(self.options['period']//2+random.random(), now=False)
 
     def stop(self):
         self.pingTask.stop()
@@ -554,10 +568,9 @@ class SerialService(ClientService):
         self.factory   = EMAProtocolFactory()
         self.serport   = None
         self.protocol  = None
+        self.vmag      = None
         self.devices   = []
-        self.synchroComplete = False
-        self.synchroError    = False
-        self.goSerial = self._decide()
+        self.goSerial  = self._decide()
 
 
     def _decide(self):
@@ -603,18 +616,6 @@ class SerialService(ClientService):
             return d
             
 
-
-    def parameters(self, result):
-        with open("/sys/class/net/eth0/address",'r') as fd:
-            mac = fd.readline().rstrip('\r\n')
-        mydict = { 'mac': mac }
-        for device in self.devices:
-            mydict.update(device.parameters())
-        log.info("PARAMETERS = {p}", p=mydict)
-        reactor.callLater(5, self.protocol.setRoofRelayMode, 'Closed')
-        reactor.callLater(10, self.protocol.setRoofRelayMode, 'Open')
-
-
     def _buildDevices(self):
         self.rtc         = RealTimeClock(self, self.options['rtc'])
         self.voltmeter   = Voltmeter(self, self.options['voltmeter'],
@@ -649,9 +650,25 @@ class SerialService(ClientService):
     def gotProtocol(self, protocol):
         log.debug("got Protocol")
         self.protocol  = protocol
+        self.protocol.addStatusCallback(self.onStatus)
+        self.protocol.addPhotometerCallback(self.onVisualMagnitude)
         self._buildDevices()
-        #self.sync().addCallback(self.parameters)
         self.watchdog.start()
+
+
+    def onVisualMagnitude(self, vmag, tstamp):
+        '''Records last visual magnitude update'''
+        self.vmag = vmag
+
+
+    def onStatus(self, status, tstamp):
+        '''
+        Adds last visual magnitude estimate
+        and pass it upwards
+        '''
+        if self.vmag:
+            status['mag'] = self.vmag
+        self.parent.onStatusReceived(status, tstamp)
 
         
     @inlineCallbacks
@@ -672,18 +689,30 @@ class SerialService(ClientService):
         Devices synchronization.
         Cannot send EMA MQTT registration until not sucessfully synchronized
         '''
-        self.synchroError    = False
-        self.synchroComplete = False
+        ok = True
         for device in self.devices:
             try:
                 yield device.sync()
             except (EMARangeError, EMATimeoutError) as e:
                 log.error("Synchronization error => {error}", error=e)
                 self.parent.logMQTTEvent(msg="Synchronization error", kind="error")
-                self.synchroError = True
+                ok = False
                 break
-        self.synchroComplete = True
+        returnValue(ok)
 
+
+    def getParameters(self):
+        '''
+        Get all parameters once al devices synchronized
+        '''
+        with open("/sys/class/net/eth0/address",'r') as fd:
+            mac = fd.readline().rstrip('\r\n')
+        mydict = { 'mac': mac }
+        for device in self.devices:
+            mydict.update(device.parameters())
+        log.info("PARAMETERS = {p}", p=mydict)
+        return mydict
+       
 
     def syncRTC(self):
         return self.rtc.sync()
@@ -704,6 +733,43 @@ class SerialService(ClientService):
         else:
             Service.stopService(self)
 
+    def nextRelayCycle(self, inactiveI):
+        '''
+        Program next auxiliar relay switch on/off cycle
+        Returns a Deferred with Noneas value
+        '''
+        return self.aux_relay.nextRelayCycle(inactiveT)
+
+
+    def auxRelayTimer(self, flag):
+        '''
+        Activates/Deactivates Auxiliar timer mode
+        Returns a Deferred 
+        '''
+        if flag:
+            return self.aux_relay.mode('Timer/On')
+        else:
+            return self.aux_relay.mode('Timer/On')
+        
+
+    def getDailyMinMaxDump(self):
+        '''
+        Get Daily Min Max accumulated measurements.
+        Retuns a Deferred whose success callback returns a complex structure (see README.md).
+        An errback may be invoked with EMATimeoutError after nretries have been made.
+        '''
+        return self.protocol.getDailyMinMaxDump()
+
+
+    def get5MinAveragesDump(self):
+        '''
+        Get Daily Min Max accumulated measurements.
+        Retuns a Deferred whose success callback returns a complex structure (see README.md).
+        An errback may be invoked with EMATimeoutError after nretries have been made.
+        '''
+        return self.protocol.getDailyMinMaxDump()
+
+
     #---------------------
     # Extended Service API
     # --------------------
@@ -716,12 +782,11 @@ class SerialService(ClientService):
         log.info("new log level is {lvl}", lvl=options['log_level'])
         self.options = options
         
-
-   
-
     # -------------
     # EMA API
     # -------------
+
+
 
     # ----------
     # Events API
@@ -733,15 +798,11 @@ class SerialService(ClientService):
         '''
         self.parent.onEventExecute(event, *args)
     
-  
-
     # --------------
     # Helper methods
     # ---------------
    
   
-
-
     def onPublish(self):
         '''
         Serial message Handler

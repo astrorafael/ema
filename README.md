@@ -7,18 +7,15 @@ This is a new version using [Python Twisted Asynchronous I/O framweork](https://
 
 | Table of Contents                                                          |
 |:---------------------------------------------------------------------------|
-| [Description](README.md#Description) |
-| [Installation](README.md#Installation) |
-| [Start/Stop/Reload/Pause]((README.md#StartStopReloadPause)
-| [Configuration](README.md#Configuration) |
-| [Features](README.md#Features) |
-| [RTC Synchronization](Readme.md#RTC) |
-| [Parameter Synchronization] 
-| [Publishing MQTT Data](README.md#Publishing Data) |
-| [MQTT](README.md#MQTT) |
-| [Scheduler](README.md#Scheduler) |
-| [Events and Scripts](README.md#Scripts) |
-
+| [Description](README.md#Description)                                       |
+| [Installation](README.md#Installation)                                     |
+| [Start/Stop/Reload/Pause]((README.md#StartStopReloadPause)                 |
+| [Configuration](README.md#Configuration)                                   |
+| [RTC Synchronization](Readme.md#RTC)                                       |
+| [Parameter Synchronization](Readme.md#Parameters)]                         | 
+| [Scheduler](README.md#Scheduler)                                           |
+| [Events and Scripts](README.md#Scripts)                                    |
+| [MQTT Publishing](README.md#MQTT)                                          |
 
 ## <a name="Description"> Description
 
@@ -123,7 +120,7 @@ Log file is placed under `/var/log/ema.log` (Linux) or `C:\ema\log\ema.log` (Win
 Default log level is `info`. It generates very litte logging at this level.
 On Linux, the log is rotated through the /etc/logrotate.d/ema policy. On Windows, there is no such policy.
 
-# FEATURES
+# <a name="Features"> FEATURES
 
 ## <a name="RTC"> Logging Real Time Clock synchronization
 
@@ -161,24 +158,36 @@ Each instrument may have:
 Calibration constants are set once for all and are seldom changed, if any.
 Threshold values may change at convenience. All of these reside in the configuration file. Each virtual instrument may be individualy synchronized (or not) with the file contents.
 
-## MQTT Topics
+## <a name="Scheduler"> Scheduler
+
+EMAd configuration file contains a list of active daily time intervals. In these active intervals, several activities are made (i.e parameter synchroization, historic data bulk dump, etc). Each interval must be at least 15 minutes long. A single 00:00-24:00 always active interval is also possible.
+
+Activities done in the active interval are distributed among several moments:
+
+* At 10%: Parameter synchronization and MQTT registry. Execute scripts.
+* At 30%: Dump daily minmax history. Execute scripts
+* At 50%: Dump 5min average daily history. Execute scripts
+* At 70%: Program next Auxiliar relay switch on switch off cycle. Execute scripts.
+* At 90%: RTC synchronization. Execute scripts (i.e. a shutdown script)
+
+## <a name="MQTT"> MQTT Publishing
 
 | Topic                | Description                                          |
-|:--------------------:|:-----------------------------------------------------|
+|:---------------------|:-----------------------------------------------------|
 | EMA/register         | Where EMA weather stations declare themselves online |
-| EMA/<channel>/events           | Log for important events, with levels      |
-| EMA/<channel>/current/state    | EMA current measurements,every minute      |
-| EMA/<channel>/historic/minmax  | Daily minima and maxima, every hour        |
-| EMA/<channel>/historic/average | Daily average, every 5 minutes             |
+| EMA/{channel}/events           | Log for important events, with levels      |
+| EMA/{channel}/current/state    | EMA current measurements,every minute      |
+| EMA/{channel}/historic/minmax  | Daily minima and maxima, every hour        |
+| EMA/{channel}/historic/average | Daily average, every 5 minutes             |
 
-<channel> is an intermedaite topic level that aggregates several EMAs into one.
-In the extreme cases, <channel> could be the unique device name or a single constant string for all EMAs.
+{channel} is an intermedaite topic level that aggregates several EMAs into one.
+In the extreme cases, {channel} could be the unique device name or a single constant string for all EMAs.
 
-## MQTT Payloads
+### MQTT Payloads
 
 All payloads are in JSON format
 
-### Published on EMA/register
+#### Published on EMA/register
 
 | Field name              |  Type  | Description                             |
 |:-----------------------:|:------:|:----------------------------------------|
@@ -198,7 +207,7 @@ All payloads are in JSON format
 | voltmeter_offset        | float  | ADC Voltage offset [V]                  |
  
 
-### Published on EMA/<channel>/events
+#### Published on EMA/{channel}/events
 
 All fields are mandatory
 
@@ -215,7 +224,7 @@ All fields are mandatory
 { "who": "ema1", "tstamp": "2016-06-05T23:45:03" "type": "info", "msg": "<a message>"} 
 ```
 
-### Published on EMA/<channel>/current/state
+#### Published on EMA/{channel}/current/state
 
 All fields are mandatory
 
@@ -226,7 +235,7 @@ All fields are mandatory
 | tstamp     | string | timestamp "YYYY-MM-DDThh:mm:ss", UTC                 |
 | current    | seq    | Current readings vector                              |
 
-### Published on EMA/<channel>/historic/minmax
+### Published on EMA/{channel}/historic/minmax
 
 All fields are mandatory
 
@@ -237,7 +246,7 @@ All fields are mandatory
 | tstamp     | string | timestamp "YYYY-MM-DDThh:mm:ss", UTC                 |
 | minmax     | seq    | Sequence of 24 tuples [timestamp, max vec, min vec ] |
 
-### Published on EMA/<channel>/historic/average
+#### Published on EMA/{channel}/historic/average
 
 All fields are mandatory
 
@@ -248,7 +257,7 @@ All fields are mandatory
 | tstamp     | string | timestamp "YYYY-MM-DDThh:mm:ss", UTC                 |
 | averages   | seq    | Sequence of 288 tuples [timestamp, average vector]   |
 
-### Readings vector
+#### Readings vector
 
 JSON sequence embedded in messages above, with all instrument readings.
 This vector may contain current, maxima minima or averaged values depending

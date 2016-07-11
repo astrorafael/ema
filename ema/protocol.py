@@ -176,7 +176,7 @@ UNSOLICITED_RESPONSES = (
     },
     {
         'name'    : 'Photometer end',
-        'pattern' : '^\(\d{2}:\d{2}:\d{2} mv:\d{2}\.\d{2}\)',            
+        'pattern' : '^\(\d{2}:\d{2}:\d{2} mv:(\d{2}\.\d{2})\)',            
     },
     {
         'name'    : 'Thermopile I2C',
@@ -244,13 +244,14 @@ def magnitude(frequency):
    return round(mv,1)
 
 
-def match(line):
+def match_unsolicited(line):
     '''Returns matched command descriptor or None'''
     for regexp in UNSOLICITED_PATTERNS:
-        if regexp.search(line):
+        matchobj = regexp.search(line)
+        if matchobj:
             log.debug("matched {pattern}", pattern=UNSOLICITED_RESPONSES[UNSOLICITED_PATTERNS.index(regexp)]['name'])
-            return UNSOLICITED_RESPONSES[UNSOLICITED_PATTERNS.index(regexp)]
-    return None
+            return UNSOLICITED_RESPONSES[UNSOLICITED_PATTERNS.index(regexp)], matchobj
+    return None, None
 
 def decodeStatus(line):
   '''Decode an EMA status line'''
@@ -2072,7 +2073,7 @@ class EMAProtocol(LineOnlyReceiver):
         Handle unsolicited responses from EMA.
         Returns True if handled, False otherwise
         '''
-        ur = match(line)
+        ur, matchobj = match_unsolicited(line)
         if not ur:
             return False
 
@@ -2084,8 +2085,9 @@ class EMAProtocol(LineOnlyReceiver):
         if ur['name'] == 'Photometer begin':
             return True
         if ur['name'] == 'Photometer end':
+            mag = float(matchobj.group(1))
             for callback in self._onPhotometer:
-                callback(curState, tstamp)
+                callback(mag, tstamp)
             return True
         if ur['name'] == 'Thermopile I2C':
             return True

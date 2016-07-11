@@ -13,6 +13,7 @@ from __future__ import division
 
 import sys
 import datetime
+import random
 from collections import deque
 
 # ---------------
@@ -35,6 +36,7 @@ from .service.relopausable import MultiService
 
 #from ..mqtt.service import MQTTService, NAME as MQTT_NAME
 
+from .protocol       import PERIOD as EMA_PERIOD
 from .serial         import SerialService
 from .scripts        import ScriptsService, AlreadyExecutedScript, AlreadyBeingExecutedScript, ScriptNotFound
 from .scheduler      import SchedulerService
@@ -60,15 +62,20 @@ class EMAService(MultiService):
     # Service name
     NAME = 'EMA'
 
-    # Periodic task in seconds
-    TLOG = 60
-
 
     def __init__(self, options, cfgFilePath):
         MultiService.__init__(self)
         self.cfgFilePath = cfgFilePath
         self.options     = options
-        self.queue       = { 'status':  deque() , 'ave5min':   deque(), 'ave1h': deque() }
+        self.counter = 0
+        self.NSAMPLES = self.options['period'] // EMA_PERIOD
+        self.queue       = { 
+            'status'  : deque(), 
+            'ave5min' : deque(), 
+            'minmax'  : deque(),
+            'log'     : deque(),
+            'register': deque(), 
+        }
         setLogLevel(namespace='ema', levelStr=self.options['log_level'])
         
 
@@ -125,9 +132,11 @@ class EMAService(MultiService):
     # -------------
 
     def logMQTTEvent(self, msg, kind='info'):
-        '''Resets stat counters'''
+        '''Logs important evento to MQTT'''
         record = { 'tstamp': datetime.datetime.utcnow(), 'type': kind, 'msg': msg}
-        # aqui falta encolarlo y que el MQTT service leponga el who
+        # aqui que el MQTT service le ponga el who
+        self.queue['log'].append(record)
+       
 
     # ----------
     # Events API
@@ -137,6 +146,19 @@ class EMAService(MultiService):
         Event Handlr coming from the Voltmeter
         '''
         self.scriptsService.onEventExecute(event, *args)
+
+
+    def onStatus(self, status, tstamp):
+        '''
+        Decimate EMA status message and enqueue
+        '''
+        if self.counter == 0:
+            status['tstamp'] = tstamp
+            queue['status'].append(status)
+        # Increments with modulo
+        self.counter += 1
+        self.counter %= self.NSAMPLES
+        
 
     # ----------------
     # Helper functions
@@ -162,44 +184,63 @@ class EMAService(MultiService):
 
 
     def addActivities(self):
-
-
-        @inlineCallbacks
-        def foo10(*args):
-            log.debug("   => HOLA, BEGIN FOO 10 <=")
-            yield task.deferLater(reactor, 305, lambda: None)
-            log.debug("   => HOLA, END   FOO 10 <=")
+        '''
+        Register all activities to the scheduler
+        '''
 
         @inlineCallbacks
-        def foo30(*args):
-            log.debug("   => HOLA, BEGIN FOO 30 <=")
-            yield task.deferLater(reactor, 323, lambda: None)
-            log.debug("   => HOLA, END   FOO 30 <=")
+        def activity10(activeInterval, inactiveInterval):
+            '''
+            Sunchronizes device parameters, then send MQTT registration
+            '''
+            result = yield self.serialService.sync()
+            if result:
+                record = self.serialService.getParameters()
+                self.queue['register'].append(record)
 
         @inlineCallbacks
-        def foo50(*args):
-            log.debug("   => HOLA, BEGIN FOO 50 <=")
-            yield task.deferLater(reactor, 334, lambda: None)
-            log.debug("   => HOLA, END   FOO 50 <=")
-
-        @inlineCallbacks    
-        def foo70(*args):
-            log.debug("   => HOLA, BEGIN FOO 70 <=")
-            yield task.deferLater(reactor, 351, lambda: None)
-            log.debug("   => HOLA, END   FOO 70 <=")
+        def activity30(activeInterval, inactiveInterval):
+            try:
+                dump = yield self.serialService.getDailyMinMaxDump()
+                self.queue['minmax'].append(dump)
+            except Exception as e:
+                self.logMQTTEvent(msg=str(e), kind='error')
 
         @inlineCallbacks
-        def foo90(*args):
-            log.debug("   => HOLA, BEGIN FOO 90 <=")
-            yield task.deferLater(reactor, 302, lambda: None)
-            log.debug("   => HOLA, END   FOO 90 <=")
+        def activity50(activeInterval, inactiveInterval):
+            try:
+                dump = yield self.serialService.get5MinAveragesDump()
+                self.queue['ave5min'].append(dump)
+            except Exception as e:
+                self.logMQTTEvent(msg=str(e), kind='error')
+    
+        @inlineCallbacks
+        def activity70(activeInterval, inactiveInterval):
+            try:
+                if self.options['relay_shutdown']:
+                    yield self.serialService.nextRelayCycle(inactiveInterval)
+                    yield self.serialService.auxRelayTimer(True)
+                else:
+                    yield self.serialService.auxRelayTimer(False)
+            except Exception as e:
+                self.logMQTTEvent(msg=str(e), kind='error')
+
+        @inlineCallbacks
+        def activity90(activeInterval, inactiveInterval):
+            syncResult = yield self.serialService.syncRTC()
+            if not syncResult:
+                self.logMQTTEvent(msg="EMA RTC could not be synchronized", kind='info')
+            if self.options['shutdown']:
+                log.warn("EMAd program shutting down gracefully in 10 seconds")
+                reactor.callLater(10+random.random(), reactor.stop)
+            
 
         active, inactive = self.schedulerService.findCurrentInterval()
-        self.schedulerService.addActivity(foo10, 10, active, inactive)
-        self.schedulerService.addActivity(foo30, 30, active, inactive)
-        self.schedulerService.addActivity(foo50, 50, active, inactive)
-        self.schedulerService.addActivity(foo70, 70, active, inactive)
-        self.schedulerService.addActivity(foo90, 90, active, inactive)
+        self.schedulerService.addActivity(activity10, 10, active, inactive)
+        self.schedulerService.addActivity(activity30, 30, active, inactive)
+        self.schedulerService.addActivity(activity50, 50, active, inactive)
+        self.schedulerService.addActivity(activity70, 70, active, inactive)
+        self.schedulerService.addActivity(activity90, 90, active, inactive)
 
 
     @inlineCallbacks
@@ -207,13 +248,13 @@ class EMAService(MultiService):
         log.debug("results = {results!r}", results=results)
         if results[0][1] == False:
             log.critical("No EMA detected. Exiting gracefully")
-            #reactor.stop()
-            #return
+            reactor.stop()
+            return
         syncResult = yield self.syncRTCActivity(skipInternet = True)
         if not syncResult:
             log.critical("could not sync RTCs. Existing gracefully")
-            #reactor.stop()
-            #return
+            reactor.stop()
+            return
         self.schedulerService.startService()
         self.addActivities()
        

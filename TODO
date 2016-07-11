@@ -1,16 +1,6 @@
 Prioridad alta
 ==============
 
-- EL README esta hecho unos zorros
-
-- documentar el SCHEDULER en el README
-
-
- - Comunicación al modulo MQTT con Colas deque() para desacoplar el servicio
-  MQTT del servicio de lectura.
-*)  revisar los intervalos window deben ser [0,24)
-*) Una unica EMA no se registra al MQTT si sus parametros seleccionados de registro no han podido
-   obtenerse
 *) Topic MQTT
 	  EMA/register
 	  EMA/<channel>/events
