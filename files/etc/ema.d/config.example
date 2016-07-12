@@ -201,6 +201,9 @@ log_level = debug
 [mqtt]
 # MQTT Client config
 
+# Unique Station Id among all EMA
+id = foo
+
 # The channel string used as the station id in topics (i.e EMA/<channel>/#)
 # and also as part of the client_id when connecting to the broker.
 channel = foo

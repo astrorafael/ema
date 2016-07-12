@@ -243,7 +243,6 @@ All fields are mandatory
 |:----------:|:------:|:-----------------------------------------------------|
 | rev        | int    | Payload format revision number                       |
 | who        | string | EMA station emitting this record                     |
-| tstamp     | string | timestamp "YYYY-MM-DDThh:mm:ss", UTC                 |
 | minmax     | seq    | Sequence of 24 tuples [timestamp, max vec, min vec ] |
 
 #### Published on EMA/{channel}/historic/average
@@ -254,7 +253,6 @@ All fields are mandatory
 |:----------:|:------:|:-----------------------------------------------------|
 | rev        | int    | Payload format revision number                       |
 | who        | string | EMA station emitting this record                     |
-| tstamp     | string | timestamp "YYYY-MM-DDThh:mm:ss", UTC                 |
 | averages   | seq    | Sequence of 288 tuples [timestamp, average vector]   |
 
 #### Readings vector

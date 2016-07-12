@@ -196,6 +196,7 @@ def loadCfgFile(path):
    
 
     options['mqtt'] = {}
+    options['mqtt']['id']             = parser.get("mqtt","id")
     options['mqtt']['channel']        = parser.get("mqtt","channel")
     options['mqtt']['log_level']      = parser.get("mqtt","log_level")
     options['mqtt']['broker']         = parser.get("mqtt","broker")

@@ -41,6 +41,7 @@ from .serial         import SerialService
 from .scripts        import ScriptsService, AlreadyExecutedScript, AlreadyBeingExecutedScript, ScriptNotFound
 from .scheduler      import SchedulerService
 from .internet       import InternetService
+from .mqttpub        import MQTTService
 
 # ----------------
 # Module constants
@@ -111,6 +112,7 @@ class EMAService(MultiService):
         self.internetService  = self.getServiceNamed(InternetService.NAME)
         self.serialService    = self.getServiceNamed(SerialService.NAME)
         self.schedulerService = self.getServiceNamed(SchedulerService.NAME)
+        self.mqttService      = self.getServiceNamed(MQTTService.NAME)
         try:
             self.scriptsService.startService()
             yield defer.maybeDeferred(self.serialService.startService)
@@ -153,8 +155,7 @@ class EMAService(MultiService):
         Decimate EMA status message and enqueue
         '''
         if self.counter == 0:
-            status['tstamp'] = tstamp
-            queue['status'].append(status)
+            queue['status'].append( (status, tstamp) )
         # Increments with modulo
         self.counter += 1
         self.counter %= self.NSAMPLES
@@ -182,6 +183,22 @@ class EMAService(MultiService):
             syncResult = yield self.serialService.syncHostRTC()
         returnValue(syncResult)
 
+    @inlineCallbacks
+    def _maybeExit(self, results):
+        log.debug("results = {results!r}", results=results)
+        if results[0][1] == False:
+            log.critical("No EMA detected. Exiting gracefully")
+            #reactor.stop()
+            #return
+        syncResult = yield self.syncRTCActivity(skipInternet = True)
+        if not syncResult:
+            log.critical("could not sync RTCs. Existing gracefully")
+            #reactor.stop()
+            #return
+        self.mqttService.startService()
+        self.schedulerService.startService()
+        self.addActivities()
+
 
     def addActivities(self):
         '''
@@ -193,7 +210,7 @@ class EMAService(MultiService):
             '''
             Sunchronizes device parameters, then send MQTT registration
             '''
-            self.logMQTTEvent(msg="At 10\% of active time window {0}".format(activeInterval), kind='info')
+            self.logMQTTEvent(msg="At 10% of active time window {0}".format(activeInterval), kind='info')
             result = yield self.serialService.sync()
             if result:
                 record = self.serialService.getParameters()
@@ -201,7 +218,7 @@ class EMAService(MultiService):
 
         @inlineCallbacks
         def activity30(activeInterval, inactiveInterval):
-            self.logMQTTEvent(msg="At 30\% of active time window {0}".format(activeInterval), kind='info')
+            self.logMQTTEvent(msg="At 30% of active time window {0}".format(activeInterval), kind='info')
             try:
                 dump = yield self.serialService.getDailyMinMaxDump()
                 self.queue['minmax'].append(dump)
@@ -210,7 +227,7 @@ class EMAService(MultiService):
 
         @inlineCallbacks
         def activity50(activeInterval, inactiveInterval):
-            self.logMQTTEvent(msg="At 50\% of active time window {0}".format(activeInterval), kind='info')
+            self.logMQTTEvent(msg="At 50% of active time window {0}".format(activeInterval), kind='info')
             try:
                 dump = yield self.serialService.get5MinAveragesDump()
                 self.queue['ave5min'].append(dump)
@@ -219,7 +236,7 @@ class EMAService(MultiService):
     
         @inlineCallbacks
         def activity70(activeInterval, inactiveInterval):
-            self.logMQTTEvent(msg="At 70\% of active time window {0}".format(activeInterval), kind='info')
+            self.logMQTTEvent(msg="At 70% of active time window {0}".format(activeInterval), kind='info')
             try:
                 if self.options['relay_shutdown']:
                     yield self.serialService.nextRelayCycle(inactiveInterval)
@@ -231,7 +248,7 @@ class EMAService(MultiService):
 
         @inlineCallbacks
         def activity90(activeInterval, inactiveInterval):
-            self.logMQTTEvent(msg="At 90\% of active time window {0}".format(activeInterval), kind='info')
+            self.logMQTTEvent(msg="At 90% of active time window {0}".format(activeInterval), kind='info')
             syncResult = yield self.serialService.syncRTC()
             if not syncResult:
                 self.logMQTTEvent(msg="EMA RTC could not be synchronized", kind='info')
@@ -248,20 +265,7 @@ class EMAService(MultiService):
         self.schedulerService.addActivity(activity90, 90, active, inactive)
 
 
-    @inlineCallbacks
-    def _maybeExit(self, results):
-        log.debug("results = {results!r}", results=results)
-        if results[0][1] == False:
-            log.critical("No EMA detected. Exiting gracefully")
-            reactor.stop()
-            return
-        syncResult = yield self.syncRTCActivity(skipInternet = True)
-        if not syncResult:
-            log.critical("could not sync RTCs. Existing gracefully")
-            reactor.stop()
-            return
-        self.schedulerService.startService()
-        self.addActivities()
+    
        
 
 

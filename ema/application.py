@@ -22,14 +22,13 @@ from .service.relopausable import Service, MultiService, Application
 from .logger import sysLogInfo,  startLogging
 from .config import VERSION_STRING, cmdline, loadCfgFile
 
-#from .mqtt     import MQTTService
 
 from .ema       import EMAService
 from .serial    import SerialService    
 from .internet  import InternetService  
 from .scripts   import ScriptsService   
 from .scheduler import SchedulerService
-
+from .mqttpub   import MQTTService
 
 
 # Read the command line arguments and config file options
@@ -69,6 +68,10 @@ scriptsService.setServiceParent(emaService)
 serialService = SerialService(options['serial'])
 serialService.setName(SerialService.NAME)
 serialService.setServiceParent(emaService)
+
+mqttService = MQTTService(options['mqtt'])
+mqttService.setName(MQTTService.NAME)
+mqttService.setServiceParent(emaService)
 
 # --------------------------------------------------------
 # Store direct links to subservices in our manager service

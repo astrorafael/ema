@@ -14,20 +14,6 @@ Prioridad alta
 *) Servicio MQTTClient para stars4all
 
 
-import json
-import datetime
-import re
-
-
-class DateTimeEncoder(json.JSONEncoder):
-
-    def default(self, o):
-        if  isinstance(o, datetime.datetime):
-            return o.strftime("%Y-%m-%dT%H:%M:%S")
-
-        # Let the base class default method raise the TypeError
-        return json.JSONEncoder.default(self, o)
-
 
 Prioreidad baja
 ===============
