@@ -203,9 +203,9 @@ class ScriptProtocol(ProcessProtocol):
         as it does for processExited .
         '''
         if reason.value.exitCode != 0:
-            log.info("Chid script with error: {message}", message=reason.getErrorMessage())
+            log.info("Child script with error: {message}", message=reason.getErrorMessage())
         else:
-            log.info("Chid script finished successfully")
+            log.info("Child script finished successfully")
         self.parent.terminated = True
   
  

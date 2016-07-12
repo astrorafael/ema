@@ -193,6 +193,7 @@ class EMAService(MultiService):
             '''
             Sunchronizes device parameters, then send MQTT registration
             '''
+            self.logMQTTEvent(msg="At 10\% of active time window {0}".format(activeInterval), kind='info')
             result = yield self.serialService.sync()
             if result:
                 record = self.serialService.getParameters()
@@ -200,6 +201,7 @@ class EMAService(MultiService):
 
         @inlineCallbacks
         def activity30(activeInterval, inactiveInterval):
+            self.logMQTTEvent(msg="At 30\% of active time window {0}".format(activeInterval), kind='info')
             try:
                 dump = yield self.serialService.getDailyMinMaxDump()
                 self.queue['minmax'].append(dump)
@@ -208,6 +210,7 @@ class EMAService(MultiService):
 
         @inlineCallbacks
         def activity50(activeInterval, inactiveInterval):
+            self.logMQTTEvent(msg="At 50\% of active time window {0}".format(activeInterval), kind='info')
             try:
                 dump = yield self.serialService.get5MinAveragesDump()
                 self.queue['ave5min'].append(dump)
@@ -216,6 +219,7 @@ class EMAService(MultiService):
     
         @inlineCallbacks
         def activity70(activeInterval, inactiveInterval):
+            self.logMQTTEvent(msg="At 70\% of active time window {0}".format(activeInterval), kind='info')
             try:
                 if self.options['relay_shutdown']:
                     yield self.serialService.nextRelayCycle(inactiveInterval)
@@ -227,6 +231,7 @@ class EMAService(MultiService):
 
         @inlineCallbacks
         def activity90(activeInterval, inactiveInterval):
+            self.logMQTTEvent(msg="At 90\% of active time window {0}".format(activeInterval), kind='info')
             syncResult = yield self.serialService.syncRTC()
             if not syncResult:
                 self.logMQTTEvent(msg="EMA RTC could not be synchronized", kind='info')
