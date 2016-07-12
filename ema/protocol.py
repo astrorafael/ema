@@ -1405,6 +1405,8 @@ class EMAProtocol(LineOnlyReceiver):
         self._onStatus     = set()                # callback sets
         self._onPhotometer = set()
         self._queue        = deque()              # Command queue
+        self.busy   = False
+        self.paused = False
       
     def connectionMade(self):
         log.debug("connectionMade()")
@@ -1448,6 +1450,7 @@ class EMAProtocol(LineOnlyReceiver):
     # ================
     # EMA Protocol API
     # ================
+
 
     def addStatusCallback(self, callback):
         '''
@@ -1997,6 +2000,20 @@ class EMAProtocol(LineOnlyReceiver):
     # Helper methods
     # --------------
 
+    def _pause(self):
+        '''
+        Pauses the sending of commands
+        '''
+        self.paused = True
+
+    def _resume(self):
+        '''
+        Resume the sending of commands
+        '''
+        self.paused = False
+        if len(self._queue) and not self.busy:
+            self._retry()
+
 
     def _enqueue(self, request, nretries):
         '''
@@ -2011,7 +2028,7 @@ class EMAProtocol(LineOnlyReceiver):
         request.encode()
         request.reset()
         self._queue.append(request)
-        if len(self._queue) == 1:    # start the ball rolling
+        if not self.busy and not self.paused:    # start the ball rolling
             self._retry()
         return request.deferred
 
@@ -2026,6 +2043,7 @@ class EMAProtocol(LineOnlyReceiver):
         log.info("Executing -> {request.name} (retries={request.retries}/{request.nretries}) [Timeout={t}]", 
             request=request, t=t)
         self.sendLine(request.getEncoded())
+        self.busy = True
 
 
     def _responseTimeout(self):
@@ -2039,7 +2057,8 @@ class EMAProtocol(LineOnlyReceiver):
             request.deferred = None
             self._queue.popleft()
             del request
-            if len(self._queue):    # Continue with the next command
+            self.busy = False
+            if len(self._queue) and not self.paused:    # Continue with the next command
                 self._retry()
         else:
             request.retries += 1
@@ -2076,18 +2095,19 @@ class EMAProtocol(LineOnlyReceiver):
         ur, matchobj = match_unsolicited(line)
         if not ur:
             return False
-
-        if ur['name'] == 'Current status message':
-            curState, _ = decode(line)
-            for callback in self._onStatus:
-                callback(curState, tstamp)
-            return True
         if ur['name'] == 'Photometer begin':
+            self._pause()
             return True
         if ur['name'] == 'Photometer end':
             mag = float(matchobj.group(1))
             for callback in self._onPhotometer:
                 callback(mag, tstamp)
+            self._resume()
+            return True
+        if ur['name'] == 'Current status message':
+            curState, _ = decode(line)
+            for callback in self._onStatus:
+                callback(curState, tstamp)
             return True
         if ur['name'] == 'Thermopile I2C':
             return True
