@@ -165,6 +165,10 @@ class MQTTService(ClientService):
         '''
         # NOTA: DEPURAR EL JSON HASTA QURE ESTE CONFORME
         # A LA ESPECIFICACION Y PUBLICAR VIA MQTT
+        def logError(failure, topic):
+            log.error("MQTT publishig failed in {topic}", topic=topic)
+            log.failure("{failure}",failure=failure)
+
         if len(self.parent.queue['register']):
             msg = self.parent.queue['register'].popleft()
             msg['who'] = self.options['id']
@@ -172,6 +176,7 @@ class MQTTService(ClientService):
             flat = json.dumps(msg, cls=DateTimeEncoder)
             log.debug("MQTT Payload => {flat}", flat=flat)
             d1 = self.protocol.publish(topic=self.topic['register'], qos=2, message=flat)
+            d1.addErrback(logError, self.topic['register'])
 
         if len(self.parent.queue['log']):
             msg = self.parent.queue['log'].popleft()
@@ -180,6 +185,7 @@ class MQTTService(ClientService):
             flat = json.dumps(msg, cls=DateTimeEncoder)
             log.debug("MQTT Payload => {flat}", flat=flat)
             d2 = self.protocol.publish(topic=self.topic['events'], qos=0, message=flat, retain=True)
+            d2.addErrback(logError, self.topic['events'])
 
         if len(self.parent.queue['status']):
             status, tstamp = self.parent.queue['status'].popleft()
@@ -191,6 +197,7 @@ class MQTTService(ClientService):
             flat = json.dumps(msg, cls=DateTimeEncoder)
             log.debug("MQTT Payload => {flat}", flat=flat)
             d3 = self.protocol.publish(topic=self.topic['state'], qos=0, message=flat)
+            d3.addErrback(logError, self.topic['state'])
 
         if len(self.parent.queue['minmax']):
             dump = self.parent.queue['minmax'].popleft()
@@ -201,6 +208,7 @@ class MQTTService(ClientService):
             flat = json.dumps(msg, cls=DateTimeEncoder)
             log.debug("MQTT Payload => {flat}", flat=flat)
             d4 = self.protocol.publish(topic=self.topic['minmax'], qos=2, message=flat)
+            d4.addErrback(logError, self.topic['minmax'])
 
         if len(self.parent.queue['minmax']):
             dump = self.parent.queue['minmax'].popleft()
@@ -211,3 +219,4 @@ class MQTTService(ClientService):
             flat = json.dumps(msg, cls=DateTimeEncoder)
             log.debug("MQTT Payload => {flat}", flat=flat)
             d5 = self.protocol.publish(topic=self.topic['averages'], qos=2, message=flat)
+            d5.addErrback(logError, self.topic['averages'])

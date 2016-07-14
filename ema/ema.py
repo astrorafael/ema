@@ -158,7 +158,9 @@ class EMAService(MultiService):
             self.queue['status'].append( (status, tstamp) )
         # Increments with modulo
         self.counter += 1
-        self.counter %= self.NSAMPLES
+        # Esto es ilogico, mi capitan pero parece que 
+        # se cuela 1 muestra de mas
+        self.counter %= self.NSAMPLES-1 
         
 
     # ----------------
@@ -188,13 +190,13 @@ class EMAService(MultiService):
         log.debug("results = {results!r}", results=results)
         if results[0][1] == False:
             log.critical("No EMA detected. Exiting gracefully")
-            #reactor.stop()
-            #return
+            reactor.stop()
+            return
         syncResult = yield self.syncRTCActivity(skipInternet = True)
         if not syncResult:
             log.critical("could not sync RTCs. Existing gracefully")
-            #reactor.stop()
-            #return
+            reactor.stop()
+            return
         self.mqttService.startService()
         self.schedulerService.startService()
         self.addActivities()
@@ -206,7 +208,7 @@ class EMAService(MultiService):
         '''
 
         @inlineCallbacks
-        def activityStart(activeInterval, inactiveInterval):
+        def activityASAP(activeInterval, inactiveInterval):
             '''
             Synchronizes device parameters, then send MQTT registration
             '''
@@ -276,7 +278,7 @@ class EMAService(MultiService):
             
 
         active, inactive = self.schedulerService.findCurrentInterval()
-        d = activityStart(active, inactive)
+        d = activityASAP(active, inactive)
         self.schedulerService.addActivity(activity10, 10, active, inactive)
         self.schedulerService.addActivity(activity30, 30, active, inactive)
         self.schedulerService.addActivity(activity50, 50, active, inactive)
