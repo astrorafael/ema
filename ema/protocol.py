@@ -273,7 +273,7 @@ def decodeStatus(line):
   status.append(round(int(line[SDPB:SDPE]) * 0.10, 1))   # Dew Point deg C
   status.append(round(int(line[SACB:SACE]) * 0.10, 1))   # Wind Speed Km/h
   status.append(int(line[SAAB:SAAE]))                    # Wind Speedn 10 min Km/h
-  status.append(int(line[SWDB:SWDE]))                    # Wind direction, degrees
+  status.append(int(line[SWDB:SWDE]) % 360)              # Wind direction, degrees
   #status['type']    = STATUS_TYPE[line[SMTB:SMTE]]      # status type
   page = int(line[SMFB:SMFE])                            # Flash page number
   return status, page

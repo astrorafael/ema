@@ -279,7 +279,7 @@ on the actual MQTT message being published.
 | 13    | float  |   ºC  | Dew point                                    |
 | 14    | float  | Km/h  | Wind speed                                   |
 | 15    | int    | Km/h  | Average windn speed in 10 mins               |
-| 16    | int    | deg   | Wind orientation (0...360)                   |
+| 16    | int    | deg   | Wind orientation (0...359)                   |
 | 17    | float  | mag   | Visual magnitude **ONLY IN CURRENT READING** |
 
 ***Note 1: Roof relay codes:***
