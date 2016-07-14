@@ -206,9 +206,23 @@ class EMAService(MultiService):
         '''
 
         @inlineCallbacks
+        def activityStart():
+            '''
+            Synchronizes device parameters, then send MQTT registration
+            '''
+            where = self.schedulerService.findActiveInactive(datetime.datetime.utcnow())
+            log.debug("At program start ({where})", where=where)
+            self.logMQTTEvent(msg="At program start ({0})".format(where), kind='info')
+            result = yield self.serialService.sync()
+            if result:
+                record = self.serialService.getParameters()
+                self.queue['register'].append(record)
+
+
+        @inlineCallbacks
         def activity10(activeInterval, inactiveInterval):
             '''
-            Sunchronizes device parameters, then send MQTT registration
+            Synchronizes device parameters, then send MQTT registration
             '''
             self.logMQTTEvent(msg="At 10% of active time window {0}".format(activeInterval), kind='info')
             result = yield self.serialService.sync()
@@ -258,6 +272,7 @@ class EMAService(MultiService):
             
 
         active, inactive = self.schedulerService.findCurrentInterval()
+        d = activityStart()
         self.schedulerService.addActivity(activity10, 10, active, inactive)
         self.schedulerService.addActivity(activity30, 30, active, inactive)
         self.schedulerService.addActivity(activity50, 50, active, inactive)

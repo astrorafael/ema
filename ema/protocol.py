@@ -2004,14 +2004,14 @@ class EMAProtocol(LineOnlyReceiver):
         '''
         Pauses the sending of commands
         '''
-        log.debug("EMA protocol pause()")
+        log.info("EMA protocol pause()")
         self.paused = True
 
     def _resume(self):
         '''
         Resume the sending of commands
         '''
-        log.debug("EMA protocol resume()")
+        log.info("EMA protocol resume()")
         self.paused = False
         if len(self._queue) and not self.busy:
             self._retry()
@@ -2030,6 +2030,7 @@ class EMAProtocol(LineOnlyReceiver):
         request.encode()
         request.reset()
         self._queue.append(request)
+        log.debug("busy = {o.busy}, paused = {o.paused}", o=self)
         if not self.busy and not self.paused:    # start the ball rolling
             self._retry()
         return request.deferred
@@ -2082,9 +2083,10 @@ class EMAProtocol(LineOnlyReceiver):
             log.info("Completed -> {request.name} (retries={request.retries}/{request.nretries})", 
             request=request)
             self._queue.popleft()
+            self.busy = False
             request.alarm.cancel()
-            if len(self._queue):    # Fires next command if any
-                    self._retry()
+            if len(self._queue) and not self.paused:    # Fires next command if any
+                self._retry()
             request.deferred.callback(request.getResult()) # Fire callback after _retry() !!!
             del request
         return handled or finished

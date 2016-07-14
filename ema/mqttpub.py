@@ -179,7 +179,7 @@ class MQTTService(ClientService):
             msg['rev'] = PROTOCOL_REVISION
             flat = json.dumps(msg, cls=DateTimeEncoder)
             log.debug("MQTT Payload => {flat}", flat=flat)
-            d2 = self.protocol.publish(topic=self.topic['events'], qos=0, message=flat, retained=True)
+            d2 = self.protocol.publish(topic=self.topic['events'], qos=0, message=flat, retain=True)
 
         if len(self.parent.queue['status']):
             status, tstamp = self.parent.queue['status'].popleft()

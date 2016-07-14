@@ -510,7 +510,7 @@ class Voltmeter(Device):
         n       = len(self.voltage)
         average = sum(self.voltage) / n
         if  self.PARAMS['threshold']['value'] is None:
-            log.debug("No thershold value yet from EMA")
+            log.debug("No threshold value yet from EMA")
             return
         threshold = self.options['delta'] + self.PARAMS['threshold']['value']
         if average < threshold:
