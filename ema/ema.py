@@ -155,7 +155,7 @@ class EMAService(MultiService):
         Decimate EMA status message and enqueue
         '''
         if self.counter == 0:
-            queue['status'].append( (status, tstamp) )
+            self.queue['status'].append( (status, tstamp) )
         # Increments with modulo
         self.counter += 1
         self.counter %= self.NSAMPLES

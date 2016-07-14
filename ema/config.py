@@ -203,10 +203,10 @@ def loadCfgFile(path):
     options['mqtt']['username']       = parser.get("mqtt","username")
     options['mqtt']['password']       = parser.get("mqtt","password")
     options['mqtt']['keepalive']      = parser.getint("mqtt","keepalive")
-
+    options['mqtt']['timeout']        = parser.getint("mqtt","timeout")
+    options['mqtt']['bandwidth']      = parser.getint("mqtt","bandwidth")
+  
    
-
-
     return options
 
 

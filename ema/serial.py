@@ -667,8 +667,10 @@ class SerialService(ClientService):
         and pass it upwards
         '''
         if self.vmag:
-            status['mag'] = self.vmag
-        self.parent.onStatusReceived(status, tstamp)
+            status.append(self.vmag)
+        else:
+            status.append(24.0)
+        self.parent.onStatus(status, tstamp)
 
         
     @inlineCallbacks

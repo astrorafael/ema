@@ -86,15 +86,22 @@ class MQTTService(ClientService):
         self.topics     = []
         setLogLevel(namespace='mqtt', levelStr=options['log_level'])
         setLogLevel(namespace='mqtt.client.factory.MQTTFactory', levelStr='error')
-        self.factory  = MQTTFactory(profile=MQTTFactory.SUBSCRIBER)
+        self.factory  = MQTTFactory(profile=MQTTFactory.PUBLISHER)
         self.endpoint = clientFromString(reactor, self.options['broker'])
         if self.options['username'] == "":
             self.options['username'] = None
             self.options['password'] = None
         ClientService.__init__(self, self.endpoint, self.factory, 
             retryPolicy=backoffPolicy(initialDelay=INITIAL_DELAY, factor=FACTOR, maxDelay=MAX_DELAY))
+        self.topic = {
+            'register' : 'EMA/register',
+            'events'   : 'EMA/{0}/events'.format(options['channel']),
+            'state'    : 'EMA/{0}/current/state'.format(options['channel']),
+            'minmax'   : 'EMA/{0}/historic/minmax'.format(options['channel']),
+            'averages' : 'EMA/{0}/historic/average'.format(options['channel']),
+        }
+   
 
-    
     def startService(self):
         log.info("starting MQTT Client Service")
         self.whenConnected().addCallback(self.connectToBroker)
@@ -136,11 +143,14 @@ class MQTTService(ClientService):
         '''
         self.protocol = protocol
         try:
+            self.protocol.setTimeout(self.options['timeout'])
+            self.protocol.setBandwith(self.options['bandwidth'])
+            self.protocol.setWindowSize(4)
             yield self.protocol.connect("TwistedMQTT-pub", 
                 username=self.options['username'], password=self.options['password'], 
                 keepalive=self.options['keepalive'])
         except Exception as e:
-            log.error("Connecting to {broker} raised {excp!s}", 
+            log.failure("Connecting to {broker} raised {excp!s}", 
                broker=self.options['broker'], excp=e)
         else:
             log.info("Connected to {broker}", broker=self.options['broker'])
@@ -161,6 +171,7 @@ class MQTTService(ClientService):
             msg['rev'] = PROTOCOL_REVISION
             flat = json.dumps(msg, cls=DateTimeEncoder)
             log.debug("MQTT Payload => {flat}", flat=flat)
+            d1 = self.protocol.publish(topic=self.topic['register'], qos=2, message=flat)
 
         if len(self.parent.queue['log']):
             msg = self.parent.queue['log'].popleft()
@@ -168,6 +179,7 @@ class MQTTService(ClientService):
             msg['rev'] = PROTOCOL_REVISION
             flat = json.dumps(msg, cls=DateTimeEncoder)
             log.debug("MQTT Payload => {flat}", flat=flat)
+            d2 = self.protocol.publish(topic=self.topic['events'], qos=0, message=flat, retained=True)
 
         if len(self.parent.queue['status']):
             status, tstamp = self.parent.queue['status'].popleft()
@@ -178,6 +190,7 @@ class MQTTService(ClientService):
             msg['current'] = status
             flat = json.dumps(msg, cls=DateTimeEncoder)
             log.debug("MQTT Payload => {flat}", flat=flat)
+            d3 = self.protocol.publish(topic=self.topic['state'], qos=0, message=flat)
 
         if len(self.parent.queue['minmax']):
             dump = self.parent.queue['minmax'].popleft()
@@ -187,6 +200,7 @@ class MQTTService(ClientService):
             msg['minmax'] = dump
             flat = json.dumps(msg, cls=DateTimeEncoder)
             log.debug("MQTT Payload => {flat}", flat=flat)
+            d4 = self.protocol.publish(topic=self.topic['minmax'], qos=2, message=flat)
 
         if len(self.parent.queue['minmax']):
             dump = self.parent.queue['minmax'].popleft()
@@ -196,3 +210,4 @@ class MQTTService(ClientService):
             msg['averages'] = dump
             flat = json.dumps(msg, cls=DateTimeEncoder)
             log.debug("MQTT Payload => {flat}", flat=flat)
+            d5 = self.protocol.publish(topic=self.topic['averages'], qos=2, message=flat)

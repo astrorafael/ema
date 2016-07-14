@@ -221,6 +221,17 @@ keepalive = 60
 # Broker to connect
 broker = tcp:test.mosquitto.org:1883
 
+# Timeout is constant in all MQTT protocol except when
+# publishing a payload, in which case a linear part depending 
+# on PDU size and bandwith estimation is added
+
+# Tx Timeout, constant part (in seconds)
+timeout = 4
+
+# Tx Timeout, bandwith estimation for variable part (in bytes/sec)
+# Avoid tiemouts when transmitting large payloads
+bandwidth = 10000
+
 # component log level (debug, info, warn, error, critical)
 log_level = debug
 

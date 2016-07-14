@@ -2078,7 +2078,7 @@ class EMAProtocol(LineOnlyReceiver):
             return False
 
         if ur['name'] == 'Current status message':
-            curState, _ = decode(line)
+            curState, _ = decodeStatus(line)
             for callback in self._onStatus:
                 callback(curState, tstamp)
             return True
