@@ -1413,29 +1413,27 @@ class EMAProtocol(LineOnlyReceiver):
 
 
     def lineReceived(self, line):
+        
+        def fix(string):
+            '''
+            Dirty hack to translate invalid ASCII strings from EMA
+            into something valid for the logging subsystem
+            '''
+            tmp = bytearray(string)
+            for i in range(0,len(tmp)):
+                tmp[i] = b'?' if tmp[i] > 127 else tmp[i]
+            return str(tmp)
+
         now = datetime.datetime.utcnow() + datetime.timedelta(seconds=0.5)
         line = line.lstrip(' \t\n\r') + b')'
-        # Dirty hack: EMA status Voltage is sent as a non-ASCII character
-        # 13.0V ==> chr(130) 
-        # and the log system complains. I did my best t avoid it ...
-        l = len(line)
-        offending = (l == STATLEN) and (ord(line[3]) > 127)
-        if offending:
-            line2 = bytearray(line)
-            line2[3] = b'+'
-            log2.debug("<== EMA+[{l}] {line}", l=l, line=line2)
-        else:
-            log2.debug("<== EMA [{l}] {line}", l=l, line=line)
         handled = self._handleCommandResponse(line, now)
         if handled:
             return
         handled = self._handleUnsolicitedResponse(line, now)
         if handled:
             return
-        if offending:
-            log.debug("Unknown/Unexpected message")
-        else:
-            log.debug("Unknown/Unexpected message {line}", line=line)
+        log.debug("Unknown/Unexpected message {line}", line=fix(line))
+
 
 
     def sendLine(self, line):
@@ -2030,7 +2028,6 @@ class EMAProtocol(LineOnlyReceiver):
         request.encode()
         request.reset()
         self._queue.append(request)
-        log.debug("busy = {o.busy}, paused = {o.paused}", o=self)
         if not self.busy and not self.paused:    # start the ball rolling
             self._retry()
         return request.deferred
