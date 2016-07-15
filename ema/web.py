@@ -143,7 +143,8 @@ class WebService(Service):
         Service.startService(self)
         endpoint = serverFromString(reactor, self.options['server'])
         
-        portal = Portal(PublicHTMLRealm(self.app.resource()), [FilePasswordDB('myfile')])
+        portal = Portal(PublicHTMLRealm(self.app.resource()), 
+            [FilePasswordDB(self.options['passwd'])])
         credentialFactory = BasicCredentialFactory("EMA")
         
         resource = HTTPAuthSessionWrapper(portal, [credentialFactory])

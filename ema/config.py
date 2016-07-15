@@ -194,7 +194,6 @@ def loadCfgFile(path):
     options['scheduler']['intervals']     = parser.get("scheduler","intervals")
     options['scheduler']['log_level']     = parser.get("scheduler","log_level")
    
-
     options['mqtt'] = {}
     options['mqtt']['id']             = parser.get("mqtt","id")
     options['mqtt']['channel']        = parser.get("mqtt","channel")
@@ -209,6 +208,7 @@ def loadCfgFile(path):
     options['web'] = {}
     options['web']['server']        = parser.get("web","server")
     options['web']['access']        = parser.get("web","access")
+    options['web']['passwd']        = parser.get("web","passwd")
     options['web']['log_level']      = parser.get("web","log_level")
    
     return options

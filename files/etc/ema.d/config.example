@@ -453,5 +453,8 @@ server = tcp:8080:0.0.0.0
 # HTTP access log file
 access = /var/log/emad_access.log
 
+# Basic Authentication password file path
+passwd = /etc/ema.d/passwd
+
 # component log level (debug, info, warn, error, critical)
 log_level = info
