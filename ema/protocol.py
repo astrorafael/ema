@@ -2002,14 +2002,14 @@ class EMAProtocol(LineOnlyReceiver):
         '''
         Pauses the sending of commands
         '''
-        log.info("EMA protocol pause()")
+        log.debug("EMA protocol pause()")
         self.paused = True
 
     def _resume(self):
         '''
         Resume the sending of commands
         '''
-        log.info("EMA protocol resume()")
+        log.debug("EMA protocol resume()")
         self.paused = False
         if len(self._queue) and not self.busy:
             self._retry()

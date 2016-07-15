@@ -448,7 +448,7 @@ sync = no
 [web]
 
 # server endpoint where it listens to for HTTP requests
-server = tcp:localhost:8080
+server = tcp:8080:0.0.0.0
 
 # component log level (debug, info, warn, error, critical)
 log_level = info

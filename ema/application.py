@@ -25,10 +25,11 @@ from .config import VERSION_STRING, cmdline, loadCfgFile
 
 from .ema       import EMAService
 from .serial    import SerialService    
-from .probe  import ProbeService  
+from .probe     import ProbeService  
 from .scripts   import ScriptsService   
 from .scheduler import SchedulerService
 from .mqttpub   import MQTTService
+from .web       import WebService
 
 
 # Read the command line arguments and config file options
@@ -72,6 +73,10 @@ serialService.setServiceParent(emaService)
 mqttService = MQTTService(options['mqtt'])
 mqttService.setName(MQTTService.NAME)
 mqttService.setServiceParent(emaService)
+
+webService = WebService(options['web'])
+webService.setName(WebService.NAME)
+webService.setServiceParent(emaService)
 
 # --------------------------------------------------------
 # Store direct links to subservices in our manager service

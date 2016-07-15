@@ -40,8 +40,9 @@ from .protocol       import PERIOD as EMA_PERIOD
 from .serial         import SerialService
 from .scripts        import ScriptsService, AlreadyExecutedScript, AlreadyBeingExecutedScript, ScriptNotFound
 from .scheduler      import SchedulerService
-from .probe       import ProbeService
+from .probe          import ProbeService
 from .mqttpub        import MQTTService
+from .web            import WebService
 
 # ----------------
 # Module constants
@@ -109,10 +110,11 @@ class EMAService(MultiService):
         '''
         log.info('starting {name}', name=self.name)
         self.scriptsService   = self.getServiceNamed(ScriptsService.NAME)
-        self.probeService  = self.getServiceNamed(ProbeService.NAME)
+        self.probeService    = self.getServiceNamed(ProbeService.NAME)
         self.serialService    = self.getServiceNamed(SerialService.NAME)
         self.schedulerService = self.getServiceNamed(SchedulerService.NAME)
         self.mqttService      = self.getServiceNamed(MQTTService.NAME)
+        self.webService       = self.getServiceNamed(WebService.NAME)
         try:
             self.scriptsService.startService()
             yield defer.maybeDeferred(self.serialService.startService)
@@ -197,6 +199,7 @@ class EMAService(MultiService):
             log.critical("could not sync RTCs. Existing gracefully")
             reactor.stop()
             return
+        self.webService.startService()
         self.mqttService.startService()
         self.schedulerService.startService()
         self.addActivities()

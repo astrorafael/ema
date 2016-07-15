@@ -206,6 +206,9 @@ def loadCfgFile(path):
     options['mqtt']['timeout']        = parser.getint("mqtt","timeout")
     options['mqtt']['bandwidth']      = parser.getint("mqtt","bandwidth")
   
+    options['web'] = {}
+    options['web']['server']        = parser.get("web","server")
+    options['web']['log_level']      = parser.get("web","log_level")
    
     return options
 
