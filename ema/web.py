@@ -129,26 +129,17 @@ class WebService(Service):
         self._port = None
         setLogLevel(namespace='web', levelStr=self.options['log_level'])
 
-    @inlineCallbacks
-    def startService(self):
-        log.info("starting {name}", name=self.name)
-        Service.startService(self)
-        endpoint = serverFromString(reactor, self.options['server'])
-        factory = Site(self.app.resource(), logPath=self.options['access'])
-        self._port = yield endpoint.listen(factory)
 
     @inlineCallbacks
     def startService(self):
         log.info("starting {name}", name=self.name)
         Service.startService(self)
         endpoint = serverFromString(reactor, self.options['server'])
-        
         portal = Portal(PublicHTMLRealm(self.app.resource()), 
             [FilePasswordDB(self.options['passwd'])])
         credentialFactory = BasicCredentialFactory("EMA")
-        
-        resource = HTTPAuthSessionWrapper(portal, [credentialFactory])
-        factory = Site(resource, logPath=self.options['access'])
+        root = HTTPAuthSessionWrapper(portal, [credentialFactory])
+        factory = Site(root, logPath=self.options['access'])
         self._port = yield endpoint.listen(factory)
 
     @inlineCallbacks
@@ -181,9 +172,11 @@ class WebService(Service):
         }
         return json.dumps(result, cls=DateTimeEncoder)
 
+
     @app.route('/ema/v1/anemometer/current/windspeed/threshold', methods=['PUT'])
     def set_current_windspeed_threshold(self, request):
         raise NotFound()
+
 
     @app.route('/ema/v1/anemometer/average/windspeed/threshold', methods=['GET'])
     def get_average_windspeed_threshold(self, request):
@@ -195,9 +188,11 @@ class WebService(Service):
         }
         return json.dumps(result, cls=DateTimeEncoder)
 
+
     @app.route('/ema/v1/anemometer/average/windspeed/threshold', methods=['PUT'])
     def set_average_windspeed_threshold(self, request):
         raise NotFound()
+
 
     @app.route('/ema/v1/cloudsensor/threshold', methods=['GET'])
     def get_cloudsensor_threshold(self, request):
@@ -209,9 +204,11 @@ class WebService(Service):
         }
         return json.dumps(result, cls=DateTimeEncoder)
 
+
     @app.route('/ema/v1/cloudsensor/threshold', methods=['PUT'])
     def set_cloudsensor_threshold(self, request):
         raise NotFound()
+
 
     @app.route('/ema/v1/photometer/threshold', methods=['GET'])
     def get_photometer_threshold(self, request):
@@ -223,9 +220,11 @@ class WebService(Service):
         }
         return json.dumps(result, cls=DateTimeEncoder)
 
+
     @app.route('/ema/v1/photometer/threshold', methods=['PUT'])
     def set_photometer_threshold(self, request):
         raise NotFound()
+
 
     @app.route('/ema/v1/rainsensor/threshold', methods=['GET'])
     def get_rainsensor_threshold(self, request):
@@ -237,9 +236,11 @@ class WebService(Service):
         }
         return json.dumps(result, cls=DateTimeEncoder)
 
+
     @app.route('/ema/v1/rainsensor/threshold', methods=['PUT'])
     def set_rainsensor_threshold(self, request):
         return 'Hello, world!'
+
 
     @app.route('/ema/v1/thermometer/deltatemp/threshold', methods=['GET'])
     def get_deltatemp_threshold(self, request):
@@ -251,9 +252,11 @@ class WebService(Service):
         }
         return json.dumps(result, cls=DateTimeEncoder)
 
+
     @app.route('/ema/v1/thermometer/deltatemp/threshold', methods=['PUT'])
     def set_deltatemp_threshold(self, request):
         raise NotFound()
+
 
     @app.route('/ema/v1/voltmeter/threshold', methods=['GET'])
     def get_voltmeter_threshold(self, request):
@@ -265,19 +268,23 @@ class WebService(Service):
         }
         return json.dumps(result, cls=DateTimeEncoder)
 
+
     @app.route('/ema/v1/voltmeter/threshold', methods=['PUT'])
     def set_voltmeter_threshold(self, request):
         raise NotFound()
+
 
     # ESTA ES ESPECIAL
     @app.route('/ema/v1/roof/relay/mode', methods=['GET'])
     def get_roof_relay_mode(self, request):
         raise NotFound()
 
+
     # Y ESTA TAMBIEN
     @app.route('/ema/v1/roof/relay/mode', methods=['PUT'])
     def set_roof_relay_mode(self, request):
         raise NotFound()
+
 
     @app.route('/ema/v1/aux/relay/mode', methods=['GET'])
     def get_aux_relay_mode(self, request):
@@ -289,24 +296,29 @@ class WebService(Service):
         }
         return json.dumps(result, cls=DateTimeEncoder)
 
+
     @app.route('/ema/v1/aux/relay/mode', methods=['PUT'])
     def set_aux_relay_mode(self, request):
         raise NotFound()
+
 
     # Estas son muy especiales y peligrosas
     @app.route('/ema/v1/aux/relay/switch/on/time', methods=['GET'])
     def get_aux_relay_switch_on_time(self, request):
         raise NotFound()
 
+
     # Estas son muy especiales y peligrosas
     @app.route('/ema/v1/aux/relay/switch/on/time', methods=['PUT'])
     def set_aux_relay_switch_on_time(self, request):
         raise NotFound()
 
+
     # Estas son muy especiales y peligrosas
     @app.route('/ema/v1/aux/relay/switch/off/time', methods=['GET'])
     def get_aux_relay_switch_off_time(self, request):
         raise NotFound()
+
 
     # Estas son muy especiales y peligrosas
     @app.route('/ema/v1/aux/relay/switch/off/time', methods=['PUT'])
@@ -322,7 +334,6 @@ class WebService(Service):
         request.setResponseCode(404)
         return NotFound.__doc__
 
-    
 
 __all__ = [
     "WebService"
