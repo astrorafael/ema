@@ -84,9 +84,9 @@ log_level = debug
 log_messages = yes
 
 #------------------------------------------------------------------------#
-[internet]
-# Internet connectivity detection
-# It is useful to know when the program has no internet connectivity
+[probe]
+# Internet connectivity probe
+# It is useful to know when the program has no Internet connectivity
 # If no network connectivity, then the program:
 # - will synchronize its clock from EMA RTC (insteado of the other way round)
 # - will execute an script (i.e. probably to shut the host down)
@@ -256,7 +256,7 @@ log_level = debug
 intervals = 12:00-12:15,20:00-20:15
 
 # component log level (debug, info, warn, error, critical)
-log_level = INFO
+log_level = info
 
 
 #========================================================================#
@@ -443,20 +443,12 @@ mode = Manual
 # sync parameters
 sync = no
 
- 
 #------------------------------------------------------------------------#
-# Thermopile sensor (alternative way to detect clouds)
-[THERMOPILE]
+# Web Service: REST API where to configure EMA remotely (thresholds, etc.)
+[web]
 
-# Where to publish measurements
-# Comma list separated values 
-# Allowed values: html, mqtt  (or just leave a blank line)
-thermop_publish_where = mqtt,html
-
-# What to publish: current, average or both
-# comma-separated list 
-thermop_publish_what = current,average        
+# server endpoint where it listens to for HTTP requests
+server = tcp:localhost:8080
 
 # component log level (debug, info, warn, error, critical)
-thermop_log = INFO
-
+log_level = info

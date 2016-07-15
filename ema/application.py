@@ -25,7 +25,7 @@ from .config import VERSION_STRING, cmdline, loadCfgFile
 
 from .ema       import EMAService
 from .serial    import SerialService    
-from .internet  import InternetService  
+from .probe  import ProbeService  
 from .scripts   import ScriptsService   
 from .scheduler import SchedulerService
 from .mqttpub   import MQTTService
@@ -57,9 +57,9 @@ schedulerService = SchedulerService(options['scheduler'])
 schedulerService.setName(SchedulerService.NAME)
 schedulerService.setServiceParent(emaService)
 
-internetService = InternetService(options['internet'])
-internetService.setName(InternetService.NAME)
-internetService.setServiceParent(emaService)
+probeService = ProbeService(options['probe'])
+probeService.setName(ProbeService.NAME)
+probeService.setServiceParent(emaService)
 
 scriptsService = ScriptsService(options['scripts'])
 scriptsService.setName(ScriptsService.NAME )

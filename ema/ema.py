@@ -40,7 +40,7 @@ from .protocol       import PERIOD as EMA_PERIOD
 from .serial         import SerialService
 from .scripts        import ScriptsService, AlreadyExecutedScript, AlreadyBeingExecutedScript, ScriptNotFound
 from .scheduler      import SchedulerService
-from .internet       import InternetService
+from .probe       import ProbeService
 from .mqttpub        import MQTTService
 
 # ----------------
@@ -109,7 +109,7 @@ class EMAService(MultiService):
         '''
         log.info('starting {name}', name=self.name)
         self.scriptsService   = self.getServiceNamed(ScriptsService.NAME)
-        self.internetService  = self.getServiceNamed(InternetService.NAME)
+        self.probeService  = self.getServiceNamed(ProbeService.NAME)
         self.serialService    = self.getServiceNamed(SerialService.NAME)
         self.schedulerService = self.getServiceNamed(SchedulerService.NAME)
         self.mqttService      = self.getServiceNamed(MQTTService.NAME)
@@ -121,9 +121,9 @@ class EMAService(MultiService):
             log.critical("Problems initializing {name}. Exiting gracefully", name=self.serialService.name)
             reactor.callLater(0,reactor.stop)
         else:
-            self.internetService.startService()
+            self.probeService.startService()
             d1 = self.serialService.detectEMA(nretries=self.options['nretries'])
-            d2 = self.internetService.hasConnectivity()
+            d2 = self.probeService.hasConnectivity()
             dl = DeferredList([d1,d2], consumeErrors=True)
             dl.addCallback(self._maybeExit)
        
@@ -174,7 +174,7 @@ class EMAService(MultiService):
         Sync RTC activity to be programmed under the scheduler
         '''
         if not skipInternet:
-            internet = yield self.internetService.hasConnectivity()
+            internet = yield self.probeService.hasConnectivity()
         else:
             internet = True
         if internet and self.options['host_rtc']:

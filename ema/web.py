@@ -19,10 +19,9 @@ from twisted.logger               import Logger, LogLevel
 from twisted.internet             import reactor, task
 from twisted.internet.defer       import inlineCallbacks, returnValue
 from twisted.internet.task        import deferLater
-from twisted.web.client           import Agent
-from twisted.web.http_headers     import Headers
 from twisted.internet.defer       import DeferredList
 from twisted.application.service  import Service
+
 #--------------
 # local imports
 # -------------
@@ -44,23 +43,19 @@ from .service.relopausable import Service
 # Module global variables
 # -----------------------
 
-log = Logger(namespace='inet')
+log = Logger(namespace='web')
 
 
 
-class InternetService(Service):
+class WebService(Service):
 
     # Service name
-    NAME = 'Internet Service'
+    NAME = 'Web Service'
 
     def __init__(self, options):
         self.options  = options
-        self.agent    = Agent(reactor)
-        self.deferred = None
-        self.T        = options['interval']
-        self.N        = options['attempts']
-        setLogLevel(namespace='inet', levelStr=self.options['log_level'])
-        setLogLevel(namespace='twisted.web.client._HTTP11ClientFactory', levelStr='warn')
+        setLogLevel(namespace='web', levelStr=self.options['log_level'])
+      
 
     
     def startService(self):
@@ -96,56 +91,16 @@ class InternetService(Service):
 
     def reloadService(self, options):
         options = options['internet']
-        setLogLevel(namespace='inet', levelStr=options['log_level'])
+        setLogLevel(namespace='web', levelStr=options['log_level'])
         log.info("new log level is {lvl}", lvl=options['log_level'])
         self.options = options
     
-
-    def probe(self):
-        '''
-        Returns a deferred that when triggered returns True or False
-        '''
-        d1 = self.agent.request('HEAD',self.options['site1'],
-            Headers({'User-Agent': ['Twisted Web Client']}),
-            None)
-        d2 = self.agent.request('HEAD',self.options['site2'],
-            Headers({'User-Agent': ['Twisted Web Client']}),
-            None)
-        d3 = self.agent.request('HEAD',self.options['site3'],
-            Headers({'User-Agent': ['Twisted Web Client']}),
-            None)
-
-        d1.addCallbacks(self._logResponse, self._logFailure)
-        d2.addCallbacks(self._logResponse, self._logFailure)
-        d3.addCallbacks(self._logResponse, self._logFailure)
-        self.deferred = DeferredList([d1,d2,d3], consumeErrors=True)
-        self.deferred.addCallback(self._quourm)
-        return self.deferred
-   
-  
-    def _logFailure(self, failure):
-        log.debug("reported {message}", message=failure.getErrorMessage())
-        return failure
-
-    def _logResponse(self, response):
-        log.debug("from {response.request.absoluteURI}: {response.code}", response=response)
-        return True
-
     # --------------
     # Helper methods
     # --------------
 
-    def _quourm(self, result):
-        '''
-        Perform a voting between three results. Majority wins.
-        Receices a list of 3 tuples each with (success,value)
-        Value is either the value returned by _logResponse or _logFailure
-        '''
-        quorum = (result[0][0] and result[1][0]) or (result[0][0] and result[2][0]) or (result[1][0] and result[2][0])
-        log.debug("sites quorum = {quorum}", quorum=quorum)
-        return quorum
-
+    
 
 __all__ = [
-    "InternetService"
+    "WebService"
 ]

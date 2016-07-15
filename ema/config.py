@@ -182,13 +182,13 @@ def loadCfgFile(path):
     options['scripts']['active90_mode']    = parser.get("scripts","active90_mode")
     options['scripts']['log_level']        = parser.get("scripts","log_level")
    
-    options['internet'] = {}
-    options['internet']['site1']         = parser.get("internet","site1")
-    options['internet']['site2']         = parser.get("internet","site2")
-    options['internet']['site3']         = parser.get("internet","site3")
-    options['internet']['interval']      = parser.getint("internet","interval")
-    options['internet']['attempts']      = parser.getint("internet","attempts")
-    options['internet']['log_level']     = parser.get("internet","log_level")
+    options['probe'] = {}
+    options['probe']['site1']         = parser.get("probe","site1")
+    options['probe']['site2']         = parser.get("probe","site2")
+    options['probe']['site3']         = parser.get("probe","site3")
+    options['probe']['interval']      = parser.getint("probe","interval")
+    options['probe']['attempts']      = parser.getint("probe","attempts")
+    options['probe']['log_level']     = parser.get("probe","log_level")
 
     options['scheduler'] = {}
     options['scheduler']['intervals']     = parser.get("scheduler","intervals")
