@@ -1,37 +1,25 @@
 Prioridad alta
 ==============
-*) Poner paramterso de initial timeout y bandwith a la seccion [mqtt]
-*) Eventos JSON (¿con retained?)
+*) Eventos JSON (con retained)
    - Ya estoy en linea de nuevo (y con uptime)
    - error de registro
-   - error en bulk dump
-*) Servicio MQTTClient para stars4all
+
+*) API REST de telegestion por HTTP (Usar klein?)
+mirar diseño de API en http://dev.enchant.com/api/v1
+
 *) Reload paraetros, repsar los que si y los que no
 Tracking cache de los dump para no volcar todo
 
 
 BUG NO SE POTA EL MINMAX APARENTEMENTE
-2016-07-14T17:29:30+0000 [serial#info] Executing -> Get Daily Min/Max Dump Command (retries=0/0) [Timeout=128]
-2016-07-14T17:29:30+0000 [script#info] On event active30 executing script with args(datetime.time(17, 29, 30), '17:25:00', '17:40:00', '17:40:00', '17:25:00')
-2016-07-14T17:29:30+0000 [script#info] Invocado script /home/pi/scripts/activity30.sh con argumentos --now 17:29:30 --active-start 17:25:00 --active-end 17:40:00 --inactive-start 17:40:00 --inactive-end 17:25:00
-2016-07-14T17:29:31+0000 [mqtt#debug] MQTT Payload => {"msg": "At 30% of active time window [17:25-17:40)", "rev": 1, "who": "foo", "type": "info", "tstamp": "2016-07-14T17:29:30"}
-2016-07-14T17:29:31+0000 [mqtt#debug] ==> PUBLISH (id=None qos=0 dup=False topic=EMA/foo/events)
-2016-07-14T17:29:35+0000 [script#info] script /home/pi/scripts/activity30.sh terminado
-2016-07-14T17:29:35+0000 [script#info] Child script finished successfully
-2016-07-14T17:29:40+0000 [serial#info] EMA protocol pause()
-2016-07-14T17:29:42+0000 [serial#info] EMA protocol resume()
-2016-07-14T17:30:12+0000 [mqtt#debug] ==> PINGREQ
-2016-07-14T17:30:12+0000 [mqtt#debug] <== PINGRESP
-2016-07-14T17:30:40+0000 [serial#info] EMA protocol pause()
-2016-07-14T17:30:42+0000 [serial#info] EMA protocol resume()
-2016-07-14T17:30:51+0000 [mqtt#debug] MQTT Payload => {"current": ["C", "A", 16.7, 0.1, 98.2, 942.4, 1022.4, 0.0, 0, 99.9, 0.0, 27.7, 31.6, 9.4, 0.0, 0, 0, 24.0], "who": "foo", "rev": 1, "tstamp": "2016-07-14T17:30:51"}
-2016-07-14T17:30:51+0000 [mqtt#debug] ==> PUBLISH (id=None qos=0 dup=False topic=EMA/foo/current/state)
+TIENE QUE VER CON LA TRANSMISION INALAMBRICA
 
 
 Prioridad baja
 ===============
-*) API REST de telegestion por HTTP (Usar klein?)
-mirar diseño de API en http://dev.enchant.com/api/v1
+*) Servicio MQTTClient para stars4all
+
+
 *) Repasar unidades, escala y rango  de los comandos
 
 Uptime en Windows:
