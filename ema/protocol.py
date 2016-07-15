@@ -488,6 +488,7 @@ class GetRTCDateTime(GetCommand):
     '''Get Real Time Clock Date & Time Command'''
     TYPE            = datetime.datetime 
     RANGE           = [datetime.datetime(2016, 1, 1), datetime.datetime(2100, 12, 31)]
+    UNITS           = 'HH:MM:SS'
     CMDFORMAT       = '(y)'
     ACK_PATTERNS    = [ '^\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)' ]
     EMA_TIME_FORMAT = '(%H:%M:%S %d/%m/%Y)'
@@ -506,6 +507,7 @@ class SetRTCDateTime(SetCommand):
     '''Set Real Time Clock Date & Time Command'''
     TYPE            = datetime.datetime
     RANGE           = [datetime.datetime(2016, 1, 1), datetime.datetime(2100, 12, 31)]
+    UNITS           = 'HH:MM:SS'
     CMDFORMAT       = '(Y%d%m%y%H%M%S)'
     ACK_PATTERNS    = [ '\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)']
     EMA_TIME_FORMAT = '(%H:%M:%S %d/%m/%Y)'
@@ -666,6 +668,7 @@ class GetAnemometerModel(GetCommand):
     '''Get Anemometer Model Command'''
     TYPE         = str
     RANGE        = ['TX20', 'Simple']
+    UNITS        = ''
     CMDFORMAT    = '(z)'
     ACK_PATTERNS = [ '^\(Z(\d{3})\)' ]
     MAPPING      = { 1: 'TX20', 0: 'Simple'}
@@ -678,6 +681,7 @@ class SetAnemometerModel(SetCommand):
     '''Set Anemometer Model Command'''
     TYPE         = str
     RANGE        = ['TX20', 'Simple']
+    UNITS        = ''
     CMDFORMAT    = '(Z{:03d})'
     ACK_PATTERNS = [ '^\(Z(\d{3})\)' ]
     MAPPING      = {'TX20': 1, 'Simple': 0 }
@@ -980,7 +984,7 @@ class GetThermometerDeltaTempThreshold(GetCommand):
     CMDFORMAT    = '(c)'
     ACK_PATTERNS = [ '^\(C(\d{3})\)']
     SCALE        = 1
-    UNITS        = 'mm'
+    UNITS        = 'deg C'
     RETRIES      = 2
     TIMEOUT      = {'min': 2, 'max': 128, 'factor': 2}
     
@@ -992,7 +996,7 @@ class SetThermometerDeltaTempThreshold(SetCommand):
     CMDFORMAT    = '(C{:03d})'
     ACK_PATTERNS = [ '^\(C(\d{3})\)']
     SCALE        = 1
-    UNITS        = 'mm'
+    UNITS        = 'deg C'
     RETRIES      = 2
     TIMEOUT      = {'min': 2, 'max': 128, 'factor': 2}
   
@@ -1060,6 +1064,7 @@ class SetRoofRelayMode(SetCommand):
     '''Set Roof Relay Mode Command'''
     TYPE         = str
     RANGE        = ['Closed', 'Open']
+    UNITS        = ''
     CMDFORMAT    = '(X{:03d})'
     ACK_PATTERNS = [ '^\(X(\d{3})\)' ,  '^(dummy)' ]
     ACK_INDEX    = 0
@@ -1124,6 +1129,7 @@ class SetAuxRelaySwitchOnTime(SetCommand):
 class GetAuxRelaySwitchOffTime(GetCommand):
     '''Get Aux Relay Switch-Off Time Command'''
     TYPE            = datetime.time
+    RANGE           = [datetime.time(0,0), datetime.time(23,59)]
     CMDFORMAT       = '(s)'
     ACK_PATTERNS    = [ '^\(S\d{3}\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
     ACK_INDEX       = 2
@@ -1158,6 +1164,7 @@ class GetAuxRelayMode(GetCommand):
     '''Get Aux Relay Mode Command'''
     TYPE         = str
     RANGE        = ['Auto', 'Closed', 'Open', 'Timer/Off', 'Timer/On']
+    UNITS        = ''
     CMDFORMAT    = '(s)'
     ACK_PATTERNS = [ '^\(S(\d{3})\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
     ACK_INDEX    = 0
@@ -1171,6 +1178,7 @@ class SetAuxRelayMode(SetCommand):
     '''Set Aux Relay Mode Command'''
     TYPE         = str
     RANGE        = ['Auto', 'Closed', 'Open', 'Timer/Off', 'Timer/On']
+    UNITS        = ''
     CMDFORMAT    = '(S{:03d})'
     ACK_PATTERNS = [ '^\(S(\d{3})\)', '^(dummy)' ]
     ACK_INDEX    = 0

@@ -450,5 +450,8 @@ sync = no
 # server endpoint where it listens to for HTTP requests
 server = tcp:8080:0.0.0.0
 
+# HTTP access log file
+access = /var/log/emad_access.log
+
 # component log level (debug, info, warn, error, critical)
 log_level = info

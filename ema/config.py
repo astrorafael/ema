@@ -208,6 +208,7 @@ def loadCfgFile(path):
   
     options['web'] = {}
     options['web']['server']        = parser.get("web","server")
+    options['web']['access']        = parser.get("web","access")
     options['web']['log_level']      = parser.get("web","log_level")
    
     return options
