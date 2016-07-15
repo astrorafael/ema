@@ -11,6 +11,7 @@
 from __future__ import division
 
 import json
+import crypt
 
 # ---------------
 # Twisted imports
@@ -26,6 +27,16 @@ from twisted.internet.endpoints   import serverFromString
 from twisted.web.server           import Site
 from twisted.web.resource         import Resource
 from klein import Klein
+
+
+
+from zope.interface import implementer
+from twisted.cred.portal import IRealm, Portal
+from twisted.cred.checkers import FilePasswordDB
+from twisted.web.resource  import IResource
+from twisted.web.guard     import HTTPAuthSessionWrapper, BasicCredentialFactory
+
+
 
 #--------------
 # local imports
@@ -45,11 +56,20 @@ from .service.relopausable import Service
 # -----------------
 
 
+def cmp_pass(uname, password, storedpass):
+    log.err("uname=%s password=%s storedpass=%s" % (uname, password, storedpass) )
+    return crypt.crypt(password, storedpass[:2])
+
+
 # -----------------------
 # Module global variables
 # -----------------------
 
 log = Logger(namespace='web')
+
+# -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 class NotFound(Exception):
     '''Resource not implemented yet'''
@@ -60,7 +80,41 @@ class NotFound(Exception):
         s = '{0}.'.format(s)
         return s
 
+# -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
+@implementer(IRealm)
+class PublicHTMLRealm(object):
+    '''
+    Defines an ACL where all users get the same resource 
+    (the Klein root resource)
+    '''
+    def __init__(self, resource):
+        self.resource = resource
+
+    def requestAvatar(self, avatarId, mind, *interfaces):
+        if IResource in interfaces:
+            return IResource, self.resource, lambda: None
+        raise NotImplementedError()
+
+# -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
+class DateTimeEncoder(json.JSONEncoder):
+    '''Helper class to encode datetime objets in JSON'''
+    def default(self, o):
+        if  isinstance(o, datetime.datetime):
+            return o.strftime("%Y-%m-%dT%H:%M:%S")
+        elif  isinstance(o, datetime.time):
+            return o.strftime("%H:%M:%S")
+        # Let the base class default method raise the TypeError
+        return json.JSONEncoder.default(self, o)
+
+# -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 class WebService(Service):
 
@@ -81,6 +135,19 @@ class WebService(Service):
         Service.startService(self)
         endpoint = serverFromString(reactor, self.options['server'])
         factory = Site(self.app.resource(), logPath=self.options['access'])
+        self._port = yield endpoint.listen(factory)
+
+    @inlineCallbacks
+    def startService(self):
+        log.info("starting {name}", name=self.name)
+        Service.startService(self)
+        endpoint = serverFromString(reactor, self.options['server'])
+        
+        portal = Portal(PublicHTMLRealm(self.app.resource()), [FilePasswordDB('myfile')])
+        credentialFactory = BasicCredentialFactory("EMA")
+        
+        resource = HTTPAuthSessionWrapper(portal, [credentialFactory])
+        factory = Site(resource, logPath=self.options['access'])
         self._port = yield endpoint.listen(factory)
 
     @inlineCallbacks
@@ -111,7 +178,7 @@ class WebService(Service):
             'units': self.parent.serialService.anemometer.PARAMS['threshold']['units'],
             'range': self.parent.serialService.anemometer.PARAMS['threshold']['range'],
         }
-        return json.dumps(result)
+        return json.dumps(result, cls=DateTimeEncoder)
 
     @app.route('/ema/v1/anemometer/current/windspeed/threshold', methods=['PUT'])
     def set_current_windspeed_threshold(self, request):
@@ -125,7 +192,7 @@ class WebService(Service):
             'units': self.parent.serialService.anemometer.PARAMS['ave_threshold']['units'],
             'range': self.parent.serialService.anemometer.PARAMS['ave_threshold']['range'],
         }
-        return json.dumps(result)
+        return json.dumps(result, cls=DateTimeEncoder)
 
     @app.route('/ema/v1/anemometer/average/windspeed/threshold', methods=['PUT'])
     def set_average_windspeed_threshold(self, request):
@@ -139,7 +206,7 @@ class WebService(Service):
             'units': self.parent.serialService.cloudsensor.PARAMS['threshold']['units'],
             'range': self.parent.serialService.cloudsensor.PARAMS['threshold']['range'],
         }
-        return json.dumps(result)
+        return json.dumps(result, cls=DateTimeEncoder)
 
     @app.route('/ema/v1/cloudsensor/threshold', methods=['PUT'])
     def set_cloudsensor_threshold(self, request):
@@ -153,7 +220,7 @@ class WebService(Service):
             'units': self.parent.serialService.photometer.PARAMS['threshold']['units'],
             'range': self.parent.serialService.photometer.PARAMS['threshold']['range'],
         }
-        return json.dumps(result)
+        return json.dumps(result, cls=DateTimeEncoder)
 
     @app.route('/ema/v1/photometer/threshold', methods=['PUT'])
     def set_photometer_threshold(self, request):
@@ -167,7 +234,7 @@ class WebService(Service):
             'units': self.parent.serialService.rainsensor.PARAMS['threshold']['units'],
             'range': self.parent.serialService.rainsensor.PARAMS['threshold']['range'],
         }
-        return json.dumps(result)
+        return json.dumps(result, cls=DateTimeEncoder)
 
     @app.route('/ema/v1/rainsensor/threshold', methods=['PUT'])
     def set_rainsensor_threshold(self, request):
@@ -181,7 +248,7 @@ class WebService(Service):
             'units': self.parent.serialService.themomenter.PARAMS['delta_threshold']['units'],
             'range': self.parent.serialService.themomenter.PARAMS['delta_threshold']['range'],
         }
-        return json.dumps(result)
+        return json.dumps(result, cls=DateTimeEncoder)
 
     @app.route('/ema/v1/thermometer/deltatemp/threshold', methods=['PUT'])
     def set_deltatemp_threshold(self, request):
@@ -195,7 +262,7 @@ class WebService(Service):
             'units': self.parent.serialService.voltmeter.PARAMS['threshold']['units'],
             'range': self.parent.serialService.voltmeter.PARAMS['threshold']['range'],
         }
-        return json.dumps(result)
+        return json.dumps(result, cls=DateTimeEncoder)
 
     @app.route('/ema/v1/voltmeter/threshold', methods=['PUT'])
     def set_voltmeter_threshold(self, request):
@@ -219,7 +286,7 @@ class WebService(Service):
             'units': self.parent.serialService.aux_relay.PARAMS['mode']['units'],
             'range': self.parent.serialService.aux_relay.PARAMS['mode']['range'],
         }
-        return json.dumps(result)
+        return json.dumps(result, cls=DateTimeEncoder)
 
     @app.route('/ema/v1/aux/relay/mode', methods=['PUT'])
     def set_aux_relay_mode(self, request):
