@@ -130,6 +130,7 @@ class Anemometer(Device):
                 'set':   self.parent.protocol.setCurrentWindSpeedThreshold,
                 'units': protocol.GetCurrentWindSpeedThreshold.UNITS,
                 'range': protocol.GetCurrentWindSpeedThreshold.RANGE,
+                'type' : protocol.GetCurrentWindSpeedThreshold.TYPE,
             },
             'ave_threshold': { 
                 'title' : 'Average Wind Speed Threshold',
@@ -139,6 +140,7 @@ class Anemometer(Device):
                 'set':   self.parent.protocol.setAverageWindSpeedThreshold,
                 'units': protocol.GetAverageWindSpeedThreshold.UNITS,
                 'range': protocol.GetAverageWindSpeedThreshold.RANGE,
+                'type' : protocol.GetAverageWindSpeedThreshold.TYPE,
             },
             'calibration': { 
                 'title' : 'Calibration Constant',
@@ -148,6 +150,7 @@ class Anemometer(Device):
                 'set':   self.parent.protocol.setAnemometerCalibrationConstant,
                 'units': protocol.GetAnemometerCalibrationConstant.UNITS,
                 'range': protocol.GetAnemometerCalibrationConstant.RANGE,
+                'type' : protocol.GetAnemometerCalibrationConstant.TYPE,
             },
             'model': { 
                 'title' : 'Model',
@@ -157,6 +160,7 @@ class Anemometer(Device):
                 'set':   self.parent.protocol.setAnemometerModel,
                 'units': protocol.GetAnemometerModel.UNITS,
                 'range': protocol.GetAnemometerModel.RANGE,
+                'type' : protocol.GetAnemometerModel.TYPE,
             },
         }
 
@@ -176,6 +180,7 @@ class Barometer(Device):
                 'set':   self.parent.protocol.setBarometerHeight,
                 'units': protocol.GetBarometerHeight.UNITS,
                 'range': protocol.GetBarometerHeight.RANGE,
+                'type' : protocol.GetBarometerHeight.TYPE,
             },
             'offset': { 
                 'title' : 'Barometer Offset',
@@ -185,6 +190,7 @@ class Barometer(Device):
                 'set':   self.parent.protocol.setBarometerOffset,
                 'units': protocol.GetBarometerOffset.UNITS,
                 'range': protocol.GetBarometerOffset.RANGE,
+                'type' : protocol.GetBarometerOffset.TYPE,
             },
         }
 
@@ -204,6 +210,7 @@ class CloudSensor(Device):
                 'set':   self.parent.protocol.setCloudSensorThreshold,
                 'units': protocol.GetCloudSensorThreshold.UNITS,
                 'range': protocol.GetCloudSensorThreshold.RANGE,
+                'type' : protocol.GetCloudSensorThreshold.TYPE,
             },
             'gain': { 
                 'title' : 'Cloud Sensor Gain',
@@ -213,6 +220,7 @@ class CloudSensor(Device):
                 'set':   self.parent.protocol.setCloudSensorGain,
                 'units': protocol.GetCloudSensorGain.UNITS,
                 'range': protocol.GetCloudSensorGain.RANGE,
+                'type' : protocol.GetCloudSensorGain.TYPE,
             },
         }   
 
@@ -232,6 +240,7 @@ class Photometer(Device):
                 'set':   self.parent.protocol.getPhotometerThreshold,
                 'units': protocol.GetPhotometerThreshold.UNITS,
                 'range': protocol.GetPhotometerThreshold.RANGE,
+                'type' : protocol.GetPhotometerThreshold.TYPE,
             },
             'offset': { 
                 'title' : 'Photometer Offset',
@@ -241,6 +250,7 @@ class Photometer(Device):
                 'set':   self.parent.protocol.setPhotometerOffset,
                 'units': protocol.GetPhotometerOffset.UNITS,
                 'range': protocol.GetPhotometerOffset.RANGE,
+                'type' : protocol.GetPhotometerOffset.TYPE,
             },
         } 
 
@@ -261,6 +271,7 @@ class Pluviometer(Device):
                 'set':   self.parent.protocol.setPluviometerCalibration,
                 'units': protocol.GetPluviometerCalibration.UNITS,
                 'range': protocol.GetPluviometerCalibration.RANGE,
+                'type' : protocol.GetPluviometerCalibration.TYPE,
             },
         } 
 
@@ -281,6 +292,7 @@ class Pyranometer(Device):
                 'set':   self.parent.protocol.setPyranometerGain,
                 'units': protocol.GetPyranometerGain.UNITS,
                 'range': protocol.GetPyranometerGain.RANGE,
+                'type' : protocol.GetPyranometerGain.TYPE,
             },
             'offset': { 
                 'title' : 'Pyranometer Offset',
@@ -290,6 +302,7 @@ class Pyranometer(Device):
                 'set':   self.parent.protocol.setPyranometerOffset,
                 'units': protocol.GetPyranometerOffset.UNITS,
                 'range': protocol.GetPyranometerOffset.RANGE,
+                'type' : protocol.GetPyranometerOffset.TYPE,
             },
         } 
 
@@ -309,6 +322,7 @@ class RainSensor(Device):
                 'set':   self.parent.protocol.setRainSensorThreshold,
                 'units': protocol.GetRainSensorThreshold.UNITS,
                 'range': protocol.GetRainSensorThreshold.RANGE,
+                'type' : protocol.GetRainSensorThreshold.TYPE,
             },
         } 
 
@@ -328,6 +342,7 @@ class Thermometer(Device):
                 'set':   self.parent.protocol.setThermometerDeltaTempThreshold,
                 'units': protocol.GetThermometerDeltaTempThreshold.UNITS,
                 'range': protocol.GetThermometerDeltaTempThreshold.RANGE,
+                'type' : protocol.GetThermometerDeltaTempThreshold.TYPE,
             },
         } 
 
@@ -381,6 +396,7 @@ class AuxiliarRelay(Device):
                 'set':   self.parent.protocol.setAuxRelayMode,
                 'units': protocol.GetAuxRelayMode.UNITS,
                 'range': protocol.GetAuxRelayMode.RANGE,
+                'type' : protocol.GetAuxRelayMode.TYPE,
             },
         } 
         self.switchon = deque(maxlen=2)
@@ -433,6 +449,7 @@ class RealTimeClock(Device):
                 'set':   self.parent.protocol.setRTCDateTime,
                 'units': protocol.GetRTCDateTime.UNITS,
                 'range': protocol.GetRTCDateTime.RANGE,
+                'type' : protocol.GetRTCDateTime.TYPE,
             },
         }
 
@@ -523,6 +540,7 @@ class Voltmeter(Device):
                 'set':   self.parent.protocol.setVoltmeterThreshold,
                 'units': protocol.GetVoltmeterThreshold.UNITS,
                 'range': protocol.GetVoltmeterThreshold.RANGE,
+                'type' : protocol.GetVoltmeterThreshold.TYPE,
             },
             'offset': { 
                 'title' : 'Offset',
@@ -533,6 +551,7 @@ class Voltmeter(Device):
                 'set':   self.parent.protocol.setVoltmeterOffset,
                 'units': protocol.GetVoltmeterOffset.UNITS,
                 'range': protocol.GetVoltmeterOffset.RANGE,
+                'type' : protocol.GetVoltmeterOffset.TYPE,
             },
         }
         self.voltage = deque(maxlen=(upload_period//EMA_PERIOD))
@@ -572,6 +591,7 @@ class Watchdog(Device):
                 'set':   self.parent.protocol.setWatchdogPeriod,
                 'units': protocol.GetWatchdogPeriod.UNITS,
                 'range': protocol.GetWatchdogPeriod.RANGE,
+                'type' : protocol.GetWatchdogPeriod.TYPE,
             },
         }
         self.pingTask  = task.LoopingCall(self.ping)
