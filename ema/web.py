@@ -72,13 +72,29 @@ log = Logger(namespace='web')
 # -----------------------------------------------------------------------------
 
 class NotFound(Exception):
-    '''Resource not implemented yet'''
-    def __str__(self):
-        s = self.__doc__
-        if self.args:
-            s = "{0}: '{1}'".format(s, self.args[0])
-        s = '{0}.'.format(s)
-        return s
+    '''Resource not found'''
+    code = 404
+    
+
+class BadRequest(Exception):
+    '''Could not parse request'''
+    code = 400
+    
+
+class UnsupportedMediaType(Exception):
+    '''POST/PUTrequest occurred without a application/json content type'''
+    code = 416
+    
+
+class UnprocessableEntry(Exception):
+    '''A request to modify a resource failed due to a validation error'''
+    code = 422
+    
+
+class InternalServerError(Exception):
+    '''An internal server error occured'''
+    code = 500
+    
 
 # -----------------------------------------------------------------------------
 # -----------------------------------------------------------------------------
@@ -136,7 +152,7 @@ class WebService(Service):
         Service.startService(self)
         endpoint = serverFromString(reactor, self.options['server'])
         portal = Portal(PublicHTMLRealm(self.app.resource()), 
-            [FilePasswordDB(self.options['passwd'])])
+            [ FilePasswordDB(self.options['passwd']) ] )
         credentialFactory = BasicCredentialFactory("EMA")
         root = HTTPAuthSessionWrapper(portal, [credentialFactory])
         factory = Site(root, logPath=self.options['access'])
@@ -329,10 +345,24 @@ class WebService(Service):
     # Helper methods
     # --------------
 
-    @app.handle_errors(NotFound)
-    def notfound(self, request, failure):
-        request.setResponseCode(404)
-        return NotFound.__doc__
+    def json_4xx_error(self, request, code, msg):
+        '''
+        Returns a JSON body for all 4xx error
+        '''
+        request.setResponseCode(code)
+        request.setHeader('Content-Type', 'application/json')
+        return json.dumps( { 'message': msg } )
+
+    @app.handle_errors
+    def handle_errors(self, request, failure):
+        '''
+        Default handler for all REST API errors
+        '''
+        if failure.type in [NotFound, BadRequest, UnsupportedMediaType, UnprocessableEntry]:
+            return self.json_4xx_error(request, failure.type.code, failure.type.__doc__)
+        else:
+            request.setResponseCode(500)
+            return ''
 
 
 __all__ = [
