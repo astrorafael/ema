@@ -4,7 +4,7 @@ Prioridad alta
    - Ya estoy en linea de nuevo (y con uptime)
    - error de registro
 
-*) API REST de telegestion por HTTP (Usar klein?)
+*) API REST de telegestion por HTTP
 mirar diseño de API en http://dev.enchant.com/api/v1
 
 *) Reload paraetros, repsar los que si y los que no

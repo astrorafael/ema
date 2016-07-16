@@ -1,0 +1,17 @@
+/var/log/ema.log {
+	copytruncate
+	daily
+	dateext
+	rotate 30
+	missingok
+	notifempty
+	compress
+}
+/var/log/ema-access.log {
+	copytruncate
+	daily
+	dateext
+	rotate 30
+	missingok
+	notifempty
+}

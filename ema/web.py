@@ -11,7 +11,7 @@
 from __future__ import division
 
 import json
-import crypt
+import hashlib
 
 # ---------------
 # Twisted imports
@@ -55,11 +55,11 @@ from .service.relopausable import Service
 # Global functions
 # -----------------
 
+def encrypt(password):
+    return hashlib.sha256(password).hexdigest()
 
-def cmp_pass(uname, password, storedpass):
-    log.err("uname=%s password=%s storedpass=%s" % (uname, password, storedpass) )
-    return crypt.crypt(password, storedpass[:2])
-
+def emahash(uname, password, storedpass):
+    return encrypt(password)
 
 # -----------------------
 # Module global variables
@@ -151,8 +151,9 @@ class WebService(Service):
         log.info("starting {name}", name=self.name)
         Service.startService(self)
         endpoint = serverFromString(reactor, self.options['server'])
+        func = None if self.options['plain'] else emahash
         portal = Portal(PublicHTMLRealm(self.app.resource()), 
-            [ FilePasswordDB(self.options['passwd']) ] )
+            [ FilePasswordDB(self.options['passwd'], hash=func) ] )
         credentialFactory = BasicCredentialFactory("EMA")
         root = HTTPAuthSessionWrapper(portal, [credentialFactory])
         factory = Site(root, logPath=self.options['access'])

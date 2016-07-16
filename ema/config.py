@@ -209,7 +209,8 @@ def loadCfgFile(path):
     options['web']['server']        = parser.get("web","server")
     options['web']['access']        = parser.get("web","access")
     options['web']['passwd']        = parser.get("web","passwd")
-    options['web']['log_level']      = parser.get("web","log_level")
+    options['web']['plain']         = parser.getboolean("web","plain")
+    options['web']['log_level']     = parser.get("web","log_level")
    
     return options
 
