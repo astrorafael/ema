@@ -82,7 +82,7 @@ class BadRequest(Exception):
     
 
 class UnsupportedMediaType(Exception):
-    '''POST/PUTrequest occurred without a application/json content type'''
+    '''POST/PUT request occurred without a application/json content type'''
     code = 416
     
 
@@ -93,7 +93,7 @@ class UnprocessableEntry(Exception):
 
 class InternalServerError(Exception):
     '''An internal server error occured'''
-    code = 500
+    code = 501
     
 
 # -----------------------------------------------------------------------------
@@ -178,6 +178,8 @@ class WebService(Service):
     # Exposed EMA REST API
     # --------------------
 
+
+
     @app.route('/ema/v1/anemometer/current/windspeed/threshold', methods=['GET'])
     def get_current_windspeed_threshold(self, request):
         request.setHeader('Content-Type', 'application/json')
@@ -189,8 +191,9 @@ class WebService(Service):
         return json.dumps(result, cls=DateTimeEncoder)
 
 
-    @app.route('/ema/v1/anemometer/current/windspeed/threshold', methods=['PUT'])
+    @app.route('/ema/v1/anemometer/current/windspeed/threshold', methods=['PUT', 'POST'])
     def set_current_windspeed_threshold(self, request):
+        body = self.getValidated(request)
         raise NotFound()
 
 
@@ -344,6 +347,35 @@ class WebService(Service):
     # --------------
     # Helper methods
     # --------------
+
+# Test with
+# curl -v -u foo:bar -H "Content-Type: application/json" \
+#    -H "X-HTTP-Method-Override: PUT" -X POST \
+#    -d '{ "value": "Hello world" }'  \
+#     http://localhost:8080/ema/v1/anemometer/current/windspeed/threshold 
+
+    def getValidated(self, request):
+        '''
+        Generic Validation for all POST/PUT requests.
+        Individual JSON contents must be validated by each route
+        '''
+        headers = request.getAllHeaders()
+        log.debug("{headers}", headers=request.getAllHeaders())
+        if request.method == 'POST' and 'x-http-method-override' not in headers:
+            raise BadRequest()
+        if 'content-type' not in headers:
+            raise BadRequest()
+        if headers['content-type'] != 'application/json':
+            raise UnsupportedMediaType()
+        body = request.content.read()
+        try:
+            obj   = json.loads(body)
+            value = obj['value']
+        except Exception as e:
+            raise UnprocessableEntry()
+        return value
+            
+            
 
     def json_4xx_error(self, request, code, msg):
         '''
