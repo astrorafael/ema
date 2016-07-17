@@ -392,7 +392,17 @@ class WebService(Service):
     # Estas son muy especiales y peligrosas
     @app.route('/ema/v1/aux/relay/switch/on/time', methods=['GET'])
     def get_aux_relay_switch_on_time(self, request):
-        raise NotFound('Not yet implemented')
+        def okCallback(value):
+            request.setHeader('Content-Type', 'application/json')
+            result = {
+                'value': value,
+                'units': 'HH:MM:00',
+                'range': [datetime.time(0,0), datetime.time(23,59)],
+            }
+            return json.dumps(result, cls=DateTimeEncoder)
+        d = self.parent.serialService.protocol.getAuxRelaySwitchOnTime()
+        d.addCallback(okCallback)
+        return d
 
 
     # Estas son muy especiales y peligrosas
@@ -409,7 +419,17 @@ class WebService(Service):
     # Estas son muy especiales y peligrosas
     @app.route('/ema/v1/aux/relay/switch/off/time', methods=['GET'])
     def get_aux_relay_switch_off_time(self, request):
-        raise NotFound('Not yet implemented')
+        def okCallback(value):
+            request.setHeader('Content-Type', 'application/json')
+            result = {
+                'value': value,
+                'units': 'HH:MM:00',
+                'range': [datetime.time(0,0), datetime.time(23,59)],
+            }
+            return json.dumps(result, cls=DateTimeEncoder)
+        d = self.parent.serialService.protocol.getAuxRelaySwitchOffTime()
+        d.addCallback(okCallback)
+        return d
 
 
     # Estas son muy especiales y peligrosas
