@@ -71,27 +71,35 @@ log = Logger(namespace='web')
 # -----------------------------------------------------------------------------
 # -----------------------------------------------------------------------------
 
-class NotFound(Exception):
+class HTTPException(Exception):
+    def __str__(self):
+        m = { 'message' : self.__doc__ }
+        if self.args:
+            m['error'] = self.args[0]
+        return json.dumps(m)
+
+
+class NotFound(HTTPException):
     '''Resource not found'''
     code = 404
     
 
-class BadRequest(Exception):
+class BadRequest(HTTPException):
     '''Could not parse request'''
     code = 400
     
 
-class UnsupportedMediaType(Exception):
+class UnsupportedMediaType(HTTPException):
     '''POST/PUT request occurred without a application/json content type'''
     code = 416
     
 
-class UnprocessableEntry(Exception):
+class UnprocessableEntry(HTTPException):
     '''A request to modify a resource failed due to a validation error'''
     code = 422
     
 
-class InternalServerError(Exception):
+class InternalServerError(HTTPException):
     '''An internal server error occured'''
     code = 501
     
@@ -192,12 +200,20 @@ class WebService(Service):
         return json.dumps(result, cls=DateTimeEncoder)
 
 
+    def writeOkCallback(self, value, request):
+            log.info("{req.method} {req.uri} = {val} ok.", req=request, val=value)
+            request.setResponseCode(200)
+            request.setHeader('Content-Type', 'application/json')
+            return json.dumps({'value': value})
+
     @app.route('/ema/v1/anemometer/current/windspeed/threshold', methods=['PUT', 'POST'])
     def set_current_windspeed_threshold(self, request):
         valrange = self.parent.serialService.anemometer.PARAMS['threshold']['range']
         valtype  = self.parent.serialService.anemometer.PARAMS['threshold']['type']
         value    = self.getValidated(request, valtype, valrange)
-        raise NotFound()
+        d        = self.parent.serialService.anemometer.PARAMS['threshold']['set'](value)
+        d.addCallback(self.writeOkCallback, request)
+        return d
 
 
     @app.route('/ema/v1/anemometer/average/windspeed/threshold', methods=['GET'])
@@ -216,7 +232,9 @@ class WebService(Service):
         valrange = self.parent.serialService.anemometer.PARAMS['ave_threshold']['range']
         valtype  = self.parent.serialService.anemometer.PARAMS['ave_threshold']['type']
         value    = self.getValidated(request, valtype, valrange)
-        raise NotFound()
+        d        = self.parent.serialService.anemometer.PARAMS['ave_threshold']['set'](value)
+        d.addCallback(self.writeOkCallback, request)
+        return d
 
 
     @app.route('/ema/v1/cloudsensor/threshold', methods=['GET'])
@@ -235,7 +253,10 @@ class WebService(Service):
         valrange = self.parent.serialService.cloudsensor.PARAMS['threshold']['range']
         valtype  = self.parent.serialService.cloudsensor.PARAMS['threshold']['type']
         value    = self.getValidated(request, valtype, valrange)
-        raise NotFound()
+        d        = self.parent.serialService.cloudsensor.PARAMS['threshold']['set'](value)
+        d.addCallback(self.writeOkCallback, request)
+        return d
+
 
 
     @app.route('/ema/v1/photometer/threshold', methods=['GET'])
@@ -254,7 +275,9 @@ class WebService(Service):
         valrange = self.parent.serialService.photometer.PARAMS['threshold']['range']
         valtype  = self.parent.serialService.photometer.PARAMS['threshold']['type']
         value    = self.getValidated(request, valtype, valrange)
-        raise NotFound()
+        d        = self.parent.serialService.photometer.PARAMS['threshold']['set'](value)
+        d.addCallback(self.writeOkCallback, request)
+        return d
 
 
     @app.route('/ema/v1/rainsensor/threshold', methods=['GET'])
@@ -273,7 +296,9 @@ class WebService(Service):
         valrange = self.parent.serialService.rainsensor.PARAMS['threshold']['range']
         valtype  = self.parent.serialService.rainsensor.PARAMS['threshold']['type']
         value    = self.getValidated(request, valtype, valrange)
-        raise NotFound()
+        d        = self.parent.serialService.rainsensor.PARAMS['threshold']['set'](value)
+        d.addCallback(self.writeOkCallback, request)
+        return d
 
 
     @app.route('/ema/v1/thermometer/deltatemp/threshold', methods=['GET'])
@@ -292,7 +317,9 @@ class WebService(Service):
         valrange = self.parent.serialService.themomenter.PARAMS['delta_threshold']['range']
         valtype  = self.parent.serialService.themomenter.PARAMS['delta_threshold']['type']
         value    = self.getValidated(request, valtype, valrange)
-        raise NotFound()
+        d        = self.parent.serialService.themomenter.PARAMS['delta_threshold']['set'](value)
+        d.addCallback(self.writeOkCallback, request)
+        return d
 
 
     @app.route('/ema/v1/voltmeter/threshold', methods=['GET'])
@@ -311,22 +338,25 @@ class WebService(Service):
         valrange = self.parent.serialService.voltmeter.PARAMS['threshold']['range']
         valtype  = self.parent.serialService.voltmeter.PARAMS['threshold']['type']
         value    = self.getValidated(request, valtype, valrange)
-        raise NotFound()
+        d        = self.parent.serialService.voltmeter.PARAMS['threshold']['set'](value)
+        d.addCallback(self.writeOkCallback, request)
+        return d
 
 
     # ESTA ES ESPECIAL
     @app.route('/ema/v1/roof/relay/mode', methods=['GET'])
     def get_roof_relay_mode(self, request):
-        raise NotFound()
+        raise NotFound('Not implemented')
 
 
-    # Y ESTA TAMBIEN
     @app.route('/ema/v1/roof/relay/mode', methods=['PUT', 'POST'])
     def set_roof_relay_mode(self, request):
         valrange = self.parent.serialService.roof_relay.PARAMS['mode']['range']
         valtype  = self.parent.serialService.roof_relay.PARAMS['mode']['type']
         value    = self.getValidated(request, valtype, valrange)
-        raise NotFound()
+        d        = self.parent.serialService.roof_relay.PARAMS['mode']['set'](value)
+        d.addCallback(self.writeOkCallback, request)
+        return d
 
 
     @app.route('/ema/v1/aux/relay/mode', methods=['GET'])
@@ -339,37 +369,39 @@ class WebService(Service):
         }
         return json.dumps(result, cls=DateTimeEncoder)
 
-
+    #  Esta es peligrosa
     @app.route('/ema/v1/aux/relay/mode', methods=['PUT', 'POST'])
     def set_aux_relay_mode(self, request):
         valrange = self.parent.serialService.aux_relay.PARAMS['mode']['range']
         valtype  = self.parent.serialService.aux_relay.PARAMS['mode']['type']
         value    = self.getValidated(request, valtype, valrange)
-        raise NotFound()
+        d        = self.parent.serialService.aux_relay.PARAMS['mode']['set'](value)
+        d.addCallback(self.writeOkCallback, request)
+        return d
 
 
     # Estas son muy especiales y peligrosas
     @app.route('/ema/v1/aux/relay/switch/on/time', methods=['GET'])
     def get_aux_relay_switch_on_time(self, request):
-        raise NotFound()
+        raise NotFound('Not yet implemented')
 
 
     # Estas son muy especiales y peligrosas
     @app.route('/ema/v1/aux/relay/switch/on/time', methods=['PUT', 'POST'])
     def set_aux_relay_switch_on_time(self, request):
-        raise NotFound()
+        raise NotFound('Not yet implemented')
 
 
     # Estas son muy especiales y peligrosas
     @app.route('/ema/v1/aux/relay/switch/off/time', methods=['GET'])
     def get_aux_relay_switch_off_time(self, request):
-        raise NotFound()
+        raise NotFound('Not yet implemented')
 
 
     # Estas son muy especiales y peligrosas
     @app.route('/ema/v1/aux/relay/switch/off/time', methods=['PUT', 'POST'])
     def set_aux_relay_switch_off_time(self, request):
-        raise NotFound()
+        raise NotFound('Not yet implemented')
 
     # --------------
     # Helper methods
@@ -387,42 +419,34 @@ class WebService(Service):
         Individual JSON contents must be validated by each route
         '''
         headers = request.getAllHeaders()
-        log.debug("{headers}", headers=request.getAllHeaders())
         if request.method == 'POST' and 'x-http-method-override' not in headers:
-            raise BadRequest()
+            raise BadRequest('HTTP POST method without X-HTTP-Method-Override header')
+        if headers['x-http-method-override'] != 'PUT':
+            raise BadRequest("X-HTTP-Method-Override header value isn't 'PUT'")
         if 'content-type' not in headers:
-            raise BadRequest()
+            raise BadRequest('missing Content-Type header')
         if headers['content-type'] != 'application/json':
-            raise UnsupportedMediaType()
+            raise UnsupportedMediaType('Content-Type is not application/json')
         body = request.content.read()
         try:
             obj   = json.loads(body)
             value = obj['value']
         except Exception as e:
             log.failure("exception {e}", e=e)
-            raise UnprocessableEntry()
+            raise UnprocessableEntry(str(e))
         else:
             if type(value) != valtype:
                 log.debug("Value's type is {t}, expected {e}", t=type(value), e=valtype)
-                raise UnprocessableEntry()
+                raise UnprocessableEntry("Value's type is {0}, expected {1}".format(type(value), valtype))
             if type(value) == str and value not in valrange:
                 log.debug("Value {v} not in range {r}", v=value, r=valrange)
-                raise UnprocessableEntry()
+                raise UnprocessableEntry("Value {0} not in range {1}".format(value, valrange))
             if  not (valrange[0] <= value <= valrange[1]):
                 log.debug("Value {v} not in range {r}", v=value, r=valrange)
-                raise UnprocessableEntry()
-            log.debug("Value {v} is ok", v=value)
+                raise UnprocessableEntry("Value {0} not in range {1}".format(value, valrange))
+            log.debug("New value for {req.uri} is {v}. ok.", v=value, req=request)
             return value
             
-
-    def json_4xx_error(self, request, code, msg):
-        '''
-        Returns a JSON body for all 4xx error
-        '''
-        request.setResponseCode(code)
-        request.setHeader('Content-Type', 'application/json')
-        return json.dumps( { 'message': msg } )
-
 
     @app.handle_errors
     def handle_errors(self, request, failure):
@@ -430,7 +454,9 @@ class WebService(Service):
         Default handler for all REST API errors
         '''
         if failure.type in [NotFound, BadRequest, UnsupportedMediaType, UnprocessableEntry]:
-            return self.json_4xx_error(request, failure.type.code, failure.type.__doc__)
+            request.setResponseCode(failure.value.code)
+            request.setHeader('Content-Type', 'application/json')
+            return str(failure.value)
         else:
             request.setResponseCode(500)
             return ''

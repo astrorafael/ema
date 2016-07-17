@@ -7,12 +7,17 @@ Prioridad alta
 *) API REST de telegestion por HTTP
 mirar diseño de API en http://dev.enchant.com/api/v1
 
+
 *) Reload paraetros, repsar los que si y los que no
 Tracking cache de los dump para no volcar todo
 
+*) Custom JSON decoder to objec_hook for datetime.time in Relay response
+*) Refactorización e objetos de dominip
 
-BUG NO SE POTA EL MINMAX APARENTEMENTE
-TIENE QUE VER CON LA TRANSMISION INALAMBRICA
+BUG NO SE POTA EL MINMAX 
+APARENTEMENTE TIENE QUE VER CON LA TRANSMISION INALAMBRICA
+O CON UN DUIPLICADO DEL EMAD ROBANDO CARACTERES
+
 
 
 Prioridad baja

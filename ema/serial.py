@@ -774,7 +774,7 @@ class SerialService(ClientService):
         mydict = { 'mac': mac }
         for device in self.devices:
             mydict.update(device.parameters())
-        log.info("PARAMETERS = {p}", p=mydict)
+        log.debug("PARAMETERS = {p}", p=mydict)
         return mydict
        
 
