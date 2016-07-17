@@ -813,7 +813,7 @@ class SerialService(ClientService):
         if flag:
             return self.aux_relay.mode('Timer/On')
         else:
-            return self.aux_relay.mode('Timer/On')
+            return self.aux_relay.mode('Timer/Off')
         
 
     def getDailyMinMaxDump(self):

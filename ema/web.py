@@ -12,6 +12,8 @@ from __future__ import division
 
 import json
 import hashlib
+import datetime
+import time
 
 # ---------------
 # Twisted imports
@@ -60,6 +62,21 @@ def encrypt(password):
 
 def emahash(uname, password, storedpass):
     return encrypt(password)
+
+def as_time(dct):
+    '''
+    Convert HH:MM JSON strings into datetime.time objects'''
+    try:
+        t = time.strptime(dct['value'], '%H:%M:%S')
+    except ValueError:
+        # This may raise an exception as well
+        t = time.strptime(dct['value'], '%H:%M')   
+        dct['value'] = datetime.time(t.tm_hour, t.tm_min)
+        return dct
+    else:
+        dct['value'] = datetime.time(t.tm_hour, t.tm_min, t.tm_sec)
+        return dct
+
 
 # -----------------------
 # Module global variables
@@ -187,8 +204,6 @@ class WebService(Service):
     # Exposed EMA REST API
     # --------------------
 
-
-
     @app.route('/ema/v1/anemometer/current/windspeed/threshold', methods=['GET'])
     def get_current_windspeed_threshold(self, request):
         request.setHeader('Content-Type', 'application/json')
@@ -197,14 +212,8 @@ class WebService(Service):
             'units': self.parent.serialService.anemometer.PARAMS['threshold']['units'],
             'range': self.parent.serialService.anemometer.PARAMS['threshold']['range'],
         }
-        return json.dumps(result, cls=DateTimeEncoder)
+        return json.dumps(result)
 
-
-    def writeOkCallback(self, value, request):
-            log.info("{req.method} {req.uri} = {val} ok.", req=request, val=value)
-            request.setResponseCode(200)
-            request.setHeader('Content-Type', 'application/json')
-            return json.dumps({'value': value})
 
     @app.route('/ema/v1/anemometer/current/windspeed/threshold', methods=['PUT', 'POST'])
     def set_current_windspeed_threshold(self, request):
@@ -224,7 +233,7 @@ class WebService(Service):
             'units': self.parent.serialService.anemometer.PARAMS['ave_threshold']['units'],
             'range': self.parent.serialService.anemometer.PARAMS['ave_threshold']['range'],
         }
-        return json.dumps(result, cls=DateTimeEncoder)
+        return json.dumps(result)
 
 
     @app.route('/ema/v1/anemometer/average/windspeed/threshold', methods=['PUT', 'POST'])
@@ -245,7 +254,7 @@ class WebService(Service):
             'units': self.parent.serialService.cloudsensor.PARAMS['threshold']['units'],
             'range': self.parent.serialService.cloudsensor.PARAMS['threshold']['range'],
         }
-        return json.dumps(result, cls=DateTimeEncoder)
+        return json.dumps(result)
 
 
     @app.route('/ema/v1/cloudsensor/threshold', methods=['PUT', 'POST'])
@@ -267,7 +276,7 @@ class WebService(Service):
             'units': self.parent.serialService.photometer.PARAMS['threshold']['units'],
             'range': self.parent.serialService.photometer.PARAMS['threshold']['range'],
         }
-        return json.dumps(result, cls=DateTimeEncoder)
+        return json.dumps(result)
 
 
     @app.route('/ema/v1/photometer/threshold', methods=['PUT', 'POST'])
@@ -288,7 +297,7 @@ class WebService(Service):
             'units': self.parent.serialService.rainsensor.PARAMS['threshold']['units'],
             'range': self.parent.serialService.rainsensor.PARAMS['threshold']['range'],
         }
-        return json.dumps(result, cls=DateTimeEncoder)
+        return json.dumps(result)
 
 
     @app.route('/ema/v1/rainsensor/threshold', methods=['PUT', 'POST'])
@@ -309,7 +318,7 @@ class WebService(Service):
             'units': self.parent.serialService.themomenter.PARAMS['delta_threshold']['units'],
             'range': self.parent.serialService.themomenter.PARAMS['delta_threshold']['range'],
         }
-        return json.dumps(result, cls=DateTimeEncoder)
+        return json.dumps(result)
 
 
     @app.route('/ema/v1/thermometer/deltatemp/threshold', methods=['PUT', 'POST'])
@@ -330,7 +339,7 @@ class WebService(Service):
             'units': self.parent.serialService.voltmeter.PARAMS['threshold']['units'],
             'range': self.parent.serialService.voltmeter.PARAMS['threshold']['range'],
         }
-        return json.dumps(result, cls=DateTimeEncoder)
+        return json.dumps(result)
 
 
     @app.route('/ema/v1/voltmeter/threshold', methods=['PUT', 'POST'])
@@ -367,7 +376,7 @@ class WebService(Service):
             'units': self.parent.serialService.aux_relay.PARAMS['mode']['units'],
             'range': self.parent.serialService.aux_relay.PARAMS['mode']['range'],
         }
-        return json.dumps(result, cls=DateTimeEncoder)
+        return json.dumps(result)
 
     #  Esta es peligrosa
     @app.route('/ema/v1/aux/relay/mode', methods=['PUT', 'POST'])
@@ -389,7 +398,12 @@ class WebService(Service):
     # Estas son muy especiales y peligrosas
     @app.route('/ema/v1/aux/relay/switch/on/time', methods=['PUT', 'POST'])
     def set_aux_relay_switch_on_time(self, request):
-        raise NotFound('Not yet implemented')
+        valrange = [datetime.time(0,0), datetime.time(23,59)]
+        valtype  = datetime.time
+        value    = self.getValidated(request, valtype, valrange, as_time)
+        d = self.parent.serialService.protocol.setAuxRelaySwitchOnTime(value)
+        d.addCallback(self.writeOkCallback, request)
+        return d
 
 
     # Estas son muy especiales y peligrosas
@@ -401,11 +415,23 @@ class WebService(Service):
     # Estas son muy especiales y peligrosas
     @app.route('/ema/v1/aux/relay/switch/off/time', methods=['PUT', 'POST'])
     def set_aux_relay_switch_off_time(self, request):
-        raise NotFound('Not yet implemented')
+        valrange = [datetime.time(0,0), datetime.time(23,59)]
+        valtype  = datetime.time
+        value    = self.getValidated(request, valtype, valrange, as_time)
+        d = self.parent.serialService.protocol.setAuxRelaySwitchOffTime(value)
+        d.addCallback(self.writeOkCallback, request)
+        return d
 
     # --------------
     # Helper methods
     # --------------
+
+    def writeOkCallback(self, value, request):
+        log.info("{req.method} {req.uri} = {val} ok.", req=request, val=value)
+        request.setResponseCode(200)
+        request.setHeader('Content-Type', 'application/json')
+        return json.dumps({'value': value}, cls=DateTimeEncoder)
+
 
 # Test with
 # curl -v -u foo:bar -H "Content-Type: application/json" \
@@ -413,11 +439,12 @@ class WebService(Service):
 #    -d '{ "value": "Hello world" }'  \
 #     http://localhost:8080/ema/v1/anemometer/current/windspeed/threshold 
 
-    def getValidated(self, request, valtype, valrange):
+    def getValidated(self, request, valtype, valrange, object_hook=None):
         '''
         Generic Validation for all POST/PUT requests.
         Individual JSON contents must be validated by each route
         '''
+        log.debug("BEGIN getValidated()")
         headers = request.getAllHeaders()
         if request.method == 'POST' and 'x-http-method-override' not in headers:
             raise BadRequest('HTTP POST method without X-HTTP-Method-Override header')
@@ -428,8 +455,9 @@ class WebService(Service):
         if headers['content-type'] != 'application/json':
             raise UnsupportedMediaType('Content-Type is not application/json')
         body = request.content.read()
+        log.debug("END getValidated()")
         try:
-            obj   = json.loads(body)
+            obj   = json.loads(body,object_hook=object_hook)
             value = obj['value']
         except Exception as e:
             log.failure("exception {e}", e=e)
