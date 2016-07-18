@@ -30,6 +30,8 @@ from twisted.internet.protocol   import ClientFactory
 # local imports
 # -------------
 
+import command
+
 from . import PY2
 
 
@@ -369,7 +371,7 @@ class EMAProtocol(LineOnlyReceiver):
             self._resume()
             return True
         if ur['name'] == 'Current status message':
-            curState, _ = decodeStatus(line)
+            curState, _ = command.decodeStatus(line)
             for callback in self._onStatus:
                 callback(curState, tstamp)
             return True
@@ -384,22 +386,4 @@ __all__ = [
     "EMAProtocol", 
     "EMAProtocolFactory",
     "EMATimeoutError",
-    "PERIOD",
-    "ROOF_RELAY",
-    "AUX_RELAY",
-    "POWER_VOLT",
-    "RAIN_PROB",
-    "CLOUD_LEVEL",
-    "ABS_PRESSURE",
-    "CAL_PRESSURE",
-    "CUR_PLUVIOM",
-    "ACC_PLUVIOM",
-    "PYRANOMETER",
-    "PHOTOM_FREQ",
-    "AMB_TEMP",
-    "HUMIDITY",
-    "DEW_POINT",
-    "CUR_WIND_SPEED",
-    "AVE_WIND_SPEED",
-    "WIND_DIRECTION",
 ]

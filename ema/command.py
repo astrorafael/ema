@@ -1239,3 +1239,23 @@ class Get5MinAveragesDump(BulkDumpCommand):
         self.response[self.iteration].append(status)
        
 
+__all__ = [
+    "PERIOD",
+    "ROOF_RELAY",
+    "AUX_RELAY",
+    "POWER_VOLT",
+    "RAIN_PROB",
+    "CLOUD_LEVEL",
+    "ABS_PRESSURE",
+    "CAL_PRESSURE",
+    "CUR_PLUVIOM",
+    "ACC_PLUVIOM",
+    "PYRANOMETER",
+    "PHOTOM_FREQ",
+    "AMB_TEMP",
+    "HUMIDITY",
+    "DEW_POINT",
+    "CUR_WIND_SPEED",
+    "AVE_WIND_SPEED",
+    "WIND_DIRECTION",
+]

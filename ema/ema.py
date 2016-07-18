@@ -36,7 +36,7 @@ from .service.relopausable import MultiService
 
 #from ..mqtt.service import MQTTService, NAME as MQTT_NAME
 
-from .protocol       import PERIOD as EMA_PERIOD
+from .command        import PERIOD as EMA_PERIOD
 from .serial         import SerialService
 from .scripts        import ScriptsService, AlreadyExecutedScript, AlreadyBeingExecutedScript, ScriptNotFound
 from .scheduler      import SchedulerService
@@ -119,7 +119,7 @@ class EMAService(MultiService):
             self.scriptsService.startService()
             yield defer.maybeDeferred(self.serialService.startService)
         except Exception as e:
-            log.error("{excp}", excp=e)
+            log.failure("{excp}", excp=e)
             log.critical("Problems initializing {name}. Exiting gracefully", name=self.serialService.name)
             reactor.callLater(0,reactor.stop)
         else:
