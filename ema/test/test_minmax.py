@@ -28,6 +28,7 @@ from twisted.internet.defer import inlineCallbacks
 # local imports
 # -------------
 
+import ema.command
 
 from ema.protocol import EMAProtocol, EMAProtocolFactory
 from ema.logger   import setLogLevel
@@ -252,7 +253,7 @@ class TestEMAProtocol1(unittest.TestCase):
     # --------------
 
     def test_getDailyMinMaxDump(self, nretries=0):
-        d = self.protocol.getDailyMinMaxDump()
+        d = self.protocol.send(ema.command.GetDailyMinMaxDump())
         self.assertEqual(self.transport.value(), '(@H0300)')
         self.transport.clear()
         for data in self.BULK_DUMP:
