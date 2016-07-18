@@ -29,9 +29,9 @@ from twisted.internet.defer       import inlineCallbacks, returnValue
 
 import metadata
 import command
-import protocol
 
-from .protocol import EMATimeoutError
+from serial import EMATimeoutError
+from utils  import setSystemTime
 
 # -----------------------
 # Module global variables
@@ -72,14 +72,14 @@ class Device(object):
         Returns a deferred whose success callback value None
         '''
         for name, param in self.PARAMS.iteritems():
-            value = yield self.parent.protocol.send(param['get']())
+            value = yield self.parent.serialService.protocol.send(param['get']())
             param['value'] = value
             configured = self.options[name]
             if not self.paramEquals(value, configured):
                 log.warn("{title} values do not match [EMA = {read}] [file = {file}]", title=param['title'], read=value, file=configured)
                 if self.options['sync'] and self.global_sync:
                     log.info("Synchronizing {title}", title=param['title'])
-                    param['value'] = yield self.parent.protocol.send(param['set'](configured))
+                    param['value'] = yield self.parent.serialService.protocol.send(param['set'](configured))
             else:
                 log.info("{title} already synchronized", title=param['title'])
 
@@ -335,7 +335,7 @@ class RoofRelay(Device):
         Device.__init__(self, parent, options, global_sync)
         self.PARAMS = {}
         self.switchon = deque(maxlen=2)
-        self.parent.protocol.addStatusCallback(self.onStatus)
+        self.parent.serialService.protocol.addStatusCallback(self.onStatus)
 
 
     def onStatus(self, message, timestamp):
@@ -378,7 +378,7 @@ class AuxiliarRelay(Device):
             },
         } 
         self.switchon = deque(maxlen=2)
-        self.parent.protocol.addStatusCallback(self.onStatus)
+        self.parent.serialService.protocol.addStatusCallback(self.onStatus)
 
 
     def onStatus(self, message, timestamp):
@@ -404,13 +404,13 @@ class AuxiliarRelay(Device):
         Either 'Auto','Open', 'Close', 'Timer/On', 'Timer/Off'
         Returns a deferred
         '''
-        return self.parent.protocol.send(command.AuxRelay.SetMode(value))
+        return self.parent.serialService.protocol.send(command.AuxRelay.SetMode(value))
 
     @inlineCallbacks
     def nextRelayCycle(self, inactiveInterval):
-        yield self.parent.protocol.send(
+        yield self.parent.serialService.protocol.send(
         		command.AuxRelay.SetSwitchOffTime(inactiveInterval.t0.time()))
-        yield self.parent.protocol.send(
+        yield self.parent.serialService.protocol.send(
         		command.AuxRelay.SetSwitchOnTime(inactiveInterval.t1.time()))
 
 #---------------------------------------------------------------------
@@ -444,7 +444,7 @@ class RealTimeClock(Device):
         max_drift = self.options['max_drift']
         log.info("Synchronizing {title} from Host RTC", title=param['title'])
         try:
-            value = yield self.parent.protocol.send(param['get']())
+            value = yield self.parent.serialService.protocol.send(param['get']())
         except EMATimeoutError as e:
             log.error("EMA RTC sync exception => {exception}", exception=e)
             returnValue(False)
@@ -453,7 +453,7 @@ class RealTimeClock(Device):
             log.warn("{title} not synchronized [EMA = {EMA!s}] [Host = {host!s}]", title=param['title'], EMA=value, host=now)
             log.info("Synchronizing {title} to Host RTC", title=param['title'])
             try:
-                value = yield self.parent.protocol.send(param['set'](None))
+                value = yield self.parent.serialService.protocol.send(param['set'](None))
             except EMATimeoutError as e:
                 log.error("RTC sync exception => {exception}", exception=e)
                 returnValue(False)
@@ -538,7 +538,7 @@ class Voltmeter(Device):
         #scripts = chop(options["script"], ',')
         #for script in scripts:
         #    self.parent.addScript('VoltageLow', script, options['mode'])
-        self.parent.protocol.addStatusCallback(self.onStatus)
+        self.parent.serialService.protocol.addStatusCallback(self.onStatus)
 
 
     def onStatus(self, message, timestamp):
@@ -585,7 +585,7 @@ class Watchdog(Device):
     @inlineCallbacks
     def ping(self):
         try:
-            res = yield self.parent.protocol.send(command.Watchdog.GetPresence())
+            res = yield self.parent.serialService.protocol.send(command.Watchdog.GetPresence())
         except EMATimeoutError as e:
             pass
 

@@ -25,6 +25,7 @@ from twisted.logger              import Logger, LogLevel
 # -------------
 
 import metadata
+from   metadata import EMARangeError
 
 from . import PY2
 
@@ -249,14 +250,6 @@ log  = Logger(namespace='serial')
 # Exceptions
 # ----------
 
-class EMARangeError(ValueError):
-    '''Command value out of range'''
-    def __str__(self):
-        s = self.__doc__
-        if self.args:
-            s = '{0}: <{1}> ({2}) not in {3}'.format(s, self.args[0], self.args[1], self.args[2])
-        s = '{0}.'.format(s)
-        return s
 
 class EMAReturnError(EMARangeError):
     '''Command return value out of range'''
@@ -375,25 +368,12 @@ class SetCommand(Command):
     def __init__(self, value):
         # Request format
         Command.__init__(self)
-        # No estoy seguro de que esto haga falta
-        self.validate(value)
-        # Ni esto tampoco
+        # no se si hace falta
         self.value = value if (self.mdata.kind == datetime.datetime) or (self.mdata.kind == datetime.time) else self.mdata.kind(value)
 
 
     def encode(self):
         self.encoded = self.cmdformat.format(int(self.value * self.scale))
-
-
-    def validate(self, value):
-        '''Validate input'''
-        if self.mdata.kind == str:
-            if value not in self.mdata.domain: 
-                raise EMARangeError(self.__class__.__name__, value, self.mdata.domain)
-        else:
-            if not (self.mdata.domain[0] <= value <= self.mdata.domain[1]): 
-                raise EMARangeError(self.__class__.__name__, value, self.mdata.domain)
-
 
 
 
