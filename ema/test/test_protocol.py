@@ -28,8 +28,11 @@ from twisted.internet.defer import inlineCallbacks
 # local imports
 # -------------
 
+import ema.command
+
 from ema.protocol import EMAProtocol, EMAProtocolFactory
 from ema.logger   import setLogLevel
+
 
 
 class TestEMAProtocol1(unittest.TestCase):
@@ -51,7 +54,7 @@ class TestEMAProtocol1(unittest.TestCase):
     # ------------
 
     def test_ping(self):
-        d = self.protocol.ping()
+        d = self.protocol.send(ema.command.Watchdog.GetPresence())
         self.assertEqual(self.transport.value(), '( )')
         self.transport.clear()
         self.protocol.dataReceived('( )')
@@ -59,7 +62,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
 
     def test_getWatchdogPeriod(self):
-        d = self.protocol.getWatchdogPeriod()
+        d = self.protocol.send(ema.command.Watchdog.GetPeriod())
         self.assertEqual(self.transport.value(), '(t)')
         self.transport.clear()
         self.protocol.dataReceived('(T200)')
@@ -67,7 +70,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
 
     def test_setWatchdogPeriod(self):
-        d = self.protocol.setWatchdogPeriod(200)
+        d = self.protocol.send(ema.command.Watchdog.SetPeriod(200))
         self.assertEqual(self.transport.value(), '(T200)')
         self.transport.clear()
         self.protocol.dataReceived('(T200)')
@@ -79,7 +82,7 @@ class TestEMAProtocol1(unittest.TestCase):
     # -------
 
     def test_getRTCDateTime(self):
-        d = self.protocol.getRTCDateTime()
+        d = self.protocol.send(ema.command.RealTimeClock.GetDateTime())
         self.assertEqual(self.transport.value(), '(y)')
         self.transport.clear()
         self.protocol.dataReceived('(00:07:35 20/06/2016)')
@@ -87,7 +90,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
 
     def test_setRTCDateTime(self):
-        d = self.protocol.setRTCDateTime(datetime.datetime(year=2016, month=6, day=20, hour=0, minute=7, second=35))
+        d = self.protocol.send(ema.command.RealTimeClock.SetDateTime(datetime.datetime(year=2016, month=6, day=20, hour=0, minute=7, second=35)))
         self.assertEqual(self.transport.value(), '(Y200616000735)')
         self.transport.clear()
         self.protocol.dataReceived('(00:07:35 20/06/2016)')
@@ -99,7 +102,7 @@ class TestEMAProtocol1(unittest.TestCase):
     # --------------
         
     def test_getCurrentWindSpeedThreshold(self):
-        d = self.protocol.getCurrentWindSpeedThreshold()
+        d = self.protocol.send(ema.command.Anemometer.GetCurrentWindSpeedThreshold())
         self.assertEqual(self.transport.value(), '(w)')
         self.transport.clear()
         self.protocol.dataReceived('(W020)')
@@ -107,7 +110,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
 
     def test_setCurrentWindSpeedThreshold(self):
-        d = self.protocol.setCurrentWindSpeedThreshold(66)
+        d = self.protocol.send(ema.command.Anemometer.SetCurrentWindSpeedThreshold(66))
         self.assertEqual(self.transport.value(), '(W066)')
         self.transport.clear()
         self.protocol.dataReceived('(W066)')
@@ -115,7 +118,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
 
     def test_getAverageWindSpeedThreshold(self):
-        d = self.protocol.getAverageWindSpeedThreshold()
+        d = self.protocol.send(ema.command.Anemometer.GetAverageWindSpeedThreshold())
         self.assertEqual(self.transport.value(), '(o)')
         self.transport.clear()
         self.protocol.dataReceived('(O066)')
@@ -123,23 +126,23 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
 
     def test_setAverageWindSpeedThreshold(self):
-        d = self.protocol.setAverageWindSpeedThreshold(66)
+        d = self.protocol.send(ema.command.Anemometer.SetAverageWindSpeedThreshold(66))
         self.assertEqual(self.transport.value(), '(O066)')
         self.transport.clear()
         self.protocol.dataReceived('(O066)')
         d.addCallback(self.assertEqual, 66)
         return d
 
-    def test_getAnemometerCalibrationConstant(self):
-        d = self.protocol.getAnemometerCalibrationConstant()
+    def test_getAnemometerCalibrationFactor(self):
+        d = self.protocol.send(ema.command.Anemometer.GetCalibrationFactor())
         self.assertEqual(self.transport.value(), '(a)')
         self.transport.clear()
         self.protocol.dataReceived('(A070)')
         d.addCallback(self.assertEqual, 70)
         return d
     
-    def test_setAnemometerCalibrationConstant(self):
-        d = self.protocol.setAnemometerCalibrationConstant(70)
+    def test_setAnemometerCalibrationFactor(self):
+        d = self.protocol.send(ema.command.Anemometer.SetCalibrationFactor(70))
         self.assertEqual(self.transport.value(), '(A070)')
         self.transport.clear()
         self.protocol.dataReceived('(A070)')
@@ -147,7 +150,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
 
     def test_getAnemometerModel(self):
-        d = self.protocol.getAnemometerModel()
+        d = self.protocol.send(ema.command.Anemometer.GetModel())
         self.assertEqual(self.transport.value(), '(z)')
         self.transport.clear()
         self.protocol.dataReceived('(Z000)')
@@ -155,7 +158,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
     
     def test_setAnemometerModel(self):
-        d = self.protocol.setAnemometerModel('Simple')
+        d = self.protocol.send(ema.command.Anemometer.SetModel('Simple'))
         self.assertEqual(self.transport.value(), '(Z000)')
         self.transport.clear()
         self.protocol.dataReceived('(Z000)')
@@ -167,7 +170,7 @@ class TestEMAProtocol1(unittest.TestCase):
     # -------------
 
     def test_getBarometerHeight(self):
-        d = self.protocol.getBarometerHeight()
+        d = self.protocol.send(ema.command.Barometer.GetHeight())
         self.assertEqual(self.transport.value(), '(m)')
         self.transport.clear()
         self.protocol.dataReceived('(M00711)')
@@ -175,7 +178,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
     
     def test_setBarometerHeight(self):
-        d = self.protocol.setBarometerHeight(711)
+        d = self.protocol.send(ema.command.Barometer.SetHeight(711))
         self.assertEqual(self.transport.value(), '(M00711)')
         self.transport.clear()
         self.protocol.dataReceived('(M00711)')
@@ -183,7 +186,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
 
     def test_getBarometerOffset(self):
-        d = self.protocol.getBarometerOffset()
+        d = self.protocol.send(ema.command.Barometer.GetOffset())
         self.assertEqual(self.transport.value(), '(b)')
         self.transport.clear()
         self.protocol.dataReceived('(B-10)')
@@ -191,7 +194,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
     
     def test_setBarometerOffset(self):
-        d = self.protocol.setBarometerOffset(-10)
+        d = self.protocol.send(ema.command.Barometer.SetOffset(-10))
         self.assertEqual(self.transport.value(), '(B-10)')
         self.transport.clear()
         self.protocol.dataReceived('(B-10)')
@@ -203,7 +206,7 @@ class TestEMAProtocol1(unittest.TestCase):
     # ------------------
 
     def test_getCloudSensorThreshold(self):
-        d = self.protocol.getCloudSensorThreshold()
+        d = self.protocol.send(ema.command.CloudSensor.GetThreshold())
         self.assertEqual(self.transport.value(), '(n)')
         self.transport.clear()
         self.protocol.dataReceived('(N067)')
@@ -211,7 +214,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
     
     def test_setCloudSensorThreshold(self):
-        d = self.protocol.setCloudSensorThreshold(67)
+        d = self.protocol.send(ema.command.CloudSensor.SetThreshold(67))
         self.assertEqual(self.transport.value(), '(N067)')
         self.transport.clear()
         self.protocol.dataReceived('(N067)')
@@ -219,7 +222,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
 
     def test_getCloudSensorGain(self):
-        d = self.protocol.getCloudSensorGain()
+        d = self.protocol.send(ema.command.CloudSensor.GetGain())
         self.assertEqual(self.transport.value(), '(r)')
         self.transport.clear()
         self.protocol.dataReceived('(R010)')
@@ -227,7 +230,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
     
     def test_setCloudSensorGain(self):
-        d = self.protocol.setCloudSensorGain(1.0)
+        d = self.protocol.send(ema.command.CloudSensor.SetGain(1.0))
         self.assertEqual(self.transport.value(), '(R010)')
         self.transport.clear()
         self.protocol.dataReceived('(R010)')
@@ -239,7 +242,7 @@ class TestEMAProtocol1(unittest.TestCase):
     # --------------
 
     def test_getPhotometerThreshold(self):
-        d = self.protocol.getPhotometerThreshold()
+        d = self.protocol.send(ema.command.Photometer.GetThreshold())
         self.assertEqual(self.transport.value(), '(i)')
         self.transport.clear()
         self.protocol.dataReceived('(I105)')
@@ -249,7 +252,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
     
     def test_setPhotometerThreshold(self):
-        d = self.protocol.setPhotometerThreshold(10.5)
+        d = self.protocol.send(ema.command.Photometer.SetThreshold(10.5))
         self.assertEqual(self.transport.value(), '(I105)')
         self.transport.clear()
         self.protocol.dataReceived('(I105)')
@@ -257,7 +260,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
 
     def test_getPhotometerOffset(self):
-        d = self.protocol.getPhotometerOffset()
+        d = self.protocol.send(ema.command.Photometer.GetOffset())
         self.assertEqual(self.transport.value(), '(i)')
         self.transport.clear()
         self.protocol.dataReceived('(I105)')
@@ -267,7 +270,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
     
     def test_setPhotometerOffset(self):
-        d = self.protocol.setPhotometerOffset(0.0)
+        d = self.protocol.send(ema.command.Photometer.SetOffset(0.0))
         self.assertEqual(self.transport.value(), '(I+00)')
         self.transport.clear()
         self.protocol.dataReceived('(I+00)')
@@ -279,7 +282,7 @@ class TestEMAProtocol1(unittest.TestCase):
     # ---------------
 
     def test_getPluviometerCalibration(self):
-        d = self.protocol.getPluviometerCalibration()
+        d = self.protocol.send(ema.command.Pluviometer.GetCalibrationFactor())
         self.assertEqual(self.transport.value(), '(p)')
         self.transport.clear()
         self.protocol.dataReceived('(P124)')
@@ -287,7 +290,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
     
     def test_setPluviometerCalibration(self):
-        d = self.protocol.setPluviometerCalibration(124)
+        d = self.protocol.send(ema.command.Pluviometer.SetCalibrationFactor(124))
         self.assertEqual(self.transport.value(), '(P124)')
         self.transport.clear()
         self.protocol.dataReceived('(P124)')
@@ -299,7 +302,7 @@ class TestEMAProtocol1(unittest.TestCase):
     # ---------------
 
     def test_getPyranometerGain(self):
-        d = self.protocol.getPyranometerGain()
+        d = self.protocol.send(ema.command.Pyranometer.GetGain())
         self.assertEqual(self.transport.value(), '(j)')
         self.transport.clear()
         self.protocol.dataReceived('(J140)')
@@ -307,7 +310,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
     
     def test_setPyranometerGain(self):
-        d = self.protocol.setPyranometerGain(14.0)
+        d = self.protocol.send(ema.command.Pyranometer.SetGain(14.0))
         self.assertEqual(self.transport.value(), '(J140)')
         self.transport.clear()
         self.protocol.dataReceived('(J140)')
@@ -315,7 +318,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
 
     def test_getPyranometerOffset(self):
-        d = self.protocol.getPyranometerOffset()
+        d = self.protocol.send(ema.command.Pyranometer.GetOffset())
         self.assertEqual(self.transport.value(), '(u)')
         self.transport.clear()
         self.protocol.dataReceived('(U000)')
@@ -323,7 +326,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
     
     def test_setPyranometerOffset(self):
-        d = self.protocol.setPyranometerOffset(0)
+        d = self.protocol.send(ema.command.Pyranometer.SetOffset(0))
         self.assertEqual(self.transport.value(), '(U000)')
         self.transport.clear()
         self.protocol.dataReceived('(U000)')
@@ -335,7 +338,7 @@ class TestEMAProtocol1(unittest.TestCase):
     # ---------------
 
     def test_getRainSensorThreshold(self):
-        d = self.protocol.getRainSensorThreshold()
+        d = self.protocol.send(ema.command.RainSensor.GetThreshold())
         self.assertEqual(self.transport.value(), '(l)')
         self.transport.clear()
         self.protocol.dataReceived('(L001)')
@@ -343,7 +346,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
     
     def test_setRainSensorThreshold(self):
-        d = self.protocol.setRainSensorThreshold(1)
+        d = self.protocol.send(ema.command.RainSensor.SetThreshold(1))
         self.assertEqual(self.transport.value(), '(L001)')
         self.transport.clear()
         self.protocol.dataReceived('(L001)')
@@ -355,7 +358,7 @@ class TestEMAProtocol1(unittest.TestCase):
     # ---------------
 
     def test_getThermometerDeltaTempThreshold(self):
-        d = self.protocol.getThermometerDeltaTempThreshold()
+        d = self.protocol.send(ema.command.Thermometer.GetThreshold())
         self.assertEqual(self.transport.value(), '(c)')
         self.transport.clear()
         self.protocol.dataReceived('(C005)')
@@ -363,7 +366,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
     
     def test_setThermometerDeltaTempThreshold(self):
-        d = self.protocol.setThermometerDeltaTempThreshold(5)
+        d = self.protocol.send(ema.command.Thermometer.SetThreshold(5))
         self.assertEqual(self.transport.value(), '(C005)')
         self.transport.clear()
         self.protocol.dataReceived('(C005)')
@@ -375,7 +378,7 @@ class TestEMAProtocol1(unittest.TestCase):
     # -------------
 
     def test_getVoltmeterThreshold(self):
-        d = self.protocol.getVoltmeterThreshold()
+        d = self.protocol.send(ema.command.Voltmeter.GetThreshold())
         self.assertEqual(self.transport.value(), '(f)')
         self.transport.clear()
         self.protocol.dataReceived('(F000)')
@@ -384,7 +387,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
     
     def test_setVoltmeterThreshold(self):
-        d = self.protocol.setVoltmeterThreshold(0.0)
+        d = self.protocol.send(ema.command.Voltmeter.SetThreshold(0.0))
         self.assertEqual(self.transport.value(), '(F000)')
         self.transport.clear()
         self.protocol.dataReceived('(F000)')
@@ -392,7 +395,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
 
     def test_getVoltmeterOffset(self):
-        d = self.protocol.getVoltmeterOffset()
+        d = self.protocol.send(ema.command.Voltmeter.GetOffset())
         self.assertEqual(self.transport.value(), '(f)')
         self.transport.clear()
         self.protocol.dataReceived('(F000)')
@@ -401,7 +404,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
     
     def test_setVoltmeterOffset(self):
-        d = self.protocol.setVoltmeterOffset(-1.4)
+        d = self.protocol.send(ema.command.Voltmeter.SetOffset(-1.4))
         self.assertEqual(self.transport.value(), '(F-14)')
         self.transport.clear()
         self.protocol.dataReceived('(F-14)')
@@ -413,7 +416,7 @@ class TestEMAProtocol1(unittest.TestCase):
     # ------------------
 
     def test_getAuxRelaySwitchOnTime(self):
-        d = self.protocol.getAuxRelaySwitchOnTime()
+        d = self.protocol.send(ema.command.AuxRelay.GetSwitchOnTime())
         self.assertEqual(self.transport.value(), '(s)')
         self.transport.clear()
         self.protocol.dataReceived('(S009)')
@@ -423,7 +426,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
     
     def test_setAuxRelaySwitchOnTime(self):
-        d = self.protocol.setAuxRelaySwitchOnTime(datetime.time(hour=6, minute=0))
+        d = self.protocol.send(ema.command.AuxRelay.SetSwitchOnTime(datetime.time(hour=6, minute=0)))
         self.assertEqual(self.transport.value(), '(Son0600)')
         self.transport.clear()
         self.protocol.dataReceived('(Son0600)')
@@ -431,7 +434,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
 
     def test_getAuxRelaySwitchOffTime(self):
-        d = self.protocol.getAuxRelaySwitchOffTime()
+        d = self.protocol.send(ema.command.AuxRelay.GetSwitchOffTime())
         self.assertEqual(self.transport.value(), '(s)')
         self.transport.clear()
         self.protocol.dataReceived('(S009)')
@@ -441,7 +444,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
     
     def test_setAuxRelaySwitchOffTime(self):
-        d = self.protocol.setAuxRelaySwitchOffTime(datetime.time(hour=9, minute=0))
+        d = self.protocol.send(ema.command.AuxRelay.SetSwitchOffTime(datetime.time(hour=9, minute=0)))
         self.assertEqual(self.transport.value(), '(Sof0900)')
         self.transport.clear()
         self.protocol.dataReceived('(Sof0900)')
@@ -449,7 +452,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
 
     def test_getAuxRelayMode(self):
-        d = self.protocol.getAuxRelayMode()
+        d = self.protocol.send(ema.command.AuxRelay.GetMode())
         self.assertEqual(self.transport.value(), '(s)')
         self.transport.clear()
         self.protocol.dataReceived('(S009)')
@@ -459,7 +462,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
     
     def test_setAuxRelayMode1(self):
-        d = self.protocol.setAuxRelayMode('Auto', nretries=0)
+        d = self.protocol.send(ema.command.AuxRelay.SetMode('Auto'), nretries=0)
         self.assertEqual(self.transport.value(), '(S000)')
         self.transport.clear()
         self.protocol.dataReceived('(S000)')
@@ -467,7 +470,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
 
     def test_setAuxRelayMode2(self):
-        d = self.protocol.setAuxRelayMode('Closed')
+        d = self.protocol.send(ema.command.AuxRelay.SetMode('Closed'))
         self.assertEqual(self.transport.value(), '(S004)')
         self.transport.clear()
         self.protocol.dataReceived('(S004)')
@@ -476,7 +479,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
 
     def test_setAuxRelayMode3(self):
-        d = self.protocol.setAuxRelayMode('Open')
+        d = self.protocol.send(ema.command.AuxRelay.SetMode('Open'))
         self.assertEqual(self.transport.value(), '(S005)')
         self.transport.clear()
         self.protocol.dataReceived('(S005)')
@@ -485,7 +488,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
 
     def test_setAuxRelayMode4(self):
-        d = self.protocol.setAuxRelayMode('Timer/Off')
+        d = self.protocol.send(ema.command.AuxRelay.SetMode('Timer/Off'))
         self.assertEqual(self.transport.value(), '(S008)')
         self.transport.clear()
         self.protocol.dataReceived('(S008)')
@@ -494,7 +497,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
 
     def test_setAuxRelayMode5(self):
-        d = self.protocol.setAuxRelayMode('Timer/On')
+        d = self.protocol.send(ema.command.AuxRelay.SetMode('Timer/On'))
         self.assertEqual(self.transport.value(), '(S009)')
         self.transport.clear()
         self.protocol.dataReceived('(S009)')
@@ -507,7 +510,7 @@ class TestEMAProtocol1(unittest.TestCase):
     # --------------
 
     def test_setRoofRelayMode1(self):
-        d = self.protocol.setRoofRelayMode('Open')
+        d = self.protocol.send(ema.command.RoofRelay.SetMode('Open'))
         self.assertEqual(self.transport.value(), '(X007)')
         self.transport.clear()
         self.protocol.dataReceived('(X007)')
@@ -516,7 +519,7 @@ class TestEMAProtocol1(unittest.TestCase):
         return d
 
     def test_setRoofRelayMode2(self):
-        d = self.protocol.setRoofRelayMode('Closed')
+        d = self.protocol.send(ema.command.RoofRelay.SetMode('Closed'))
         self.assertEqual(self.transport.value(), '(X000)')
         self.transport.clear()
         self.protocol.dataReceived('(X000)')
