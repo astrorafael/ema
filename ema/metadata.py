@@ -264,40 +264,13 @@ class AuxRelay(object):
         volatile     = False
 
 
-    class SwitchOnTime(Metadata):
+    class Time(Metadata):
         '''Auxiliar Relay Switch-On Time'''
         kind         = datetime.time
         domain       = [datetime.time(0,0), datetime.time(23,59)]
         units        = 'HH:MM:00'
         volatile     = False
        
-
-    class SwitchOffTime(Metadata):
-        '''Auxiliar Relay Switch-Off Time'''
-        kind         = datetime.time
-        domain       = [datetime.time(0,0), datetime.time(23,59)]
-        units        = 'HH:MM:00'
-        volatile     = False
-
-
-class EMARangeError(ValueError):
-    '''Command value out of range'''
-    def __str__(self):
-        s = self.__doc__
-        if self.args:
-            s = '{0}: <{1}> ({2}) not in {3}'.format(s, self.args[0], self.args[1], self.args[2])
-        s = '{0}.'.format(s)
-        return s
-
-def validate(value, metadata):
-    '''Validate input value against a metadata instance'''
-    if self.metadata.kind == str:
-        if value not in self.metadata.domain: 
-            raise EMARangeError(self.__class__.__name__, "value", self.metadata.domain)
-    else:
-        if not (self.metadata.domain[0] <= value <= self.metadata.domain[1]): 
-            raise EMARangeError(self.__class__.__name__, "value", self.metadata.domain)
-
 
 __all__ = [
     "validate",

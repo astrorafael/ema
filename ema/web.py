@@ -223,7 +223,7 @@ class WebService(Service):
         valtype  = self.parent.serialService.anemometer.PARAMS['threshold']['type']
         value    = self.getValidated(request, valtype, valrange)
         cmd      = self.parent.serialService.anemometer.PARAMS['threshold']['set'](value)
-        d = self.parent.serialService.protocol.send(cmd)
+        d = self.parent.serialService.protocol.execute(cmd)
         d.addCallback(self.writeOkCallback, request)
         return d
 
@@ -245,7 +245,7 @@ class WebService(Service):
         valtype  = self.parent.serialService.anemometer.PARAMS['ave_threshold']['type']
         value    = self.getValidated(request, valtype, valrange)
         cmd      = self.parent.serialService.anemometer.PARAMS['ave_threshold']['set'](value)
-        d = self.parent.serialService.protocol.send(cmd)
+        d = self.parent.serialService.protocol.execute(cmd)
         d.addCallback(self.writeOkCallback, request)
         return d
 
@@ -267,7 +267,7 @@ class WebService(Service):
         valtype  = self.parent.serialService.cloudsensor.PARAMS['threshold']['type']
         value    = self.getValidated(request, valtype, valrange)
         cmd      = self.parent.serialService.cloudsensor.PARAMS['threshold']['set'](value)
-        d = self.parent.serialService.protocol.send(cmd)
+        d = self.parent.serialService.protocol.execute(cmd)
         d.addCallback(self.writeOkCallback, request)
         return d
 
@@ -290,7 +290,7 @@ class WebService(Service):
         valtype  = self.parent.serialService.photometer.PARAMS['threshold']['type']
         value    = self.getValidated(request, valtype, valrange)
         cmd      = self.parent.serialService.photometer.PARAMS['threshold']['set'](value)
-        d = self.parent.serialService.protocol.send(cmd)
+        d = self.parent.serialService.protocol.execute(cmd)
         d.addCallback(self.writeOkCallback, request)
         return d
 
@@ -312,7 +312,7 @@ class WebService(Service):
         valtype  = self.parent.serialService.rainsensor.PARAMS['threshold']['type']
         value    = self.getValidated(request, valtype, valrange)
         cmd      = self.parent.serialService.rainsensor.PARAMS['threshold']['set'](value)
-        d = self.parent.serialService.protocol.send(cmd)
+        d = self.parent.serialService.protocol.execute(cmd)
         d.addCallback(self.writeOkCallback, request)
         return d
 
@@ -334,7 +334,7 @@ class WebService(Service):
         valtype  = self.parent.serialService.themomenter.PARAMS['delta_threshold']['type']
         value    = self.getValidated(request, valtype, valrange)
         cmd      = self.parent.serialService.themomenter.PARAMS['delta_threshold']['set'](value)
-        d = self.parent.serialService.protocol.send(cmd)
+        d = self.parent.serialService.protocol.execute(cmd)
         d.addCallback(self.writeOkCallback, request)
         return d
 
@@ -356,7 +356,7 @@ class WebService(Service):
         valtype  = self.parent.serialService.voltmeter.PARAMS['threshold']['type']
         value    = self.getValidated(request, valtype, valrange)
         cmd      = self.parent.serialService.voltmeter.PARAMS['threshold']['set'](value)
-        d = self.parent.serialService.protocol.send(cmd)
+        d = self.parent.serialService.protocol.execute(cmd)
         d.addCallback(self.writeOkCallback, request)
         return d
 
@@ -373,7 +373,7 @@ class WebService(Service):
         valtype  = self.parent.serialService.roof_relay.PARAMS['mode']['type']
         value    = self.getValidated(request, valtype, valrange)
         cmd      = self.parent.serialService.roof_relay.PARAMS['mode']['set'](value)
-        d = self.parent.serialService.protocol.send(cmd)
+        d = self.parent.serialService.protocol.execute(cmd)
         d.addCallback(self.writeOkCallback, request)
         return d
 
@@ -395,7 +395,7 @@ class WebService(Service):
         valtype  = self.parent.serialService.aux_relay.PARAMS['mode']['type']
         value    = self.getValidated(request, valtype, valrange)
         cmd      = self.parent.serialService.aux_relay.PARAMS['mode']['set'](value)
-        d = self.parent.serialService.protocol.send(cmd)
+        d = self.parent.serialService.protocol.execute(cmd)
         d.addCallback(self.writeOkCallback, request)
         return d
 
@@ -412,7 +412,7 @@ class WebService(Service):
             }
             return json.dumps(result, cls=DateTimeEncoder)
         cmd = command.AuxRelay.GetSwitchOnTime()
-        d = self.parent.serialService.protocol.send(cmd)
+        d = self.parent.serialService.protocol.execute(cmd)
         d.addCallback(okCallback)
         return d
 
@@ -424,7 +424,7 @@ class WebService(Service):
         valtype  = datetime.time
         value    = self.getValidated(request, valtype, valrange, as_time)
         cmd = command.AuxRelay.SetSwitchOnTime(value)
-        d = self.parent.serialService.protocol.send(cmd)
+        d = self.parent.serialService.protocol.execute(cmd)
         d.addCallback(self.writeOkCallback, request)
         return d
 
@@ -441,7 +441,7 @@ class WebService(Service):
             }
             return json.dumps(result, cls=DateTimeEncoder)
         cmd = command.AuxRelay.GetSwitchOffTime()
-        d = self.parent.serialService.protocol.send(cmd)
+        d = self.parent.serialService.protocol.execute(cmd)
         d.addCallback(okCallback)
         return d
 
@@ -453,7 +453,7 @@ class WebService(Service):
         valtype  = datetime.time
         value    = self.getValidated(request, valtype, valrange, as_time)
         cmd = command.AuxRelay.SetSwitchOnTime(value)
-        d = self.parent.serialService.protocol.send(cmd)
+        d = self.parent.serialService.protocol.execute(cmd)
         d.addCallback(self.writeOkCallback, request)
         return d
 

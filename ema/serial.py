@@ -258,10 +258,10 @@ class EMAProtocol(LineOnlyReceiver):
         self._onPhotometer.remove(callback)
 
 
-    def send(self, cmd, nretries=None):
+    def execute(self, cmd, nretries=None):
         '''
         API Entry Point.
-        Send a command to EMA.
+        Send a command to EMA for execution.
         Retuns a Deferred whose success callback returns the command value.
         An errback may be invoked with EMATimeoutError after nretries have been made.
         '''

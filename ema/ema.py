@@ -36,8 +36,7 @@ from .service.relopausable import MultiService
 
 #from ..mqtt.service import MQTTService, NAME as MQTT_NAME
 
-from .command        import PERIOD as EMA_PERIOD
-from .metadata       import EMARangeError
+from .command        import PERIOD as EMA_PERIOD, EMARangeError
 from .serial         import SerialService, EMATimeoutError
 from .scripts        import ScriptsService, AlreadyExecutedScript, AlreadyBeingExecutedScript, ScriptNotFound
 from .scheduler      import SchedulerService
@@ -329,13 +328,15 @@ class EMAService(MultiService):
                             self.photometer,self.pluviometer,self.pyranometer,self.rainsensor,
                             self.watchdog, self.aux_relay, self.roof_relay]
 
+        self.wdog2 = device.Watchdog2()
+
     @inlineCallbacks
     def detectEMA(self, nretries=3):
         '''
         Returns True if EMA responds
         '''
         try:
-            res = yield self.serialService.protocol.send(ema.command.Watchdog.GetPresence(), nretries)
+            res = yield self.serialService.protocol.execute(command.Watchdog.GetPresence(), nretries)
         except EMATimeoutError as e:
             returnValue(False)
         else:
@@ -348,9 +349,9 @@ class EMAService(MultiService):
         Cannot send EMA MQTT registration until not sucessfully synchronized
         '''
         ok = True
-        for device in self.devices:
+        for dev in self.devices:
             try:
-                yield device.sync()
+                yield dev.sync()
             except (EMARangeError, EMATimeoutError) as e:
                 log.error("Synchronization error => {error}", error=e)
                 self.logMQTTEvent(msg="Synchronization error", kind="error")
@@ -366,9 +367,11 @@ class EMAService(MultiService):
         with open("/sys/class/net/eth0/address",'r') as fd:
             mac = fd.readline().rstrip('\r\n')
         mydict = { 'mac': mac }
-        for device in self.devices:
-            mydict.update(device.parameters())
+        for dev in self.devices:
+            mydict.update(dev.parameters())
         log.debug("PARAMETERS = {p}", p=mydict)
+        device.Property.bind(self.serialService)
+        self.wdog2.start()
         return mydict
        
 
@@ -407,7 +410,7 @@ class EMAService(MultiService):
         An errback may be invoked with EMATimeoutError after nretries have been made.
         '''
         cmd = command.GetDailyMinMaxDump()
-        return self.serialService.protocol.send(cmd)
+        return self.serialService.protocol.execute(cmd)
 
 
     def get5MinAveragesDump(self):
@@ -417,7 +420,7 @@ class EMAService(MultiService):
         An errback may be invoked with EMATimeoutError after nretries have been made.
         '''
         cmd = command.Get5MinAveragesDump()
-        return self.serialService.protocol.send(cmd)
+        return self.serialService.protocol.execute(cmd)
 
 
 

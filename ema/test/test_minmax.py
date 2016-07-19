@@ -253,7 +253,7 @@ class TestEMAProtocol1(unittest.TestCase):
     # --------------
 
     def test_getDailyMinMaxDump(self, nretries=0):
-        d = self.protocol.send(ema.command.GetDailyMinMaxDump())
+        d = self.protocol.execute(ema.command.GetDailyMinMaxDump())
         self.assertEqual(self.transport.value(), '(@H0300)')
         self.transport.clear()
         for data in self.BULK_DUMP:

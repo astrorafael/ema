@@ -24,11 +24,10 @@ from twisted.logger              import Logger, LogLevel
 # local imports
 # -------------
 
-import metadata
-from   metadata import EMARangeError
-
 from . import PY2
 
+import metadata as mdata
+from metadata import Metadata
 
 # ----------------
 # Module constants
@@ -250,6 +249,15 @@ log  = Logger(namespace='serial')
 # Exceptions
 # ----------
 
+class EMARangeError(ValueError):
+    '''Command value out of range'''
+    def __str__(self):
+        s = self.__doc__
+        if self.args:
+            s = '{0}: <{1}> ({2}) not in {3}'.format(s, self.args[0], self.args[1], self.args[2])
+        s = '{0}.'.format(s)
+        return s
+
 
 class EMAReturnError(EMARangeError):
     '''Command return value out of range'''
@@ -333,14 +341,14 @@ class Command(object):
         Returns a response.
         Must be called only after decode() returns True
         '''
-        if self.mdata.kind == str:
+        if self.metadata.kind == str:
             result = self.mapping[int(self.matchobj[self.selindex].group(1))]
-            if result not in self.mdata.domain: 
-                raise EMAReturnError(self.__class__.__name__, result, self.mdata.domain)
+            if result not in self.metadata.domain: 
+                raise EMAReturnError(self.__class__.__name__, result, self.metadata.domain)
         else:
-            result = self.mdata.kind(int(self.matchobj[self.selindex].group(1)) / self.scale)
-            if not (self.mdata.domain[0] <= result <= self.mdata.domain[1]): 
-                raise EMAReturnError(self.__class__.__name__, result, self.mdata.domain)
+            result = self.metadata.kind(int(self.matchobj[self.selindex].group(1)) / self.scale)
+            if not (self.metadata.domain[0] <= result <= self.metadata.domain[1]): 
+                raise EMAReturnError(self.__class__.__name__, result, self.metadata.domain)
         return result
 
    
@@ -369,7 +377,7 @@ class SetCommand(Command):
         # Request format
         Command.__init__(self)
         # no se si hace falta
-        self.value = value if (self.mdata.kind == datetime.datetime) or (self.mdata.kind == datetime.time) else self.mdata.kind(value)
+        self.value = value if (self.metadata.kind == datetime.datetime) or (self.metadata.kind == datetime.time) else self.metadata.kind(value)
 
 
     def encode(self):
@@ -384,9 +392,17 @@ class SetCommand(Command):
 class RealTimeClock(object):
     '''Namespace for children commands'''
 
+    class DateTime(Metadata):
+        '''Real Time Clock Date & Time'''
+        kind            = datetime.datetime 
+        domain          = [datetime.datetime(2016, 1, 1), datetime.datetime(2100, 12, 31)]
+        units           = 'ISO 8601'
+        volatile        = True
+
+
     class GetDateTime(GetCommand):
         '''Get Real Time Clock Date & Time Command'''
-        mdata           = metadata.RealTimeClock.DateTime
+        metadata        = mdata.RealTimeClock.DateTime
         cmdformat       = '(y)'
         ack_patterns    = [ '^\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)' ]
         ema_time_format = '(%H:%M:%S %d/%m/%Y)'
@@ -395,15 +411,15 @@ class RealTimeClock(object):
 
         def getResult(self):
             result = datetime.datetime.strptime(self.response[0], self.ema_time_format)
-            if not (self.mdata.domain[0] <= result <= self.mdata.domain[1]): 
-                    raise EMAReturnError(self.__class__.__name__, result, self.mdata.domain)
+            if not (self.metadata.domain[0] <= result <= self.metadata.domain[1]): 
+                    raise EMAReturnError(self.__class__.__name__, result, self.metadata.domain)
             return result
 
     # ------------------------------------------------------------------------------
 
     class SetDateTime(SetCommand):
         '''Set Real Time Clock Date & Time Command'''
-        mdata           = metadata.RealTimeClock.DateTime
+        metadata        = mdata.RealTimeClock.DateTime
         cmdformat       = '(Y%d%m%y%H%M%S)'
         ack_patterns    = [ '\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)']
         ema_time_format = '(%H:%M:%S %d/%m/%Y)'
@@ -419,8 +435,8 @@ class RealTimeClock(object):
                 self.value = datetime.datetime.utcnow()+datetime.timedelta(seconds=0.5)
             else:
                 self.value = value
-            if not (self.mdata.domain[0] <= self.value <= self.mdata.domain[1]): 
-                raise EMARangeError(self.__class__.__name__, self.value, self.mdata.domain)
+            if not (self.metadata.domain[0] <= self.value <= self.metadata.domain[1]): 
+                raise EMARangeError(self.__class__.__name__, self.value, self.metadata.domain)
 
 
         def encode(self):
@@ -444,9 +460,24 @@ class RealTimeClock(object):
 class Watchdog(object):
     '''Namespace for chldren commands'''
 
+    class Presence(Metadata):
+        '''EMA Presence'''
+        kind         = str
+        domain       = [ '( )' ]
+        units        = ''
+        volatile     = True
+       
+
+    class Period(Metadata):
+        '''Watchdog Period'''
+        kind         = int
+        domain       = [0, 999]
+        units        = 'sec'
+        volatile     = False
+
     class GetPresence(GetCommand):
         '''Ping'''
-        mdata        = metadata.Watchdog.Presence
+        metadata     = mdata.Watchdog.Presence
         cmdformat    = '( )'
         ack_patterns = [ '^\( \)' ]
         retries      = 0
@@ -459,7 +490,7 @@ class Watchdog(object):
 
     class GetPeriod(GetCommand):
         '''Get Watchdog Period Command'''
-        mdata        = metadata.Watchdog.Period
+        metadata     = mdata.Watchdog.Period
         cmdformat    = '(t)'
         ack_patterns = [ '^\(T(\d{3})\)' ]
         ack_index    = 0
@@ -470,7 +501,7 @@ class Watchdog(object):
 
     class SetPeriod(SetCommand):
         '''Set Watchdog Period Command'''
-        mdata        = metadata.Watchdog.Period
+        metadata     = mdata.Watchdog.Period
         cmdformat    = '(T{:03d})'
         ack_patterns = [ '^\(T(\d{3})\)' ]
         ack_index    = 0
@@ -486,9 +517,32 @@ class Watchdog(object):
 class Anemometer(object):
     '''Namespace for chldren commands'''
 
+    class WindSpeedThreshold(Metadata):
+        '''Wind Speed Threshold'''
+        kind         = int
+        domain       = [0, 999]
+        units        = 'Km/h'
+        volatile     = False
+       
+
+    class CalibrationFactor(Metadata):
+        '''Anemometer Calibration Constant'''
+        kind         = int
+        domain       = [0, 999]
+        units        = 'Km/h (TX20) or mm (Simple)'
+        volatile     = False
+   
+
+    class Model(Metadata):
+        '''Anemometer Model'''
+        kind         = str
+        domain       = ['TX20', 'Simple']
+        units        = ''
+        volatile     = False
+
     class GetCurrentWindSpeedThreshold(GetCommand):
         '''Get Current Wind Speed Threshold Command'''
-        mdata        = metadata.Anemometer.WindSpeedThreshold
+        metadata     = mdata.Anemometer.WindSpeedThreshold
         cmdformat    = '(w)'
         ack_patterns = [ '^\(W(\d{3})\)' ]
         scale        = 1
@@ -498,7 +552,7 @@ class Anemometer(object):
         
     class SetCurrentWindSpeedThreshold(SetCommand):
         '''Set Current Wind Speed Threshold Command'''
-        mdata        = metadata.Anemometer.WindSpeedThreshold
+        metadata     = mdata.Anemometer.WindSpeedThreshold
         cmdformat    = '(W{:03d})'
         ack_patterns = [ '^\(W(\d{3})\)' ]
         scale        = 1
@@ -510,7 +564,7 @@ class Anemometer(object):
 
     class GetAverageWindSpeedThreshold(GetCommand):
         '''Get 10min Average Wind Speed Threshold Command'''
-        mdata        = metadata.Anemometer.WindSpeedThreshold
+        metadata     = mdata.Anemometer.WindSpeedThreshold
         cmdformat    = '(o)'
         ack_patterns = [ '^\(O(\d{3})\)' ]
         scale        = 1
@@ -520,7 +574,7 @@ class Anemometer(object):
      
     class SetAverageWindSpeedThreshold(SetCommand):
         '''Set 10min Average Wind Speed Threshold Command'''
-        mdata        = metadata.Anemometer.WindSpeedThreshold
+        metadata     = mdata.Anemometer.WindSpeedThreshold
         cmdformat    = '(O{:03d})'
         ack_patterns = [ '^\(O(\d{3})\)' ]
         scale        = 1
@@ -532,7 +586,7 @@ class Anemometer(object):
 
     class GetCalibrationFactor(GetCommand):
         '''Get Anemometer Calibration Factor'''
-        mdata        = metadata.Anemometer.CalibrationFactor
+        metadata     = mdata.Anemometer.CalibrationFactor
         cmdformat    = '(a)'
         ack_patterns = [ '^\(A(\d{3})\)' ]
         scale        = 1
@@ -542,7 +596,7 @@ class Anemometer(object):
 
     class SetCalibrationFactor(SetCommand):
         '''Set Anemometer Calibration Factor'''
-        mdata        = metadata.Anemometer.CalibrationFactor
+        metadata     = mdata.Anemometer.CalibrationFactor
         cmdformat    = '(A{:03d})'
         ack_patterns = [ '^\(A(\d{3})\)' ]
         scale        = 1
@@ -553,7 +607,7 @@ class Anemometer(object):
 
     class GetModel(GetCommand):
         '''Get Anemometer Model Command'''
-        mdata        = metadata.Anemometer.Model
+        metadata     = mdata.Anemometer.Model
         cmdformat    = '(z)'
         ack_patterns = [ '^\(Z(\d{3})\)' ]
         mapping      = { 1: 'TX20', 0: 'Simple'}
@@ -564,7 +618,7 @@ class Anemometer(object):
 
     class SetModel(SetCommand):
         '''Set Anemometer Model Command'''
-        mdata        = metadata.Anemometer.Model
+        metadata     = mdata.Anemometer.Model
         cmdformat    = '(Z{:03d})'
         ack_patterns = [ '^\(Z(\d{3})\)' ]
         mapping      = {'TX20': 1, 'Simple': 0 }
@@ -585,9 +639,25 @@ class Anemometer(object):
 class Barometer(object):
     '''Namespace for chldren commands'''
 
+    class Height(Metadata):
+        '''Barometer Height'''
+        kind         = int
+        domain       = [0, 99999]
+        units        = 'm'
+        volatile     = False
+
+
+    class Offset(Metadata):
+        '''Barometer Offset'''
+        kind         = int
+        domain       = [-99, 99]
+        units        = 'mBar'
+        volatile     = False
+
+
     class GetHeight(GetCommand):
         '''Get Barometer Height Command'''
-        mdata        = metadata.Barometer.Height
+        metadata     = mdata.Barometer.Height
         cmdformat    = '(m)'
         ack_patterns = [ '^\(M(\d{5})\)' ]
         scale        = 1
@@ -597,7 +667,7 @@ class Barometer(object):
 
     class SetHeight(SetCommand):
         '''Set Barometer Height Command'''
-        mdata        = metadata.Barometer.Height
+        metadata     = mdata.Barometer.Height
         cmdformat    = '(M{:05d})'
         ack_patterns = [ '^\(M(\d{5})\)' ]
         scale        = 1
@@ -609,7 +679,7 @@ class Barometer(object):
 
     class GetOffset(GetCommand):
         '''Get Barometer Offset Command'''
-        mdata        = metadata.Barometer.Offset
+        metadata     = mdata.Barometer.Offset
         cmdformat    = '(b)'
         ack_patterns = [ '^\(B([+-]\d{2})\)' ]
         scale        = 1
@@ -620,7 +690,7 @@ class Barometer(object):
 
     class SetOffset(SetCommand):
         '''Set Barometer Offset Command'''
-        mdata        = metadata.Barometer.Offset
+        metadata     = mdata.Barometer.Offset
         cmdformat    = '(B{:+03d})'
         ack_patterns = [ '^\(B([+-]\d{2})\)' ]
         scale        = 1
@@ -635,9 +705,23 @@ class Barometer(object):
 class CloudSensor(object):
     '''Namespace for chldren commands'''
 
+    class Threshold(Metadata):
+        '''Cloud Sensor Threshold'''
+        kind         = int
+        domain       = [0, 100]
+        units        = '%'
+        volatile     = False
+      
+    class Gain(Metadata):
+        '''Cloud Sensor Gain'''
+        kind         = float
+        domain       = [0.0, 99.9]
+        units        = '?'
+        volatile     = False
+
     class GetThreshold(GetCommand):
         '''Get Cloud Sensor Threshold Command'''
-        mdata        = metadata.CloudSensor.Threshold
+        metadata     = mdata.CloudSensor.Threshold
         cmdformat    = '(n)'
         ack_patterns = [ '^\(N(\d{3})\)' ]
         ack_index    = 0
@@ -648,7 +732,7 @@ class CloudSensor(object):
 
     class SetThreshold(SetCommand):
         '''Set Cloud Sensor Threshold Command'''
-        mdata        = metadata.CloudSensor.Threshold
+        metadata     = mdata.CloudSensor.Threshold
         cmdformat    = '(N{:03d})'
         ack_patterns = [ '^\(N(\d{3})\)' ]
         scale        = 1
@@ -660,7 +744,7 @@ class CloudSensor(object):
 
     class GetGain(GetCommand):
         '''Get Cloud Sensor Gain Command'''
-        mdata        = metadata.CloudSensor.Gain
+        metadata     = mdata.CloudSensor.Gain
         cmdformat    = '(r)'
         ack_patterns = [ '^\(R(\d{3})\)' ]
         scale        = 10
@@ -670,7 +754,7 @@ class CloudSensor(object):
 
     class SetGain(SetCommand):
         '''Set Cloud Sensor Gain Command'''
-        mdata        = metadata.CloudSensor.Gain
+        metadata     = mdata.CloudSensor.Gain
         cmdformat    = '(R{:03d})'
         ack_patterns = [ '^\(R(\d{3})\)' ]
         scale        = 10
@@ -685,9 +769,25 @@ class CloudSensor(object):
 class Photometer(object):
     '''Namespace for chldren commands'''
 
+    class Threshold(Metadata):
+        '''Photometer Threshold'''
+        kind         = float
+        domain       = [0.0, 99.9]
+        units        = 'Mv/arcsec^2'
+        volatile     = False
+
+       
+    class Offset(Metadata):
+        '''Photometer Gain Offset'''
+        kind         = float
+        domain       = [-99.9, +99.9]
+        units        = 'Mv/arcsec^2'
+        volatile     = False
+
+
     class GetThreshold(GetCommand):
         '''Get Photometer Threshold Command'''
-        mdata        = metadata.Photometer.Threshold
+        metadata     = mdata.Photometer.Threshold
         cmdformat    = '(i)'
         ack_patterns = [ '^\(I(\d{3})\)',  '^\(I([+-]\d{2})\)',  '^\(I(\d{5})\)']
         ack_index    = 0
@@ -698,7 +798,7 @@ class Photometer(object):
 
     class SetThreshold(SetCommand):
         '''Set Photometer Threshold Command'''
-        mdata        = metadata.Photometer.Threshold
+        metadata     = mdata.Photometer.Threshold
         cmdformat    = '(I{:03d})'
         ack_patterns = [ '^\(I(\d{3})\)' ]
         scale        = 10
@@ -710,7 +810,7 @@ class Photometer(object):
 
     class GetOffset(GetCommand):
         '''Get Photometer Gain Offset'''
-        mdata        = metadata.Photometer.Offset
+        metadata     = mdata.Photometer.Offset
         cmdformat    = '(i)'
         ack_patterns = [ '^\(I(\d{3})\)',  '^\(I([+-]\d{2})\)',  '^\(I(\d{5})\)']
         ack_index    = 1
@@ -721,7 +821,7 @@ class Photometer(object):
 
     class SetOffset(SetCommand):
         '''Set Photometer Gain Offset'''
-        mdata        = metadata.Photometer.Offset
+        metadata     = mdata.Photometer.Offset
         cmdformat    = '(I{:+03d})'
         ack_patterns = [ '^\(I([+-]\d{2})\)']
         scale        = 10
@@ -736,9 +836,17 @@ class Photometer(object):
 class Pluviometer(object):
     '''Namespace for chldren commands'''
 
+    class Factor(Metadata):
+        '''Pluviometer Calibration Factor'''
+        kind         = int
+        domain       = [0, 999]
+        units        = 'mm'
+        volatile     = False
+
+
     class GetCalibrationFactor(GetCommand):
         '''Get Pluviometer Calibration Factor Command'''
-        mdata        = metadata.Pluviometer.Factor
+        metadata     = mdata.Pluviometer.Factor
         cmdformat    = '(p)'
         ack_patterns = [ '^\(P(\d{3})\)']
         scale        = 1
@@ -748,7 +856,7 @@ class Pluviometer(object):
 
     class SetCalibrationFactor(SetCommand):
         '''Set Pluviometer Calibration Constant Command'''
-        mdata        = metadata.Pluviometer.Factor
+        metadata     = mdata.Pluviometer.Factor
         cmdformat    = '(P{:03d})'
         ack_patterns = [ '^\(P(\d{3})\)']
         scale        = 1
@@ -763,9 +871,24 @@ class Pluviometer(object):
 class Pyranometer(object):
     '''Namespace for chldren commands'''
 
+    class Gain(Metadata):
+        '''Pyranometer Gain'''
+        kind         = float
+        domain       = [0.0, 99.9]
+        units        = '?'
+        volatile     = False
+
+
+    class Offset(Metadata):
+        '''Pyranometer Offset'''
+        kind         = int
+        domain       = [0, 999]
+        units        = '?'
+        volatile     = False
+
     class GetGain(GetCommand):
         '''Get Pyranometer Gain Command'''
-        mdata        = metadata.Pyranometer.Gain
+        metadata     = mdata.Pyranometer.Gain
         cmdformat    = '(j)'
         ack_patterns = [ '^\(J(\d{3})\)']
         scale        = 10
@@ -775,7 +898,7 @@ class Pyranometer(object):
 
     class SetGain(SetCommand):
         '''Set Pyranometer Gain Command'''
-        mdata        = metadata.Pyranometer.Gain
+        metadata     = mdata.Pyranometer.Gain
         cmdformat    = '(J{:03d})'
         ack_patterns = [ '^\(J(\d{3})\)']
         scale        = 10
@@ -786,7 +909,7 @@ class Pyranometer(object):
 
     class GetOffset(GetCommand):
         '''Get Pyranometer Offset Command'''
-        mdata        = metadata.Pyranometer.Offset
+        metadata     = mdata.Pyranometer.Offset
         cmdformat    = '(u)'
         ack_patterns = [ '^\(U(\d{3})\)']
         scale        = 1
@@ -796,8 +919,8 @@ class Pyranometer(object):
 
 
     class SetOffset(SetCommand):
-        '''Get Pyranometer Offset Command'''
-        mdata        = metadata.Pyranometer.Offset
+        '''Set Pyranometer Offset Command'''
+        metadata     = mdata.Pyranometer.Offset
         cmdformat    = '(U{:03d})'
         ack_patterns = [ '^\(U(\d{3})\)']
         scale        = 1
@@ -813,9 +936,16 @@ class Pyranometer(object):
 class RainSensor(object):
     '''Namespace for chldren commands'''
 
+    class Threshold(Metadata):
+        '''Rain Sensor Threshold'''
+        kind         = int
+        domain       = [0, 999]
+        units        = 'mm'
+        volatile     = False
+
     class GetThreshold(GetCommand):
         '''Get Rain Sensor Threshold Command'''
-        mdata        = metadata.RainSensor.Threshold
+        metadata     = mdata.RainSensor.Threshold
         cmdformat    = '(l)'
         ack_patterns = [ '^\(L(\d{3})\)']
         scale        = 1
@@ -825,7 +955,7 @@ class RainSensor(object):
 
     class SetThreshold(SetCommand):
         '''Set Rain Sensor Threshold Command'''
-        mdata        = metadata.RainSensor.Threshold
+        metadata     = mdata.RainSensor.Threshold
         cmdformat    = '(L{:03d})'
         ack_patterns = [ '^\(L(\d{3})\)']
         scale        = 1
@@ -840,9 +970,17 @@ class RainSensor(object):
 class Thermometer(object):
     '''Namespace for chldren commands'''
 
+    class Threshold(Metadata):
+        '''Thermometer Delta Temperature Threshold'''
+        kind         = int
+        domain       = [0, 999]
+        units        = 'deg C'
+        volatile     = False
+
+
     class GetThreshold(GetCommand):
         '''Get Thermometer DeltaTemp Threshold Command'''
-        mdata        = metadata.Thermometer.Threshold
+        metadata     = mdata.Thermometer.Threshold
         cmdformat    = '(c)'
         ack_patterns = [ '^\(C(\d{3})\)']
         scale        = 1
@@ -852,7 +990,7 @@ class Thermometer(object):
 
     class SetThreshold(SetCommand):
         '''Set Thermometer DeltaTemp Threshold Command'''
-        mdata        = metadata.Thermometer.Threshold
+        metadata     = mdata.Thermometer.Threshold
         cmdformat    = '(C{:03d})'
         ack_patterns = [ '^\(C(\d{3})\)']
         scale        = 1
@@ -867,9 +1005,24 @@ class Thermometer(object):
 class Voltmeter(object):
     '''Namespace for chldren commands'''
 
+    class Threshold(Metadata):
+        '''Voltmeter Threshold'''
+        kind         = float
+        domain       = [0.0, 25.5]
+        units        = 'V'
+        volatile     = False
+
+
+    class Offset(Metadata):
+        '''Voltmeter Offset'''
+        kind         = float
+        domain       = [-99.9, +99.9]
+        units        = 'V'
+        volatile     = False
+
     class GetThreshold(GetCommand):
         '''Get Voltmeter Threshold Command'''
-        mdata        = metadata.Voltmeter.Threshold
+        metadata     = mdata.Voltmeter.Threshold
         cmdformat    = '(f)'
         ack_patterns = [ '^\(F(\d{3})\)', '^\(F([+-]\d{2})\)' ]
         ack_index    = 0
@@ -880,7 +1033,7 @@ class Voltmeter(object):
 
     class SetThreshold(SetCommand):
         '''Set Voltmeter Threshold Command'''
-        mdata        = metadata.Voltmeter.Threshold
+        metadata     = mdata.Voltmeter.Threshold
         cmdformat    = '(F{:03d})'
         ack_patterns = [ '^\(F(\d{3})\)' ]
         scale        = 10
@@ -890,7 +1043,7 @@ class Voltmeter(object):
 
     class GetOffset(GetCommand):
         '''Get Voltmeter Offset Command'''
-        mdata        = metadata.Voltmeter.Offset
+        metadata     = mdata.Voltmeter.Offset
         cmdformat    = '(f)'
         ack_patterns = [ '^\(F(\d{3})\)', '^\(F([+-]\d{2})\)' ]
         ack_index    = 1
@@ -901,7 +1054,7 @@ class Voltmeter(object):
 
     class SetOffset(SetCommand):
         '''Set Voltmeter Offset Command'''
-        mdata        = metadata.Voltmeter.Offset
+        metadata     = mdata.Voltmeter.Offset
         cmdformat    = '(F{:+03d})'
         ack_patterns = [ '^\(F([+-]\d{2})\)' ]
         scale        = 10
@@ -916,20 +1069,28 @@ class Voltmeter(object):
 class RoofRelay(object):
     '''Namespace for chldren commands'''
 
+    class Mode(Metadata):
+        '''Set Roof Relay Mode'''
+        kind         = str
+        domain       = ['Auto', 'Closed', 'Open']
+        units        = ''
+        volatile     = False
+
     class SetMode(SetCommand):
         '''Set Roof Relay Mode Command'''
-        mdata        = metadata.RoofRelay.Mode
+        metadata     = mdata.RoofRelay.Mode
         cmdformat    = '(X{:03d})'
         ack_patterns = [ '^\(X(\d{3})\)' ,  '^(dummy)' ]
         ack_index    = 0
-        mapping      = { 'Closed': 0, 'Open' : 7, }
-        inv_mapping  = { 0: 'Closed', 7: 'Open',  }
+        mapping      = { 'Closed': 0, 'Open' : 7, 'Auto': 1 }
+        inv_mapping  = { 0: 'Closed', 7: 'Open',  1: 'Auto' }
         retries      = 2
         timeout      = {'min': 2, 'max': 128, 'factor': 2}
         
         def __init__(self, value):
             SetCommand.__init__(self, value)
            # Patches the last compiled expression
+           ## WARNING: ME FALTA TRATAR E CASO DE AUTO !!!
             if self.value == 'Open':
                 self.ackPat[1] = re.compile('^\(\d{2}:\d{2}:\d{2} Abrir Obs\. FORZADO\)')
             elif self.value == 'Closed':
@@ -949,9 +1110,24 @@ class RoofRelay(object):
 class AuxRelay(object):
     '''Namespace for chldren commands'''
 
+    class Mode(Metadata):
+        '''Auxiliar Relay Mode'''
+        kind         = str
+        domain       = ['Auto', 'Closed', 'Open', 'Timer/Off', 'Timer/On']
+        units        = ''
+        volatile     = False
+       
+
+    class Time(Metadata):
+        '''Auxiliar Relay Switch-Off Time'''
+        kind         = datetime.time
+        domain       = [datetime.time(0,0), datetime.time(23,59)]
+        units        = 'HH:MM:00'
+        volatile     = False
+
     class GetSwitchOnTime(GetCommand):
         '''Get Aux Relay Switch-On Time Command'''
-        mdata           = metadata.AuxRelay.SwitchOnTime
+        metadata        = mdata.AuxRelay.Time
         cmdformat       = '(s)'
         ack_patterns    = [ '^\(S\d{3}\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
         ack_index       = 1
@@ -965,7 +1141,7 @@ class AuxRelay(object):
 
     class SetSwitchOnTime(SetCommand):
         '''Set Aux Relay Switch-On Time Command'''
-        mdata           = metadata.AuxRelay.SwitchOnTime
+        metadata        = mdata.AuxRelay.Time
         cmdformat       = '(Son{:04d})'
         ack_patterns    = [ '^\(Son\d{4}\)' ]
         ema_time_format = '(Son%H%M)'
@@ -981,7 +1157,7 @@ class AuxRelay(object):
 
     class GetSwitchOffTime(GetCommand):
         '''Get Aux Relay Switch-Off Time Command'''
-        mdata           = metadata.AuxRelay.SwitchOffTime
+        metadata        = mdata.AuxRelay.Time
         cmdformat       = '(s)'
         ack_patterns    = [ '^\(S\d{3}\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
         ack_index       = 2
@@ -995,7 +1171,7 @@ class AuxRelay(object):
 
     class SetSwitchOffTime(SetCommand):
         '''Set Aux Relay Switch-Off Time Command'''
-        mdata           = metadata.AuxRelay.SwitchOffTime
+        metadata        = mdata.AuxRelay.Time
         cmdformat       = '(Sof{:04d})'
         ack_patterns    = [ '^\(Sof\d{4}\)' ]
         ema_time_format = '(Sof%H%M)'
@@ -1011,7 +1187,7 @@ class AuxRelay(object):
 
     class GetMode(GetCommand):
         '''Get Aux Relay Mode Command'''
-        mdata        = metadata.AuxRelay.Mode
+        metadata     = mdata.AuxRelay.Mode
         cmdformat    = '(s)'
         ack_patterns = [ '^\(S(\d{3})\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
         ack_index    = 0
@@ -1023,7 +1199,7 @@ class AuxRelay(object):
 
     class SetMode(SetCommand):
         '''Set Aux Relay Mode Command'''
-        mdata        = metadata.AuxRelay.Mode
+        metadata     = mdata.AuxRelay.Mode
         cmdformat    = '(S{:03d})'
         ack_patterns = [ '^\(S(\d{3})\)', '^(dummy)' ]
         ack_index    = 0

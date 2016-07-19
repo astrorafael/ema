@@ -33,11 +33,110 @@ import command
 from serial import EMATimeoutError
 from utils  import setSystemTime
 
+
 # -----------------------
 # Module global variables
 # -----------------------
 
-log  = Logger(namespace='serial')
+log  = Logger(namespace='ema')
+
+
+class Property(object):
+
+    # Service from where to obtain the protocol
+    service = None
+
+    @classmethod
+    def bind(cls, service):
+        '''Binds the Proerty with servicee where to obtain the protocol'''
+        cls.service = service
+
+    def __init__(self, parameter):
+        self.parameter = parameter
+
+
+    def __delete__(self, obj):
+        raise AttributeError("can't delete attribute")
+
+
+    def assertService(self):
+        '''Assets the runtime is ready'''
+        if self.service is None:
+            raise RuntimeError("Not bound to a service yet")
+        if self.service.protocol is None:
+            raise RuntimeError("descriptor service not bound to a protocol yet")
+
+    def validate(self, value):
+        '''Validates value against parameter's setter metadata type and range'''
+        if self.parameter.setter is None:
+            raise RuntimeError("This descriptor does no support assignments")
+        if self.parameter.setter.metadata.kind == str:
+            if value not in self.parameter.setter.metadata.domain: 
+                raise EMARangeError(self.__class__.__name__, value, self.parameter.setter.metadata.domain)
+        else:
+            if not (self.parameter.setter.metadata.domain[0] <= value <= self.parameter.setter.metadata.domain[1]): 
+                raise EMARangeError(self.__class__.__name__, value, self.metadata.parameter.domain)
+
+
+def deferred(attrname):
+    '''
+    Factory function that returns a Descriptor Class
+    with customized private attribute and deff
+    '''
+    class Descriptor(Property):
+        '''Threshold descriptor'''
+        def __init__(self, parameter):
+            Property.__init__(self, parameter)
+            self.attr_name      = '__' + attrname
+            self.attr_dfrd_name = '__' + attrname + '_deferred'
+
+        def __get__(self, obj, objtype=None):
+            '''Descriptor get protocol'''
+            def complete(value):
+                setattr(obj, self.attr_name,     value)
+                setattr(obj, self.attr_dfrd_name, None)
+            def failed(failure):
+                setattr(obj, self.attr_name,      None)
+                setattr(obj, self.attr_dfrd_name, None)
+                return failure
+            attr_val     =  getattr(obj, self.attr_name,      None)
+            attr_def_val =  getattr(obj, self.attr_dfrd_name, None)
+            if attr_val is not None and not self.parameter.getter.metadata.volatile:
+                return defer.succeed(attr_val)
+            if attr_def_val is not None:
+                return  attr_def_val
+            self.assertService()
+            cmd = self.parameter.getter()
+            d = self.service.protocol.execute(cmd)
+            setattr(obj, self.attr_dfrd_name, d)
+            d.addCallbacks(complete, failed)
+            return  d
+
+
+        def __set__(self, obj, value):
+            '''Descriptor set protocol'''
+            def complete(value):
+                setattr(obj, self.attr_name,     value)
+                setattr(obj, self.attr_dfrd_name, None)
+            def failed(failure):
+                setattr(obj, self.attr_dfrd_name, None)
+                return failure
+            self.validate(value)
+            self.assertService()
+            attr_def_val =  getattr(obj, self.attr_dfrd_name, None)
+            if attr_def_val is not None:
+                raise RuntimeError("Operation in progress")
+            setattr(obj, self.attr_name, None)
+            cmd = self.parameter.setter(value)
+            d = self.service.protocol.execute(cmd)
+            setattr(obj, self.attr_dfrd_name, d)
+            d.addCallbacks(complete, failed)
+        
+
+    return Descriptor
+
+
+
 
 
 
@@ -72,14 +171,14 @@ class Device(object):
         Returns a deferred whose success callback value None
         '''
         for name, param in self.PARAMS.iteritems():
-            value = yield self.parent.serialService.protocol.send(param['get']())
+            value = yield self.parent.serialService.protocol.execute(param['get']())
             param['value'] = value
             configured = self.options[name]
             if not self.paramEquals(value, configured):
                 log.warn("{title} values do not match [EMA = {read}] [file = {file}]", title=param['title'], read=value, file=configured)
                 if self.options['sync'] and self.global_sync:
                     log.info("Synchronizing {title}", title=param['title'])
-                    param['value'] = yield self.parent.serialService.protocol.send(param['set'](configured))
+                    param['value'] = yield self.parent.serialService.protocol.execute(param['set'](configured))
             else:
                 log.info("{title} already synchronized", title=param['title'])
 
@@ -89,6 +188,8 @@ class Device(object):
 # --------------------------------------------------------------------
 
 class Thermopile(Device):
+
+
     def __init__(self, parent, options, global_sync=True):
         pass    
         
@@ -404,13 +505,13 @@ class AuxiliarRelay(Device):
         Either 'Auto','Open', 'Close', 'Timer/On', 'Timer/Off'
         Returns a deferred
         '''
-        return self.parent.serialService.protocol.send(command.AuxRelay.SetMode(value))
+        return self.parent.serialService.protocol.execute(command.AuxRelay.SetMode(value))
 
     @inlineCallbacks
     def nextRelayCycle(self, inactiveInterval):
-        yield self.parent.serialService.protocol.send(
+        yield self.parent.serialService.protocol.execute(
         		command.AuxRelay.SetSwitchOffTime(inactiveInterval.t0.time()))
-        yield self.parent.serialService.protocol.send(
+        yield self.parent.serialService.protocol.execute(
         		command.AuxRelay.SetSwitchOnTime(inactiveInterval.t1.time()))
 
 #---------------------------------------------------------------------
@@ -444,7 +545,7 @@ class RealTimeClock(Device):
         max_drift = self.options['max_drift']
         log.info("Synchronizing {title} from Host RTC", title=param['title'])
         try:
-            value = yield self.parent.serialService.protocol.send(param['get']())
+            value = yield self.parent.serialService.protocol.execute(param['get']())
         except EMATimeoutError as e:
             log.error("EMA RTC sync exception => {exception}", exception=e)
             returnValue(False)
@@ -453,7 +554,7 @@ class RealTimeClock(Device):
             log.warn("{title} not synchronized [EMA = {EMA!s}] [Host = {host!s}]", title=param['title'], EMA=value, host=now)
             log.info("Synchronizing {title} to Host RTC", title=param['title'])
             try:
-                value = yield self.parent.serialService.protocol.send(param['set'](None))
+                value = yield self.parent.serialService.protocol.execute(param['set'](None))
             except EMATimeoutError as e:
                 log.error("RTC sync exception => {exception}", exception=e)
                 returnValue(False)
@@ -585,7 +686,39 @@ class Watchdog(Device):
     @inlineCallbacks
     def ping(self):
         try:
-            res = yield self.parent.serialService.protocol.send(command.Watchdog.GetPresence())
+            res = yield self.parent.serialService.protocol.execute(command.Watchdog.GetPresence())
         except EMATimeoutError as e:
             pass
+
+
+
+class Watchdog2(object):
+
+    class PeriodParameter(object):
+        getter = command.Watchdog.GetPeriod
+        setter = command.Watchdog.SetPeriod
+    class PresenceParameter(object):
+        getter = command.Watchdog.GetPresence
+        setter = None
+
+    # Deferred attribute handling via Descriptors
+    period   = deferred("period")(PeriodParameter())
+    presence = deferred("presence")(PresenceParameter())
+
+    def __init__(self):
+        self.pingTask  = task.LoopingCall(self.ping)
+
+    def start(self):
+        self.pingTask.start(10//2+random.random(), now=False)
+
+    def stop(self):
+        self.pingTask.stop()
+
+    @inlineCallbacks
+    def ping(self):
+        try:
+            val = yield self.presence 
+        except EMATimeoutError as e:
+            pass
+        
 
