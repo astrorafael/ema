@@ -100,18 +100,23 @@ def deferred(attrname):
                 setattr(obj, self.attr_name,      None)
                 setattr(obj, self.attr_dfrd_name, None)
                 return failure
-            attr_val     =  getattr(obj, self.attr_name,      None)
-            attr_def_val =  getattr(obj, self.attr_dfrd_name, None)
-            if attr_val is not None and not self.parameter.getter.metadata.volatile:
-                return defer.succeed(attr_val)
-            if attr_def_val is not None:
-                return  attr_def_val
-            self.assertService()
-            cmd = self.parameter.getter()
-            d = self.service.protocol.execute(cmd)
-            setattr(obj, self.attr_dfrd_name, d)
-            d.addCallbacks(complete, failed)
-            return  d
+            if obj is not None:
+                attr_val     =  getattr(obj, self.attr_name,      None)
+                attr_def_val =  getattr(obj, self.attr_dfrd_name, None)
+                if attr_val is not None and not self.parameter.getter.metadata.volatile:
+                    return defer.succeed(attr_val)
+                if attr_def_val is not None:
+                    return  attr_def_val
+                self.assertService()
+                cmd = self.parameter.getter()
+                d = self.service.protocol.execute(cmd)
+                setattr(obj, self.attr_dfrd_name, d)
+                d.addCallbacks(complete, failed)
+                return  d
+            else:   
+                # Access through class, not instance
+                # returns the parameter class in order to retrieve metadata
+                return self.parameter
 
 
         def __set__(self, obj, value):
@@ -159,30 +164,21 @@ class Device(object):
         return { (self.name + '_' + name).lower(): param['value'] 
             for name, param in self.PARAMS.iteritems() if param['invariant']}
 
+    def parameters(self):
+        '''
+        Return a dictionary of current parameter values
+        '''
+        for attr in self.PARAMS:
+            cls = getattr(self.__class__, attr, None)
+            log.debug(" ================> CLASE = {cls}", cls=cls)
+        return {}
+
 
     def paramEquals(self, value, target,  threshold=0.001):
         if type(value) == float:
             return math.fabs(value - target) < threshold
         else:
             return value == target
-
-    @inlineCallbacks
-    def sync(self):
-        '''
-        Synchronizes parameters. 
-        Returns a deferred whose success callback value None
-        '''
-        for name, param in self.PARAMS.iteritems():
-            value = yield self.parent.serialService.protocol.execute(param['get']())
-            param['value'] = value
-            configured = self.options[name]
-            if not self.paramEquals(value, configured):
-                log.warn("{title} values do not match [EMA = {read}] [file = {file}]", title=param['title'], read=value, file=configured)
-                if self.options['sync'] and self.global_sync:
-                    log.info("Synchronizing {title}", title=param['title'])
-                    param['value'] = yield self.parent.serialService.protocol.execute(param['set'](configured))
-            else:
-                log.info("{title} already synchronized", title=param['title'])
 
     @inlineCallbacks
     def sync(self):
@@ -246,6 +242,12 @@ class Anemometer(Device):
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
         self.PARAMS = ['threshold', 'ave_threshold','calibration','model']
+
+    def stable(self):
+        '''
+        Return a dictionary of current parameter values
+        '''
+        pass
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
