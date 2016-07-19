@@ -719,7 +719,7 @@ class Photometer(object):
     # ------------------------------------------------------------------------------
 
     class GetOffset(GetCommand):
-        '''Get Photometer Gain Offset'''
+        '''Get Photometer Offset'''
         metadata     = mdata.Photometer.Offset
         cmdformat    = '(i)'
         ack_patterns = [ '^\(I(\d{3})\)',  '^\(I([+-]\d{2})\)',  '^\(I(\d{5})\)']
@@ -730,7 +730,7 @@ class Photometer(object):
         
 
     class SetOffset(SetCommand):
-        '''Set Photometer Gain Offset'''
+        '''Set Photometer Offset'''
         metadata     = mdata.Photometer.Offset
         cmdformat    = '(I{:+03d})'
         ack_patterns = [ '^\(I([+-]\d{2})\)']

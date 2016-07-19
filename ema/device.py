@@ -93,8 +93,9 @@ def deferred(attrname):
         def __get__(self, obj, objtype=None):
             '''Descriptor get protocol'''
             def complete(value):
-                setattr(obj, self.attr_name,     value)
-                setattr(obj, self.attr_dfrd_name, None)
+                setattr(obj, '__' + attrname,     value)
+                setattr(obj, '__' + attrname + '_deferred', None)
+                return value
             def failed(failure):
                 setattr(obj, self.attr_name,      None)
                 setattr(obj, self.attr_dfrd_name, None)
@@ -118,6 +119,7 @@ def deferred(attrname):
             def complete(value):
                 setattr(obj, self.attr_name,     value)
                 setattr(obj, self.attr_dfrd_name, None)
+                return value
             def failed(failure):
                 setattr(obj, self.attr_dfrd_name, None)
                 return failure
@@ -182,6 +184,25 @@ class Device(object):
             else:
                 log.info("{title} already synchronized", title=param['title'])
 
+    @inlineCallbacks
+    def sync(self):
+        '''
+        Synchronizes parameters. 
+        Returns a deferred whose success callback value None
+        '''
+        log.debug("EN PLAN BUCLE A LO SALVAJE")
+        for name in self.PARAMS:
+            configured = self.options[name]
+            value = yield getattr(self, name, None)
+            if not self.paramEquals(value, configured):
+                log.warn("{title} values do not match [EMA = {read}] [file = {file}]", 
+                    title=name, read=value, file=configured)
+                if self.options['sync'] and self.global_sync:
+                        log.info("Synchronizing {title}", title=name)
+                        setattr(self, name, configured)
+            else:
+                log.info("{title} already synchronized",title=name)
+
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -200,68 +221,31 @@ class Thermopile(Device):
 class Anemometer(Device):
 
     class Threshold(object):
+        '''Current Wind Speed Threshold'''
         getter = command.Anemometer.GetCurrentWindSpeedThreshold
         setter = command.Anemometer.SetCurrentWindSpeedThreshold
     class AverageThreshold(object):
+        '''Average Wind Speed Threshold'''
         getter = command.Anemometer.GetAverageWindSpeedThreshold
         setter = command.Anemometer.GetAverageWindSpeedThreshold
     class Calibration(object):
+        '''Calibration Constant'''
         getter = command.Anemometer.GetCalibrationFactor
         setter = command.Anemometer.SetCalibrationFactor
     class Model(object):
+        '''Anemometer Model'''
         getter = command.Anemometer.GetModel
         setter = command.Anemometer.SetModel
 
     # Deferred attribute handling via Descriptors
     threshold     = deferred("threshold")(Threshold())
     ave_threshold = deferred("ave_threshold")(AverageThreshold())
-    calibration   = deferred("calibration")(Threshold())
-    model         = deferred("model")(AverageThreshold())
+    calibration   = deferred("calibration")(Calibration())
+    model         = deferred("model")(Model())
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = {
-            'threshold': { 
-                'title' : 'Current Wind Speed Threshold',
-                'value' : None,
-                'invariant': False,
-                'get':   command.Anemometer.GetCurrentWindSpeedThreshold,
-                'set':   command.Anemometer.SetCurrentWindSpeedThreshold,
-                'units': metadata.Anemometer.WindSpeedThreshold.units,
-                'range': metadata.Anemometer.WindSpeedThreshold.domain,
-                'type' : metadata.Anemometer.WindSpeedThreshold.kind,
-            },
-            'ave_threshold': { 
-                'title' : 'Average Wind Speed Threshold',
-                'value' : None,
-                'invariant': False,
-                'get':   command.Anemometer.GetAverageWindSpeedThreshold,
-                'set':   command.Anemometer.SetAverageWindSpeedThreshold,
-                'units': metadata.Anemometer.WindSpeedThreshold.units,
-                'range': metadata.Anemometer.WindSpeedThreshold.domain,
-                'type' : metadata.Anemometer.WindSpeedThreshold.kind,
-            },
-            'calibration': { 
-                'title' : 'Calibration Constant',
-                'value' : None,
-                'invariant': True,
-                'get':   command.Anemometer.GetCalibrationFactor,
-                'set':   command.Anemometer.SetCalibrationFactor,
-                'units': metadata.Anemometer.CalibrationFactor.units,
-                'range': metadata.Anemometer.CalibrationFactor.domain,
-                'type' : metadata.Anemometer.CalibrationFactor.kind,
-            },
-            'model': { 
-                'title' : 'Model',
-                'value' : None,
-                'invariant': True,
-                'get':   command.Anemometer.GetModel,
-                'set':   command.Anemometer.SetModel,
-                'units': metadata.Anemometer.Model.units,
-                'range': metadata.Anemometer.Model.domain,
-                'type' : metadata.Anemometer.Model.kind,
-            },
-        }
+        self.PARAMS = ['threshold', 'ave_threshold','calibration','model']
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -270,9 +254,11 @@ class Anemometer(Device):
 class Barometer(Device):
 
     class Height(object):
+        '''Barometer Height'''
         getter = command.Barometer.GetHeight
         setter = command.Barometer.SetHeight
     class Offset(object):
+        '''Barometer Offset'''
         getter = command.Barometer.GetOffset
         setter = command.Barometer.SetOffset
 
@@ -282,28 +268,7 @@ class Barometer(Device):
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = {
-            'height': { 
-                'title' : 'Barometer Height',
-                'value' : None,
-                'invariant': True,
-                'get':   command.Barometer.GetHeight,
-                'set':   command.Barometer.SetHeight,
-                'units': metadata.Barometer.Height.units,
-                'range': metadata.Barometer.Height.domain,
-                'type' : metadata.Barometer.Height.kind,
-            },
-            'offset': { 
-                'title' : 'Barometer Offset',
-                'value' : None,
-                'invariant': True,
-                'get':   command.Barometer.GetOffset,
-                'set':   command.Barometer.SetOffset,
-                'units': metadata.Barometer.Offset.units,
-                'range': metadata.Barometer.Offset.domain,
-                'type' : metadata.Barometer.Offset.kind,
-            },
-        }
+        self.PARAMS = ['height', 'offset']
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -312,9 +277,11 @@ class Barometer(Device):
 class CloudSensor(Device):
 
     class Threshold(object):
+        '''Cloud Sensor Threshold'''
         getter = command.CloudSensor.GetThreshold
         setter = command.CloudSensor.SetThreshold
     class Gain(object):
+        '''Cloud Sensor Gain'''
         getter = command.CloudSensor.GetGain
         setter = command.CloudSensor.SetGain
 
@@ -324,28 +291,7 @@ class CloudSensor(Device):
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = {
-            'threshold': { 
-                'title' : 'Cloud Sensor Threshold',
-                'value' : None,
-                'invariant': False,
-                'get':   command.CloudSensor.GetThreshold,
-                'set':   command.CloudSensor.SetThreshold,
-                'units': metadata.CloudSensor.Threshold.units,
-                'range': metadata.CloudSensor.Threshold.domain,
-                'type' : metadata.CloudSensor.Threshold.kind,
-            },
-            'gain': { 
-                'title' : 'Cloud Sensor Gain',
-                'value' : None,
-                'invariant': True,
-                'get':   command.CloudSensor.GetGain,
-                'set':   command.CloudSensor.SetGain,
-                'units': metadata.CloudSensor.Gain.units,
-                'range': metadata.CloudSensor.Gain.domain,
-                'type' : metadata.CloudSensor.Gain.kind,
-            },
-        }   
+        self.PARAMS = ['threshold', 'gain']
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -354,39 +300,21 @@ class CloudSensor(Device):
 class Photometer(Device):
 
     class Threshold(object):
+        '''Photometer Threshold'''
         getter = command.Photometer.GetThreshold
         setter = command.Photometer.SetThreshold
     class Offset(object):
+        '''Photometer Offset'''
         getter = command.Photometer.GetOffset
         setter = command.Photometer.SetOffset
 
     # Deferred attribute handling via Descriptors
-    gain      = deferred("gain")(Threshold())
+    threshold = deferred("threshold")(Threshold())
     offset    = deferred("offset")(Offset())
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = {
-            'threshold': { 
-                'title' : 'Photometer Threshold',
-                'value' : None,
-                'invariant': False,
-                'get':   command.Photometer.GetThreshold,
-                'set':   command.Photometer.SetThreshold,
-                'units': metadata.Photometer.Threshold.units,
-                'range': metadata.Photometer.Threshold.domain,
-                'type' : metadata.Photometer.Threshold.kind,
-            },
-            'offset': { 
-                'title' : 'Photometer Offset',
-                'value' : None,
-                'invariant': True,
-                'get':   command.Photometer.GetOffset,
-                'set':   command.Photometer.SetOffset,
-                'units': metadata.Photometer.Offset.units,
-                'range': metadata.Photometer.Offset.domain,
-                'type' : metadata.Photometer.Offset.kind,
-            },
-        } 
+        self.PARAMS = ['threshold', 'offset']
+
 
 
 # --------------------------------------------------------------------
@@ -396,26 +324,16 @@ class Photometer(Device):
 class Pluviometer(Device):
 
     class CalibrationFactor(object):
+        '''Pluviometer Calibration Constant'''
         getter = command.Pluviometer.GetCalibrationFactor
         setter = command.Pluviometer.SetCalibrationFactor
 
     # Deferred attribute handling via Descriptors
-    factor      = deferred("factor")(CalibrationFactor())
+    calibration      = deferred("calibration")(CalibrationFactor())
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = {
-            'calibration': { 
-                'title' : 'Pluviometer Calibration',
-                'value' : None,
-                'invariant': True,
-                'get':   command.Pluviometer.GetCalibrationFactor,
-                'set':   command.Pluviometer.SetCalibrationFactor,
-                'units': metadata.Pluviometer.Factor.units,
-                'range': metadata.Pluviometer.Factor.domain,
-                'type' : metadata.Pluviometer.Factor.kind,
-            },
-        } 
+        self.PARAMS = ['calibration']
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -425,9 +343,11 @@ class Pluviometer(Device):
 class Pyranometer(Device):
 
     class Gain(object):
+        '''Pyranometer Gain'''
         getter = command.Pyranometer.GetGain
         setter = command.Pyranometer.SetGain
     class Offset(object):
+        '''Pyranometer Offset'''
         getter = command.Pyranometer.GetOffset
         setter = command.Pyranometer.SetOffset
 
@@ -437,28 +357,7 @@ class Pyranometer(Device):
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = {
-            'gain': { 
-                'title' : 'Pyranometer Gain',
-                'value' : None,
-                'invariant': True,
-                'get':   command.Pyranometer.GetGain,
-                'set':   command.Pyranometer.SetGain,
-                'units': metadata.Pyranometer.Gain.units,
-                'range': metadata.Pyranometer.Gain.domain,
-                'type' : metadata.Pyranometer.Gain.kind,
-            },
-            'offset': { 
-                'title' : 'Pyranometer Offset',
-                'value' : True,
-                'invariant': True,
-                'get':   command.Pyranometer.GetOffset,
-                'set':   command.Pyranometer.SetOffset,
-                'units': metadata.Pyranometer.Offset.units,
-                'range': metadata.Pyranometer.Offset.domain,
-                'type' : metadata.Pyranometer.Offset.kind,
-            },
-        } 
+        self.PARAMS = ['gain','offset'] 
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -467,6 +366,7 @@ class Pyranometer(Device):
 class RainSensor(Device):
 
     class Threshold(object):
+        '''Rain Sensor Threshold'''
         getter = command.RainSensor.GetThreshold
         setter = command.RainSensor.SetThreshold
   
@@ -475,18 +375,7 @@ class RainSensor(Device):
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = {
-            'threshold': { 
-                'title' : 'Rain Sensor Threshold',
-                'value' : None,
-                'invariant': False,
-                'get':   command.RainSensor.GetThreshold,
-                'set':   command.RainSensor.SetThreshold,
-                'units': metadata.RainSensor.Threshold.units,
-                'range': metadata.RainSensor.Threshold.domain,
-                'type' : metadata.RainSensor.Threshold.kind,
-            },
-        } 
+        self.PARAMS = ['threshold'] 
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -495,6 +384,7 @@ class RainSensor(Device):
 class Thermometer(Device):
 
     class Threshold(object):
+        '''Thermometer Delta Temperature Threshold'''
         getter = command.Thermometer.GetThreshold
         setter = command.Thermometer.SetThreshold
   
@@ -503,18 +393,7 @@ class Thermometer(Device):
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = {
-            'delta_threshold': { 
-                'title' : 'Thermometer Delta Threshold',
-                'value' : None,
-                'invariant': False,
-                'get':   command.Thermometer.GetThreshold,
-                'set':   command.Thermometer.SetThreshold,
-                'units': metadata.Thermometer.Threshold.units,
-                'range': metadata.Thermometer.Threshold.domain,
-                'type' : metadata.Thermometer.Threshold.kind,
-            },
-        } 
+        self.PARAMS = ['threshold'] 
 
 
 
@@ -533,7 +412,7 @@ class RoofRelay(Device):
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = {}
+        self.PARAMS = []
         self.switchon = deque(maxlen=2)
         self.parent.serialService.protocol.addStatusCallback(self.onStatus)
 
@@ -565,12 +444,15 @@ class RoofRelay(Device):
 class AuxiliarRelay(Device):
 
     class SwitchOnTime(object):
+        '''Auxiliar Relay Switch On Time'''
         getter = command.AuxRelay.GetSwitchOnTime
         setter = command.AuxRelay.SetSwitchOnTime
     class SwitchOffTime(object):
+        '''Auxiliar Relay Switch Off Time'''
         getter = command.AuxRelay.GetSwitchOffTime
         setter = command.AuxRelay.SetSwitchOffTime
     class Mode(object):
+        '''AuxiliarRelay Mode'''
         getter = command.AuxRelay.GetMode
         setter = command.AuxRelay.SetMode
 
@@ -581,18 +463,7 @@ class AuxiliarRelay(Device):
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = {
-            'mode': { 
-                'title' : 'Aux Relay Mode',
-                'value' : None,
-                'invariant': False,
-                'get':   command.AuxRelay.GetMode,
-                'set':   command.AuxRelay.SetMode,
-                'units': metadata.AuxRelay.Mode.units,
-                'range': metadata.AuxRelay.Mode.domain,
-                'type' : metadata.AuxRelay.Mode.kind,
-            },
-        } 
+        self.PARAMS = ['mode']  
         self.switchon = deque(maxlen=2)
         self.parent.serialService.protocol.addStatusCallback(self.onStatus)
 
@@ -614,20 +485,17 @@ class AuxiliarRelay(Device):
         else:
             pass
 
-    def mode(self, value):
-        '''
-        Program Auxiliar Relay Mode
-        Either 'Auto','Open', 'Close', 'Timer/On', 'Timer/Off'
-        Returns a deferred
-        '''
-        return self.parent.serialService.protocol.execute(command.AuxRelay.SetMode(value))
 
     @inlineCallbacks
     def nextRelayCycle(self, inactiveInterval):
-        yield self.parent.serialService.protocol.execute(
-        		command.AuxRelay.SetSwitchOffTime(inactiveInterval.t0.time()))
-        yield self.parent.serialService.protocol.execute(
-        		command.AuxRelay.SetSwitchOnTime(inactiveInterval.t1.time()))
+        off = inactiveInterval.t0.time()
+        on  = inactiveInterval.t1.time()
+        self.switchOffTime = off
+        yield self.switchOffTime
+        self.switchOnTime  = on
+        yield self.switchOffTime
+
+    
 
 #---------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -636,6 +504,7 @@ class AuxiliarRelay(Device):
 class RealTimeClock(Device):
 
     class DateTime(object):
+        '''EMA Date Time Clock Adjustment'''
         getter = command.RealTimeClock.GetDateTime
         setter = command.RealTimeClock.SetDateTime
 
@@ -644,18 +513,8 @@ class RealTimeClock(Device):
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = {
-            'max_drift': { 
-                'title' : 'EMA RTC',
-                'value' : None,
-                'invariant': False,
-                'get':   command.RealTimeClock.GetDateTime,
-                'set':   command.RealTimeClock.SetDateTime,
-                'units': metadata.RealTimeClock.DateTime.units,
-                'range': metadata.RealTimeClock.DateTime.domain,
-                'type' : metadata.RealTimeClock.DateTime.kind,
-            },
-        }
+        self.PARAMS = []
+
 
     @inlineCallbacks
     def sync(self):
@@ -664,28 +523,29 @@ class RealTimeClock(Device):
         Returns a deferred whose success callback value is a flag
         True = synch process ok, False = synch process went wrong
         '''
-        param     = self.PARAMS['max_drift']
         max_drift = self.options['max_drift']
-        log.info("Synchronizing {title} from Host RTC", title=param['title'])
+        log.info("Synchronizing {title} from Host RTC", title='EMA RTC')
         try:
-            value = yield self.parent.serialService.protocol.execute(param['get']())
+            value = yield self.dateTime
         except EMATimeoutError as e:
             log.error("EMA RTC sync exception => {exception}", exception=e)
             returnValue(False)
         now = datetime.datetime.utcnow()
         if abs((value - now).total_seconds()) > max_drift:
-            log.warn("{title} not synchronized [EMA = {EMA!s}] [Host = {host!s}]", title=param['title'], EMA=value, host=now)
-            log.info("Synchronizing {title} to Host RTC", title=param['title'])
+            log.warn("{title} not synchronized [EMA = {EMA!s}] [Host = {host!s}]", title='EMA RTC', EMA=value, host=now)
+            log.info("Synchronizing {title} to Host RTC", title='EMA RTC')
             try:
-                value = yield self.parent.serialService.protocol.execute(param['set'](None))
+                self.dateTime = value
+                value = yield self.dateTime
             except EMATimeoutError as e:
                 log.error("RTC sync exception => {exception}", exception=e)
                 returnValue(False)
             if abs((value - datetime.datetime.utcnow()).total_seconds()) > max_drift:
-                log.warn("{title} still not synchronized to Host RTC", title=param['title'])
+                log.warn("{title} still not synchronized to Host RTC", title='EMA RTC')
         else:
-            log.info("{title} already synchronized to Host RTC", title=param['title'])
+            log.info("{title} already synchronized to Host RTC", title='EMA RTC')
         returnValue(True)
+
 
     @inlineCallbacks
     def inverseSync(self):
@@ -697,7 +557,7 @@ class RealTimeClock(Device):
         log.info("Synchronizing Host RTC from EMA RTC")
         max_drift = self.options['max_drift']
         try:
-            utvalue = yield command.RTCDateTime.Get()
+            utvalue = yield self.dateTime
         except EMATimeoutError as e:
             log.error("RTC inverseSync exception => {exception}", exception=e)
             returnValue(False)
@@ -713,7 +573,7 @@ class RealTimeClock(Device):
             log.info("Synchronizing Host computer from EMA RTC")
             # Assume Host Compuer works in UTC !!!
             setSystemTime(utvalue.timetuple())
-            utvalue = yield command.RTCDateTime.Get()
+            utvalue = yield  self.dateTime
         except Exception as e:
             log.error("RTC inverseSync exception => {exception}", exception=e)
             returnValue(False)    
@@ -746,33 +606,8 @@ class Voltmeter(Device):
 
     def __init__(self, parent, options, upload_period, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = {
-            'threshold': { 
-                'title' : 'Threshold',
-                'value' : None,
-                'invariant': False,
-                'get':   command.Voltmeter.GetThreshold,
-                'set':   command.Voltmeter.SetThreshold,
-                'units': metadata.Voltmeter.Threshold.units,
-                'range': metadata.Voltmeter.Threshold.domain,
-                'type' : metadata.Voltmeter.Threshold.kind,
-            },
-            'offset': { 
-                'title' : 'Offset',
-                'option': 'offset',
-                'value' : None,
-                'invariant': True,
-                'get':   command.Voltmeter.GetOffset,
-                'set':   command.Voltmeter.SetOffset,
-                'units': metadata.Voltmeter.Offset.units,
-                'range': metadata.Voltmeter.Offset.domain,
-                'type' : metadata.Voltmeter.Offset.kind,
-            },
-        }
+        self.PARAMS = ['threshold', 'offset']
         self.voltage = deque(maxlen=(upload_period//command.PERIOD))
-        #scripts = chop(options["script"], ',')
-        #for script in scripts:
-        #    self.parent.addScript('VoltageLow', script, options['mode'])
         self.parent.serialService.protocol.addStatusCallback(self.onStatus)
 
 
@@ -783,12 +618,14 @@ class Voltmeter(Device):
         self.voltage.append(message[command.POWER_VOLT])
         n       = len(self.voltage)
         average = sum(self.voltage) / n
-        if  self.PARAMS['threshold']['value'] is None:
+        # This is a dirty trick, bypassing the attribute descriptor
+        value = getattr(self, '__threshold', None)
+        if  value is None:
             log.debug("No threshold value yet from EMA")
             return
-        threshold = self.options['delta'] + self.PARAMS['threshold']['value']
-        if average < threshold:
-            self.parent.onEventExecute('low_voltage', average, threshold, n)
+        secure_threshold = self.options['delta'] + value
+        if average < secure_threshold:
+            self.parent.onEventExecute('low_voltage', average, secure_threshold, n)
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -797,9 +634,11 @@ class Voltmeter(Device):
 class Watchdog(Device):
 
     class Period(object):
+        '''Watchdog Period'''
         getter = command.Watchdog.GetPeriod
         setter = command.Watchdog.SetPeriod
     class Presence(object):
+        '''Watchdog presence message'''
         getter = command.Watchdog.GetPresence
         setter = None
 
@@ -809,20 +648,7 @@ class Watchdog(Device):
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-
-        # To be deleted
-        self.PARAMS = {
-            'period': { 
-                'title' : 'Watchdog Period',
-                'value' : None,
-                'invariant': False,
-                'get':   command.Watchdog.GetPeriod,
-                'set':   command.Watchdog.SetPeriod,
-                'units': metadata.Watchdog.Period.units,
-                'range': metadata.Watchdog.Period.domain,
-                'type' : metadata.Watchdog.Period.kind,
-            },
-        }
+        self.PARAMS = ['period']
         self.pingTask  = task.LoopingCall(self.ping)
 
     def start(self):
@@ -833,13 +659,6 @@ class Watchdog(Device):
 
     @inlineCallbacks
     def ping(self):
-        try:
-            res = yield self.parent.serialService.protocol.execute(command.Watchdog.GetPresence())
-        except EMATimeoutError as e:
-            pass
-
-    @inlineCallbacks
-    def ping2(self):
         try:
             val = yield self.presence 
         except EMATimeoutError as e:

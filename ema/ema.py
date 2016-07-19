@@ -299,6 +299,9 @@ class EMAService(MultiService):
     # --------------------------
 
     def buildDevices(self):
+        
+        device.Property.bind(self.serialService)
+
         self.rtc         = device.RealTimeClock(self, self.options['rtc'])
         self.voltmeter   = device.Voltmeter(self, self.options['voltmeter'],
                             upload_period=self.options['upload_period'], 
@@ -368,7 +371,6 @@ class EMAService(MultiService):
         for dev in self.devices:
             mydict.update(dev.parameters())
         log.debug("PARAMETERS = {p}", p=mydict)
-        device.Property.bind(self.serialService)
         return mydict
        
 
