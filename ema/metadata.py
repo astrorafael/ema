@@ -29,7 +29,8 @@ class RealTimeClock(object):
         kind            = datetime.datetime 
         domain          = [datetime.datetime(2016, 1, 1), datetime.datetime(2100, 12, 31)]
         units           = 'ISO 8601'
-        volatile        = True
+        volatile        = True   # Must not be cached in memory
+        stable          = False  # if mutable, never stable
 
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
@@ -43,7 +44,7 @@ class Watchdog(object):
         kind         = str
         domain       = [ '( )' ]
         units        = ''
-        volatile     = True
+        volatile     = True     # Must not be cached in memory
        
 
     class Period(Metadata):
@@ -51,7 +52,8 @@ class Watchdog(object):
         kind         = int
         domain       = [0, 999]
         units        = 'sec'
-        volatile     = False
+        volatile     = False  # may be cached in memory for efficiency
+        stable       = False  # if mutable, never stable
    
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
@@ -65,7 +67,8 @@ class Anemometer(object):
         kind         = int
         domain       = [0, 999]
         units        = 'Km/h'
-        volatile     = False
+        volatile     = False  # may be cached in memory for efficiency
+        stable       = False  # not subject to recalibration, may be changed at will  
        
 
     class CalibrationFactor(Metadata):
@@ -73,7 +76,8 @@ class Anemometer(object):
         kind         = int
         domain       = [0, 999]
         units        = 'Km/h (TX20) or mm (Simple)'
-        volatile     = False
+        volatile     = False  # may be cached in memory for efficiency
+        stable       = True   # stable parameter: only changed after a recalibration
    
 
     class Model(Metadata):
@@ -81,7 +85,8 @@ class Anemometer(object):
         kind         = str
         domain       = ['TX20', 'Simple']
         units        = ''
-        volatile     = False
+        volatile     = False  # may be cached in memory for efficiency
+        stable       = True  # stable parameter: only changed after a recalibration
      
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
@@ -95,7 +100,8 @@ class Barometer(object):
         kind         = int
         domain       = [0, 99999]
         units        = 'm'
-        volatile     = False
+        volatile     = False  # may be cached in memory for efficiency
+        stable       = True  # stable parameter: only changed after a recalibration
 
 
     class Offset(Metadata):
@@ -103,7 +109,8 @@ class Barometer(object):
         kind         = int
         domain       = [-99, 99]
         units        = 'mBar'
-        volatile     = False
+        volatile     = False  # may be cached in memory for efficiency
+        stable       = True  # stable parameter: only changed after a recalibration
 
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
@@ -117,14 +124,16 @@ class CloudSensor(object):
         kind         = int
         domain       = [0, 100]
         units        = '%'
-        volatile     = False
+        volatile     = False  # may be cached in memory for efficiency
+        stable       = False  # not subject to recalibration, may be changed at will  
       
     class Gain(Metadata):
         '''Cloud Sensor Gain'''
         kind         = float
         domain       = [0.0, 99.9]
         units        = '?'
-        volatile     = False
+        volatile     = False  # may be cached in memory for efficiency
+        stable       = True   # stable parameter: only changed after a recalibration
    
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
@@ -138,7 +147,8 @@ class Photometer(object):
         kind         = float
         domain       = [0.0, 99.9]
         units        = 'Mv/arcsec^2'
-        volatile     = False
+        volatile     = False  # may be cached in memory for efficiency
+        stable       = False  # not subject to recalibration, may be changed at will  
 
        
     class Offset(Metadata):
@@ -146,7 +156,8 @@ class Photometer(object):
         kind         = float
         domain       = [-99.9, +99.9]
         units        = 'Mv/arcsec^2'
-        volatile     = False
+        volatile     = False  # may be cached in memory for efficiency
+        stable       = True   # stable parameter: only changed after a recalibration
 
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
@@ -160,7 +171,8 @@ class Pluviometer(object):
         kind         = int
         domain       = [0, 999]
         units        = 'mm'
-        volatile     = False
+        volatile     = False  # may be cached in memory for efficiency
+        stable       = True   # stable parameter: only changed after a recalibration
 
 
 # ------------------------------------------------------------------------------
@@ -175,7 +187,8 @@ class Pyranometer(object):
         kind         = float
         domain       = [0.0, 99.9]
         units        = '?'
-        volatile     = False
+        volatile     = False  # may be cached in memory for efficiency
+        stable       = True  # stable parameter: only changed after a recalibration
 
 
     class Offset(Metadata):
@@ -183,7 +196,8 @@ class Pyranometer(object):
         kind         = int
         domain       = [0, 999]
         units        = '?'
-        volatile     = False
+        volatile     = False  # may be cached in memory for efficiency
+        stable       = True  # stable parameter: only changed after a recalibration
 
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
@@ -197,7 +211,8 @@ class RainSensor(object):
         kind         = int
         domain       = [0, 999]
         units        = 'mm'
-        volatile     = False
+        volatile     = False  # may be cached in memory for efficiency
+        stable       = False  # not subject to recalibration, may be changed at will  
 
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
@@ -211,7 +226,8 @@ class Thermometer(object):
         kind         = int
         domain       = [0, 999]
         units        = 'deg C'
-        volatile     = False
+        volatile     = False  # may be cached in memory for efficiency
+        stable       = False  # not subject to recalibration, may be changed at will  
   
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
@@ -225,7 +241,8 @@ class Voltmeter(object):
         kind         = float
         domain       = [0.0, 25.5]
         units        = 'V'
-        volatile     = False
+        volatile     = False  # may be cached in memory for efficiency
+        stable       = False  # not subject to recalibration, may be changed at will  
 
 
     class Offset(Metadata):
@@ -233,7 +250,8 @@ class Voltmeter(object):
         kind         = float
         domain       = [-99.9, +99.9]
         units        = 'V'
-        volatile     = False
+        volatile     = False  # may be cached in memory for efficiency
+        stable       = True  # stable parameter: only changed after a recalibration
 
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
@@ -247,7 +265,8 @@ class RoofRelay(object):
         kind         = str
         domain       = ['Auto', 'Closed', 'Open']
         units        = ''
-        volatile     = False
+        volatile     = False  # may be cached in memory for efficiency
+        stable       = True  # stable parameter: only changed after a recalibration
 
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
@@ -261,7 +280,8 @@ class AuxRelay(object):
         kind         = str
         domain       = ['Auto', 'Closed', 'Open', 'Timer/Off', 'Timer/On']
         units        = ''
-        volatile     = False
+        volatile     = False  # may be cached in memory for efficiency
+        stable       = False  # not subject to recalibration, may be changed at will  
 
 
     class Time(Metadata):
@@ -269,12 +289,11 @@ class AuxRelay(object):
         kind         = datetime.time
         domain       = [datetime.time(0,0), datetime.time(23,59)]
         units        = 'HH:MM:00'
-        volatile     = False
+        volatile     = False  # may be cached in memory for efficiency
+        stable       = False  # not subject to recalibration, may be changed at will  
        
 
 __all__ = [
-    "validate",
-    "EMARangeError",
     "RealTimeClock.DateTime",
     "Watchdog.Presence",
     "Watchdog.Period",

@@ -328,8 +328,6 @@ class EMAService(MultiService):
                             self.photometer,self.pluviometer,self.pyranometer,self.rainsensor,
                             self.watchdog, self.aux_relay, self.roof_relay]
 
-        self.wdog2 = device.Watchdog2()
-
     @inlineCallbacks
     def detectEMA(self, nretries=3):
         '''
@@ -371,7 +369,6 @@ class EMAService(MultiService):
             mydict.update(dev.parameters())
         log.debug("PARAMETERS = {p}", p=mydict)
         device.Property.bind(self.serialService)
-        self.wdog2.start()
         return mydict
        
 

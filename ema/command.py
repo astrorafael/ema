@@ -27,7 +27,6 @@ from twisted.logger              import Logger, LogLevel
 from . import PY2
 
 import metadata as mdata
-from metadata import Metadata
 
 # ----------------
 # Module constants
@@ -392,13 +391,6 @@ class SetCommand(Command):
 class RealTimeClock(object):
     '''Namespace for children commands'''
 
-    class DateTime(Metadata):
-        '''Real Time Clock Date & Time'''
-        kind            = datetime.datetime 
-        domain          = [datetime.datetime(2016, 1, 1), datetime.datetime(2100, 12, 31)]
-        units           = 'ISO 8601'
-        volatile        = True
-
 
     class GetDateTime(GetCommand):
         '''Get Real Time Clock Date & Time Command'''
@@ -460,20 +452,6 @@ class RealTimeClock(object):
 class Watchdog(object):
     '''Namespace for chldren commands'''
 
-    class Presence(Metadata):
-        '''EMA Presence'''
-        kind         = str
-        domain       = [ '( )' ]
-        units        = ''
-        volatile     = True
-       
-
-    class Period(Metadata):
-        '''Watchdog Period'''
-        kind         = int
-        domain       = [0, 999]
-        units        = 'sec'
-        volatile     = False
 
     class GetPresence(GetCommand):
         '''Ping'''
@@ -516,29 +494,6 @@ class Watchdog(object):
 
 class Anemometer(object):
     '''Namespace for chldren commands'''
-
-    class WindSpeedThreshold(Metadata):
-        '''Wind Speed Threshold'''
-        kind         = int
-        domain       = [0, 999]
-        units        = 'Km/h'
-        volatile     = False
-       
-
-    class CalibrationFactor(Metadata):
-        '''Anemometer Calibration Constant'''
-        kind         = int
-        domain       = [0, 999]
-        units        = 'Km/h (TX20) or mm (Simple)'
-        volatile     = False
-   
-
-    class Model(Metadata):
-        '''Anemometer Model'''
-        kind         = str
-        domain       = ['TX20', 'Simple']
-        units        = ''
-        volatile     = False
 
     class GetCurrentWindSpeedThreshold(GetCommand):
         '''Get Current Wind Speed Threshold Command'''
@@ -639,22 +594,6 @@ class Anemometer(object):
 class Barometer(object):
     '''Namespace for chldren commands'''
 
-    class Height(Metadata):
-        '''Barometer Height'''
-        kind         = int
-        domain       = [0, 99999]
-        units        = 'm'
-        volatile     = False
-
-
-    class Offset(Metadata):
-        '''Barometer Offset'''
-        kind         = int
-        domain       = [-99, 99]
-        units        = 'mBar'
-        volatile     = False
-
-
     class GetHeight(GetCommand):
         '''Get Barometer Height Command'''
         metadata     = mdata.Barometer.Height
@@ -705,20 +644,6 @@ class Barometer(object):
 class CloudSensor(object):
     '''Namespace for chldren commands'''
 
-    class Threshold(Metadata):
-        '''Cloud Sensor Threshold'''
-        kind         = int
-        domain       = [0, 100]
-        units        = '%'
-        volatile     = False
-      
-    class Gain(Metadata):
-        '''Cloud Sensor Gain'''
-        kind         = float
-        domain       = [0.0, 99.9]
-        units        = '?'
-        volatile     = False
-
     class GetThreshold(GetCommand):
         '''Get Cloud Sensor Threshold Command'''
         metadata     = mdata.CloudSensor.Threshold
@@ -768,21 +693,6 @@ class CloudSensor(object):
 
 class Photometer(object):
     '''Namespace for chldren commands'''
-
-    class Threshold(Metadata):
-        '''Photometer Threshold'''
-        kind         = float
-        domain       = [0.0, 99.9]
-        units        = 'Mv/arcsec^2'
-        volatile     = False
-
-       
-    class Offset(Metadata):
-        '''Photometer Gain Offset'''
-        kind         = float
-        domain       = [-99.9, +99.9]
-        units        = 'Mv/arcsec^2'
-        volatile     = False
 
 
     class GetThreshold(GetCommand):
@@ -836,14 +746,6 @@ class Photometer(object):
 class Pluviometer(object):
     '''Namespace for chldren commands'''
 
-    class Factor(Metadata):
-        '''Pluviometer Calibration Factor'''
-        kind         = int
-        domain       = [0, 999]
-        units        = 'mm'
-        volatile     = False
-
-
     class GetCalibrationFactor(GetCommand):
         '''Get Pluviometer Calibration Factor Command'''
         metadata     = mdata.Pluviometer.Factor
@@ -870,21 +772,6 @@ class Pluviometer(object):
 
 class Pyranometer(object):
     '''Namespace for chldren commands'''
-
-    class Gain(Metadata):
-        '''Pyranometer Gain'''
-        kind         = float
-        domain       = [0.0, 99.9]
-        units        = '?'
-        volatile     = False
-
-
-    class Offset(Metadata):
-        '''Pyranometer Offset'''
-        kind         = int
-        domain       = [0, 999]
-        units        = '?'
-        volatile     = False
 
     class GetGain(GetCommand):
         '''Get Pyranometer Gain Command'''
@@ -936,13 +823,6 @@ class Pyranometer(object):
 class RainSensor(object):
     '''Namespace for chldren commands'''
 
-    class Threshold(Metadata):
-        '''Rain Sensor Threshold'''
-        kind         = int
-        domain       = [0, 999]
-        units        = 'mm'
-        volatile     = False
-
     class GetThreshold(GetCommand):
         '''Get Rain Sensor Threshold Command'''
         metadata     = mdata.RainSensor.Threshold
@@ -969,14 +849,6 @@ class RainSensor(object):
 
 class Thermometer(object):
     '''Namespace for chldren commands'''
-
-    class Threshold(Metadata):
-        '''Thermometer Delta Temperature Threshold'''
-        kind         = int
-        domain       = [0, 999]
-        units        = 'deg C'
-        volatile     = False
-
 
     class GetThreshold(GetCommand):
         '''Get Thermometer DeltaTemp Threshold Command'''
@@ -1005,20 +877,6 @@ class Thermometer(object):
 class Voltmeter(object):
     '''Namespace for chldren commands'''
 
-    class Threshold(Metadata):
-        '''Voltmeter Threshold'''
-        kind         = float
-        domain       = [0.0, 25.5]
-        units        = 'V'
-        volatile     = False
-
-
-    class Offset(Metadata):
-        '''Voltmeter Offset'''
-        kind         = float
-        domain       = [-99.9, +99.9]
-        units        = 'V'
-        volatile     = False
 
     class GetThreshold(GetCommand):
         '''Get Voltmeter Threshold Command'''
@@ -1069,13 +927,6 @@ class Voltmeter(object):
 class RoofRelay(object):
     '''Namespace for chldren commands'''
 
-    class Mode(Metadata):
-        '''Set Roof Relay Mode'''
-        kind         = str
-        domain       = ['Auto', 'Closed', 'Open']
-        units        = ''
-        volatile     = False
-
     class SetMode(SetCommand):
         '''Set Roof Relay Mode Command'''
         metadata     = mdata.RoofRelay.Mode
@@ -1110,20 +961,6 @@ class RoofRelay(object):
 class AuxRelay(object):
     '''Namespace for chldren commands'''
 
-    class Mode(Metadata):
-        '''Auxiliar Relay Mode'''
-        kind         = str
-        domain       = ['Auto', 'Closed', 'Open', 'Timer/Off', 'Timer/On']
-        units        = ''
-        volatile     = False
-       
-
-    class Time(Metadata):
-        '''Auxiliar Relay Switch-Off Time'''
-        kind         = datetime.time
-        domain       = [datetime.time(0,0), datetime.time(23,59)]
-        units        = 'HH:MM:00'
-        volatile     = False
 
     class GetSwitchOnTime(GetCommand):
         '''Get Aux Relay Switch-On Time Command'''

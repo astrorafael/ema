@@ -198,6 +198,26 @@ class Thermopile(Device):
 # --------------------------------------------------------------------
 
 class Anemometer(Device):
+
+    class Threshold(object):
+        getter = command.Anemometer.GetCurrentWindSpeedThreshold
+        setter = command.Anemometer.SetCurrentWindSpeedThreshold
+    class AverageThreshold(object):
+        getter = command.Anemometer.GetAverageWindSpeedThreshold
+        setter = command.Anemometer.GetAverageWindSpeedThreshold
+    class Calibration(object):
+        getter = command.Anemometer.GetCalibrationFactor
+        setter = command.Anemometer.SetCalibrationFactor
+    class Model(object):
+        getter = command.Anemometer.GetModel
+        setter = command.Anemometer.SetModel
+
+    # Deferred attribute handling via Descriptors
+    threshold     = deferred("threshold")(Threshold())
+    ave_threshold = deferred("ave_threshold")(AverageThreshold())
+    calibration   = deferred("calibration")(Threshold())
+    model         = deferred("model")(AverageThreshold())
+
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
         self.PARAMS = {
@@ -248,6 +268,18 @@ class Anemometer(Device):
 # --------------------------------------------------------------------
 
 class Barometer(Device):
+
+    class Height(object):
+        getter = command.Barometer.GetHeight
+        setter = command.Barometer.SetHeight
+    class Offset(object):
+        getter = command.Barometer.GetOffset
+        setter = command.Barometer.SetOffset
+
+    # Deferred attribute handling via Descriptors
+    height    = deferred("height")(Height())
+    offset    = deferred("offset")(Offset())
+
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
         self.PARAMS = {
@@ -278,6 +310,18 @@ class Barometer(Device):
 # --------------------------------------------------------------------
 
 class CloudSensor(Device):
+
+    class Threshold(object):
+        getter = command.CloudSensor.GetThreshold
+        setter = command.CloudSensor.SetThreshold
+    class Gain(object):
+        getter = command.CloudSensor.GetGain
+        setter = command.CloudSensor.SetGain
+
+    # Deferred attribute handling via Descriptors
+    threshold = deferred("threshold")(Threshold())
+    gain      = deferred("gain")(Gain())
+
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
         self.PARAMS = {
@@ -308,6 +352,17 @@ class CloudSensor(Device):
 # --------------------------------------------------------------------
 
 class Photometer(Device):
+
+    class Threshold(object):
+        getter = command.Photometer.GetThreshold
+        setter = command.Photometer.SetThreshold
+    class Offset(object):
+        getter = command.Photometer.GetOffset
+        setter = command.Photometer.SetOffset
+
+    # Deferred attribute handling via Descriptors
+    gain      = deferred("gain")(Threshold())
+    offset    = deferred("offset")(Offset())
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
         self.PARAMS = {
@@ -339,6 +394,14 @@ class Photometer(Device):
 # --------------------------------------------------------------------
 
 class Pluviometer(Device):
+
+    class CalibrationFactor(object):
+        getter = command.Pluviometer.GetCalibrationFactor
+        setter = command.Pluviometer.SetCalibrationFactor
+
+    # Deferred attribute handling via Descriptors
+    factor      = deferred("factor")(CalibrationFactor())
+
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
         self.PARAMS = {
@@ -360,6 +423,18 @@ class Pluviometer(Device):
 
 
 class Pyranometer(Device):
+
+    class Gain(object):
+        getter = command.Pyranometer.GetGain
+        setter = command.Pyranometer.SetGain
+    class Offset(object):
+        getter = command.Pyranometer.GetOffset
+        setter = command.Pyranometer.SetOffset
+
+    # Deferred attribute handling via Descriptors
+    gain      = deferred("gain")(Gain())
+    offset    = deferred("offset")(Offset())
+
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
         self.PARAMS = {
@@ -390,6 +465,14 @@ class Pyranometer(Device):
 # --------------------------------------------------------------------
 
 class RainSensor(Device):
+
+    class Threshold(object):
+        getter = command.RainSensor.GetThreshold
+        setter = command.RainSensor.SetThreshold
+  
+    # Deferred attribute handling via Descriptors
+    threshold = deferred("threshold")(Threshold())
+
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
         self.PARAMS = {
@@ -410,6 +493,14 @@ class RainSensor(Device):
 # --------------------------------------------------------------------
 
 class Thermometer(Device):
+
+    class Threshold(object):
+        getter = command.Thermometer.GetThreshold
+        setter = command.Thermometer.SetThreshold
+  
+    # Deferred attribute handling via Descriptors
+    threshold = deferred("threshold")(Threshold())
+
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
         self.PARAMS = {
@@ -432,6 +523,14 @@ class Thermometer(Device):
 # --------------------------------------------------------------------
 
 class RoofRelay(Device):
+
+    class Mode(object):
+        getter = None
+        setter = command.RoofRelay.SetMode
+
+    # Deferred attribute handling via Descriptors
+    mode          = deferred("mode")(Mode())
+
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
         self.PARAMS = {}
@@ -464,6 +563,22 @@ class RoofRelay(Device):
 
 
 class AuxiliarRelay(Device):
+
+    class SwitchOnTime(object):
+        getter = command.AuxRelay.GetSwitchOnTime
+        setter = command.AuxRelay.SetSwitchOnTime
+    class SwitchOffTime(object):
+        getter = command.AuxRelay.GetSwitchOffTime
+        setter = command.AuxRelay.SetSwitchOffTime
+    class Mode(object):
+        getter = command.AuxRelay.GetMode
+        setter = command.AuxRelay.SetMode
+
+    # Deferred attribute handling via Descriptors
+    switchOnTime  = deferred("switchOnTime")(SwitchOnTime())
+    switchOffTime = deferred("switchOffTime")(SwitchOffTime())
+    mode          = deferred("mode")(SwitchOffTime())
+
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
         self.PARAMS = {
@@ -519,6 +634,14 @@ class AuxiliarRelay(Device):
 # --------------------------------------------------------------------
 
 class RealTimeClock(Device):
+
+    class DateTime(object):
+        getter = command.RealTimeClock.GetDateTime
+        setter = command.RealTimeClock.SetDateTime
+
+    # Deferred attribute handling via Descriptors
+    dateTime = deferred("dateTime")(DateTime())
+
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
         self.PARAMS = {
@@ -610,6 +733,17 @@ class RealTimeClock(Device):
 
 class Voltmeter(Device):
 
+    class Threshold(object):
+        getter = command.Voltmeter.GetThreshold
+        setter = command.Voltmeter.SetThreshold
+    class Offset(object):
+        getter = command.Voltmeter.GetOffset
+        setter = command.Voltmeter.SetOffset
+
+    # Deferred attribute handling via Descriptors
+    threshold = deferred("threshold")(Threshold())
+    offset    = deferred("offset")(Offset())
+
     def __init__(self, parent, options, upload_period, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
         self.PARAMS = {
@@ -661,8 +795,22 @@ class Voltmeter(Device):
 # --------------------------------------------------------------------
     
 class Watchdog(Device):
+
+    class Period(object):
+        getter = command.Watchdog.GetPeriod
+        setter = command.Watchdog.SetPeriod
+    class Presence(object):
+        getter = command.Watchdog.GetPresence
+        setter = None
+
+    # Deferred attribute handling via Descriptors
+    period   = deferred("period")(Period())
+    presence = deferred("presence")(Presence())
+
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
+
+        # To be deleted
         self.PARAMS = {
             'period': { 
                 'title' : 'Watchdog Period',
@@ -690,32 +838,8 @@ class Watchdog(Device):
         except EMATimeoutError as e:
             pass
 
-
-
-class Watchdog2(object):
-
-    class PeriodParameter(object):
-        getter = command.Watchdog.GetPeriod
-        setter = command.Watchdog.SetPeriod
-    class PresenceParameter(object):
-        getter = command.Watchdog.GetPresence
-        setter = None
-
-    # Deferred attribute handling via Descriptors
-    period   = deferred("period")(PeriodParameter())
-    presence = deferred("presence")(PresenceParameter())
-
-    def __init__(self):
-        self.pingTask  = task.LoopingCall(self.ping)
-
-    def start(self):
-        self.pingTask.start(10//2+random.random(), now=False)
-
-    def stop(self):
-        self.pingTask.stop()
-
     @inlineCallbacks
-    def ping(self):
+    def ping2(self):
         try:
             val = yield self.presence 
         except EMATimeoutError as e:
