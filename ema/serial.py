@@ -198,7 +198,7 @@ class EMAProtocol(LineOnlyReceiver):
     def lineReceived(self, line):
         now = datetime.datetime.utcnow() + datetime.timedelta(seconds=0.5)
         line = (line.lstrip(' \t\n\r') + b')').decode('latin-1')
-        log2.info("<== EMA [{l}] {line}", l=len(line), line=line)
+        log2.info("<== EMA [{l:02d}] {line}", l=len(line), line=line)
         handled = self._handleCommandResponse(line, now)
         if handled:
             return
@@ -215,7 +215,7 @@ class EMAProtocol(LineOnlyReceiver):
         @param line: The line to send, including the delimiter.
         @type line: C{bytes}
         """
-        log2.info("==> EMA [{l}] {line}", l=len(line), line=line)
+        log2.info("==> EMA [{l:02d}] {line}", l=len(line), line=line)
         return self.transport.write(line)
         
     # ================
