@@ -196,26 +196,16 @@ class EMAProtocol(LineOnlyReceiver):
 
 
     def lineReceived(self, line):
-        
-        def fix(string):
-            '''
-            Dirty hack to translate invalid ASCII strings from EMA
-            into something valid for the logging subsystem
-            '''
-            tmp = bytearray(string)
-            for i in range(0,len(tmp)):
-                tmp[i] = b'?' if tmp[i] > 127 else tmp[i]
-            return str(tmp)
-
         now = datetime.datetime.utcnow() + datetime.timedelta(seconds=0.5)
-        line = line.lstrip(' \t\n\r') + b')'
+        line = (line.lstrip(' \t\n\r') + b')').decode('latin-1')
+        log2.info("<== EMA [{l}] {line}", l=len(line), line=line)
         handled = self._handleCommandResponse(line, now)
         if handled:
             return
         handled = self._handleUnsolicitedResponse(line, now)
         if handled:
             return
-        log.debug("Unknown/Unexpected message {line}", line=fix(line))
+        log.debug("Unknown/Unexpected message {line}", line=line)
 
 
 
@@ -225,7 +215,7 @@ class EMAProtocol(LineOnlyReceiver):
         @param line: The line to send, including the delimiter.
         @type line: C{bytes}
         """
-        log2.debug("==> EMA [{l}] {line}", l=len(line), line=line)
+        log2.info("==> EMA [{l}] {line}", l=len(line), line=line)
         return self.transport.write(line)
         
     # ================
@@ -402,7 +392,7 @@ class SerialService(ClientService):
 
     def __init__(self, options):
         self.options    = options    
-        protocol_level  = 'debug' if self.options['log_messages'] else 'info'
+        protocol_level  = 'info' if self.options['log_messages'] else 'warn'
         setLogLevel(namespace='protoc', levelStr=protocol_level)
         setLogLevel(namespace='serial', levelStr=self.options['log_level'])
         setLogLevel(namespace='ema.serial.protocol.base.EMAProtocolFactory', levelStr='error')

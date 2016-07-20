@@ -431,7 +431,7 @@ class EMAService(MultiService):
         '''
         Event Handlr coming from the Voltmeter
         '''
-        self.onEventExecute(event, *args)
+        self.scriptsService.onEventExecute(event, *args)
     
     
        
