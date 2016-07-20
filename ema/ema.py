@@ -299,7 +299,8 @@ class EMAService(MultiService):
     # --------------------------
 
     def gotProtocol(self, protocol):
-        device.Property.bind(self.serialService.protocol)
+        device.DeferredAttribute.bind(protocol)
+    
 
     def buildDevices(self):
         

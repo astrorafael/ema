@@ -41,7 +41,7 @@ from utils  import setSystemTime
 log  = Logger(namespace='ema')
 
 
-class Property(object):
+class DeferredAttribute(object):
 
     # Service from where to obtain the protocol
     service = None
@@ -53,10 +53,8 @@ class Property(object):
 
     def __init__(self, parameter):
         self.parameter = parameter
-
-
-    def __delete__(self, obj):
-        raise AttributeError("can't delete attribute")
+        self.attr_name      = '__' + parameter.name
+        self.attr_dfrd_name = '__' + parameter.name + '_deferred'
 
 
     def validate(self, value):
@@ -70,75 +68,63 @@ class Property(object):
             if not (self.parameter.setter.metadata.domain[0] <= value <= self.parameter.setter.metadata.domain[1]): 
                 raise EMARangeError(self.__class__.__name__, value, self.metadata.parameter.domain)
 
+    def __delete__(self, obj):
+        '''Descriptor delete protocol'''
+        raise AttributeError("can't delete attribute")
 
-def deferred(attrname):
-    '''
-    Factory function that returns a Descriptor Class
-    with customized private attribute and deff
-    '''
-    class Descriptor(Property):
-        '''Threshold descriptor'''
-        def __init__(self, parameter):
-            Property.__init__(self, parameter)
-            self.attr_name      = '__' + parameter.name
-            self.attr_dfrd_name = '__' + parameter.name + '_deferred'
 
-        def __get__(self, obj, objtype=None):
-            '''Descriptor get protocol'''
-            def complete(value):
-                setattr(obj, self.attr_name,     value)
-                setattr(obj, self.attr_dfrd_name, None)
-                return value
-            def failed(failure):
-                setattr(obj, self.attr_name,      None)
-                setattr(obj, self.attr_dfrd_name, None)
-                return failure
-            if obj is None:
-                return self.parameter
-            if self.parameter.getter is None:
-                raise AttributeError("w/o attribute")
-            attr_val     =  getattr(obj, self.attr_name,      None)
-            attr_def_val =  getattr(obj, self.attr_dfrd_name, None)
-            # sharing deferred with __set__
-            if attr_def_val is not None:
-                return  attr_def_val
-            if attr_val is not None and not self.parameter.getter.metadata.volatile:
-                return defer.succeed(attr_val)
-            if self.protocol is None:
-                raise RuntimeError("attribute not bound to a protocol yet")
-            cmd = self.parameter.getter()
-            d = self.protocol.execute(cmd)
-            setattr(obj, self.attr_dfrd_name, d)
-            d.addCallbacks(complete, failed)
-            return  d
+    
+    def __get__(self, obj, objtype=None):
+        '''Descriptor get protocol'''
+        def complete(value):
+            setattr(obj, self.attr_name,     value)
+            setattr(obj, self.attr_dfrd_name, None)
+            return value
+        def failed(failure):
+            setattr(obj, self.attr_name,      None)
+            setattr(obj, self.attr_dfrd_name, None)
+            return failure
+        if obj is None:
+            return self.parameter
+        if self.parameter.getter is None:
+            raise AttributeError("w/o attribute")
+        attr_val     =  getattr(obj, self.attr_name,      None)
+        attr_def_val =  getattr(obj, self.attr_dfrd_name, None)
+        # sharing deferred with __set__
+        if attr_def_val is not None:
+            return  attr_def_val
+        if attr_val is not None and not self.parameter.getter.metadata.volatile:
+            return defer.succeed(attr_val)
+        if self.protocol is None:
+            raise RuntimeError("attribute not bound to a protocol yet")
+        cmd = self.parameter.getter()
+        d = self.protocol.execute(cmd)
+        setattr(obj, self.attr_dfrd_name, d)
+        d.addCallbacks(complete, failed)
+        return  d
            
 
-        def __set__(self, obj, value):
-            '''Descriptor set protocol'''
-            def complete(ignored_value):
-                setattr(obj, self.attr_name,     value)
-                setattr(obj, self.attr_dfrd_name, None)
-                return value
-            def failed(failure):
-                setattr(obj, self.attr_dfrd_name, None)
-                return failure
-            self.validate(value)
-            if self.protocol is None:
-                raise RuntimeError("attribute not bound to a protocol yet")
-            attr_def_val =  getattr(obj, self.attr_dfrd_name, None)
-            if attr_def_val is not None:
-                raise RuntimeError("Operation in progress")
-            setattr(obj, self.attr_name, None)
-            cmd = self.parameter.setter(value)
-            d = self.protocol.execute(cmd)
-            setattr(obj, self.attr_dfrd_name, d)
-            d.addCallbacks(complete, failed)
+    def __set__(self, obj, value):
+        '''Descriptor set protocol'''
+        def complete(ignored_value):
+            setattr(obj, self.attr_name,     value)
+            setattr(obj, self.attr_dfrd_name, None)
+            return value
+        def failed(failure):
+            setattr(obj, self.attr_dfrd_name, None)
+            return failure
+        self.validate(value)
+        if self.protocol is None:
+            raise RuntimeError("attribute not bound to a protocol yet")
+        attr_def_val =  getattr(obj, self.attr_dfrd_name, None)
+        if attr_def_val is not None:
+            raise RuntimeError("Operation in progress")
+        setattr(obj, self.attr_name, None)
+        cmd = self.parameter.setter(value)
+        d = self.protocol.execute(cmd)
+        setattr(obj, self.attr_dfrd_name, d)
+        d.addCallbacks(complete, failed)
         
-
-    return Descriptor
-
-
-
 
 
 
@@ -149,27 +135,20 @@ class Device(object):
         self.options     = options
         self.parent      = parent
         self.global_sync = global_sync
-        self.PARAMS      = []
-
-
-    def parameters(self):
-        '''
-        Return a dictionary of current parameter values
-        '''
-        return { (self.name + '_' + name).lower(): param['value'] 
-            for name, param in self.PARAMS.iteritems() if param['invariant']}
+        self.sync_params = []
 
     @inlineCallbacks
     def parameters(self):
         '''
-        Return a dictionary of current parameter values
+        Return a dictionary of current syncable parameter 
+        for this device values
         '''
         
         # Selected attributes only
-        attrs = [ self.__class__.__name__.lower() + '_' + attr for attr in self.PARAMS 
+        attrs = [ self.__class__.__name__.lower() + '_' + attr for attr in self.sync_params 
                 if getattr(self.__class__, attr).getter.metadata.stable ]
         # Selected values in form of deferreds
-        dl = [ getattr(self, attr) for attr in self.PARAMS 
+        dl = [ getattr(self, attr) for attr in self.sync_params 
                 if getattr(self.__class__, attr).getter.metadata.stable ]
         result = yield defer.DeferredList(dl, consumeErrors=True)
         mydict = { attrs[i] : result[i][1] for i in range(0,len(attrs))  }
@@ -188,7 +167,7 @@ class Device(object):
         Synchronizes parameters. 
         Returns a deferred whose success callback value None
         '''
-        for name in self.PARAMS:
+        for name in self.sync_params:
             configured = self.options[name]
             value = yield getattr(self, name)
             if not self.paramEquals(value, configured):
@@ -239,14 +218,14 @@ class Anemometer(Device):
         setter = command.Anemometer.SetModel
 
     # Deferred attribute handling via Descriptors
-    threshold     = deferred("threshold")(Threshold())
-    ave_threshold = deferred("ave_threshold")(AverageThreshold())
-    calibration   = deferred("calibration")(Calibration())
-    model         = deferred("model")(Model())
+    threshold     = DeferredAttribute(Threshold())
+    ave_threshold = DeferredAttribute(AverageThreshold())
+    calibration   = DeferredAttribute(Calibration())
+    model         = DeferredAttribute(Model())
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = [Anemometer.Threshold.name, 
+        self.sync_params = [Anemometer.Threshold.name, 
             Anemometer.AverageThreshold.name, 
             Anemometer.Calibration.name, 
             Anemometer.Model.name]
@@ -275,12 +254,12 @@ class Barometer(Device):
         setter = command.Barometer.SetOffset
 
     # Deferred attribute handling via Descriptors
-    height    = deferred("height")(Height())
-    offset    = deferred("offset")(Offset())
+    height    = DeferredAttribute(Height())
+    offset    = DeferredAttribute(Offset())
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = [Barometer.Height.name, Barometer.Offset.name]
+        self.sync_params = [Barometer.Height.name, Barometer.Offset.name]
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -300,12 +279,12 @@ class CloudSensor(Device):
         setter = command.CloudSensor.SetGain
 
     # Deferred attribute handling via Descriptors
-    threshold = deferred("threshold")(Threshold())
-    gain      = deferred("gain")(Gain())
+    threshold = DeferredAttribute(Threshold())
+    gain      = DeferredAttribute(Gain())
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = [CloudSensor.Threshold.name, CloudSensor.Gain.name]
+        self.sync_params = [CloudSensor.Threshold.name, CloudSensor.Gain.name]
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -325,11 +304,11 @@ class Photometer(Device):
         setter = command.Photometer.SetOffset
 
     # Deferred attribute handling via Descriptors
-    threshold = deferred("threshold")(Threshold())
-    offset    = deferred("offset")(Offset())
+    threshold = DeferredAttribute(Threshold())
+    offset    = DeferredAttribute(Offset())
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = [Photometer.Threshold.name, Photometer.Offset.name]
+        self.sync_params = [Photometer.Threshold.name, Photometer.Offset.name]
 
 
 
@@ -346,11 +325,11 @@ class Pluviometer(Device):
         setter = command.Pluviometer.SetCalibrationFactor
 
     # Deferred attribute handling via Descriptors
-    calibration      = deferred("calibration")(CalibrationFactor())
+    calibration      = DeferredAttribute(CalibrationFactor())
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = [Pluviometer.CalibrationFactor.name]
+        self.sync_params = [Pluviometer.CalibrationFactor.name]
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -371,12 +350,12 @@ class Pyranometer(Device):
         setter = command.Pyranometer.SetOffset
 
     # Deferred attribute handling via Descriptors
-    gain      = deferred("gain")(Gain())
-    offset    = deferred("offset")(Offset())
+    gain      = DeferredAttribute(Gain())
+    offset    = DeferredAttribute(Offset())
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = [Pyranometer.Gain.name, Pyranometer.Offset.name] 
+        self.sync_params = [Pyranometer.Gain.name, Pyranometer.Offset.name] 
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -391,11 +370,11 @@ class RainSensor(Device):
         setter = command.RainSensor.SetThreshold
   
     # Deferred attribute handling via Descriptors
-    threshold = deferred("threshold")(Threshold())
+    threshold = DeferredAttribute(Threshold())
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = [RainSensor.Threshold.name] 
+        self.sync_params = [RainSensor.Threshold.name] 
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -410,11 +389,11 @@ class Thermometer(Device):
         setter = command.Thermometer.SetThreshold
   
     # Deferred attribute handling via Descriptors
-    threshold = deferred("threshold")(Threshold())
+    threshold = DeferredAttribute(Threshold())
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = [Thermometer.Threshold.name] 
+        self.sync_params = [Thermometer.Threshold.name] 
 
 
 
@@ -430,11 +409,11 @@ class RoofRelay(Device):
         setter = command.RoofRelay.SetMode
 
     # Deferred attribute handling via Descriptors
-    mode          = deferred("mode")(Mode())
+    mode          = DeferredAttribute(Mode())
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = []
+        self.sync_params = []
         self.switchon = deque(maxlen=2)
         self.parent.serialService.protocol.addStatusCallback(self.onStatus)
 
@@ -482,13 +461,13 @@ class AuxiliarRelay(Device):
         setter = command.AuxRelay.SetMode
 
     # Deferred attribute handling via Descriptors
-    switchOnTime  = deferred("switchOnTime")(SwitchOnTime())
-    switchOffTime = deferred("switchOffTime")(SwitchOffTime())
-    mode          = deferred("mode")(SwitchOffTime())
+    switchOnTime  = DeferredAttribute(SwitchOnTime())
+    switchOffTime = DeferredAttribute(SwitchOffTime())
+    mode          = DeferredAttribute(SwitchOffTime())
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = [AuxiliarRelay.Mode.name]  
+        self.sync_params = [AuxiliarRelay.Mode.name]  
         self.switchon = deque(maxlen=2)
         self.parent.serialService.protocol.addStatusCallback(self.onStatus)
 
@@ -535,11 +514,11 @@ class RealTimeClock(Device):
         setter = command.RealTimeClock.SetDateTime
 
     # Deferred attribute handling via Descriptors
-    dateTime = deferred("dateTime")(DateTime())
+    dateTime = DeferredAttribute(DateTime())
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = [RealTimeClock.DateTime.name]
+        self.sync_params = [RealTimeClock.DateTime.name]
 
 
     @inlineCallbacks
@@ -629,12 +608,12 @@ class Voltmeter(Device):
         setter = command.Voltmeter.SetOffset
 
     # Deferred attribute handling via Descriptors
-    threshold = deferred("threshold")(Threshold())
-    offset    = deferred("offset")(Offset())
+    threshold = DeferredAttribute(Threshold())
+    offset    = DeferredAttribute(Offset())
 
     def __init__(self, parent, options, upload_period, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = [Voltmeter.Threshold.name, Voltmeter.Offset.name]
+        self.sync_params = [Voltmeter.Threshold.name, Voltmeter.Offset.name]
         self.voltage = deque(maxlen=(upload_period//command.PERIOD))
         self.parent.serialService.protocol.addStatusCallback(self.onStatus)
 
@@ -673,12 +652,12 @@ class Watchdog(Device):
         setter = None
 
     # Deferred attribute handling via Descriptors
-    period   = deferred("period")(Period())
-    presence = deferred("presence")(Presence())
+    period   = DeferredAttribute(Period())
+    presence = DeferredAttribute(Presence())
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = [Watchdog.Period.name]
+        self.sync_params = [Watchdog.Period.name]
         self.pingTask  = task.LoopingCall(self.ping)
 
     def start(self):
