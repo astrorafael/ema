@@ -246,7 +246,10 @@ class Anemometer(Device):
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = ['threshold', 'ave_threshold','calibration','model']
+        self.PARAMS = [Anemometer.Threshold.name, 
+            Anemometer.AverageThreshold.name, 
+            Anemometer.Calibration.name, 
+            Anemometer.Model.name]
 
     def stable(self):
         '''
@@ -277,7 +280,7 @@ class Barometer(Device):
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = ['height', 'offset']
+        self.PARAMS = [Barometer.Height.name, Barometer.Offset.name]
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -302,7 +305,7 @@ class CloudSensor(Device):
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = ['threshold', 'gain']
+        self.PARAMS = [CloudSensor.Threshold.name, CloudSensor.Gain.name]
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -326,7 +329,7 @@ class Photometer(Device):
     offset    = deferred("offset")(Offset())
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = ['threshold', 'offset']
+        self.PARAMS = [Photometer.Threshold.name, Photometer.Offset.name]
 
 
 
@@ -347,7 +350,7 @@ class Pluviometer(Device):
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = ['calibration']
+        self.PARAMS = [Pluviometer.CalibrationFactor.name]
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -373,7 +376,7 @@ class Pyranometer(Device):
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = ['gain','offset'] 
+        self.PARAMS = [Pyranometer.Gain.name, Pyranometer.Offset.name] 
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -392,7 +395,7 @@ class RainSensor(Device):
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = ['threshold'] 
+        self.PARAMS = [RainSensor.Threshold.name] 
 
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -411,7 +414,7 @@ class Thermometer(Device):
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = ['threshold'] 
+        self.PARAMS = [Thermometer.Threshold.name] 
 
 
 
@@ -485,7 +488,7 @@ class AuxiliarRelay(Device):
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = ['mode']  
+        self.PARAMS = [AuxiliarRelay.Mode.name]  
         self.switchon = deque(maxlen=2)
         self.parent.serialService.protocol.addStatusCallback(self.onStatus)
 
@@ -536,7 +539,7 @@ class RealTimeClock(Device):
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = []
+        self.PARAMS = [RealTimeClock.DateTime.name]
 
 
     @inlineCallbacks
@@ -631,7 +634,7 @@ class Voltmeter(Device):
 
     def __init__(self, parent, options, upload_period, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = ['threshold', 'offset']
+        self.PARAMS = [Voltmeter.Threshold.name, Voltmeter.Offset.name]
         self.voltage = deque(maxlen=(upload_period//command.PERIOD))
         self.parent.serialService.protocol.addStatusCallback(self.onStatus)
 
@@ -675,7 +678,7 @@ class Watchdog(Device):
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
-        self.PARAMS = ['period']
+        self.PARAMS = [Watchdog.Period.name]
         self.pingTask  = task.LoopingCall(self.ping)
 
     def start(self):
