@@ -171,17 +171,14 @@ class Device(object):
         Return a dictionary of current parameter values
         '''
         
-        # Selected attributes
-        attrs = [ attr for attr in self.PARAMS 
+        # Selected attributes only
+        attrs = [ self.__class__.__name__.lower() + '_' + attr for attr in self.PARAMS 
                 if getattr(self.__class__, attr).getter.metadata.stable ]
         # Selected values in form of deferreds
         dl = [ getattr(self, attr) for attr in self.PARAMS 
                 if getattr(self.__class__, attr).getter.metadata.stable ]
-
-        # IR TERMINANDO ESTO CON UNA DEFERREDLIST Y UN CALLBACK
         result = yield defer.DeferredList(dl, consumeErrors=True)
         mydict = { attrs[i] : result[i][1] for i in range(0,len(attrs))  }
-        log.debug(" == result = {obj}", obj=mydict)
         returnValue(mydict)
 
 
