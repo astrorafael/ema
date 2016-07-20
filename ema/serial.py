@@ -488,6 +488,7 @@ class SerialService(ClientService):
         self.protocol  = protocol
         self.protocol.addStatusCallback(self.onStatus)
         self.protocol.addPhotometerCallback(self.onVisualMagnitude)
+        self.parent.gotProtocol(protocol)
        
 
     # ----------------------------

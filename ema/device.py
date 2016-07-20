@@ -47,9 +47,9 @@ class Property(object):
     service = None
 
     @classmethod
-    def bind(cls, service):
+    def bind(cls, protocol):
         '''Binds the Proerty with servicee where to obtain the protocol'''
-        cls.service = service
+        cls.protocol = protocol
 
     def __init__(self, parameter):
         self.parameter = parameter
@@ -59,17 +59,10 @@ class Property(object):
         raise AttributeError("can't delete attribute")
 
 
-    def assertService(self):
-        '''Assets the runtime is ready'''
-        if self.service is None:
-            raise RuntimeError("Not bound to a service yet")
-        if self.service.protocol is None:
-            raise RuntimeError("descriptor service not bound to a protocol yet")
-
     def validate(self, value):
         '''Validates value against parameter's setter metadata type and range'''
         if self.parameter.setter is None:
-            raise RuntimeError("This descriptor does no support assignments")
+            raise AttributeError("r/o attribute")
         if self.parameter.setter.metadata.kind == str:
             if value not in self.parameter.setter.metadata.domain: 
                 raise EMARangeError(self.__class__.__name__, value, self.parameter.setter.metadata.domain)
@@ -100,25 +93,25 @@ def deferred(attrname):
                 setattr(obj, self.attr_name,      None)
                 setattr(obj, self.attr_dfrd_name, None)
                 return failure
-            if obj is not None:
-                attr_val     =  getattr(obj, self.attr_name,      None)
-                attr_def_val =  getattr(obj, self.attr_dfrd_name, None)
-                # sharing deferred with __set__
-                if attr_def_val is not None:
-                    return  attr_def_val
-                if attr_val is not None and not self.parameter.getter.metadata.volatile:
-                    return defer.succeed(attr_val)
-                self.assertService()
-                cmd = self.parameter.getter()
-                d = self.service.protocol.execute(cmd)
-                setattr(obj, self.attr_dfrd_name, d)
-                d.addCallbacks(complete, failed)
-                return  d
-            else:   
-                # Access through class, not instance
-                # returns the parameter class in order to retrieve metadata
+            if obj is None:
                 return self.parameter
-
+            if self.parameter.getter is None:
+                raise AttributeError("w/o attribute")
+            attr_val     =  getattr(obj, self.attr_name,      None)
+            attr_def_val =  getattr(obj, self.attr_dfrd_name, None)
+            # sharing deferred with __set__
+            if attr_def_val is not None:
+                return  attr_def_val
+            if attr_val is not None and not self.parameter.getter.metadata.volatile:
+                return defer.succeed(attr_val)
+            if self.protocol is None:
+                raise RuntimeError("attribute not bound to a protocol yet")
+            cmd = self.parameter.getter()
+            d = self.protocol.execute(cmd)
+            setattr(obj, self.attr_dfrd_name, d)
+            d.addCallbacks(complete, failed)
+            return  d
+           
 
         def __set__(self, obj, value):
             '''Descriptor set protocol'''
@@ -130,13 +123,14 @@ def deferred(attrname):
                 setattr(obj, self.attr_dfrd_name, None)
                 return failure
             self.validate(value)
-            self.assertService()
+            if self.protocol is None:
+                raise RuntimeError("attribute not bound to a protocol yet")
             attr_def_val =  getattr(obj, self.attr_dfrd_name, None)
             if attr_def_val is not None:
                 raise RuntimeError("Operation in progress")
             setattr(obj, self.attr_name, None)
             cmd = self.parameter.setter(value)
-            d = self.service.protocol.execute(cmd)
+            d = self.protocol.execute(cmd)
             setattr(obj, self.attr_dfrd_name, d)
             d.addCallbacks(complete, failed)
         

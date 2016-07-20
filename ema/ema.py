@@ -298,10 +298,11 @@ class EMAService(MultiService):
     # TEMPORARY Helper functions
     # --------------------------
 
+    def gotProtocol(self, protocol):
+        device.Property.bind(self.serialService.protocol)
+
     def buildDevices(self):
         
-        device.Property.bind(self.serialService)
-
         self.rtc         = device.RealTimeClock(self, self.options['rtc'])
         self.voltmeter   = device.Voltmeter(self, self.options['voltmeter'],
                             upload_period=self.options['upload_period'], 
