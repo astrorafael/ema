@@ -230,7 +230,7 @@ class EMAService(MultiService):
             self.logMQTTEvent(msg="At program start ({0} window {1})".format(where, window), kind='info')
             result = yield self.sync()
             if result:
-                record = self.getParameters()
+                record = yield self.getParameters()
                 self.queue['register'].append(record)
 
 
@@ -361,6 +361,7 @@ class EMAService(MultiService):
         returnValue(ok)
 
 
+    @inlineCallbacks
     def getParameters(self):
         '''
         Get all parameters once al devices synchronized
@@ -369,9 +370,10 @@ class EMAService(MultiService):
             mac = fd.readline().rstrip('\r\n')
         mydict = { 'mac': mac }
         for dev in self.devices:
-            mydict.update(dev.parameters())
+            anotherDict = yield dev.parameters()
+            mydict.update(anotherDict)
         log.debug("PARAMETERS = {p}", p=mydict)
-        return mydict
+        returnValue(mydict)
        
 
     def syncRTC(self):

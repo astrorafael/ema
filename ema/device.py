@@ -103,10 +103,11 @@ def deferred(attrname):
             if obj is not None:
                 attr_val     =  getattr(obj, self.attr_name,      None)
                 attr_def_val =  getattr(obj, self.attr_dfrd_name, None)
-                if attr_val is not None and not self.parameter.getter.metadata.volatile:
-                    return defer.succeed(attr_val)
+                # sharing deferred with __set__
                 if attr_def_val is not None:
                     return  attr_def_val
+                if attr_val is not None and not self.parameter.getter.metadata.volatile:
+                    return defer.succeed(attr_val)
                 self.assertService()
                 cmd = self.parameter.getter()
                 d = self.service.protocol.execute(cmd)
@@ -121,7 +122,7 @@ def deferred(attrname):
 
         def __set__(self, obj, value):
             '''Descriptor set protocol'''
-            def complete(value):
+            def complete(ignored_value):
                 setattr(obj, self.attr_name,     value)
                 setattr(obj, self.attr_dfrd_name, None)
                 return value
@@ -164,14 +165,19 @@ class Device(object):
         return { (self.name + '_' + name).lower(): param['value'] 
             for name, param in self.PARAMS.iteritems() if param['invariant']}
 
+    @inlineCallbacks
     def parameters(self):
         '''
         Return a dictionary of current parameter values
         '''
-        for attr in self.PARAMS:
-            cls = getattr(self.__class__, attr, None)
-            log.debug(" ================> CLASE = {cls}", cls=cls)
-        return {}
+        
+        dl = [ getattr(self, attr) for attr in self.PARAMS 
+                if getattr(self.__class__, attr).getter.metadata.stable ]
+        log.debug(" == aList = {obj}", obj=dl)
+        # IR TERMINANDO ESTO CON UNA DEFERREDLIST Y UN CALLBACK
+        result = yield defer.DeferredList(dl, consumeErrors=True)
+        log.debug(" == result = {obj}", obj=result)
+        returnValue({})
 
 
     def paramEquals(self, value, target,  threshold=0.001):
@@ -186,10 +192,9 @@ class Device(object):
         Synchronizes parameters. 
         Returns a deferred whose success callback value None
         '''
-        log.debug("EN PLAN BUCLE A LO SALVAJE")
         for name in self.PARAMS:
             configured = self.options[name]
-            value = yield getattr(self, name, None)
+            value = yield getattr(self, name)
             if not self.paramEquals(value, configured):
                 log.warn("{title} values do not match [EMA = {read}] [file = {file}]", 
                     title=name, read=value, file=configured)
