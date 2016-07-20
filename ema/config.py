@@ -136,7 +136,7 @@ def loadCfgFile(path):
     options['ema']['rainsensor']['threshold']       = parser.getint("rainsensor","threshold")
     options['ema']['thermometer'] = {}
     options['ema']['thermometer']['sync']            = parser.getboolean("thermometer","sync")
-    options['ema']['thermometer']['delta_threshold'] = parser.getfloat("thermometer","delta_threshold")
+    options['ema']['thermometer']['threshold']      = parser.getfloat("thermometer","threshold")
     options['ema']['watchdog'] = {}
     options['ema']['watchdog']['sync']            = parser.getboolean("watchdog","sync")
     options['ema']['watchdog']['period']          = parser.getint("watchdog","period")

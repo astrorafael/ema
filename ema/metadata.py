@@ -272,7 +272,7 @@ class RoofRelay(object):
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
 
-class AuxRelay(object):
+class AuxiliarRelay(object):
     '''Namespace for children metadata'''
 
     class Mode(Metadata):
@@ -314,7 +314,7 @@ __all__ = [
     "Voltmeter.Offset",
     "Voltmeter.Threshold",
     "RoofRelay.Mode",
-    "AuxRelay.Mode",
-    "AuxRelay.SwitchOnTime",
-    "AuxRelay.SwitchOffTime",
+    "AuxiliarRelay.Mode",
+    "AuxiliarRelay.SwitchOnTime",
+    "AuxiliarRelay.SwitchOffTime",
 ]

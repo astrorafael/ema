@@ -253,7 +253,7 @@ class EMARangeError(ValueError):
     def __str__(self):
         s = self.__doc__
         if self.args:
-            s = '{0}: <{1}> ({2}) not in {3}'.format(s, self.args[0], self.args[1], self.args[2])
+            s = '{0}: <{1}> whose value <{2}> is not in {3}'.format(s, self.args[0], self.args[1], self.args[2])
         s = '{0}.'.format(s)
         return s
 
@@ -958,13 +958,13 @@ class RoofRelay(object):
 #                               AUX RELAY COMMANDS
 # ------------------------------------------------------------------------------
 
-class AuxRelay(object):
+class AuxiliarRelay(object):
     '''Namespace for chldren commands'''
 
 
     class GetSwitchOnTime(GetCommand):
         '''Get Aux Relay Switch-On Time Command'''
-        metadata        = mdata.AuxRelay.Time
+        metadata        = mdata.AuxiliarRelay.Time
         cmdformat       = '(s)'
         ack_patterns    = [ '^\(S\d{3}\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
         ack_index       = 1
@@ -978,7 +978,7 @@ class AuxRelay(object):
 
     class SetSwitchOnTime(SetCommand):
         '''Set Aux Relay Switch-On Time Command'''
-        metadata        = mdata.AuxRelay.Time
+        metadata        = mdata.AuxiliarRelay.Time
         cmdformat       = '(Son{:04d})'
         ack_patterns    = [ '^\(Son\d{4}\)' ]
         ema_time_format = '(Son%H%M)'
@@ -994,7 +994,7 @@ class AuxRelay(object):
 
     class GetSwitchOffTime(GetCommand):
         '''Get Aux Relay Switch-Off Time Command'''
-        metadata        = mdata.AuxRelay.Time
+        metadata        = mdata.AuxiliarRelay.Time
         cmdformat       = '(s)'
         ack_patterns    = [ '^\(S\d{3}\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
         ack_index       = 2
@@ -1008,7 +1008,7 @@ class AuxRelay(object):
 
     class SetSwitchOffTime(SetCommand):
         '''Set Aux Relay Switch-Off Time Command'''
-        metadata        = mdata.AuxRelay.Time
+        metadata        = mdata.AuxiliarRelay.Time
         cmdformat       = '(Sof{:04d})'
         ack_patterns    = [ '^\(Sof\d{4}\)' ]
         ema_time_format = '(Sof%H%M)'
@@ -1024,7 +1024,7 @@ class AuxRelay(object):
 
     class GetMode(GetCommand):
         '''Get Aux Relay Mode Command'''
-        metadata     = mdata.AuxRelay.Mode
+        metadata     = mdata.AuxiliarRelay.Mode
         cmdformat    = '(s)'
         ack_patterns = [ '^\(S(\d{3})\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
         ack_index    = 0
@@ -1036,7 +1036,7 @@ class AuxRelay(object):
 
     class SetMode(SetCommand):
         '''Set Aux Relay Mode Command'''
-        metadata     = mdata.AuxRelay.Mode
+        metadata     = mdata.AuxiliarRelay.Mode
         cmdformat    = '(S{:03d})'
         ack_patterns = [ '^\(S(\d{3})\)', '^(dummy)' ]
         ack_index    = 0

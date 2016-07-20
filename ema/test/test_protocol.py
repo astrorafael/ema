@@ -415,8 +415,8 @@ class TestEMAProtocol1(unittest.TestCase):
     # EMA Auxiliar Relay
     # ------------------
 
-    def test_getAuxRelaySwitchOnTime(self):
-        d = self.protocol.execute(ema.command.AuxRelay.GetSwitchOnTime())
+    def test_getAuxiliarRelaySwitchOnTime(self):
+        d = self.protocol.execute(ema.command.AuxiliarRelay.GetSwitchOnTime())
         self.assertEqual(self.transport.value(), '(s)')
         self.transport.clear()
         self.protocol.dataReceived('(S009)')
@@ -425,16 +425,16 @@ class TestEMAProtocol1(unittest.TestCase):
         d.addCallback(self.assertEqual, datetime.time(hour=6, minute=0))
         return d
     
-    def test_setAuxRelaySwitchOnTime(self):
-        d = self.protocol.execute(ema.command.AuxRelay.SetSwitchOnTime(datetime.time(hour=6, minute=0)))
+    def test_setAuxiliarRelaySwitchOnTime(self):
+        d = self.protocol.execute(ema.command.AuxiliarRelay.SetSwitchOnTime(datetime.time(hour=6, minute=0)))
         self.assertEqual(self.transport.value(), '(Son0600)')
         self.transport.clear()
         self.protocol.dataReceived('(Son0600)')
         d.addCallback(self.assertEqual, datetime.time(hour=6, minute=0))
         return d
 
-    def test_getAuxRelaySwitchOffTime(self):
-        d = self.protocol.execute(ema.command.AuxRelay.GetSwitchOffTime())
+    def test_getAuxiliarRelaySwitchOffTime(self):
+        d = self.protocol.execute(ema.command.AuxiliarRelay.GetSwitchOffTime())
         self.assertEqual(self.transport.value(), '(s)')
         self.transport.clear()
         self.protocol.dataReceived('(S009)')
@@ -443,16 +443,16 @@ class TestEMAProtocol1(unittest.TestCase):
         d.addCallback(self.assertEqual, datetime.time(hour=9, minute=0))
         return d
     
-    def test_setAuxRelaySwitchOffTime(self):
-        d = self.protocol.execute(ema.command.AuxRelay.SetSwitchOffTime(datetime.time(hour=9, minute=0)))
+    def test_setAuxiliarRelaySwitchOffTime(self):
+        d = self.protocol.execute(ema.command.AuxiliarRelay.SetSwitchOffTime(datetime.time(hour=9, minute=0)))
         self.assertEqual(self.transport.value(), '(Sof0900)')
         self.transport.clear()
         self.protocol.dataReceived('(Sof0900)')
         d.addCallback(self.assertEqual, datetime.time(hour=9, minute=0))
         return d
 
-    def test_getAuxRelayMode(self):
-        d = self.protocol.execute(ema.command.AuxRelay.GetMode())
+    def test_getAuxiliarRelayMode(self):
+        d = self.protocol.execute(ema.command.AuxiliarRelay.GetMode())
         self.assertEqual(self.transport.value(), '(s)')
         self.transport.clear()
         self.protocol.dataReceived('(S009)')
@@ -461,16 +461,16 @@ class TestEMAProtocol1(unittest.TestCase):
         d.addCallback(self.assertEqual, 'Timer/On')
         return d
     
-    def test_setAuxRelayMode1(self):
-        d = self.protocol.execute(ema.command.AuxRelay.SetMode('Auto'), nretries=0)
+    def test_setAuxiliarRelayMode1(self):
+        d = self.protocol.execute(ema.command.AuxiliarRelay.SetMode('Auto'), nretries=0)
         self.assertEqual(self.transport.value(), '(S000)')
         self.transport.clear()
         self.protocol.dataReceived('(S000)')
         d.addCallback(self.assertEqual, 'Auto')
         return d
 
-    def test_setAuxRelayMode2(self):
-        d = self.protocol.execute(ema.command.AuxRelay.SetMode('Closed'))
+    def test_setAuxiliarRelayMode2(self):
+        d = self.protocol.execute(ema.command.AuxiliarRelay.SetMode('Closed'))
         self.assertEqual(self.transport.value(), '(S004)')
         self.transport.clear()
         self.protocol.dataReceived('(S004)')
@@ -478,8 +478,8 @@ class TestEMAProtocol1(unittest.TestCase):
         d.addCallback(self.assertEqual, 'Closed')
         return d
 
-    def test_setAuxRelayMode3(self):
-        d = self.protocol.execute(ema.command.AuxRelay.SetMode('Open'))
+    def test_setAuxiliarRelayMode3(self):
+        d = self.protocol.execute(ema.command.AuxiliarRelay.SetMode('Open'))
         self.assertEqual(self.transport.value(), '(S005)')
         self.transport.clear()
         self.protocol.dataReceived('(S005)')
@@ -487,8 +487,8 @@ class TestEMAProtocol1(unittest.TestCase):
         d.addCallback(self.assertEqual, 'Open')
         return d
 
-    def test_setAuxRelayMode4(self):
-        d = self.protocol.execute(ema.command.AuxRelay.SetMode('Timer/Off'))
+    def test_setAuxiliarRelayMode4(self):
+        d = self.protocol.execute(ema.command.AuxiliarRelay.SetMode('Timer/Off'))
         self.assertEqual(self.transport.value(), '(S008)')
         self.transport.clear()
         self.protocol.dataReceived('(S008)')
@@ -496,8 +496,8 @@ class TestEMAProtocol1(unittest.TestCase):
         d.addCallback(self.assertEqual, 'Timer/Off')
         return d
 
-    def test_setAuxRelayMode5(self):
-        d = self.protocol.execute(ema.command.AuxRelay.SetMode('Timer/On'))
+    def test_setAuxiliarRelayMode5(self):
+        d = self.protocol.execute(ema.command.AuxiliarRelay.SetMode('Timer/On'))
         self.assertEqual(self.transport.value(), '(S009)')
         self.transport.clear()
         self.protocol.dataReceived('(S009)')

@@ -30,8 +30,9 @@ from twisted.internet.defer       import inlineCallbacks, returnValue
 import metadata
 import command
 
-from serial import EMATimeoutError
-from utils  import setSystemTime
+from serial  import EMATimeoutError
+from command import EMARangeError
+from utils   import setSystemTime
 
 
 # -----------------------
@@ -64,10 +65,10 @@ class DeferredAttribute(object):
             raise AttributeError("r/o attribute")
         if self.parameter.setter.metadata.kind == str:
             if value not in self.parameter.setter.metadata.domain: 
-                raise EMARangeError(self.__class__.__name__, value, self.parameter.setter.metadata.domain)
+                raise EMARangeError(self.attr_name[2:], value, self.parameter.setter.metadata.domain)
         else:
             if not (self.parameter.setter.metadata.domain[0] <= value <= self.parameter.setter.metadata.domain[1]): 
-                raise EMARangeError(self.__class__.__name__, value, self.metadata.parameter.domain)
+                raise EMARangeError(self.attr_name[2:], value, self.parameter.setter.metadata.domain)
 
 
     def __delete__(self, obj):
@@ -87,13 +88,16 @@ class DeferredAttribute(object):
             return failure
         if obj is None:
             return self.parameter
-        if self.parameter.getter is None:
-            raise AttributeError("w/o attribute")
         attr_val     =  getattr(obj, self.attr_name,      None)
         attr_def_val =  getattr(obj, self.attr_dfrd_name, None)
         # sharing deferred with __set__
         if attr_def_val is not None:
             return  attr_def_val
+        # checking the getter after the deferred makes it possible
+        # to capture the deferred generated in the __set__ operation
+        # even for w/o attributies
+        if self.parameter.getter is None:
+            raise AttributeError("w/o attribute")
         if attr_val is not None and not self.parameter.getter.metadata.volatile:
             return defer.succeed(attr_val)
         if self.protocol is None:
@@ -446,18 +450,18 @@ class AuxiliarRelay(Device):
     class SwitchOnTime(object):
         '''Auxiliar Relay Switch On Time'''
         name   = 'switchOnTime'
-        getter = command.AuxRelay.GetSwitchOnTime
-        setter = command.AuxRelay.SetSwitchOnTime
+        getter = command.AuxiliarRelay.GetSwitchOnTime
+        setter = command.AuxiliarRelay.SetSwitchOnTime
     class SwitchOffTime(object):
         '''Auxiliar Relay Switch Off Time'''
         name   = 'switchOffTime'
-        getter = command.AuxRelay.GetSwitchOffTime
-        setter = command.AuxRelay.SetSwitchOffTime
+        getter = command.AuxiliarRelay.GetSwitchOffTime
+        setter = command.AuxiliarRelay.SetSwitchOffTime
     class Mode(object):
         '''AuxiliarRelay Mode'''
         name   = 'mode'
-        getter = command.AuxRelay.GetMode
-        setter = command.AuxRelay.SetMode
+        getter = command.AuxiliarRelay.GetMode
+        setter = command.AuxiliarRelay.SetMode
 
     # Deferred attribute handling via Descriptors
     switchOnTime  = DeferredAttribute(parameter=SwitchOnTime())

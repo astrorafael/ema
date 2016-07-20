@@ -393,9 +393,9 @@ threshold = 1
 sync = no
 
 # Threshold temperature above dew point.
-# If ambient temperature < (dew point + delta_threshold)
+# If ambient temperature < (dew point + threshold)
 # the roof relay will close.
-delta_threshold = 5.0
+threshold = 5.0
 
 
 #------------------------------------------------------------------------#

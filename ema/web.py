@@ -47,7 +47,10 @@ from twisted.web.guard     import HTTPAuthSessionWrapper, BasicCredentialFactory
 from .logger import setLogLevel
 from .service.relopausable import Service
 
-import command
+import device
+
+from command import EMARangeError, EMAReturnError
+from serial  import EMATimeoutError
 
 # ----------------
 # Module constants
@@ -106,21 +109,25 @@ class NotFound(HTTPException):
 class BadRequest(HTTPException):
     '''Could not parse request'''
     code = 400
+    msg = 'Bad Request'
     
 
 class UnsupportedMediaType(HTTPException):
     '''POST/PUT request occurred without a application/json content type'''
     code = 416
+    msg = 'Unsupported Media Type'
     
 
 class UnprocessableEntry(HTTPException):
     '''A request to modify a resource failed due to a validation error'''
     code = 422
+    msg = 'Unprocessable Entry'
     
 
 class InternalServerError(HTTPException):
     '''An internal server error occured'''
     code = 501
+    msg = 'Internal Server Error'
     
 
 # -----------------------------------------------------------------------------
@@ -202,163 +209,194 @@ class WebService(Service):
         log.info("new log level is {lvl}", lvl=options['log_level'])
         self.options = options
     
+
+    
     #---------------------
     # Exposed EMA REST API
     # --------------------
 
     @app.route('/ema/v1/anemometer/current/windspeed/threshold', methods=['GET'])
     def get_current_windspeed_threshold(self, request):
-        request.setHeader('Content-Type', 'application/json')
-        result = {
-            'value': self.parent.serialService.anemometer.PARAMS['threshold']['value'],
-            'units': self.parent.serialService.anemometer.PARAMS['threshold']['units'],
-            'range': self.parent.serialService.anemometer.PARAMS['threshold']['range'],
-        }
-        return json.dumps(result)
+        metadata = device.Anemometer.Threshold.getter.metadata
+        # Initiate read
+        d = self.parent.anemometer.threshold
+        d.addCallback(self.readOkCallback, request, metadata)
+        return d
 
 
     @app.route('/ema/v1/anemometer/current/windspeed/threshold', methods=['PUT', 'POST'])
     def set_current_windspeed_threshold(self, request):
-        valrange = self.parent.serialService.anemometer.PARAMS['threshold']['range']
-        valtype  = self.parent.serialService.anemometer.PARAMS['threshold']['type']
-        value    = self.getValidated(request, valtype, valrange)
-        cmd      = self.parent.serialService.anemometer.PARAMS['threshold']['set'](value)
-        d = self.parent.serialService.protocol.execute(cmd)
-        d.addCallback(self.writeOkCallback, request)
-        return d
+        value    = self.validate(request)
+        try:
+            # Initiate write
+            self.parent.anemometer.threshold = value
+        except EMARangeError as e:
+            raise UnprocessableEntry(str(e))
+        except (RuntimeError, AttributeError) as e:
+            raise InternalServerError(str(e))
+        else:
+            # get same deferred object from write
+            d = self.parent.anemometer.threshold
+            d.addCallback(self.writeOkCallback, request)
+            return d
 
 
     @app.route('/ema/v1/anemometer/average/windspeed/threshold', methods=['GET'])
     def get_average_windspeed_threshold(self, request):
-        request.setHeader('Content-Type', 'application/json')
-        result = {
-            'value': self.parent.serialService.anemometer.PARAMS['ave_threshold']['value'],
-            'units': self.parent.serialService.anemometer.PARAMS['ave_threshold']['units'],
-            'range': self.parent.serialService.anemometer.PARAMS['ave_threshold']['range'],
-        }
-        return json.dumps(result)
+        metadata = device.Anemometer.AverageThreshold.getter.metadata
+        # Initiate read
+        d = self.parent.anemometer.ave_threshold
+        d.addCallback(self.readOkCallback, request, metadata)
+        return d
 
 
     @app.route('/ema/v1/anemometer/average/windspeed/threshold', methods=['PUT', 'POST'])
     def set_average_windspeed_threshold(self, request):
-        valrange = self.parent.serialService.anemometer.PARAMS['ave_threshold']['range']
-        valtype  = self.parent.serialService.anemometer.PARAMS['ave_threshold']['type']
-        value    = self.getValidated(request, valtype, valrange)
-        cmd      = self.parent.serialService.anemometer.PARAMS['ave_threshold']['set'](value)
-        d = self.parent.serialService.protocol.execute(cmd)
-        d.addCallback(self.writeOkCallback, request)
-        return d
+        value    = self.validate(request)
+        try:
+            # Initiate write
+            self.parent.anemometer.ave_threshold = value
+        except EMARangeError as e:
+            raise UnprocessableEntry(str(e))
+        except (RuntimeError, AttributeError) as e:
+            raise InternalServerError(str(e))
+        else:
+            # get same deferred object from write
+            d = self.parent.anemometer.ave_threshold
+            d.addCallback(self.writeOkCallback, request)
+            return d
 
 
     @app.route('/ema/v1/cloudsensor/threshold', methods=['GET'])
     def get_cloudsensor_threshold(self, request):
-        request.setHeader('Content-Type', 'application/json')
-        result = {
-            'value': self.parent.serialService.cloudsensor.PARAMS['threshold']['value'],
-            'units': self.parent.serialService.cloudsensor.PARAMS['threshold']['units'],
-            'range': self.parent.serialService.cloudsensor.PARAMS['threshold']['range'],
-        }
-        return json.dumps(result)
+        metadata = device.CloudSensor.Threshold.getter.metadata
+        # Initiate read
+        d = self.parent.cloudsensor.threshold
+        d.addCallback(self.readOkCallback, request, metadata)
+        return d
 
 
     @app.route('/ema/v1/cloudsensor/threshold', methods=['PUT', 'POST'])
     def set_cloudsensor_threshold(self, request):
-        valrange = self.parent.serialService.cloudsensor.PARAMS['threshold']['range']
-        valtype  = self.parent.serialService.cloudsensor.PARAMS['threshold']['type']
-        value    = self.getValidated(request, valtype, valrange)
-        cmd      = self.parent.serialService.cloudsensor.PARAMS['threshold']['set'](value)
-        d = self.parent.serialService.protocol.execute(cmd)
-        d.addCallback(self.writeOkCallback, request)
-        return d
-
+        value    = self.validate(request)
+        try:
+            # Initiate write
+            self.parent.cloudsensor.threshold = value
+        except EMARangeError as e:
+            raise UnprocessableEntry(str(e))
+        except (RuntimeError, AttributeError) as e:
+            raise InternalServerError(str(e))
+        else:
+            # get same deferred object from write
+            d = self.parent.cloudsensor.threshold
+            d.addCallback(self.writeOkCallback, request)
+            return d
 
 
     @app.route('/ema/v1/photometer/threshold', methods=['GET'])
     def get_photometer_threshold(self, request):
-        request.setHeader('Content-Type', 'application/json')
-        result = {
-            'value': self.parent.serialService.photometer.PARAMS['threshold']['value'],
-            'units': self.parent.serialService.photometer.PARAMS['threshold']['units'],
-            'range': self.parent.serialService.photometer.PARAMS['threshold']['range'],
-        }
-        return json.dumps(result)
+        metadata = device.Photometer.Threshold.getter.metadata
+        # Initiate read
+        d = self.parent.photometer.threshold
+        d.addCallback(self.readOkCallback, request, metadata)
+        return d
 
 
     @app.route('/ema/v1/photometer/threshold', methods=['PUT', 'POST'])
     def set_photometer_threshold(self, request):
-        valrange = self.parent.serialService.photometer.PARAMS['threshold']['range']
-        valtype  = self.parent.serialService.photometer.PARAMS['threshold']['type']
-        value    = self.getValidated(request, valtype, valrange)
-        cmd      = self.parent.serialService.photometer.PARAMS['threshold']['set'](value)
-        d = self.parent.serialService.protocol.execute(cmd)
-        d.addCallback(self.writeOkCallback, request)
-        return d
+        value    = self.validate(request)
+        try:
+            # Initiate write
+            self.parent.photometer.threshold = value
+        except EMARangeError as e:
+            raise UnprocessableEntry(str(e))
+        except (RuntimeError, AttributeError) as e:
+            raise InternalServerError(str(e))
+        else:
+            # get same deferred object from write
+            d = self.parent.photometer.threshold
+            d.addCallback(self.writeOkCallback, request)
+            return d
 
 
     @app.route('/ema/v1/rainsensor/threshold', methods=['GET'])
     def get_rainsensor_threshold(self, request):
-        request.setHeader('Content-Type', 'application/json')
-        result = {
-            'value': self.parent.serialService.rainsensor.PARAMS['threshold']['value'],
-            'units': self.parent.serialService.rainsensor.PARAMS['threshold']['units'],
-            'range': self.parent.serialService.rainsensor.PARAMS['threshold']['range'],
-        }
-        return json.dumps(result)
+        metadata = device.RainSensor.Threshold.getter.metadata
+        # Initiate read
+        d = self.parent.rainsensor.threshold
+        d.addCallback(self.readOkCallback, request, metadata)
+        return d
 
 
     @app.route('/ema/v1/rainsensor/threshold', methods=['PUT', 'POST'])
     def set_rainsensor_threshold(self, request):
-        valrange = self.parent.serialService.rainsensor.PARAMS['threshold']['range']
-        valtype  = self.parent.serialService.rainsensor.PARAMS['threshold']['type']
-        value    = self.getValidated(request, valtype, valrange)
-        cmd      = self.parent.serialService.rainsensor.PARAMS['threshold']['set'](value)
-        d = self.parent.serialService.protocol.execute(cmd)
-        d.addCallback(self.writeOkCallback, request)
-        return d
+        value    = self.validate(request)
+        try:
+            # Initiate write
+            self.parent.rainsensor.threshold = value
+        except EMARangeError as e:
+            raise UnprocessableEntry(str(e))
+        except (RuntimeError, AttributeError) as e:
+            raise InternalServerError(str(e))
+        else:
+            # get same deferred object from write
+            d = self.parent.rainsensor.threshold
+            d.addCallback(self.writeOkCallback, request)
+            return d
+
 
 
     @app.route('/ema/v1/thermometer/deltatemp/threshold', methods=['GET'])
     def get_deltatemp_threshold(self, request):
-        request.setHeader('Content-Type', 'application/json')
-        result = {
-            'value': self.parent.serialService.themomenter.PARAMS['delta_threshold']['value'],
-            'units': self.parent.serialService.themomenter.PARAMS['delta_threshold']['units'],
-            'range': self.parent.serialService.themomenter.PARAMS['delta_threshold']['range'],
-        }
-        return json.dumps(result)
+        metadata = device.Thermometer.Threshold.getter.metadata
+        # Initiate read
+        d = self.parent.themomenter.threshold
+        d.addCallback(self.readOkCallback, request, metadata)
+        return d
 
 
     @app.route('/ema/v1/thermometer/deltatemp/threshold', methods=['PUT', 'POST'])
     def set_deltatemp_threshold(self, request):
-        valrange = self.parent.serialService.themomenter.PARAMS['delta_threshold']['range']
-        valtype  = self.parent.serialService.themomenter.PARAMS['delta_threshold']['type']
-        value    = self.getValidated(request, valtype, valrange)
-        cmd      = self.parent.serialService.themomenter.PARAMS['delta_threshold']['set'](value)
-        d = self.parent.serialService.protocol.execute(cmd)
-        d.addCallback(self.writeOkCallback, request)
-        return d
+        value    = self.validate(request)
+        try:
+            # Initiate write
+            self.parent.thermometer.threshold = value
+        except EMARangeError as e:
+            raise UnprocessableEntry(str(e))
+        except (RuntimeError, AttributeError) as e:
+            raise InternalServerError(str(e))
+        else:
+            # get same deferred object from write
+            d = self.parent.thermometer.threshold
+            d.addCallback(self.writeOkCallback, request)
+            return d
 
 
     @app.route('/ema/v1/voltmeter/threshold', methods=['GET'])
     def get_voltmeter_threshold(self, request):
-        request.setHeader('Content-Type', 'application/json')
-        result = {
-            'value': self.parent.serialService.voltmeter.PARAMS['threshold']['value'],
-            'units': self.parent.serialService.voltmeter.PARAMS['threshold']['units'],
-            'range': self.parent.serialService.voltmeter.PARAMS['threshold']['range'],
-        }
-        return json.dumps(result)
+        metadata = device.Voltmeter.Threshold.getter.metadata
+        # Initiate read
+        d = self.parent.voltmeter.threshold
+        d.addCallback(self.readOkCallback, request, metadata)
+        return d
+
 
 
     @app.route('/ema/v1/voltmeter/threshold', methods=['PUT', 'POST'])
     def set_voltmeter_threshold(self, request):
-        valrange = self.parent.serialService.voltmeter.PARAMS['threshold']['range']
-        valtype  = self.parent.serialService.voltmeter.PARAMS['threshold']['type']
-        value    = self.getValidated(request, valtype, valrange)
-        cmd      = self.parent.serialService.voltmeter.PARAMS['threshold']['set'](value)
-        d = self.parent.serialService.protocol.execute(cmd)
-        d.addCallback(self.writeOkCallback, request)
-        return d
+        value    = self.validate(request)
+        try:
+            # Initiate write
+            self.parent.voltmeter.threshold = value
+        except EMARangeError as e:
+            raise UnprocessableEntry(str(e))
+        except (RuntimeError, AttributeError) as e:
+            raise InternalServerError(str(e))
+        else:
+            # get same deferred object from write
+            d = self.parent.voltmeter.threshold
+            d.addCallback(self.writeOkCallback, request)
+            return d
 
 
     # ESTA ES ESPECIAL
@@ -369,103 +407,143 @@ class WebService(Service):
 
     @app.route('/ema/v1/roof/relay/mode', methods=['PUT', 'POST'])
     def set_roof_relay_mode(self, request):
-        valrange = self.parent.serialService.roof_relay.PARAMS['mode']['range']
-        valtype  = self.parent.serialService.roof_relay.PARAMS['mode']['type']
-        value    = self.getValidated(request, valtype, valrange)
-        cmd      = self.parent.serialService.roof_relay.PARAMS['mode']['set'](value)
-        d = self.parent.serialService.protocol.execute(cmd)
-        d.addCallback(self.writeOkCallback, request)
-        return d
+        value    = self.validate(request)
+        try:
+            # Initiate write
+            self.parent.roof_relay.mode = value
+        except EMARangeError as e:
+            raise UnprocessableEntry(str(e))
+        except (RuntimeError, AttributeError) as e:
+            raise InternalServerError(str(e))
+        else:
+            # get same deferred object from write
+            d = self.parent.roof_relay.mode
+            d.addCallback(self.writeOkCallback, request)
+            return d
 
 
     @app.route('/ema/v1/aux/relay/mode', methods=['GET'])
     def get_aux_relay_mode(self, request):
-        request.setHeader('Content-Type', 'application/json')
-        result = {
-            'value': self.parent.serialService.aux_relay.PARAMS['mode']['value'],
-            'units': self.parent.serialService.aux_relay.PARAMS['mode']['units'],
-            'range': self.parent.serialService.aux_relay.PARAMS['mode']['range'],
-        }
-        return json.dumps(result)
+        metadata = device.AuxiliarRelay.Mode.getter.metadata
+        # Initiate read
+        d = self.parent.aux_relay.mode
+        d.addCallback(self.readOkCallback, request, metadata)
+        return d
 
     #  Esta es peligrosa
     @app.route('/ema/v1/aux/relay/mode', methods=['PUT', 'POST'])
     def set_aux_relay_mode(self, request):
-        valrange = self.parent.serialService.aux_relay.PARAMS['mode']['range']
-        valtype  = self.parent.serialService.aux_relay.PARAMS['mode']['type']
-        value    = self.getValidated(request, valtype, valrange)
-        cmd      = self.parent.serialService.aux_relay.PARAMS['mode']['set'](value)
-        d = self.parent.serialService.protocol.execute(cmd)
-        d.addCallback(self.writeOkCallback, request)
-        return d
+        value    = self.validate(request)
+        try:
+            # Initiate write
+            self.parent.aux_relay.mode = value
+        except EMARangeError as e:
+            raise UnprocessableEntry(str(e))
+        except (RuntimeError, AttributeError) as e:
+            raise InternalServerError(str(e))
+        else:
+            # get same deferred object from write
+            d = self.parent.aux_relay.mode
+            d.addCallback(self.writeOkCallback, request)
+            return d
 
 
     # Estas son muy especiales y peligrosas
     @app.route('/ema/v1/aux/relay/switch/on/time', methods=['GET'])
     def get_aux_relay_switch_on_time(self, request):
-        def okCallback(value):
-            request.setHeader('Content-Type', 'application/json')
-            result = {
-                'value': value,
-                'units': 'HH:MM:00',
-                'range': [datetime.time(0,0), datetime.time(23,59)],
-            }
-            return json.dumps(result, cls=DateTimeEncoder)
-        cmd = command.AuxRelay.GetSwitchOnTime()
-        d = self.parent.serialService.protocol.execute(cmd)
-        d.addCallback(okCallback)
+        metadata = device.AuxiliarRelay.SwitchOnTime.getter.metadata
+        # Initiate read
+        d = self.parent.aux_relay.switchOnTime
+        d.addCallback(self.readOkCallback, request, metadata)
         return d
 
 
     # Estas son muy especiales y peligrosas
     @app.route('/ema/v1/aux/relay/switch/on/time', methods=['PUT', 'POST'])
     def set_aux_relay_switch_on_time(self, request):
-        valrange = [datetime.time(0,0), datetime.time(23,59)]
-        valtype  = datetime.time
-        value    = self.getValidated(request, valtype, valrange, as_time)
-        cmd = command.AuxRelay.SetSwitchOnTime(value)
-        d = self.parent.serialService.protocol.execute(cmd)
-        d.addCallback(self.writeOkCallback, request)
-        return d
+        value    = self.validate(request)
+        try:
+            # Initiate write
+            self.parent.aux_relay.switchOnTime = value
+        except EMARangeError as e:
+            raise UnprocessableEntry(str(e))
+        except (RuntimeError, AttributeError) as e:
+            raise InternalServerError(str(e))
+        else:
+            # get same deferred object from write
+            d = self.parent.aux_relay.switchOnTime
+            d.addCallback(self.writeOkCallback, request)
+            return d
 
 
     # Estas son muy especiales y peligrosas
     @app.route('/ema/v1/aux/relay/switch/off/time', methods=['GET'])
     def get_aux_relay_switch_off_time(self, request):
-        def okCallback(value):
-            request.setHeader('Content-Type', 'application/json')
-            result = {
-                'value': value,
-                'units': 'HH:MM:00',
-                'range': [datetime.time(0,0), datetime.time(23,59)],
-            }
-            return json.dumps(result, cls=DateTimeEncoder)
-        cmd = command.AuxRelay.GetSwitchOffTime()
-        d = self.parent.serialService.protocol.execute(cmd)
-        d.addCallback(okCallback)
+        metadata = device.AuxiliarRelay.SwitchOffTime.getter.metadata
+        # Initiate read
+        d = self.parent.aux_relay.switchOffTime
+        d.addCallback(self.readOkCallback, request, metadata)
         return d
 
 
     # Estas son muy especiales y peligrosas
     @app.route('/ema/v1/aux/relay/switch/off/time', methods=['PUT', 'POST'])
     def set_aux_relay_switch_off_time(self, request):
-        valrange = [datetime.time(0,0), datetime.time(23,59)]
-        valtype  = datetime.time
-        value    = self.getValidated(request, valtype, valrange, as_time)
-        cmd = command.AuxRelay.SetSwitchOnTime(value)
-        d = self.parent.serialService.protocol.execute(cmd)
-        d.addCallback(self.writeOkCallback, request)
-        return d
+        value    = self.validate(request)
+        try:
+            # Initiate write
+            self.parent.aux_relay.switchOffTime = value
+        except EMARangeError as e:
+            raise UnprocessableEntry(str(e))
+        except (RuntimeError, AttributeError) as e:
+            raise InternalServerError(str(e))
+        else:
+            # get same deferred object from write
+            d = self.parent.aux_relay.switchOffTime
+            d.addCallback(self.writeOkCallback, request)
+            return d
+
+    @app.handle_errors
+    def handle_errors(self, request, failure):
+        '''
+        Default handler for all REST API errors
+        '''
+        if failure.type in [NotFound, BadRequest, UnsupportedMediaType, UnprocessableEntry]:
+            request.setResponseCode(failure.value.code, message=failure.value.msg)
+            request.setHeader('Content-Type', 'application/json')
+            return str(failure.value)
+        else:
+            request.setHeader('Content-Type', 'text/plain')
+            request.setResponseCode(InternalServerError.code, message=InternalServerError.msg)
+            # This is temporary, to aid debugging
+            # we shoudl return the empty string
+            import StringIO
+            output = StringIO.StringIO() 
+            failure.printTraceback(file=output)
+            return output.getvalue()
 
     # --------------
     # Helper methods
     # --------------
 
+    
     def writeOkCallback(self, value, request):
         log.info("{req.method} {req.uri} = {val} ok.", req=request, val=value)
         request.setResponseCode(200)
         request.setHeader('Content-Type', 'application/json')
         return json.dumps({'value': value}, cls=DateTimeEncoder)
+
+
+    def readOkCallback(self, value, request, metadata):
+        log.info("{req.method} {req.uri} = {val} ok.", req=request, val=value)
+        request.setResponseCode(200)
+        request.setHeader('Content-Type', 'application/json')
+        result = {
+            'value': value,
+            'units': metadata.units,
+            'range': metadata.domain,
+        }
+        return json.dumps(result, cls=DateTimeEncoder)
 
 
 # Test with
@@ -474,12 +552,11 @@ class WebService(Service):
 #    -d '{ "value": "Hello world" }'  \
 #     http://localhost:8080/ema/v1/anemometer/current/windspeed/threshold 
 
-    def getValidated(self, request, valtype, valrange, object_hook=None):
+    def validate(self, request, object_hook=None):
         '''
         Generic Validation for all POST/PUT requests.
         Individual JSON contents must be validated by each route
         '''
-        log.debug("BEGIN getValidated()")
         headers = request.getAllHeaders()
         if request.method == 'POST' and 'x-http-method-override' not in headers:
             raise BadRequest('HTTP POST method without X-HTTP-Method-Override header')
@@ -490,7 +567,6 @@ class WebService(Service):
         if headers['content-type'] != 'application/json':
             raise UnsupportedMediaType('Content-Type is not application/json')
         body = request.content.read()
-        log.debug("END getValidated()")
         try:
             obj   = json.loads(body,object_hook=object_hook)
             value = obj['value']
@@ -498,32 +574,9 @@ class WebService(Service):
             log.failure("exception {e}", e=e)
             raise UnprocessableEntry(str(e))
         else:
-            if type(value) != valtype:
-                log.debug("Value's type is {t}, expected {e}", t=type(value), e=valtype)
-                raise UnprocessableEntry("Value's type is {0}, expected {1}".format(type(value), valtype))
-            if type(value) == str and value not in valrange:
-                log.debug("Value {v} not in range {r}", v=value, r=valrange)
-                raise UnprocessableEntry("Value {0} not in range {1}".format(value, valrange))
-            if  not (valrange[0] <= value <= valrange[1]):
-                log.debug("Value {v} not in range {r}", v=value, r=valrange)
-                raise UnprocessableEntry("Value {0} not in range {1}".format(value, valrange))
-            log.debug("New value for {req.uri} is {v}. ok.", v=value, req=request)
             return value
-            
-
-    @app.handle_errors
-    def handle_errors(self, request, failure):
-        '''
-        Default handler for all REST API errors
-        '''
-        if failure.type in [NotFound, BadRequest, UnsupportedMediaType, UnprocessableEntry]:
-            request.setResponseCode(failure.value.code)
-            request.setHeader('Content-Type', 'application/json')
-            return str(failure.value)
-        else:
-            request.setResponseCode(500)
-            return ''
-
+           
+    
 
 __all__ = [
     "WebService"
