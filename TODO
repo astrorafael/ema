@@ -4,8 +4,7 @@ Prioridad alta
 * Flatten Descriptor, no more inherinatce
   => theshold = DeferredAttribute(parameter=Threshold())
   BEWRAE THIS REFACTORING ....
- * bind directly to portocol, not to service
-   DefeeredAttribute.bind(protocol) in gotProtocol()
+
  * parameter name in Auxiliar classes asn class attribute name = "threshold"
  
  * Device parameters() method now will be inkinbeCallbacks

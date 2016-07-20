@@ -80,14 +80,14 @@ def deferred(attrname):
         '''Threshold descriptor'''
         def __init__(self, parameter):
             Property.__init__(self, parameter)
-            self.attr_name      = '__' + attrname
-            self.attr_dfrd_name = '__' + attrname + '_deferred'
+            self.attr_name      = '__' + parameter.name
+            self.attr_dfrd_name = '__' + parameter.name + '_deferred'
 
         def __get__(self, obj, objtype=None):
             '''Descriptor get protocol'''
             def complete(value):
-                setattr(obj, '__' + attrname,     value)
-                setattr(obj, '__' + attrname + '_deferred', None)
+                setattr(obj, self.attr_name,     value)
+                setattr(obj, self.attr_dfrd_name, None)
                 return value
             def failed(failure):
                 setattr(obj, self.attr_name,      None)
@@ -219,18 +219,22 @@ class Anemometer(Device):
 
     class Threshold(object):
         '''Current Wind Speed Threshold'''
+        name   = 'threshold'
         getter = command.Anemometer.GetCurrentWindSpeedThreshold
         setter = command.Anemometer.SetCurrentWindSpeedThreshold
     class AverageThreshold(object):
         '''Average Wind Speed Threshold'''
+        name   = 'ave_threshold'
         getter = command.Anemometer.GetAverageWindSpeedThreshold
         setter = command.Anemometer.GetAverageWindSpeedThreshold
     class Calibration(object):
         '''Calibration Constant'''
+        name   = 'calibration'
         getter = command.Anemometer.GetCalibrationFactor
         setter = command.Anemometer.SetCalibrationFactor
     class Model(object):
         '''Anemometer Model'''
+        name   = 'model'
         getter = command.Anemometer.GetModel
         setter = command.Anemometer.SetModel
 
@@ -258,10 +262,12 @@ class Barometer(Device):
 
     class Height(object):
         '''Barometer Height'''
+        name   = 'height'
         getter = command.Barometer.GetHeight
         setter = command.Barometer.SetHeight
     class Offset(object):
         '''Barometer Offset'''
+        name   = 'offset'
         getter = command.Barometer.GetOffset
         setter = command.Barometer.SetOffset
 
@@ -281,10 +287,12 @@ class CloudSensor(Device):
 
     class Threshold(object):
         '''Cloud Sensor Threshold'''
+        name   = 'threshold'
         getter = command.CloudSensor.GetThreshold
         setter = command.CloudSensor.SetThreshold
     class Gain(object):
         '''Cloud Sensor Gain'''
+        name   = 'gain'
         getter = command.CloudSensor.GetGain
         setter = command.CloudSensor.SetGain
 
@@ -304,10 +312,12 @@ class Photometer(Device):
 
     class Threshold(object):
         '''Photometer Threshold'''
+        name   = 'threshold'
         getter = command.Photometer.GetThreshold
         setter = command.Photometer.SetThreshold
     class Offset(object):
         '''Photometer Offset'''
+        name   = 'offset'
         getter = command.Photometer.GetOffset
         setter = command.Photometer.SetOffset
 
@@ -328,6 +338,7 @@ class Pluviometer(Device):
 
     class CalibrationFactor(object):
         '''Pluviometer Calibration Constant'''
+        name   = 'calibration'
         getter = command.Pluviometer.GetCalibrationFactor
         setter = command.Pluviometer.SetCalibrationFactor
 
@@ -347,10 +358,12 @@ class Pyranometer(Device):
 
     class Gain(object):
         '''Pyranometer Gain'''
+        name   = 'gain'
         getter = command.Pyranometer.GetGain
         setter = command.Pyranometer.SetGain
     class Offset(object):
         '''Pyranometer Offset'''
+        name   = 'offset'
         getter = command.Pyranometer.GetOffset
         setter = command.Pyranometer.SetOffset
 
@@ -370,6 +383,7 @@ class RainSensor(Device):
 
     class Threshold(object):
         '''Rain Sensor Threshold'''
+        name   = 'threshold'
         getter = command.RainSensor.GetThreshold
         setter = command.RainSensor.SetThreshold
   
@@ -388,6 +402,7 @@ class Thermometer(Device):
 
     class Threshold(object):
         '''Thermometer Delta Temperature Threshold'''
+        name   = 'threshold'
         getter = command.Thermometer.GetThreshold
         setter = command.Thermometer.SetThreshold
   
@@ -407,6 +422,7 @@ class Thermometer(Device):
 class RoofRelay(Device):
 
     class Mode(object):
+        name   = 'mode'
         getter = None
         setter = command.RoofRelay.SetMode
 
@@ -448,14 +464,17 @@ class AuxiliarRelay(Device):
 
     class SwitchOnTime(object):
         '''Auxiliar Relay Switch On Time'''
+        name   = 'switchOnTime'
         getter = command.AuxRelay.GetSwitchOnTime
         setter = command.AuxRelay.SetSwitchOnTime
     class SwitchOffTime(object):
         '''Auxiliar Relay Switch Off Time'''
+        name   = 'switchOffTime'
         getter = command.AuxRelay.GetSwitchOffTime
         setter = command.AuxRelay.SetSwitchOffTime
     class Mode(object):
         '''AuxiliarRelay Mode'''
+        name   = 'mode'
         getter = command.AuxRelay.GetMode
         setter = command.AuxRelay.SetMode
 
@@ -508,6 +527,7 @@ class RealTimeClock(Device):
 
     class DateTime(object):
         '''EMA Date Time Clock Adjustment'''
+        name   = 'dateTime'
         getter = command.RealTimeClock.GetDateTime
         setter = command.RealTimeClock.SetDateTime
 
@@ -597,9 +617,11 @@ class RealTimeClock(Device):
 class Voltmeter(Device):
 
     class Threshold(object):
+        name   = 'threshold'
         getter = command.Voltmeter.GetThreshold
         setter = command.Voltmeter.SetThreshold
     class Offset(object):
+        name   = 'offset'
         getter = command.Voltmeter.GetOffset
         setter = command.Voltmeter.SetOffset
 
@@ -638,9 +660,11 @@ class Watchdog(Device):
 
     class Period(object):
         '''Watchdog Period'''
+        name   = 'period'
         getter = command.Watchdog.GetPeriod
         setter = command.Watchdog.SetPeriod
     class Presence(object):
+        name   = 'presence'
         '''Watchdog presence message'''
         getter = command.Watchdog.GetPresence
         setter = None
