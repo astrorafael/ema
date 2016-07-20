@@ -466,7 +466,7 @@ class AuxiliarRelay(Device):
     # Deferred attribute handling via Descriptors
     switchOnTime  = DeferredAttribute(parameter=SwitchOnTime())
     switchOffTime = DeferredAttribute(parameter=SwitchOffTime())
-    mode          = DeferredAttribute(parameter=SwitchOffTime())
+    mode          = DeferredAttribute(parameter=Mode())
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)

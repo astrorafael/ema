@@ -1,27 +1,23 @@
 Prioridad alta
 ==============
+bug
+2016-07-20T18:55:09+0000 [serial#info] Completed -> Get Aux Relay Switch-Off Time Command (retries=0/2)
+2016-07-20T18:55:09+0000 [ema#warn] mode values do not match [EMA = 09:00:00] [file = Manual]
 
-* Flatten Descriptor, no more inherinatce
-  => theshold = DeferredAttribute(parameter=Threshold())
-  BEWRAE THIS REFACTORING ....
+*) encoding='Latin-1'
 
- * parameter name in Auxiliar classes asn class attribute name = "threshold"
- 
- * Device parameters() method now will be inkinbeCallbacks
+*) Un testcase delmodulo devices a fondo, 
+ provocoando errores de tiemout, de rango, de mal retirno de la EMA, lectiras en w/o properties, etc.
+ de fata de binding prpotocol etc.
 
 *) Eventos JSON (con retained)
    - Ya estoy en linea de nuevo (y con uptime)
    - error de registro
 
-*) API REST de telegestion por HTTP
-mirar diseño de API en http://dev.enchant.com/api/v1
-
 
 *) Reload paraetros, repsar los que si y los que no
 Tracking cache de los dump para no volcar todo
-
-*) Custom JSON decoder to objec_hook for datetime.time in Relay response
-*) Refactorización e objetos de dominip
+Las ventanas de activodad no se pueden recargar, los efectos srían impredecibles
 
 BUG NO SE POTA EL MINMAX 
 APARENTEMENTE TIENE QUE VER CON LA TRANSMISION INALAMBRICA
