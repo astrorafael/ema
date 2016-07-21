@@ -51,7 +51,7 @@ from .serial    import EMATimeoutError
 # Module constants
 # ----------------
 
-
+DEBUG_HTTP = 1
 
 # ----------------
 # Global functions
@@ -128,7 +128,7 @@ class HTTPNotImplementedError(HTTPException):
     code = 501
     msg = 'The server currently dos not recognize this method'
 
-class GatewayTimeout(HTTPException):
+class GatewayTimeoutError(HTTPException):
     '''The server did not receive a timely response from EMA'''
     code = 504
     msg = 'Gateway Timeout'
@@ -548,7 +548,8 @@ class WebService(Service):
         '''
         Default handler for all REST API errors
         '''
-        if failure.type in [NotFound, BadRequest, UnsupportedMediaType, UnprocessableEntry, InternalServerError2]:
+        if failure.type in [NotFound, BadRequest, UnsupportedMediaType, UnprocessableEntry, 
+                            HTTPNotImplementedError, GatewayTimeoutError]:
             request.setResponseCode(failure.value.code, message=failure.value.msg)
             request.setHeader('Content-Type', 'application/json')
             return str(failure.value)
@@ -557,18 +558,21 @@ class WebService(Service):
             request.setResponseCode(InternalServerError.code, message=InternalServerError.msg)
             # This is temporary, to aid debugging
             # we shoudl return the empty string
-            import StringIO
-            output = StringIO.StringIO() 
-            failure.printTraceback(file=output)
-            return output.getvalue()
+            if DEBUG_HTTP:
+                import StringIO
+                output = StringIO.StringIO() 
+                failure.printTraceback(file=output)
+                return output.getvalue()
+            else:
+                return ''
 
     # --------------
     # Helper methods
     # --------------
 
     def errorCallback(self, failure, request, *args):
-        log.info("{req.method} {req.uri} = {val} error.", req=request)
-        raise InternalServerError2(str(failure.value))
+        log.info("{req.method} {req.uri} error.", req=request)
+        raise GatewayTimeoutError(str(failure.value))
        
 
     def writeOkCallback(self, value, request):
