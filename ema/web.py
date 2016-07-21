@@ -8,7 +8,7 @@
 # System wide imports
 # -------------------
 
-from __future__ import division
+from __future__ import division, absolute_import
 
 import json
 import hashlib
@@ -40,8 +40,8 @@ from klein import Klein
 # local imports
 # -------------
 
-import device
-import scheduler
+import ema.device    as device
+import ema.scheduler as scheduler
 
 from .service.relopausable import Service
 from .logger    import setLogLevel

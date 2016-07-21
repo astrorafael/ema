@@ -8,7 +8,7 @@
 # System wide imports
 # -------------------
 
-from __future__ import division
+from __future__ import division, absolute_import
 
 import math
 import datetime
@@ -26,7 +26,7 @@ from twisted.logger              import Logger, LogLevel
 
 from . import PY2
 
-import metadata as mdata
+import ema.metadata as mdata
 
 # ----------------
 # Module constants
@@ -998,7 +998,6 @@ class AuxiliarRelay(object):
         metadata     = mdata.AuxiliarRelay.Mode
         cmdformat    = '(s)'
         ack_patterns = [ '^\(S(\d{3})\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
-        ack_patterns = [ '^\(S(\d{3})\)', '^\(Son\d{4}\)', '^\(Sxf\d{4}\)' ]
         ack_index    = 0
         mapping      = { 0 : 'Auto', 4: 'Closed', 5 : 'Open', 8 : 'Timer/Off', 9 : 'Timer/On' }
         retries      = 2

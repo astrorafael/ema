@@ -9,6 +9,8 @@
 # System wide imports
 # -------------------
 
+from __future__ import division, absolute_import
+
 # ---------------
 # Twisted imports
 # ---------------

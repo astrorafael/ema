@@ -9,7 +9,7 @@
 # System wide imports
 # -------------------
 
-from __future__ import division
+from __future__ import division, absolute_import
 
 import os
 import sys
@@ -37,11 +37,11 @@ options = cmdline()
 
 if os.name == "nt":
 	if not options.interactive:
-		import main_winserv
+		import ema.main_winserv
 	else:
-		import main_win
+		import ema.main_win
 elif os.name == "posix":
-	import main_posix
+	import ema.main_posix
 else:
 	print("ERROR: unsupported OS")
 	sys.exit(1)

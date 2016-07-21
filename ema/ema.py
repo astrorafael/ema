@@ -9,7 +9,7 @@
 # System wide imports
 # -------------------
 
-from __future__ import division
+from __future__ import division, absolute_import
 
 import sys
 import datetime
@@ -43,8 +43,8 @@ from .probe          import ProbeService
 from .mqttpub        import MQTTService
 from .web            import WebService
 
-import command
-import device
+import ema.command as command
+import ema.device  as device
 
 # ----------------
 # Module constants

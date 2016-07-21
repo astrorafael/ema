@@ -2,7 +2,7 @@
 # System wide imports
 # -------------------
 
-from __future__ import division
+from __future__ import division, absolute_import
 
 import os
 import errno
@@ -27,11 +27,11 @@ from twisted.internet.defer       import inlineCallbacks, returnValue
 # local imports
 # -------------
 
-import metadata
-import command
+import ema.metadata as metadata
+import ema.command  as command
 
-from serial  import EMATimeoutError
-from utils   import setSystemTime
+from .serial  import EMATimeoutError
+from .utils   import setSystemTime
 
 # ----------
 # Exceptions

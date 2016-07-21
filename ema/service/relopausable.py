@@ -12,7 +12,7 @@
 # System wide imports
 # -------------------
 
-from __future__ import division
+from __future__ import division, absolute_import
 
 import os
 import signal
@@ -32,8 +32,8 @@ from twisted.application.service import IService, Process
 # local imports
 # -------------
 
-import reloadable
-import pausable
+import ema.service.reloadable as reloadable
+import ema.service.pausable   as pausable
 
 # ----------------
 # Global functions

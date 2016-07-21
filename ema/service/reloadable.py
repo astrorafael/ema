@@ -12,7 +12,7 @@
 # System wide imports
 # -------------------
 
-from __future__ import division
+from __future__ import division, absolute_import
 
 import os
 import signal
@@ -24,8 +24,8 @@ import signal
 from zope.interface import implementer, Interface
 
 from twisted.persisted import sob
-from twisted.python import components
-from twisted.internet import defer, task
+from twisted.python    import components
+from twisted.internet  import defer, task
 from twisted.application.service import IService, Service as BaseService, MultiService as BaseMultiService, Process
 
 #--------------

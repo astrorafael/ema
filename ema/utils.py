@@ -8,7 +8,8 @@
 # System wide imports
 # -------------------
 
-from __future__ import division
+from __future__ import division, absolute_import
+
 import sys
 import datetime
 

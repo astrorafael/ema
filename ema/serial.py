@@ -8,7 +8,7 @@
 # System wide imports
 # -------------------
 
-from __future__ import division
+from __future__ import division, absolute_import
 
 import re
 import datetime
@@ -35,11 +35,11 @@ from twisted.internet.endpoints   import clientFromString
 # local imports
 # -------------
 
-from service.interfaces import IReloadable, IPausable
-from logger   import setLogLevel
-from utils    import chop
+from .service.interfaces import IReloadable, IPausable
+from .logger   import setLogLevel
+from .utils    import chop
 
-import command
+import ema.command as command
 
 # ----------------
 # Module constants
