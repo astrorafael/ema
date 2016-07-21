@@ -30,7 +30,7 @@ from twisted.internet.defer import inlineCallbacks
 
 import ema.command
 
-from ema.protocol import EMAProtocol, EMAProtocolFactory
+from ema.serial import EMAProtocol, EMAProtocolFactory
 from ema.logger   import setLogLevel
 
 
