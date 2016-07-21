@@ -19,6 +19,8 @@ import time
 # Twisted imports
 # ---------------
 
+from zope.interface import implementer
+
 from twisted.logger               import Logger, LogLevel
 from twisted.internet             import reactor, task
 from twisted.internet.defer       import inlineCallbacks, returnValue
@@ -27,30 +29,22 @@ from twisted.internet.defer       import DeferredList
 from twisted.application.service  import Service
 from twisted.internet.endpoints   import serverFromString
 from twisted.web.server           import Site
-from twisted.web.resource         import Resource
+from twisted.web.resource         import Resource, IResource
+from twisted.cred.portal          import IRealm, Portal
+from twisted.cred.checkers        import FilePasswordDB
+from twisted.web.guard            import HTTPAuthSessionWrapper, BasicCredentialFactory
+
 from klein import Klein
-
-
-
-from zope.interface import implementer
-from twisted.cred.portal import IRealm, Portal
-from twisted.cred.checkers import FilePasswordDB
-from twisted.web.resource  import IResource
-from twisted.web.guard     import HTTPAuthSessionWrapper, BasicCredentialFactory
-
-
 
 #--------------
 # local imports
 # -------------
 
-from .logger import setLogLevel
-from .service.relopausable import Service
-
 import device
 
-from command import EMARangeError, EMAReturnError
-from serial  import EMATimeoutError
+from .service.relopausable import Service
+from .logger  import setLogLevel
+from .serial  import EMATimeoutError
 
 # ----------------
 # Module constants
@@ -230,7 +224,7 @@ class WebService(Service):
         try:
             # Initiate write
             self.parent.anemometer.threshold = value
-        except EMARangeError as e:
+        except (ValueError, TypeError) as e:
             raise UnprocessableEntry(str(e))
         except (RuntimeError, AttributeError) as e:
             raise InternalServerError(str(e))
@@ -256,7 +250,7 @@ class WebService(Service):
         try:
             # Initiate write
             self.parent.anemometer.ave_threshold = value
-        except EMARangeError as e:
+        except (ValueError, TypeError) as e:
             raise UnprocessableEntry(str(e))
         except (RuntimeError, AttributeError) as e:
             raise InternalServerError(str(e))
@@ -282,7 +276,7 @@ class WebService(Service):
         try:
             # Initiate write
             self.parent.cloudsensor.threshold = value
-        except EMARangeError as e:
+        except (ValueError, TypeError) as e:
             raise UnprocessableEntry(str(e))
         except (RuntimeError, AttributeError) as e:
             raise InternalServerError(str(e))
@@ -308,7 +302,7 @@ class WebService(Service):
         try:
             # Initiate write
             self.parent.photometer.threshold = value
-        except EMARangeError as e:
+        except (ValueError, TypeError) as e:
             raise UnprocessableEntry(str(e))
         except (RuntimeError, AttributeError) as e:
             raise InternalServerError(str(e))
@@ -334,7 +328,7 @@ class WebService(Service):
         try:
             # Initiate write
             self.parent.rainsensor.threshold = value
-        except EMARangeError as e:
+        except (ValueError, TypeError) as e:
             raise UnprocessableEntry(str(e))
         except (RuntimeError, AttributeError) as e:
             raise InternalServerError(str(e))
@@ -361,7 +355,7 @@ class WebService(Service):
         try:
             # Initiate write
             self.parent.thermometer.threshold = value
-        except EMARangeError as e:
+        except (ValueError, TypeError) as e:
             raise UnprocessableEntry(str(e))
         except (RuntimeError, AttributeError) as e:
             raise InternalServerError(str(e))
@@ -388,7 +382,7 @@ class WebService(Service):
         try:
             # Initiate write
             self.parent.voltmeter.threshold = value
-        except EMARangeError as e:
+        except (ValueError, TypeError) as e:
             raise UnprocessableEntry(str(e))
         except (RuntimeError, AttributeError) as e:
             raise InternalServerError(str(e))
@@ -411,7 +405,7 @@ class WebService(Service):
         try:
             # Initiate write
             self.parent.roof_relay.mode = value
-        except EMARangeError as e:
+        except (ValueError, TypeError) as e:
             raise UnprocessableEntry(str(e))
         except (RuntimeError, AttributeError) as e:
             raise InternalServerError(str(e))
@@ -437,7 +431,7 @@ class WebService(Service):
         try:
             # Initiate write
             self.parent.aux_relay.mode = value
-        except EMARangeError as e:
+        except (ValueError, TypeError) as e:
             raise UnprocessableEntry(str(e))
         except (RuntimeError, AttributeError) as e:
             raise InternalServerError(str(e))
@@ -465,7 +459,7 @@ class WebService(Service):
         try:
             # Initiate write
             self.parent.aux_relay.switchOnTime = value
-        except EMARangeError as e:
+        except (ValueError, TypeError) as e:
             raise UnprocessableEntry(str(e))
         except (RuntimeError, AttributeError) as e:
             raise InternalServerError(str(e))
@@ -493,7 +487,7 @@ class WebService(Service):
         try:
             # Initiate write
             self.parent.aux_relay.switchOffTime = value
-        except EMARangeError as e:
+        except (ValueError, TypeError) as e:
             raise UnprocessableEntry(str(e))
         except (RuntimeError, AttributeError) as e:
             raise InternalServerError(str(e))

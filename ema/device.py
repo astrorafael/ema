@@ -31,8 +31,47 @@ import metadata
 import command
 
 from serial  import EMATimeoutError
-from command import EMARangeError
 from utils   import setSystemTime
+
+# ----------
+# Exceptions
+# ----------
+
+class EMARangeError(ValueError):
+    '''EMA Attribute value out of range'''
+    def __str__(self):
+        s = self.__doc__
+        if self.args:
+            s = '{0}: {1} whose value <{2}> is not in {3} range'.format(s, self.args[0], self.args[1], self.args[2])
+        s = '{0}.'.format(s)
+        return s
+
+class EMATypeError(TypeError):
+    '''EMA Attribute value type mismatch'''
+    def __str__(self):
+        s = self.__doc__
+        if self.args:
+            s = '{0}: in {1} expected {2}, got {3}'.format(s, self.args[0], self.args[1], self.args[2])
+        s = '{0}.'.format(s)
+        return s
+
+class EMAAttributeError(AttributeError):
+    '''EMA Attribute Error'''
+    def __str__(self):
+        s = self.__doc__
+        if self.args:
+            s = '{0}: {1} is {2}'.format(s, self.args[0], self.args[1], self.args[2])
+        s = '{0}.'.format(s)
+        return s
+
+class EMARuntimeError(RuntimeError):
+    '''EMA Runtime Error'''
+    def __str__(self):
+        s = self.__doc__
+        if self.args:
+            s = '{0}: {1}, {2}'.format(s, self.args[0], self.args[1], self.args[2])
+        s = '{0}.'.format(s)
+        return s
 
 
 # -----------------------
@@ -62,7 +101,9 @@ class DeferredAttribute(object):
     def validate(self, value):
         '''Validates value against parameter's setter metadata type and range'''
         if self.parameter.setter is None:
-            raise AttributeError("r/o attribute")
+            raise EMAAttributeError(self.parameter.name, "r/o attribute")
+        if type(value) != self.parameter.setter.metadata.kind:
+            raise EMATypeError(value, self.parameter.setter.metadata.kind, type(value))
         if self.parameter.setter.metadata.kind == str:
             if value not in self.parameter.setter.metadata.domain: 
                 raise EMARangeError(self.attr_name[2:], value, self.parameter.setter.metadata.domain)
@@ -97,11 +138,11 @@ class DeferredAttribute(object):
         # to capture the deferred generated in the __set__ operation
         # even for w/o attributies
         if self.parameter.getter is None:
-            raise AttributeError("w/o attribute")
+            raise EMAAttributeError(self.parameter.name, "w/o attribute")
         if attr_val is not None and not self.parameter.getter.metadata.volatile:
             return defer.succeed(attr_val)
         if self.protocol is None:
-            raise RuntimeError("attribute not bound to a protocol yet")
+            raise EMARuntimeError(self.parameter.name, "attribute not bound to a protocol yet")
         cmd = self.parameter.getter()
         d = self.protocol.execute(cmd)
         setattr(obj, self.attr_dfrd_name, d)
@@ -120,10 +161,10 @@ class DeferredAttribute(object):
             return failure
         self.validate(value)
         if self.protocol is None:
-            raise RuntimeError("attribute not bound to a protocol yet")
+            raise EMARuntimeError(self.parameter.name, "attribute not bound to a protocol yet")
         attr_def_val =  getattr(obj, self.attr_dfrd_name, None)
         if attr_def_val is not None:
-            raise RuntimeError("Operation in progress")
+            raise EMARuntimeError(self.parameter.name, "operation in progress")
         setattr(obj, self.attr_name, None)
         cmd = self.parameter.setter(value)
         d = self.protocol.execute(cmd)

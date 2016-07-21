@@ -288,7 +288,7 @@ class AuxiliarRelay(object):
         '''Auxiliar Relay Switch-On Time'''
         kind         = datetime.time
         domain       = [datetime.time(0,0), datetime.time(23,59)]
-        units        = 'HH:MM:00'
+        units        = 'HH:MM:SS'
         volatile     = False  # may be cached in memory for efficiency
         stable       = False  # not subject to recalibration, may be changed at will  
        

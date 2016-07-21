@@ -34,9 +34,8 @@ from .logger import setLogLevel
 
 from .service.relopausable import MultiService
 
-#from ..mqtt.service import MQTTService, NAME as MQTT_NAME
-
-from .command        import PERIOD as EMA_PERIOD, EMARangeError
+from .device         import EMARangeError
+from .command        import PERIOD as EMA_PERIOD
 from .serial         import SerialService, EMATimeoutError
 from .scripts        import ScriptsService, AlreadyExecutedScript, AlreadyBeingExecutedScript, ScriptNotFound
 from .scheduler      import SchedulerService

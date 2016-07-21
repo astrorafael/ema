@@ -1,39 +1,38 @@
 Prioridad alta
 ==============
-bug
-2016-07-20T18:55:09+0000 [serial#info] Completed -> Get Aux Relay Switch-Off Time Command (retries=0/2)
-2016-07-20T18:55:09+0000 [ema#warn] mode values do not match [EMA = 09:00:00] [file = Manual]
-
-*) encoding='Latin-1'
-
+* RoofRelay.SetMode, le falta ver que pasa con el modo Auto
+* absolute_import
+* completar doc de analisiy
+* API for get intervals /ema/v2/scheduler/intervals
+* documento de diseño
+* excepciones y booleans ¿ hace falta convertir de excp a booleans o propagamos all the way up ?
+* only reloadable, no relopasuable
+  - servicio de windows, comentar lo que no proceda
 *) Un testcase delmodulo devices a fondo, 
  provocoando errores de tiemout, de rango, de mal retirno de la EMA, lectiras en w/o properties, etc.
  de fata de binding prpotocol etc.
-
 *) Eventos JSON (con retained)
    - Ya estoy en linea de nuevo (y con uptime)
    - error de registro
-
-
-*) Reload paraetros, repsar los que si y los que no
+*) Reload parametros, repsar los que si y los que no
 Tracking cache de los dump para no volcar todo
 Las ventanas de activodad no se pueden recargar, los efectos srían impredecibles
 
-BUG NO SE POTA EL MINMAX 
+* tira tocha de ventanas de 15 minutos en el config
+* Test de los 2 bulk dumps BUG NO SE POTA EL MINMAX 
 APARENTEMENTE TIENE QUE VER CON LA TRANSMISION INALAMBRICA
 O CON UN DUIPLICADO DEL EMAD ROBANDO CARACTERES
-
-
+* pruebas de encendido y apagado realses con Cristobal
 
 Prioridad baja
 ===============
 *) Servicio MQTTClient para stars4all
-
-
-*) Repasar unidades, escala y rango  de los comandos
-
-Uptime en Windows:
-http://code.activestate.com/recipes/496815-getting-uptime-in-windows-2000ntxp/
-
-MAC en Widnows
-http://www.codeguru.com/cpp/i-n/network/networkinformation/article.php/c5451/Three-ways-to-get-your-MAC-address.htm
+*) compatibilidad con Python 3
+*) Compatibilidad con Windows:
+   - Timezone info en windows
+     http://stackoverflow.com/questions/1681143/how-to-get-tz-info-object-corresponding-to-current-timezone
+   - Uptime en Windows:
+   http://code.activestate.com/recipes/496815-getting-uptime-in-windows-2000ntxp/
+   - MAC address en Widnows
+    http://www.codeguru.com/cpp/i-n/network/networkinformation/article.php/c5451/Three-ways-to-get-your-MAC-address.htm
+   - shutdown en windows

@@ -244,25 +244,6 @@ def decodeStatus(line):
 log  = Logger(namespace='serial')
 
 
-# ----------
-# Exceptions
-# ----------
-
-class EMARangeError(ValueError):
-    '''Command value out of range'''
-    def __str__(self):
-        s = self.__doc__
-        if self.args:
-            s = '{0}: <{1}> whose value <{2}> is not in {3}'.format(s, self.args[0], self.args[1], self.args[2])
-        s = '{0}.'.format(s)
-        return s
-
-
-class EMAReturnError(EMARangeError):
-    '''Command return value out of range'''
-    pass
-
-
 # EMA Commands consists of request messages like (<req>) 
 # and one or more response messages like (<resp1>)(<resp2>)(<resp3>)
 # The usual kind of command is one that sets or gets a configurable
@@ -342,12 +323,8 @@ class Command(object):
         '''
         if self.metadata.kind == str:
             result = self.mapping[int(self.matchobj[self.selindex].group(1))]
-            if result not in self.metadata.domain: 
-                raise EMAReturnError(self.__class__.__name__, result, self.metadata.domain)
         else:
             result = self.metadata.kind(int(self.matchobj[self.selindex].group(1)) / self.scale)
-            if not (self.metadata.domain[0] <= result <= self.metadata.domain[1]): 
-                raise EMAReturnError(self.__class__.__name__, result, self.metadata.domain)
         return result
 
    
@@ -378,7 +355,6 @@ class SetCommand(Command):
         # no se si hace falta
         self.value = value if (self.metadata.kind == datetime.datetime) or (self.metadata.kind == datetime.time) else self.metadata.kind(value)
 
-
     def encode(self):
         self.encoded = self.cmdformat.format(int(self.value * self.scale))
 
@@ -402,10 +378,7 @@ class RealTimeClock(object):
         timeout         = {'min': 1, 'max': 128, 'factor': 2}
 
         def getResult(self):
-            result = datetime.datetime.strptime(self.response[0], self.ema_time_format)
-            if not (self.metadata.domain[0] <= result <= self.metadata.domain[1]): 
-                    raise EMAReturnError(self.__class__.__name__, result, self.metadata.domain)
-            return result
+            return datetime.datetime.strptime(self.response[0], self.ema_time_format)
 
     # ------------------------------------------------------------------------------
 
@@ -427,9 +400,6 @@ class RealTimeClock(object):
                 self.value = datetime.datetime.utcnow()+datetime.timedelta(seconds=0.5)
             else:
                 self.value = value
-            if not (self.metadata.domain[0] <= self.value <= self.metadata.domain[1]): 
-                raise EMARangeError(self.__class__.__name__, self.value, self.metadata.domain)
-
 
         def encode(self):
             self.encoded = self.value.strftime(self.cmdformat)
