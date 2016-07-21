@@ -67,7 +67,7 @@ class DateTimeEncoder(json.JSONEncoder):
     '''Helper class to encode datetime objets in JSON'''
     def default(self, o):
         if  isinstance(o, datetime.datetime):
-            return o.strftime("%Y-%m-%dT%H:%M:%S")
+            return o.strftime("%Y-%m-%dT%H:%M:%SZ")
         # Let the base class default method raise the TypeError
         return json.JSONEncoder.default(self, o)
 
