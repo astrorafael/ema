@@ -297,6 +297,9 @@ class IntervalList(object):
          aList.append(Interval([self.windows[-1].t1, self.windows[0].t0 ]))
       return IntervalList(aList)
 
+   def asList(self):
+      return self.windows
+
    # Own methods
    def sorted(self):
       '''Sorts the intervals by start time.
@@ -477,6 +480,7 @@ class SchedulerService(Service):
 
 
 __all__ = [
+    "Interval"
     "ScheduleService",
     "ReversedInterval",
     "OverlappedIntervals",

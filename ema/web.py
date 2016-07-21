@@ -41,10 +41,11 @@ from klein import Klein
 # -------------
 
 import device
+import scheduler
 
 from .service.relopausable import Service
-from .logger  import setLogLevel
-from .serial  import EMATimeoutError
+from .logger    import setLogLevel
+from .serial    import EMATimeoutError
 
 # ----------------
 # Module constants
@@ -153,6 +154,8 @@ class DateTimeEncoder(json.JSONEncoder):
             return o.strftime("%Y-%m-%dT%H:%M:%S")
         elif  isinstance(o, datetime.time):
             return o.strftime("%H:%M:%S")
+        elif  isinstance(o, scheduler.Interval):
+            return str(o)
         # Let the base class default method raise the TypeError
         return json.JSONEncoder.default(self, o)
 
@@ -208,6 +211,15 @@ class WebService(Service):
     #---------------------
     # Exposed EMA REST API
     # --------------------
+
+    @app.route('/ema/v1/scheduler/intervals', methods=['GET'])
+    def get_scheduler_intervals(self, request):
+        value = self.parent.schedulerService.windows.asList()
+        log.info("{req.method} {req.uri} ok.", req=request)
+        request.setResponseCode(200)
+        request.setHeader('Content-Type', 'application/json')
+        return json.dumps({'value': value}, cls=DateTimeEncoder)
+
 
     @app.route('/ema/v1/anemometer/current/windspeed/threshold', methods=['GET'])
     def get_current_windspeed_threshold(self, request):

@@ -3,7 +3,6 @@ Prioridad alta
 * RoofRelay.SetMode, le falta ver que pasa con el modo Auto
 * absolute_import
 * completar doc de analisiy
-* API for get intervals /ema/v2/scheduler/intervals
 * documento de diseño
 * excepciones y booleans ¿ hace falta convertir de excp a booleans o propagamos all the way up ?
 * only reloadable, no relopasuable
