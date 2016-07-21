@@ -118,11 +118,20 @@ class UnprocessableEntry(HTTPException):
     code = 422
     msg = 'Unprocessable Entry'
     
-
 class InternalServerError(HTTPException):
     '''An internal server error occured'''
-    code = 501
+    code = 500
     msg = 'Internal Server Error'
+
+class HTTPNotImplementedError(HTTPException):
+    '''Not Implemented'''
+    code = 501
+    msg = 'The server currently dos not recognize this method'
+
+class GatewayTimeout(HTTPException):
+    '''The server did not receive a timely response from EMA'''
+    code = 504
+    msg = 'Gateway Timeout'
     
 
 # -----------------------------------------------------------------------------
@@ -226,7 +235,8 @@ class WebService(Service):
         metadata = device.Anemometer.Threshold.getter.metadata
         # Initiate read
         d = self.parent.anemometer.threshold
-        d.addCallback(self.readOkCallback, request, metadata)
+        d.addCallbacks(self.readOkCallback, self.errorCallback, 
+                callbackArgs=(request,metadata), errbackArgs=(request,))
         return d
 
 
@@ -243,7 +253,8 @@ class WebService(Service):
         else:
             # get same deferred object from write
             d = self.parent.anemometer.threshold
-            d.addCallback(self.writeOkCallback, request)
+            d.addCallbacks(self.writeOkCallback, self.errorCallback, 
+                callbackArgs=(request,), errbackArgs=(request,))
             return d
 
 
@@ -252,7 +263,8 @@ class WebService(Service):
         metadata = device.Anemometer.AverageThreshold.getter.metadata
         # Initiate read
         d = self.parent.anemometer.ave_threshold
-        d.addCallback(self.readOkCallback, request, metadata)
+        d.addCallbacks(self.readOkCallback, self.errorCallback, 
+                callbackArgs=(request,metadata), errbackArgs=(request,))
         return d
 
 
@@ -269,7 +281,8 @@ class WebService(Service):
         else:
             # get same deferred object from write
             d = self.parent.anemometer.ave_threshold
-            d.addCallback(self.writeOkCallback, request)
+            d.addCallbacks(self.writeOkCallback, self.errorCallback, 
+                callbackArgs=(request,), errbackArgs=(request,))
             return d
 
 
@@ -278,7 +291,8 @@ class WebService(Service):
         metadata = device.CloudSensor.Threshold.getter.metadata
         # Initiate read
         d = self.parent.cloudsensor.threshold
-        d.addCallback(self.readOkCallback, request, metadata)
+        d.addCallbacks(self.readOkCallback, self.errorCallback, 
+                callbackArgs=(request,metadata), errbackArgs=(request,))
         return d
 
 
@@ -295,7 +309,8 @@ class WebService(Service):
         else:
             # get same deferred object from write
             d = self.parent.cloudsensor.threshold
-            d.addCallback(self.writeOkCallback, request)
+            d.addCallbacks(self.writeOkCallback, self.errorCallback, 
+                callbackArgs=(request,), errbackArgs=(request,))
             return d
 
 
@@ -304,7 +319,8 @@ class WebService(Service):
         metadata = device.Photometer.Threshold.getter.metadata
         # Initiate read
         d = self.parent.photometer.threshold
-        d.addCallback(self.readOkCallback, request, metadata)
+        d.addCallbacks(self.readOkCallback, self.errorCallback, 
+                callbackArgs=(request,metadata), errbackArgs=(request,))
         return d
 
 
@@ -321,7 +337,8 @@ class WebService(Service):
         else:
             # get same deferred object from write
             d = self.parent.photometer.threshold
-            d.addCallback(self.writeOkCallback, request)
+            d.addCallbacks(self.writeOkCallback, self.errorCallback, 
+                callbackArgs=(request,), errbackArgs=(request,))
             return d
 
 
@@ -330,7 +347,8 @@ class WebService(Service):
         metadata = device.RainSensor.Threshold.getter.metadata
         # Initiate read
         d = self.parent.rainsensor.threshold
-        d.addCallback(self.readOkCallback, request, metadata)
+        d.addCallbacks(self.readOkCallback, self.errorCallback, 
+                callbackArgs=(request,metadata), errbackArgs=(request,))
         return d
 
 
@@ -347,7 +365,8 @@ class WebService(Service):
         else:
             # get same deferred object from write
             d = self.parent.rainsensor.threshold
-            d.addCallback(self.writeOkCallback, request)
+            d.addCallbacks(self.writeOkCallback, self.errorCallback, 
+                callbackArgs=(request,), errbackArgs=(request,))
             return d
 
 
@@ -357,7 +376,8 @@ class WebService(Service):
         metadata = device.Thermometer.Threshold.getter.metadata
         # Initiate read
         d = self.parent.themomenter.threshold
-        d.addCallback(self.readOkCallback, request, metadata)
+        d.addCallbacks(self.readOkCallback, self.errorCallback, 
+                callbackArgs=(request,metadata), errbackArgs=(request,))
         return d
 
 
@@ -374,7 +394,8 @@ class WebService(Service):
         else:
             # get same deferred object from write
             d = self.parent.thermometer.threshold
-            d.addCallback(self.writeOkCallback, request)
+            d.addCallbacks(self.writeOkCallback, self.errorCallback, 
+                callbackArgs=(request,), errbackArgs=(request,))
             return d
 
 
@@ -383,7 +404,8 @@ class WebService(Service):
         metadata = device.Voltmeter.Threshold.getter.metadata
         # Initiate read
         d = self.parent.voltmeter.threshold
-        d.addCallback(self.readOkCallback, request, metadata)
+        d.addCallbacks(self.readOkCallback, self.errorCallback, 
+                callbackArgs=(request,metadata), errbackArgs=(request,))
         return d
 
 
@@ -401,19 +423,21 @@ class WebService(Service):
         else:
             # get same deferred object from write
             d = self.parent.voltmeter.threshold
-            d.addCallback(self.writeOkCallback, request)
+            d.addCallbacks(self.writeOkCallback, self.errorCallback, 
+                callbackArgs=(request,), errbackArgs=(request,))
             return d
 
 
     # ESTA ES ESPECIAL
     @app.route('/ema/v1/roof/relay/mode', methods=['GET'])
     def get_roof_relay_mode(self, request):
-        raise NotFound('Not implemented')
+        raise HTTPNotImplemented('No Roof Relay Get command available from EMA protocol')
 
 
     @app.route('/ema/v1/roof/relay/mode', methods=['PUT', 'POST'])
     def set_roof_relay_mode(self, request):
-        value    = self.validate(request)
+        # json returns value as unicode in python 2.7, not str
+        value    = str(self.validate(request)) 
         try:
             # Initiate write
             self.parent.roof_relay.mode = value
@@ -424,7 +448,8 @@ class WebService(Service):
         else:
             # get same deferred object from write
             d = self.parent.roof_relay.mode
-            d.addCallback(self.writeOkCallback, request)
+            d.addCallbacks(self.writeOkCallback, self.errorCallback, 
+                callbackArgs=(request,), errbackArgs=(request,))
             return d
 
 
@@ -433,13 +458,15 @@ class WebService(Service):
         metadata = device.AuxiliarRelay.Mode.getter.metadata
         # Initiate read
         d = self.parent.aux_relay.mode
-        d.addCallback(self.readOkCallback, request, metadata)
+        d.addCallbacks(self.readOkCallback, self.errorCallback, 
+                callbackArgs=(request,metadata), errbackArgs=(request,))
         return d
 
     #  Esta es peligrosa
     @app.route('/ema/v1/aux/relay/mode', methods=['PUT', 'POST'])
     def set_aux_relay_mode(self, request):
-        value    = self.validate(request)
+        # json returns value as unicode in python 2.7, not str
+        value    = str(self.validate(request)) 
         try:
             # Initiate write
             self.parent.aux_relay.mode = value
@@ -450,7 +477,8 @@ class WebService(Service):
         else:
             # get same deferred object from write
             d = self.parent.aux_relay.mode
-            d.addCallback(self.writeOkCallback, request)
+            d.addCallbacks(self.writeOkCallback, self.errorCallback, 
+                callbackArgs=(request,), errbackArgs=(request,))
             return d
 
 
@@ -460,14 +488,16 @@ class WebService(Service):
         metadata = device.AuxiliarRelay.SwitchOnTime.getter.metadata
         # Initiate read
         d = self.parent.aux_relay.switchOnTime
-        d.addCallback(self.readOkCallback, request, metadata)
+        d.addCallbacks(self.readOkCallback, self.errorCallback, 
+                callbackArgs=(request,metadata), errbackArgs=(request,))
         return d
 
 
     # Estas son muy especiales y peligrosas
     @app.route('/ema/v1/aux/relay/switch/on/time', methods=['PUT', 'POST'])
     def set_aux_relay_switch_on_time(self, request):
-        value    = self.validate(request)
+        # json returns value as unicode in python 2.7, not str
+        value    = str(self.validate(request))   
         try:
             # Initiate write
             self.parent.aux_relay.switchOnTime = value
@@ -478,7 +508,8 @@ class WebService(Service):
         else:
             # get same deferred object from write
             d = self.parent.aux_relay.switchOnTime
-            d.addCallback(self.writeOkCallback, request)
+            d.addCallbacks(self.writeOkCallback, self.errorCallback, 
+                callbackArgs=(request,), errbackArgs=(request,))
             return d
 
 
@@ -488,14 +519,16 @@ class WebService(Service):
         metadata = device.AuxiliarRelay.SwitchOffTime.getter.metadata
         # Initiate read
         d = self.parent.aux_relay.switchOffTime
-        d.addCallback(self.readOkCallback, request, metadata)
+        d.addCallbacks(self.readOkCallback, self.errorCallback, 
+                callbackArgs=(request,metadata), errbackArgs=(request,))
         return d
 
 
     # Estas son muy especiales y peligrosas
     @app.route('/ema/v1/aux/relay/switch/off/time', methods=['PUT', 'POST'])
     def set_aux_relay_switch_off_time(self, request):
-        value    = self.validate(request)
+        # json returns value as unicode in python 2.7, not str
+        value    = str(self.validate(request))   
         try:
             # Initiate write
             self.parent.aux_relay.switchOffTime = value
@@ -506,7 +539,8 @@ class WebService(Service):
         else:
             # get same deferred object from write
             d = self.parent.aux_relay.switchOffTime
-            d.addCallback(self.writeOkCallback, request)
+            d.addCallbacks(self.writeOkCallback, self.errorCallback, 
+                callbackArgs=(request,), errbackArgs=(request,))
             return d
 
     @app.handle_errors
@@ -514,7 +548,7 @@ class WebService(Service):
         '''
         Default handler for all REST API errors
         '''
-        if failure.type in [NotFound, BadRequest, UnsupportedMediaType, UnprocessableEntry]:
+        if failure.type in [NotFound, BadRequest, UnsupportedMediaType, UnprocessableEntry, InternalServerError2]:
             request.setResponseCode(failure.value.code, message=failure.value.msg)
             request.setHeader('Content-Type', 'application/json')
             return str(failure.value)
@@ -532,7 +566,11 @@ class WebService(Service):
     # Helper methods
     # --------------
 
-    
+    def errorCallback(self, failure, request, *args):
+        log.info("{req.method} {req.uri} = {val} error.", req=request)
+        raise InternalServerError2(str(failure.value))
+       
+
     def writeOkCallback(self, value, request):
         log.info("{req.method} {req.uri} = {val} ok.", req=request, val=value)
         request.setResponseCode(200)
@@ -574,7 +612,7 @@ class WebService(Service):
             raise UnsupportedMediaType('Content-Type is not application/json')
         body = request.content.read()
         try:
-            obj   = json.loads(body,object_hook=object_hook)
+            obj   = json.loads(body, object_hook=object_hook)
             value = obj['value']
         except Exception as e:
             log.failure("exception {e}", e=e)

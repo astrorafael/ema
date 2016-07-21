@@ -911,11 +911,12 @@ class RoofRelay(object):
         def __init__(self, value):
             SetCommand.__init__(self, value)
            # Patches the last compiled expression
-           ## WARNING: ME FALTA TRATAR E CASO DE AUTO !!!
             if self.value == 'Open':
                 self.ackPat[1] = re.compile('^\(\d{2}:\d{2}:\d{2} Abrir Obs\. FORZADO\)')
             elif self.value == 'Closed':
                 self.ackPat[1] = re.compile('^\(\d{2}:\d{2}:\d{2} Cerrar Obs\.\)')
+            elif self.value == 'Auto':
+                self.ackPat[1] = re.compile('^\(\d{2}:\d{2}:\d{2} Abrir Obs\.\)')
 
         def encode(self):
             self.encoded = self.cmdformat.format(self.mapping[self.value])
@@ -997,6 +998,7 @@ class AuxiliarRelay(object):
         metadata     = mdata.AuxiliarRelay.Mode
         cmdformat    = '(s)'
         ack_patterns = [ '^\(S(\d{3})\)', '^\(Son\d{4}\)', '^\(Sof\d{4}\)' ]
+        ack_patterns = [ '^\(S(\d{3})\)', '^\(Son\d{4}\)', '^\(Sxf\d{4}\)' ]
         ack_index    = 0
         mapping      = { 0 : 'Auto', 4: 'Closed', 5 : 'Open', 8 : 'Timer/Off', 9 : 'Timer/On' }
         retries      = 2
