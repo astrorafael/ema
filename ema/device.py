@@ -254,7 +254,7 @@ class Anemometer(Device):
         '''Average Wind Speed Threshold'''
         name   = 'ave_threshold'
         getter = command.Anemometer.GetAverageWindSpeedThreshold
-        setter = command.Anemometer.GetAverageWindSpeedThreshold
+        setter = command.Anemometer.SetAverageWindSpeedThreshold
     class Calibration(object):
         '''Calibration Constant'''
         name   = 'calibration'
@@ -459,7 +459,7 @@ class RoofRelay(Device):
         Device.__init__(self, parent, options, global_sync)
         self.sync_params = []
         self.switchon = deque(maxlen=2)
-        self.parent.serialService.protocol.addStatusCallback(self.onStatus)
+        self.parent.addStatusCallback(self.onStatus)
 
 
     def onStatus(self, message, timestamp):
@@ -513,7 +513,7 @@ class AuxiliarRelay(Device):
         Device.__init__(self, parent, options, global_sync)
         self.sync_params = [AuxiliarRelay.Mode.name]  
         self.switchon = deque(maxlen=2)
-        self.parent.serialService.protocol.addStatusCallback(self.onStatus)
+        self.parent.addStatusCallback(self.onStatus)
 
 
     def onStatus(self, message, timestamp):
@@ -659,7 +659,7 @@ class Voltmeter(Device):
         Device.__init__(self, parent, options, global_sync)
         self.sync_params = [Voltmeter.Threshold.name, Voltmeter.Offset.name]
         self.voltage = deque(maxlen=(upload_period//command.PERIOD))
-        self.parent.serialService.protocol.addStatusCallback(self.onStatus)
+        self.parent.addStatusCallback(self.onStatus)
 
 
     def onStatus(self, message, timestamp):
