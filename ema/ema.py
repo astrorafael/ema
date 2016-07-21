@@ -32,7 +32,7 @@ from twisted.internet.threads import deferToThread
 from .config import VERSION_STRING, loadCfgFile
 from .logger import setLogLevel
 
-from .service.relopausable import MultiService
+from .service.reloadable import MultiService
 
 from .device         import EMARangeError
 from .command        import PERIOD as EMA_PERIOD

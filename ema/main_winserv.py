@@ -42,7 +42,7 @@ from .  import __version__
 
 from .logger               import sysLogInfo
 from .application          import application
-from .service.relopausable import TopLevelService
+from .service.reloadable import TopLevelService
 
 # ----------------
 # Module constants

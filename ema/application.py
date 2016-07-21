@@ -20,7 +20,7 @@ from twisted.internet import task, reactor
 # local imports
 # -------------
 
-from .service.relopausable import Service, MultiService, Application
+from .service.reloadable import Service, MultiService, Application
 from .logger import sysLogInfo,  startLogging
 from .config import VERSION_STRING, cmdline, loadCfgFile
 

@@ -43,7 +43,7 @@ from klein import Klein
 import ema.device    as device
 import ema.scheduler as scheduler
 
-from .service.relopausable import Service
+from .service.reloadable import Service
 from .logger    import setLogLevel
 from .serial    import EMATimeoutError
 

@@ -30,7 +30,7 @@ from twisted.internet.protocol    import ProcessProtocol
 
 from .utils   import chop
 from .logger  import setLogLevel
-from .service.relopausable import Service
+from .service.reloadable import Service
 
 # ----------------
 # Module constants

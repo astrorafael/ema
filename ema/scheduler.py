@@ -25,7 +25,7 @@ from twisted.internet.defer       import inlineCallbacks, returnValue
 # local imports
 # -------------
 
-from .service.relopausable import Service
+from .service.reloadable import Service
 from .logger   import setLogLevel
 
 
