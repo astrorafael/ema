@@ -42,7 +42,7 @@ from .  import __version__
 
 from .logger               import sysLogInfo
 from .application          import application
-from .service.reloadable import TopLevelService
+from .service.reloadable   import TopLevelService
 
 # ----------------
 # Module constants
@@ -84,21 +84,24 @@ class TESSWindowsService(win32serviceutil.ServiceFramework):
 		reactor.callFromThread(reactor.stop)
 		sysLogInfo("Stopping {0} {1} Windows service".format( IService(application).name, __version__ ))
 
+	# -----------------------------------------------------------------
+	#  SvcPause() &  SvcContinue() only applicable to pausable services
+	# -----------------------------------------------------------------
 
-	def SvcPause(self):
-		'''Service Pause entry point'''
-		self.ReportServiceStatus(win32service.SERVICE_PAUSE_PENDING)
-		reactor.callFromThread(TopLevelService.sigpause)
-		sysLogInfo("Pausing {0} {1} Windows service".format( IService(application).name, __version__ ))
-		self.ReportServiceStatus(win32service.SERVICE_PAUSED)
+	# def SvcPause(self):
+	# 	'''Service Pause entry point'''
+	# 	self.ReportServiceStatus(win32service.SERVICE_PAUSE_PENDING)
+	# 	reactor.callFromThread(TopLevelService.sigpause)
+	# 	sysLogInfo("Pausing {0} {1} Windows service".format( IService(application).name, __version__ ))
+	# 	self.ReportServiceStatus(win32service.SERVICE_PAUSED)
 		
 
-	def SvcContinue(self):
-		'''Service Continue entry point'''
-		self.ReportServiceStatus(win32service.SERVICE_CONTINUE_PENDING)
-		reactor.callFromThread(TopLevelService.sigresume)
-		sysLogInfo("Resuming {0} {1} Windows service".format( IService(application).name, __version__ ))
-		self.ReportServiceStatus(win32service.SERVICE_RUNNING)
+	# def SvcContinue(self):
+	# 	'''Service Continue entry point'''
+	# 	self.ReportServiceStatus(win32service.SERVICE_CONTINUE_PENDING)
+	# 	reactor.callFromThread(TopLevelService.sigresume)
+	# 	sysLogInfo("Resuming {0} {1} Windows service".format( IService(application).name, __version__ ))
+	# 	self.ReportServiceStatus(win32service.SERVICE_RUNNING)
 		
 
 	def SvcOtherEx(self, control, event_type, data):

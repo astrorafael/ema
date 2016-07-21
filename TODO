@@ -4,8 +4,6 @@ Prioridad alta
 * completar doc de analisiy
 * documento de diseño
 * excepciones y booleans ¿ hace falta convertir de excp a booleans o propagamos all the way up ?
-* only reloadable, no relopasuable
-  - servicio de windows, comentar lo que no proceda
 *) Un testcase delmodulo devices a fondo, 
  provocoando errores de tiemout, de rango, de mal retirno de la EMA, lectiras en w/o properties, etc.
  de fata de binding prpotocol etc.
