@@ -64,12 +64,22 @@ class EMAAttributeError(AttributeError):
         s = '{0}.'.format(s)
         return s
 
+class EMADeleteAttributeError(AttributeError):
+    '''EMA Delete Attribute Error'''
+    def __str__(self):
+        s = self.__doc__
+        if self.args:
+            s = '{0}: {1} -> {2}'.format(s, self.args[0], self.args[1])
+        s = '{0}.'.format(s)
+        return s
+
+
 class EMARuntimeError(RuntimeError):
     '''EMA Runtime Error'''
     def __str__(self):
         s = self.__doc__
         if self.args:
-            s = '{0}: {1}, {2}'.format(s, self.args[0], self.args[1], self.args[2])
+            s = '{0}: {1}, {2}'.format(s, self.args[0], self.args[1])
         s = '{0}.'.format(s)
         return s
 
@@ -114,7 +124,7 @@ class DeferredAttribute(object):
 
     def __delete__(self, obj):
         '''Descriptor delete protocol'''
-        raise AttributeError("not implemented")
+        raise EMADeleteAttributeError(self.parameter.name, "not implemented operation")
 
 
     def __get__(self, obj, objtype=None):

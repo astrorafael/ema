@@ -1,27 +1,58 @@
 Prioridad alta
 ==============
 
-* completar doc de analisiy
-* documento de diseño
-* excepciones y booleans ¿ hace falta convertir de excp a booleans o propagamos all the way up ?
-*) Un testcase delmodulo devices a fondo, 
- provocoando errores de tiemout, de rango, de mal retirno de la EMA, lectiras en w/o properties, etc.
- de fata de binding prpotocol etc.
+*) Un testcase de DeferredAttribute, 
+  provocando errores
+  - type mismatch
+  - EMAtiemout, d
+  - EMARangeError, 
+  - bad return value,
+  - no protocol binding
+  R/W Attributes:
+  - two reads in a row
+  - two writes in a row
+  - write then read
+  - read then write
+  R/O Attributes:
+  - read a r/o property (nominal case)
+  - write a r/o attribute 
+  - two reads in a row
+  - two writes in a row
+  - write then read
+  - read then write
+  W/O ATrributes:
+  - read a w/o attributes
+  - write a w/o property (nominal case)
+  - two reads in a row
+  - two writes in a row
+  - write then read
+  - read then write
+  
+
+  etc.
+  de fata de binding prpotocol etc.
+*) quitar los from .<modulo>
+*) modulo web , json.encoder, cls=str en lugar del casting a pelo que hago
+*) API de dispatching en la EMA para que solo haya self.parent.MYYOPERATION()
+*) excepciones y booleans ¿ hace falta convertir de excp a booleans o propagamos all the way up ?
 *) Eventos JSON (con retained)
    - Ya estoy en linea de nuevo (y con uptime)
    - error de registro
 *) Reload parametros, repsar los que si y los que no
-Tracking cache de los dump para no volcar todo
-Las ventanas de activodad no se pueden recargar, los efectos srían impredecibles
+   Las ventanas de actividad no se pueden recargar, los efectos serían impredecibles
+
+*) Tracking cache de los dump para no volcar todo
 
 * tira tocha de ventanas de 15 minutos en el config
 * Test de los 2 bulk dumps BUG NO SE POTA EL MINMAX 
 APARENTEMENTE TIENE QUE VER CON LA TRANSMISION INALAMBRICA
 O CON UN DUIPLICADO DEL EMAD ROBANDO CARACTERES
-* pruebas de encendido y apagado realses con Cristobal
+* pruebas de encendido y apagado reales con Cristobal
 
 Prioridad baja
 ===============
+*) completar doc de analisiy
+*) documento de diseño
 *) Servicio MQTTClient para stars4all
 *) compatibilidad con Python 3
 *) Compatibilidad con Windows:
