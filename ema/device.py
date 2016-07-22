@@ -114,7 +114,7 @@ class DeferredAttribute(object):
 
     def __delete__(self, obj):
         '''Descriptor delete protocol'''
-        raise AttributeError("can't delete attribute")
+        raise AttributeError("not implemented")
 
 
     def __get__(self, obj, objtype=None):
