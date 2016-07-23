@@ -66,7 +66,7 @@ class BadScriptMode(ValueError):
         return s
 
 class AlreadyExecutedScript(Exception):
-    '''Script has already been executed'''
+    '''Script had already been executed'''
     def __str__(self):
         s = self.__doc__
         if self.args:
@@ -75,7 +75,7 @@ class AlreadyExecutedScript(Exception):
         return s
 
 class AlreadyBeingExecutedScript(Exception):
-    '''Script is stil being executed'''
+    '''Script being still executed'''
     def __str__(self):
         s = self.__doc__
         if self.args:
@@ -160,7 +160,7 @@ class ScriptProtocol(ProcessProtocol):
         This is called with data from the process’ stderr pipe. 
         It behaves just like outReceived().
         '''
-        log.info("{data}", data=data.rstrip('\r\n'))
+        log.debug("{data}", data=data.rstrip('\r\n'))
 
     def inConnectionLost(self):
         '''
@@ -203,9 +203,9 @@ class ScriptProtocol(ProcessProtocol):
         as it does for processExited .
         '''
         if reason.value.exitCode != 0:
-            log.info("Child script with error: {message}", message=reason.getErrorMessage())
+            log.warn("Child script with error: {message}", message=reason.getErrorMessage())
         else:
-            log.info("Child script finished successfully")
+            log.debug("Child script finished successfully")
         self.parent.terminated = True
   
  
@@ -331,7 +331,7 @@ class ScriptsService(Service):
         '''
         Event Handlr coming from the Voltmeter
         '''
-        log.info("On event {event} executing script with args{rest!r}", event=event, rest=args)
+        log.debug("On event {event} executing script with args{rest!r}", event=event, rest=args)
         for script in self.scripts[event]:
             try:
                 script.run(*args)

@@ -238,14 +238,16 @@ class EMAService(MultiService):
             '''
             Synchronizes device parameters, then send MQTT registration
             '''
+            log.info("At 10% of active time window {w}",w=activeInterval)
             self.logMQTTEvent(msg="At 10% of active time window {0}".format(activeInterval), kind='info')
             result = yield self.sync()
             if result:
-                record = self.getParameters()
+                record = yield self.getParameters()
                 self.queue['register'].append(record)
 
         @inlineCallbacks
         def activity30(activeInterval, inactiveInterval):
+            log.info("At 10% of active time window {w}",w=activeInterval)
             self.logMQTTEvent(msg="At 30% of active time window {0}".format(activeInterval), kind='info')
             try:
                 dump = yield self.getDailyMinMaxDump()
@@ -255,6 +257,7 @@ class EMAService(MultiService):
 
         @inlineCallbacks
         def activity50(activeInterval, inactiveInterval):
+            log.info("At 50% of active time window {w}",w=activeInterval)
             self.logMQTTEvent(msg="At 50% of active time window {0}".format(activeInterval), kind='info')
             try:
                 dump = yield self.get5MinAveragesDump()
@@ -264,6 +267,7 @@ class EMAService(MultiService):
     
         @inlineCallbacks
         def activity70(activeInterval, inactiveInterval):
+            log.info("At 70% of active time window {w}",w=activeInterval)
             self.logMQTTEvent(msg="At 70% of active time window {0}".format(activeInterval), kind='info')
             try:
                 if self.options['relay_shutdown']:
@@ -276,6 +280,7 @@ class EMAService(MultiService):
 
         @inlineCallbacks
         def activity90(activeInterval, inactiveInterval):
+            log.info("At 90% of active time window {w}",w=activeInterval)
             self.logMQTTEvent(msg="At 90% of active time window {0}".format(activeInterval), kind='info')
             syncResult = yield self.syncRTC()
             if not syncResult:
