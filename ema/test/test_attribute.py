@@ -50,7 +50,7 @@ class TestGeneric(unittest.TestCase):
         self.transport.protocol = self.protocol
         EMAProtocol.callLater   = self.clock.callLater
         self.protocol.makeConnection(self.transport)
-        device.DeferredAttribute.bind(self.protocol)
+        device.Attribute.bind(self.protocol)
         
 
 
@@ -129,7 +129,7 @@ class TestVReadWriteAttribute(TestGeneric):
 
 
     def test_noProtocol(self):
-        device.DeferredAttribute.bind(None)
+        device.Attribute.bind(None)
         error = None
         try:
             self.voltmeter.offset = -1.4
@@ -223,7 +223,7 @@ class TestVReadOnlyAttribute(TestGeneric):
     def test_noProtocol(self):
         '''R/O attribute exception takes precendece'''
         error = None
-        device.DeferredAttribute.bind(None)
+        device.Attribute.bind(None)
         try:
             self.watchdog.presence = -1.4
         except Exception as e:
@@ -319,7 +319,7 @@ class TestVWriteOnlyAttribute(TestGeneric):
     def test_noProtocol(self):
         '''Missing Protocol does not takes precedence'''
         error = None
-        device.DeferredAttribute.bind(None)
+        device.Attribute.bind(None)
         try:
             self.roof_relay.mode = -1.4
         except Exception as e:

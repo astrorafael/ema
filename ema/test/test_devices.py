@@ -76,7 +76,7 @@ class TestGeneric(unittest.TestCase):
         self.transport.protocol = self.protocol
         #EMAProtocol.callLater   = self.clock.callLater
         self.protocol.makeConnection(self.transport)
-        device.DeferredAttribute.bind(self.protocol)
+        device.Attribute.bind(self.protocol)
 
 
 class TestWatchdog(TestGeneric):

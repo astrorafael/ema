@@ -298,7 +298,7 @@ class EMAService(MultiService):
     # --------------------------
 
     def gotProtocol(self, protocol):
-        device.DeferredAttribute.bind(protocol)
+        device.Attribute.bind(protocol)
 
     def addStatusCallback(self, callback):
         self.serialService.protocol.addStatusCallback(callback)

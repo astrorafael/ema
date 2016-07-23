@@ -91,15 +91,20 @@ class EMARuntimeError(RuntimeError):
 log  = Logger(namespace='ema')
 
 
-class DeferredAttribute(object):
+class Attribute(object):
 
     # Protocol to use
     protocol = None
 
     @classmethod
     def bind(cls, protocol):
-        '''Binds the DeferredAttribute to the protrocol for command execution'''
+        '''Binds the deferred Attribute to the protrocol for command execution'''
         cls.protocol = protocol
+
+    @classmethod
+    def deferred(cls, parameter):
+        '''Builds the deferred attribute instance'''
+        return cls(parameter)
 
 
     def __init__(self, parameter):
@@ -277,10 +282,10 @@ class Anemometer(Device):
         setter = command.Anemometer.SetModel
 
     # Deferred attribute handling via Descriptors
-    threshold     = DeferredAttribute(parameter=Threshold())
-    ave_threshold = DeferredAttribute(parameter=AverageThreshold())
-    calibration   = DeferredAttribute(parameter=Calibration())
-    model         = DeferredAttribute(parameter=Model())
+    threshold     = Attribute.deferred(parameter=Threshold())
+    ave_threshold = Attribute.deferred(parameter=AverageThreshold())
+    calibration   = Attribute.deferred(parameter=Calibration())
+    model         = Attribute.deferred(parameter=Model())
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
@@ -308,8 +313,8 @@ class Barometer(Device):
         setter = command.Barometer.SetOffset
 
     # Deferred attribute handling via Descriptors
-    height    = DeferredAttribute(parameter=Height())
-    offset    = DeferredAttribute(parameter=Offset())
+    height    = Attribute.deferred(parameter=Height())
+    offset    = Attribute.deferred(parameter=Offset())
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
@@ -333,8 +338,8 @@ class CloudSensor(Device):
         setter = command.CloudSensor.SetGain
 
     # Deferred attribute handling via Descriptors
-    threshold = DeferredAttribute(parameter=Threshold())
-    gain      = DeferredAttribute(parameter=Gain())
+    threshold = Attribute.deferred(parameter=Threshold())
+    gain      = Attribute.deferred(parameter=Gain())
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
@@ -358,8 +363,8 @@ class Photometer(Device):
         setter = command.Photometer.SetOffset
 
     # Deferred attribute handling via Descriptors
-    threshold = DeferredAttribute(parameter=Threshold())
-    offset    = DeferredAttribute(parameter=Offset())
+    threshold = Attribute.deferred(parameter=Threshold())
+    offset    = Attribute.deferred(parameter=Offset())
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
         self.sync_params = [Photometer.Threshold.name, Photometer.Offset.name]
@@ -379,7 +384,7 @@ class Pluviometer(Device):
         setter = command.Pluviometer.SetCalibrationFactor
 
     # Deferred attribute handling via Descriptors
-    calibration      = DeferredAttribute(parameter=CalibrationFactor())
+    calibration      = Attribute.deferred(parameter=CalibrationFactor())
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
@@ -404,8 +409,8 @@ class Pyranometer(Device):
         setter = command.Pyranometer.SetOffset
 
     # Deferred attribute handling via Descriptors
-    gain      = DeferredAttribute(parameter=Gain())
-    offset    = DeferredAttribute(parameter=Offset())
+    gain      = Attribute.deferred(parameter=Gain())
+    offset    = Attribute.deferred(parameter=Offset())
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
@@ -424,7 +429,7 @@ class RainSensor(Device):
         setter = command.RainSensor.SetThreshold
   
     # Deferred attribute handling via Descriptors
-    threshold = DeferredAttribute(parameter=Threshold())
+    threshold = Attribute.deferred(parameter=Threshold())
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
@@ -443,7 +448,7 @@ class Thermometer(Device):
         setter = command.Thermometer.SetThreshold
   
     # Deferred attribute handling via Descriptors
-    threshold = DeferredAttribute(parameter=Threshold())
+    threshold = Attribute.deferred(parameter=Threshold())
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
@@ -463,7 +468,7 @@ class RoofRelay(Device):
         setter = command.RoofRelay.SetMode
 
     # Deferred attribute handling via Descriptors
-    mode          = DeferredAttribute(parameter=Mode())
+    mode          = Attribute.deferred(parameter=Mode())
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
@@ -515,9 +520,9 @@ class AuxiliarRelay(Device):
         setter = command.AuxiliarRelay.SetMode
 
     # Deferred attribute handling via Descriptors
-    switchOnTime  = DeferredAttribute(parameter=SwitchOnTime())
-    switchOffTime = DeferredAttribute(parameter=SwitchOffTime())
-    mode          = DeferredAttribute(parameter=Mode())
+    switchOnTime  = Attribute.deferred(parameter=SwitchOnTime())
+    switchOffTime = Attribute.deferred(parameter=SwitchOffTime())
+    mode          = Attribute.deferred(parameter=Mode())
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
@@ -568,7 +573,7 @@ class RealTimeClock(Device):
         setter = command.RealTimeClock.SetDateTime
 
     # Deferred attribute handling via Descriptors
-    dateTime = DeferredAttribute(parameter=DateTime())
+    dateTime = Attribute.deferred(parameter=DateTime())
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
@@ -662,8 +667,8 @@ class Voltmeter(Device):
         setter = command.Voltmeter.SetOffset
 
     # Deferred attribute handling via Descriptors
-    threshold = DeferredAttribute(parameter=Threshold())
-    offset    = DeferredAttribute(parameter=Offset())
+    threshold = Attribute.deferred(parameter=Threshold())
+    offset    = Attribute.deferred(parameter=Offset())
 
     def __init__(self, parent, options, upload_period, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
@@ -706,8 +711,8 @@ class Watchdog(Device):
         setter = None
 
     # Deferred attribute handling via Descriptors
-    period   = DeferredAttribute(parameter=Period())
-    presence = DeferredAttribute(parameter=Presence())
+    period   = Attribute.deferred(parameter=Period())
+    presence = Attribute.deferred(parameter=Presence())
 
     def __init__(self, parent, options, global_sync=True):
         Device.__init__(self, parent, options, global_sync)
