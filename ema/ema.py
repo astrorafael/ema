@@ -185,11 +185,11 @@ class EMAService(MultiService):
         else:
             internet = True
         if internet and self.options['host_rtc']:
-            syncResult = yield self.syncRTC()
+            syncResult = yield self.rtc.sync()
         elif internet and not self.options['host_rtc']:
-            syncResult = yield self.syncRTC()
+            syncResult = yield self.rtc.sync()
         else:
-            syncResult = yield self.syncHostRTC()
+            syncResult = yield self.rtc.inverseSync()
         returnValue(syncResult)
 
     @inlineCallbacks
@@ -270,11 +270,9 @@ class EMAService(MultiService):
             log.info("At 70% of active time window {w}",w=activeInterval)
             self.logMQTTEvent(msg="At 70% of active time window {0}".format(activeInterval), kind='info')
             try:
-                if self.options['relay_shutdown']:
-                    yield self.nextRelayCycle(inactiveInterval)
-                    yield self.auxRelayTimer(True)
-                else:
-                    yield self.auxRelayTimer(False)
+                aux_mode = yield self.aux_relay.mode
+                if aux_mode == 'Timer/On':
+                    yield self.aux_relay.nextRelayCycle(inactiveInterval)
             except Exception as e:
                 self.logMQTTEvent(msg=str(e), kind='error')
 
@@ -282,10 +280,11 @@ class EMAService(MultiService):
         def activity90(activeInterval, inactiveInterval):
             log.info("At 90% of active time window {w}",w=activeInterval)
             self.logMQTTEvent(msg="At 90% of active time window {0}".format(activeInterval), kind='info')
-            syncResult = yield self.syncRTC()
+            syncResult = yield self.rtc.sync()
             if not syncResult:
                 self.logMQTTEvent(msg="EMA RTC could not be synchronized", kind='info')
-            if self.options['shutdown']:
+            aux_mode = yield self.aux_relay.mode
+            if aux_mode == 'Timer/On' and self.options['shutdown']:
                 log.warn("EMAd program shutting down gracefully in 10 seconds")
                 reactor.callLater(10+random.random(), reactor.stop)
             
@@ -388,34 +387,6 @@ class EMAService(MultiService):
         log.debug("PARAMETERS = {p}", p=mydict)
         returnValue(mydict)
        
-
-    def syncRTC(self):
-        return self.rtc.sync()
-        
-
-    def syncHostRTC(self):
-        return self.rtc.inverseSync()
-        
-    
-
-    def nextRelayCycle(self, inactiveI):
-        '''
-        Program next auxiliar relay switch on/off cycle
-        Returns a Deferred with Noneas value
-        '''
-        return self.aux_relay.nextRelayCycle(inactiveT)
-
-
-    def auxRelayTimer(self, flag):
-        '''
-        Activates/Deactivates Auxiliar timer mode
-        Returns a Deferred 
-        '''
-        if flag:
-            return self.aux_relay.mode('Timer/On')
-        else:
-            return self.aux_relay.mode('Timer/Off')
-        
 
     def getDailyMinMaxDump(self):
         '''

@@ -49,12 +49,6 @@ period = 60
 # An script at 90% activity should do it.
 shutdown = yes
 
-# Flag: Program EMA Aux Relay switch on/off power supply 
-# with the next activity interval set in the scheduler.
-# Warning: This does not shut down the computer. 
-# An script at 90% activity should do it.
-relay_shutdown = yes
-
 # component log level (debug, info, warn, error, critical)
 log_level = debug
 
@@ -426,14 +420,14 @@ max_drift  = 2
 [aux_relay]
 
 # sync parameters
-sync = no
+sync = yes
 
 # Flag. Open/close relay mode 
 # 'Auto'   = automatic based on dew point
 # 'Manual' = manual, by explicit commands
 # 'Timer/On'   = Timed, with On/Off hour:minute
 # 'Timer/Off'  = Timed, with On/Off hour:minute
-mode = Manual
+mode = Auto
 
 
 #------------------------------------------------------------------------#

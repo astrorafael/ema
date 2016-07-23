@@ -97,7 +97,6 @@ def loadCfgFile(path):
     options['ema']['nretries']   = parser.getint("ema","nretries")
     options['ema']['period']     = parser.getint("ema","period")
     options['ema']['shutdown']   = parser.getboolean("ema","shutdown")
-    options['ema']['relay_shutdown'] = parser.getboolean("ema","relay_shutdown")
 
     options['ema']['sync']          = parser.getboolean("serial","sync")
     options['ema']['upload_period'] = parser.getint("serial","upload_period")
