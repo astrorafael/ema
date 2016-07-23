@@ -680,7 +680,7 @@ class RealTimeClock(Device):
             log.warn("{title} not synchronized [EMA = {EMA!s}] [Host = {host!s}]", title='EMA RTC', EMA=value, host=now)
             log.info("Synchronizing {title} to Host RTC", title='EMA RTC')
             try:
-                self.dateTime = value
+                self.dateTime = now
                 value = yield self.dateTime
             except EMATimeoutError as e:
                 log.error("RTC sync exception => {exception}", exception=e)

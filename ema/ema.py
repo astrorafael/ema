@@ -225,7 +225,7 @@ class EMAService(MultiService):
                 window = inactiveInterval
             else:
                 window = activeInterval
-            log.debug("At program start ({where} window {w})", where=where, w=window)
+            log.info("At program start ({where} window {w})", where=where, w=window)
             self.logMQTTEvent(msg="At program start ({0} window {1})".format(where, window), kind='info')
             result = yield self.sync()
             if result:
@@ -293,9 +293,10 @@ class EMAService(MultiService):
         self.schedulerService.addActivity(activity70, 70, active, inactive)
         self.schedulerService.addActivity(activity90, 90, active, inactive)
 
-    # --------------------------
-    # TEMPORARY Helper functions
-    # --------------------------
+    
+        # ---------------
+        # Dispatching API
+        # ---------------
 
     def gotProtocol(self, protocol):
         device.Attribute.bind(protocol)
@@ -334,6 +335,9 @@ class EMAService(MultiService):
         self.devices     = [self.voltmeter, self.anemometer, self.barometer, self.cloudsensor,
                             self.photometer,self.pluviometer,self.pyranometer,self.rainsensor,
                             self.watchdog, self.aux_relay, self.roof_relay]
+    # --------------------------
+    # TEMPORARY Helper functions
+    # --------------------------
 
     @inlineCallbacks
     def detectEMA(self, nretries=3):

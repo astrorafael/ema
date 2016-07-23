@@ -462,7 +462,7 @@ class SchedulerService(Service):
         else:
             found, i = self.gaps.find(tNow)
             inactive = self.gaps[i]
-            active   = self.windows[i+1 % len(self.windows)]
+            active   = self.windows[(i+1) % len(self.windows)]
             log.debug("now {now} we are in the inactive window {gap}", now=tNow.strftime("%H:%M:%S"), gap=inactive)
             log.debug("Next active gap will be {window}", window=active)
         return active, inactive
