@@ -1,7 +1,6 @@
 Prioridad alta
 ==============
 
-*) modulo web , json.encoder, cls=str en lugar del casting a pelo que hago
 *) API de dispatching en la EMA para que solo haya self.parent.MYYOPERATION()
 *) excepciones y booleans ¿ hace falta convertir de excp a booleans o propagamos all the way up ?
 *) Eventos JSON (con retained)
@@ -20,8 +19,7 @@ O CON UN DUIPLICADO DEL EMAD ROBANDO CARACTERES
 
 Prioridad baja
 ===============
-*) completar doc de analisiy
-*) documento de diseño
+
 *) Servicio MQTTClient para stars4all
 *) compatibilidad con Python 3
 *) Compatibilidad con Windows:
