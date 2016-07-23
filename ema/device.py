@@ -101,20 +101,28 @@ class Attribute(object):
         '''Binds the deferred Attribute to the protrocol for command execution'''
         cls.protocol = protocol
 
-    @classmethod
-    def deferred(cls, parameter):
+    @staticmethod
+    def deferred(parameter):
         '''Builds the deferred attribute instance'''
-        return cls(parameter)
+        if parameter.getter is None and parameter.setter is not None:
+            return WOAttribute(parameter)
+        if parameter.getter is not None and parameter.setter is None:
+            return ROAttribute(parameter)
+        if parameter.getter is not None and parameter.setter is not None:
+            return RWAttribute(parameter)
+        return None
 
 
     def __init__(self, parameter):
         self.parameter = parameter
         self.attr_name      = '__' + parameter.name
-        self.attr_dfrd_name = '__' + parameter.name + '_deferred'
+        self.attr_wdfrd_name = '__' + parameter.name + '_deferred'
 
 
     def validate(self, value):
         '''Validates value against parameter's setter metadata type and range'''
+        if self.protocol is None:
+            raise EMARuntimeError(self.parameter.name, "attribute not bound to a protocol yet")
         if self.parameter.setter is None:
             raise EMAAttributeError(self.parameter.name, "r/o attribute")
         if type(value) != self.parameter.setter.metadata.kind:
@@ -134,33 +142,127 @@ class Attribute(object):
 
     def __get__(self, obj, objtype=None):
         '''Descriptor get protocol'''
+        return None
+        
+           
+    def __set__(self, obj, value):
+        '''Default descriptor set protocol for w/o & r/w'''
+        def complete(ignored_value):
+            setattr(obj, self.attr_name,     value)
+            setattr(obj, self.attr_wdfrd_name, None)
+            return value
+        def failed(failure):
+            setattr(obj, self.attr_wdfrd_name, None)
+            return failure
+        self.validate(value)
+        # invalidate cache
+        setattr(obj, self.attr_name, None)
+        # Execute command every time
+        cmd = self.parameter.setter(value)
+        d = self.protocol.execute(cmd)
+        setattr(obj, self.attr_wdfrd_name, d)
+        d.addCallbacks(complete, failed)
+        
+
+class ROAttribute(Attribute):
+    '''
+         +================================+===================================+
+         |     R/O, volatile attribute    |  R/O, non volatile attribute      |
+---------+--------------------------------+-----------------------------------+
+  Read   | exec R cmd each time           | exec R cmd if not cached          | 
+---------+--------------------------------+-----------------------------------+  
+  Write  | raise r/o exception            | raise r/o exception               |
+=========+================================+===================================+
+
+    '''
+
+    def __get__(self, obj, objtype=None):
+        '''Descriptor get protocol'''
         def complete(value):
             setattr(obj, self.attr_name,     value)
-            setattr(obj, self.attr_dfrd_name, None)
             return value
         def failed(failure):
             setattr(obj, self.attr_name,      None)
-            setattr(obj, self.attr_dfrd_name, None)
             return failure
         if obj is None:
             return self.parameter
-        attr_val     =  getattr(obj, self.attr_name,      None)
-        attr_def_val =  getattr(obj, self.attr_dfrd_name, None)
-        # sharing deferred with __set__
-        if attr_def_val is not None:
-            return  attr_def_val
-        # checking the getter after the deferred makes it possible
-        # to capture the deferred generated in the __set__ operation
-        # even for w/o attributies
-        if self.parameter.getter is None:
-            raise EMAAttributeError(self.parameter.name, "w/o attribute")
-        if attr_val is not None and not self.parameter.getter.metadata.volatile:
-            return defer.succeed(attr_val)
         if self.protocol is None:
-            raise EMARuntimeError(self.parameter.name, "attribute not bound to a protocol yet")
+            return defer.fail(EMARuntimeError(self.parameter.name, "attribute not bound to a protocol yet"))
+        attr_val =  getattr(obj, self.attr_name, None)
+        if not self.parameter.getter.metadata.volatile and attr_val is not None:
+            return defer.succeed(attr_val)
         cmd = self.parameter.getter()
         d = self.protocol.execute(cmd)
-        setattr(obj, self.attr_dfrd_name, d)
+        d.addCallbacks(complete, failed)
+        return  d
+           
+
+    def __set__(self, obj, value):
+        '''Descriptor set protocol'''
+        raise EMAAttributeError(self.parameter.name, "r/o attribute")
+
+ 
+class WOAttribute(Attribute):
+    '''
+         +================================+===================================+
+         |     W/O, volatile attribute    |  W/O, non volatile attribute      |
+---------+--------------------------------+-----------------------------------+
+  Read   | ret pend write deferred if any | ret pend write deferred if any    |
+         | else defer.fail                | else defer.fail                   | 
+---------+--------------------------------+-----------------------------------+
+         | invalid cache (does not harm)  | invalid cache                     |
+  Write  | exec W cmd each time           | exec W cmd each time              |
+=========+================================+===================================+
+    '''
+
+
+    def __get__(self, obj, objtype=None):
+        '''Descriptor get protocol'''
+        if obj is None:
+            return self.parameter
+        Attribute.__get__(self, obj, objtype)
+        attr_wdfrd_val =  getattr(obj, self.attr_wdfrd_name, None)
+        if attr_wdfrd_val is not None:
+            return attr_wdfrd_val
+        return defer.fail(EMAAttributeError(self.parameter.name, "w/o attribute"))
+           
+
+    
+class RWAttribute(Attribute):
+    '''
+         +================================+===================================+
+         |     R/W, volatile attribute    |  R/W, non volatile attribute      |
+---------+--------------------------------+-----------------------------------+
+  Read   | ret pend write deferred if any | ret pend write deferred if any    |
+         | else exec R cmd each time      | else exec R cmd if not cached     | 
+---------+--------------------------------+-----------------------------------+  
+         | invalid cache (does not harm)  | invalid cache                     |
+  Write  | exec W cmd each time           | exec W cmd each time              |
+---------+--------------------------------+-----------------------------------+
+    '''
+
+    def __get__(self, obj, objtype=None):
+        '''Descriptor get protocol'''
+        def complete(value):
+            setattr(obj, self.attr_name,     value)
+            return value
+        def failed(failure):
+            setattr(obj, self.attr_name,      None)
+            return failure
+        if obj is None:
+            return self.parameter
+        if self.protocol is None:
+            return defer.fail(EMARuntimeError(self.parameter.name, "attribute not bound to a protocol yet"))
+        attr_val       =  getattr(obj, self.attr_name,      None)
+        attr_wdfrd_val =  getattr(obj, self.attr_wdfrd_name, None)
+        # return pending write deferred if any 
+        if attr_wdfrd_val is not None:
+            return  attr_wdfrd_val
+        # if not volatile and already cached, return it
+        if not self.parameter.getter.metadata.volatile and attr_val is not None:
+            return defer.succeed(attr_val)
+        cmd = self.parameter.getter()
+        d = self.protocol.execute(cmd)
         d.addCallbacks(complete, failed)
         return  d
            
@@ -169,24 +271,21 @@ class Attribute(object):
         '''Descriptor set protocol'''
         def complete(ignored_value):
             setattr(obj, self.attr_name,     value)
-            setattr(obj, self.attr_dfrd_name, None)
+            setattr(obj, self.attr_wdfrd_name, None)
             return value
         def failed(failure):
-            setattr(obj, self.attr_dfrd_name, None)
+            setattr(obj, self.attr_wdfrd_name, None)
             return failure
         self.validate(value)
-        if self.protocol is None:
-            raise EMARuntimeError(self.parameter.name, "attribute not bound to a protocol yet")
-        attr_def_val =  getattr(obj, self.attr_dfrd_name, None)
-        if attr_def_val is not None:
-            raise EMARuntimeError(self.parameter.name, "operation in progress")
+        # invalidate cache
         setattr(obj, self.attr_name, None)
+        # Execute command every time
         cmd = self.parameter.setter(value)
         d = self.protocol.execute(cmd)
-        setattr(obj, self.attr_dfrd_name, d)
+        setattr(obj, self.attr_wdfrd_name, d)
         d.addCallbacks(complete, failed)
         
-
+        
 #---------------------------------------------------------------------
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
@@ -279,7 +378,7 @@ class Anemometer(Device):
         '''Anemometer Model'''
         name   = 'model'
         getter = command.Anemometer.GetModel
-        setter = command.Anemometer.SetModel
+        setter = None
 
     # Deferred attribute handling via Descriptors
     threshold     = Attribute.deferred(parameter=Threshold())
