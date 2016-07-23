@@ -499,6 +499,8 @@ class TestReadWriteAttribute(TestGeneric):
         d1 = self.voltmeter.offset
         d2 = self.voltmeter.offset
         self.assertEqual(d1, d2)
+        # queue holds the write command
+        self.assertEqual(len(self.protocol._queue), 1)
        
 
     def test_twoWrites(self):
@@ -513,6 +515,8 @@ class TestReadWriteAttribute(TestGeneric):
         except Exception as e:
             error = e
         self.assertEqual(type(error), type(None))
+        # queue holds both write command
+        self.assertEqual(len(self.protocol._queue), 2)
 
 
 
