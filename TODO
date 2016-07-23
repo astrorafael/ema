@@ -1,36 +1,6 @@
 Prioridad alta
 ==============
 
-*) Un testcase de DeferredAttribute, 
-  provocando errores
-  - type mismatch
-  - EMAtiemout, d
-  - EMARangeError, 
-  - bad return value,
-  - no protocol binding
-  R/W Attributes:
-  - two reads in a row
-  - two writes in a row
-  - write then read
-  - read then write
-  R/O Attributes:
-  - read a r/o property (nominal case)
-  - write a r/o attribute 
-  - two reads in a row
-  - two writes in a row
-  - write then read
-  - read then write
-  W/O ATrributes:
-  - read a w/o attributes
-  - write a w/o property (nominal case)
-  - two reads in a row
-  - two writes in a row
-  - write then read
-  - read then write
-  
-
-  etc.
-  de fata de binding prpotocol etc.
 *) quitar los from .<modulo>
 *) modulo web , json.encoder, cls=str en lugar del casting a pelo que hago
 *) API de dispatching en la EMA para que solo haya self.parent.MYYOPERATION()

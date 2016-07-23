@@ -28,11 +28,13 @@ from twisted.internet.defer import inlineCallbacks
 # local imports
 # -------------
 
-import ema.device as device
+import ema.device  as device
+import ema.command as command
 
 from ema.serial   import EMAProtocol, EMAProtocolFactory, EMATimeoutError
 from ema.logger   import setLogLevel
 from ema.device   import EMARangeError, EMATypeError, EMAAttributeError, EMARuntimeError, EMADeleteAttributeError
+
 
 log = Logger()
 
@@ -155,6 +157,18 @@ Write    | raise r/o exception            | raise r/o exception               |
         d2 = self.watchdog.presence
         self.assertEqual(len(self.protocol._queue), 1)
        
+    def test_twoReads3(self):
+        '''Volatile R/O attributes issue commmands every time'''
+        d1 = self.watchdog.presence
+        d2 = self.watchdog.presence
+        self.assertEqual(len(self.protocol._queue), 2)
+        self.clock.advance(100)
+        self.assertEqual(len(self.protocol._queue), 1)
+        self.failureResultOf(d1).trap(EMATimeoutError)
+        self.assertNoResult(d2)
+        self.clock.advance(100)
+        self.assertEqual(len(self.protocol._queue), 0)
+        self.failureResultOf(d2).trap(EMATimeoutError)
 
 
 class TestReadOnlyNonVolatileAttribute(TestGeneric):
@@ -379,7 +393,7 @@ class TestVWriteOnlyAttribute(TestGeneric):
         self.failureResultOf(d2).trap(EMAAttributeError)
                
 
-    def test_twoWrites(self):
+    def test_twoWrites1(self):
         '''Two writes in a row are allowed.
            You can get only the last deferred through a subsequent read
         '''
@@ -391,9 +405,28 @@ class TestVWriteOnlyAttribute(TestGeneric):
             error = e
         self.assertEqual(type(error), type(None))
 
-  
-
-
+    def test_twoWrites2(self):
+        '''Two writes in a row are allowed.
+           You can get only the last deferred through a subsequent read
+        '''
+        log.debug("test_twoWrites2")
+        command.RoofRelay.SetMode.retries = 0
+        error = None
+        try:
+            self.roof_relay.mode = 'Open'
+            d1 = self.roof_relay.mode
+            self.roof_relay.mode = 'Auto'
+            d2 = self.roof_relay.mode
+        except Exception as e:
+            error = e
+        self.assertEqual(type(error), type(None))
+        self.clock.advance(100)
+        self.assertEqual(len(self.protocol._queue), 1)
+        self.failureResultOf(d1).trap(EMATimeoutError)
+        self.clock.advance(100)
+        self.assertEqual(len(self.protocol._queue), 0)
+        self.failureResultOf(d2).trap(EMATimeoutError)
+       
 
 class TestReadWriteAttribute(TestGeneric):
     '''

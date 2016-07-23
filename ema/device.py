@@ -162,6 +162,7 @@ class Attribute(object):
         d = self.protocol.execute(cmd)
         setattr(obj, self.attr_wdfrd_name, d)
         d.addCallbacks(complete, failed)
+
         
 
 class ROAttribute(Attribute):
@@ -265,25 +266,6 @@ class RWAttribute(Attribute):
         d = self.protocol.execute(cmd)
         d.addCallbacks(complete, failed)
         return  d
-           
-
-    def __set__(self, obj, value):
-        '''Descriptor set protocol'''
-        def complete(ignored_value):
-            setattr(obj, self.attr_name,     value)
-            setattr(obj, self.attr_wdfrd_name, None)
-            return value
-        def failed(failure):
-            setattr(obj, self.attr_wdfrd_name, None)
-            return failure
-        self.validate(value)
-        # invalidate cache
-        setattr(obj, self.attr_name, None)
-        # Execute command every time
-        cmd = self.parameter.setter(value)
-        d = self.protocol.execute(cmd)
-        setattr(obj, self.attr_wdfrd_name, d)
-        d.addCallbacks(complete, failed)
         
         
 #---------------------------------------------------------------------
