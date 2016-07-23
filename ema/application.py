@@ -20,18 +20,18 @@ from twisted.internet import task, reactor
 # local imports
 # -------------
 
-from .service.reloadable import Service, MultiService, Application
-from .logger import sysLogInfo,  startLogging
-from .config import VERSION_STRING, cmdline, loadCfgFile
+from ema.service.reloadable import Service, MultiService, Application
+from ema.logger import sysLogInfo,  startLogging
+from ema.config import VERSION_STRING, cmdline, loadCfgFile
 
 
-from .ema       import EMAService
-from .serial    import SerialService    
-from .probe     import ProbeService  
-from .scripts   import ScriptsService   
-from .scheduler import SchedulerService
-from .mqttpub   import MQTTService
-from .web       import WebService
+from ema.ema       import EMAService
+from ema.serial    import SerialService    
+from ema.probe     import ProbeService  
+from ema.scripts   import ScriptsService   
+from ema.scheduler import SchedulerService
+from ema.mqttpub   import MQTTService
+from ema.web       import WebService
 
 
 # Read the command line arguments and config file options

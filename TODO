@@ -1,7 +1,6 @@
 Prioridad alta
 ==============
 
-*) quitar los from .<modulo>
 *) modulo web , json.encoder, cls=str en lugar del casting a pelo que hago
 *) API de dispatching en la EMA para que solo haya self.parent.MYYOPERATION()
 *) excepciones y booleans ¿ hace falta convertir de excp a booleans o propagamos all the way up ?

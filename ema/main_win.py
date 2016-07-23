@@ -21,8 +21,8 @@ from twisted.application.service import IService
 # local imports
 # -------------
 
-from .  import __version__
-from .application import application
+from ema  import __version__
+from ema.application import application
 
 # ----------------
 # Module constants

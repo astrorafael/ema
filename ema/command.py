@@ -24,7 +24,7 @@ from twisted.logger              import Logger, LogLevel
 # local imports
 # -------------
 
-from . import PY2
+from ema import PY2
 
 import ema.metadata as mdata
 

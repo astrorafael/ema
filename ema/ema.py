@@ -29,19 +29,19 @@ from twisted.internet.threads import deferToThread
 # local imports
 # -------------
 
-from .config import VERSION_STRING, loadCfgFile
-from .logger import setLogLevel
+from ema.config import VERSION_STRING, loadCfgFile
+from ema.logger import setLogLevel
 
-from .service.reloadable import MultiService
+from ema.service.reloadable import MultiService
 
-from .device         import EMARangeError
-from .command        import PERIOD as EMA_PERIOD
-from .serial         import SerialService, EMATimeoutError
-from .scripts        import ScriptsService, AlreadyExecutedScript, AlreadyBeingExecutedScript, ScriptNotFound
-from .scheduler      import SchedulerService
-from .probe          import ProbeService
-from .mqttpub        import MQTTService
-from .web            import WebService
+from ema.device         import EMARangeError
+from ema.command        import PERIOD as EMA_PERIOD
+from ema.serial         import SerialService, EMATimeoutError
+from ema.scripts        import ScriptsService, AlreadyExecutedScript, AlreadyBeingExecutedScript, ScriptNotFound
+from ema.scheduler      import SchedulerService
+from ema.probe          import ProbeService
+from ema.mqttpub        import MQTTService
+from ema.web            import WebService
 
 import ema.command as command
 import ema.device  as device

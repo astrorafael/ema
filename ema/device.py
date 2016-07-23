@@ -30,8 +30,8 @@ from twisted.internet.defer       import inlineCallbacks, returnValue
 import ema.metadata as metadata
 import ema.command  as command
 
-from .serial  import EMATimeoutError
-from .utils   import setSystemTime
+from ema.serial  import EMATimeoutError
+from ema.utils   import setSystemTime
 
 # ----------
 # Exceptions

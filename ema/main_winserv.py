@@ -38,11 +38,11 @@ from twisted.logger import Logger, LogLevel
 # local imports
 # -------------
 
-from .  import __version__
+from ema  import __version__
 
-from .logger               import sysLogInfo
-from .application          import application
-from .service.reloadable   import TopLevelService
+from ema.logger               import sysLogInfo
+from ema.application          import application
+from ema.service.reloadable   import TopLevelService
 
 # ----------------
 # Module constants

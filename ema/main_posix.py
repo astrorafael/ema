@@ -22,9 +22,9 @@ from twisted.application.service import IService
 # local imports
 # -------------
 
-from .  import __version__
-from .application import application
-from .logger      import sysLogInfo
+from ema  import __version__
+from ema.application import application
+from ema.logger      import sysLogInfo
 
 # ----------------
 # Module constants

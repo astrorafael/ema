@@ -29,8 +29,8 @@ from twisted.logger import LogLevel
 # local imports
 # -------------
 
-from .utils import chop
-from . import __version__
+from ema.utils import chop
+from ema import __version__
 
 # ----------------
 # Module constants
