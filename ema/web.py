@@ -42,6 +42,8 @@ from klein import Klein
 
 import ema.device    as device
 import ema.scheduler as scheduler
+# only for debugging
+import ema.command   as command
 
 from .service.reloadable import Service
 from .logger    import setLogLevel
@@ -542,6 +544,47 @@ class WebService(Service):
             d.addCallbacks(self.writeOkCallback, self.errorCallback, 
                 callbackArgs=(request,), errbackArgs=(request,))
             return d
+
+    # Esta es solo para depuracion, quitar despues
+    @app.route('/ema/v1/historic/minmax', methods=['GET'])
+    def get_minmax(self, request):
+        def enqueue(value, request):
+            self.parent.queue['minmax'].append(value)
+            log.info("{req.method} {req.uri} ok.", req=request)
+            request.setResponseCode(200)
+            request.setHeader('Content-Type', 'application/json')
+            result = {
+                'value': "daily bulk dump being loaded through MQTT broker",
+                'units': 'n/a',
+                'range': 'n/a',
+            }
+            return json.dumps(result, cls=DateTimeEncoder)
+        cmd = command.GetDailyMinMaxDump()
+        d = self.parent.serialService.protocol.execute(cmd)
+        d.addCallbacks(enqueue, self.errorCallback,
+            callbackArgs=(request,), errbackArgs=(request,))
+        return d
+
+
+    # Esta es solo para depuracion, quitar despues
+    @app.route('/ema/v1/historic/average', methods=['GET'])
+    def get_averages(self, request):
+        def enqueue(value, request):
+            self.parent.queue['ave5min'].append(value)
+            log.info("{req.method} {req.uri} ok.", req=request)
+            request.setResponseCode(200)
+            request.setHeader('Content-Type', 'application/json')
+            result = {
+                'value': "average 5min bulk dump being loaded through MQTT broker",
+                'units': 'n/a',
+                'range': 'n/a',
+            }
+            return json.dumps(result, cls=DateTimeEncoder)
+        cmd = command.Get5MinAveragesDump()
+        d = self.parent.serialService.protocol.execute(cmd)
+        d.addCallbacks(enqueue, self.errorCallback,
+            callbackArgs=(request,), errbackArgs=(request,))
+        return d
 
     @app.handle_errors
     def handle_errors(self, request, failure):
