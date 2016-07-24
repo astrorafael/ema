@@ -1,21 +1,19 @@
 Prioridad alta
 ==============
 
-*) API de dispatching en la EMA para que solo haya self.parent.MYYOPERATION()
+*) Tracking cache de los dump para no volcar todo
+
 *) excepciones y booleans ¿ hace falta convertir de excp a booleans o propagamos all the way up ?
+
 *) Eventos JSON (con retained)
    - Ya estoy en linea de nuevo (y con uptime)
    - error de registro
 *) Reload parametros, repsar los que si y los que no
    Las ventanas de actividad no se pueden recargar, los efectos serían impredecibles
 
-*) Tracking cache de los dump para no volcar todo
+*) Test de los 2 bulk dumps. A veces falla si no están las trazas puestas.
 
-* tira tocha de ventanas de 15 minutos en el config
-* Test de los 2 bulk dumps BUG NO SE POTA EL MINMAX 
-APARENTEMENTE TIENE QUE VER CON LA TRANSMISION INALAMBRICA
-O CON UN DUIPLICADO DEL EMAD ROBANDO CARACTERES
-* pruebas de encendido y apagado reales con Cristobal
+*) pruebas de encendido y apagado reales con Cristobal
 
 Prioridad baja
 ===============
