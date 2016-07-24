@@ -41,10 +41,11 @@ class Watchdog(object):
 
     class Presence(Metadata):
         '''EMA Presence'''
-        kind         = str
-        domain       = [ '( )' ]
+        kind         = bool
+        domain       = [ True, True ]
         units        = ''
         volatile     = True     # Must not be cached in memory
+        stable       = False    # if volatile, never stable
        
 
     class Period(Metadata):
@@ -53,7 +54,7 @@ class Watchdog(object):
         domain       = [0, 999]
         units        = 'sec'
         volatile     = False  # may be cached in memory for efficiency
-        stable       = False  # if mutable, never stable
+        stable       = False  # not subject to recalibration, may be changed at will
    
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
@@ -86,7 +87,7 @@ class Anemometer(object):
         domain       = ['TX20', 'Simple']
         units        = ''
         volatile     = False  # may be cached in memory for efficiency
-        stable       = True  # stable parameter: only changed after a recalibration
+        stable       = True   # stable parameter: only changed after a recalibration
      
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
@@ -101,7 +102,7 @@ class Barometer(object):
         domain       = [0, 99999]
         units        = 'm'
         volatile     = False  # may be cached in memory for efficiency
-        stable       = True  # stable parameter: only changed after a recalibration
+        stable       = True   # stable parameter: only changed after a recalibration
 
 
     class Offset(Metadata):
@@ -110,7 +111,7 @@ class Barometer(object):
         domain       = [-99, 99]
         units        = 'mBar'
         volatile     = False  # may be cached in memory for efficiency
-        stable       = True  # stable parameter: only changed after a recalibration
+        stable       = True   # stable parameter: only changed after a recalibration
 
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
@@ -188,7 +189,7 @@ class Pyranometer(object):
         domain       = [0.0, 99.9]
         units        = '?'
         volatile     = False  # may be cached in memory for efficiency
-        stable       = True  # stable parameter: only changed after a recalibration
+        stable       = True   # stable parameter: only changed after a recalibration
 
 
     class Offset(Metadata):
@@ -197,7 +198,7 @@ class Pyranometer(object):
         domain       = [0, 999]
         units        = '?'
         volatile     = False  # may be cached in memory for efficiency
-        stable       = True  # stable parameter: only changed after a recalibration
+        stable       = True   # stable parameter: only changed after a recalibration
 
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
@@ -251,7 +252,7 @@ class Voltmeter(object):
         domain       = [-99.9, +99.9]
         units        = 'V'
         volatile     = False  # may be cached in memory for efficiency
-        stable       = True  # stable parameter: only changed after a recalibration
+        stable       = True   # stable parameter: only changed after a recalibration
 
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
@@ -266,7 +267,7 @@ class RoofRelay(object):
         domain       = ['Auto', 'Closed', 'Open']
         units        = ''
         volatile     = False  # may be cached in memory for efficiency
-        stable       = True  # stable parameter: only changed after a recalibration
+        stable       = True   # stable parameter: only changed after a recalibration
 
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------

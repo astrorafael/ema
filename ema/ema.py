@@ -69,10 +69,11 @@ class EMAService(MultiService):
 
     def __init__(self, options, cfgFilePath):
         MultiService.__init__(self)
+        setLogLevel(namespace='ema', levelStr=options['log_level'])
         self.cfgFilePath = cfgFilePath
         self.options     = options
-        self.counter = 0
-        self.NSAMPLES = self.options['period'] // EMA_PERIOD
+        self.samplingCounter = 0
+        self.NSAMPLES    = self.options['period'] // EMA_PERIOD
         self.queue       = { 
             'status'  : deque(), 
             'ave5min' : deque(), 
@@ -80,30 +81,8 @@ class EMAService(MultiService):
             'log'     : deque(),
             'register': deque(), 
         }
-        setLogLevel(namespace='ema', levelStr=self.options['log_level'])
-        self.rtc         = None
-        self.voltmeter   = None
-        self.anemometer  = None
-        self.barometer   = None
-        self.cloudsensor = None
-        self.photometer  = None
-        self.pluviometer = None
-        self.pyranometer = None
-        self.rainsensor  = None
-        self.thermometer = None
-        self.watchdog    = None
-        self.aux_relay   = None
-        self.roof_relay  = None
         self.devices     = []
         
-
-    def reporter(self):
-        '''
-        Periodic task to log queue size
-        '''
-        log.info("Readings queue size is {size}", size=len(self.queue['tess_readings']))
-
-
 
     @inlineCallbacks
     def reloadService(self, options):
@@ -148,11 +127,43 @@ class EMAService(MultiService):
             dl = DeferredList([d1,d2], consumeErrors=True)
             dl.addCallback(self._maybeExit)
        
-       
+
+    def buildDevices(self):
+        '''
+        Build the virtual devices as soon as the service is started
+        ''' 
+        self.rtc         = device.RealTimeClock(self, self.options['rtc'])
+        self.voltmeter   = device.Voltmeter(self, self.options['voltmeter'],
+                            upload_period=self.options['upload_period'], 
+                            global_sync=self.options['sync'])
+        self.anemometer  = device.Anemometer(self, self.options['anemometer'],
+                            global_sync=self.options['sync'])
+        self.barometer   = device.Barometer(self, self.options['barometer'],
+                            global_sync=self.options['sync'])
+        self.cloudsensor = device.CloudSensor(self, self.options['cloudsensor'],
+                            global_sync=self.options['sync'])
+        self.photometer  = device.Photometer(self, self.options['photometer'],
+                            global_sync=self.options['sync'])
+        self.pluviometer = device.Pluviometer(self, self.options['pluviometer'],
+                            global_sync=self.options['sync'])
+        self.pyranometer = device.Pyranometer(self, self.options['pyranometer'],
+                            global_sync=self.options['sync'])
+        self.rainsensor  = device.RainSensor(self, self.options['rainsensor'],
+                            global_sync=self.options['sync'])
+        self.thermometer = device.Thermometer(self, self.options['thermometer'],
+                            global_sync=self.options['sync'])
+        self.watchdog    = device.Watchdog(self, self.options['watchdog'],
+                            global_sync=self.options['sync'])
+        self.aux_relay   = device.AuxiliarRelay(self, self.options['aux_relay'],
+                            global_sync=self.options['sync'])
+        self.roof_relay  = device.RoofRelay(self, self.options['roof_relay'], global_sync=False)
+        self.devices     = [self.voltmeter, self.anemometer, self.barometer, self.cloudsensor,
+                            self.photometer,self.pluviometer,self.pyranometer,self.rainsensor,
+                            self.watchdog, self.aux_relay, self.roof_relay]       
     
-    # -------------
-    # MQTT API
-    # -------------
+    # ----------------
+    # Dispatching APIs
+    # ----------------
 
     def logMQTTEvent(self, msg, kind='info'):
         '''Logs important evento to MQTT'''
@@ -161,9 +172,6 @@ class EMAService(MultiService):
         self.queue['log'].append(record)
        
 
-    # ----------
-    # Events API
-    # ----------
     def onEventExecute(self, event, *args):
         '''
         Event Handler coming from the Voltmeter
@@ -175,53 +183,50 @@ class EMAService(MultiService):
         '''
         Decimate EMA status message and enqueue
         '''
-        if self.counter == 0:
+        if self.samplingCounter == 0:
             self.queue['status'].append( (status, tstamp) )
         # Increments with modulo
-        self.counter += 1
+        self.samplingCounter += 1
         # Esto es ilogico, mi capitan pero parece que 
         # se cuela 1 muestra de mas
-        self.counter %= self.NSAMPLES-1 
+        self.samplingCounter %= self.NSAMPLES-1 
         
 
-    # ----------------
-    # Helper functions
-    # ----------------
+    def gotProtocol(self, protocol):
+        '''
+        Called from serial service as soon as it gets a new protocol.
+        '''
+        device.Attribute.bind(protocol)
 
+
+    def addStatusCallback(self, callback):
+        '''
+        Register other services/components interest in EMA status messages
+        '''
+        self.serialService.protocol.addStatusCallback(callback)
+    
+
+    
+    # --------------------
+    # Scheduler Activities
+    # --------------------
 
     @inlineCallbacks
     def syncRTCActivity(self, skipInternet = False):
         '''
-        Sync RTC activity to be programmed under the scheduler
+        Sync RTC activity to be programmed under the scheduler.
         '''
         if not skipInternet:
             internet = yield self.probeService.hasConnectivity()
         else:
             internet = True
-        if internet and self.options['host_rtc']:
-            syncResult = yield self.rtc.sync()
-        elif internet and not self.options['host_rtc']:
-            syncResult = yield self.rtc.sync()
-        else:
-            syncResult = yield self.rtc.inverseSync()
-        returnValue(syncResult)
 
-    @inlineCallbacks
-    def _maybeExit(self, results):
-        log.debug("results = {results!r}", results=results)
-        if results[0][1] == False:
-            log.critical("No EMA detected. Exiting gracefully")
-            reactor.stop()
-            return
-        syncResult = yield self.syncRTCActivity(skipInternet = True)
-        if not syncResult:
-            log.critical("could not sync RTCs. Existing gracefully")
-            reactor.stop()
-            return
-        self.webService.startService()
-        self.mqttService.startService()
-        self.schedulerService.startService()
-        self.addActivities()
+        if not internet and not self.options['host_rtc']:
+            syncResult = yield self.rtc.inverseSync()
+        else:
+            syncResult = yield self.rtc.sync()
+
+        returnValue(syncResult)
 
 
     def addActivities(self):
@@ -314,62 +319,47 @@ class EMAService(MultiService):
         self.schedulerService.addActivity(activity90, 90, active, inactive)
 
     
-        # ---------------
-        # Dispatching API
-        # ---------------
+  
 
-    def gotProtocol(self, protocol):
-        device.Attribute.bind(protocol)
 
-    def addStatusCallback(self, callback):
-        self.serialService.protocol.addStatusCallback(callback)
-    
-
-    def buildDevices(self):
-        
-        self.rtc         = device.RealTimeClock(self, self.options['rtc'])
-        self.voltmeter   = device.Voltmeter(self, self.options['voltmeter'],
-                            upload_period=self.options['upload_period'], 
-                            global_sync=self.options['sync'])
-        self.anemometer  = device.Anemometer(self, self.options['anemometer'],
-                            global_sync=self.options['sync'])
-        self.barometer   = device.Barometer(self, self.options['barometer'],
-                            global_sync=self.options['sync'])
-        self.cloudsensor = device.CloudSensor(self, self.options['cloudsensor'],
-                            global_sync=self.options['sync'])
-        self.photometer  = device.Photometer(self, self.options['photometer'],
-                            global_sync=self.options['sync'])
-        self.pluviometer = device.Pluviometer(self, self.options['pluviometer'],
-                            global_sync=self.options['sync'])
-        self.pyranometer = device.Pyranometer(self, self.options['pyranometer'],
-                            global_sync=self.options['sync'])
-        self.rainsensor  = device.RainSensor(self, self.options['rainsensor'],
-                            global_sync=self.options['sync'])
-        self.thermometer = device.Thermometer(self, self.options['thermometer'],
-                            global_sync=self.options['sync'])
-        self.watchdog    = device.Watchdog(self, self.options['watchdog'],
-                            global_sync=self.options['sync'])
-        self.aux_relay   = device.AuxiliarRelay(self, self.options['aux_relay'],
-                            global_sync=self.options['sync'])
-        self.roof_relay  = device.RoofRelay(self, self.options['roof_relay'], global_sync=False)
-        self.devices     = [self.voltmeter, self.anemometer, self.barometer, self.cloudsensor,
-                            self.photometer,self.pluviometer,self.pyranometer,self.rainsensor,
-                            self.watchdog, self.aux_relay, self.roof_relay]
-    # --------------------------
-    # TEMPORARY Helper functions
-    # --------------------------
+    # ----------------------
+    # Other Helper functions
+    # ----------------------
 
     @inlineCallbacks
+    def _maybeExit(self, results):
+        '''
+        Starts all services or exit gracefully on either these two conditions:
+        1) No EMA has been detected
+        2) No RTC synchronoization took place
+        '''
+        log.debug("results = {results!r}", results=results)
+        if results[0][1] == False:
+            log.critical("No EMA detected. Exiting gracefully")
+            reactor.stop()
+            return
+        syncResult = yield self.syncRTCActivity(skipInternet = True)
+        if not syncResult:
+            log.critical("could not sync RTCs. Existing gracefully")
+            reactor.stop()
+            return
+        self.webService.startService()
+        self.mqttService.startService()
+        self.schedulerService.startService()
+        self.addActivities()
+
+
     def detectEMA(self, nretries=3):
         '''
-        Returns True if EMA responds
+        Returns a deferred with True if detected, false otherwise
         '''
-        try:
-            res = yield self.serialService.protocol.execute(command.Watchdog.GetPresence(), nretries)
-        except EMATimeoutError as e:
-            returnValue(False)
-        else:
-            returnValue(True)
+        def noEma(failure):
+            return False
+        cmd = command.Watchdog.GetPresence()
+        d = self.serialService.protocol.execute(cmd, nretries)
+        d.addErrback(noEma)
+        return d
+
 
     @inlineCallbacks
     def sync(self):
@@ -404,13 +394,7 @@ class EMAService(MultiService):
         returnValue(mydict)
        
 
-    def onEventExecute(self, event, *args):
-        '''
-        Event Handlr coming from the Voltmeter
-        '''
-        self.scriptsService.onEventExecute(event, *args)
-    
-    
+   
        
 
 

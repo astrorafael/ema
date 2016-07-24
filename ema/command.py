@@ -431,9 +431,8 @@ class Watchdog(object):
         retries      = 2
         timeout      = {'min': 2, 'max': 128, 'factor': 2}
 
-
         def getResult(self):
-            return self.response[0]
+            return True
 
 
     class GetPeriod(GetCommand):
