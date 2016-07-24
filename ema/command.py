@@ -428,7 +428,7 @@ class Watchdog(object):
         metadata     = mdata.Watchdog.Presence
         cmdformat    = '( )'
         ack_patterns = [ '^\( \)' ]
-        retries      = 0
+        retries      = 2
         timeout      = {'min': 2, 'max': 128, 'factor': 2}
 
 
@@ -1147,7 +1147,7 @@ class GetDailyMinMaxDump(BulkDumpCommand):
     iterations   = 24
     ema_time_format = '(%H:%M:%S %d/%m/%Y)'
     retries      = 0
-    timeout      = {'min': 128, 'max': 128, 'factor': 2}
+    timeout      = {'min': 120, 'max': 120, 'factor': 2}
 
     def accumulate(self, line, matchobj):
         '''Default implementation, maybe overriden in subclasses'''
@@ -1170,7 +1170,7 @@ class Get5MinAveragesDump(BulkDumpCommand):
     cmdformat    = '(@t0000)'
     iterations   = 288
     retries      = 0
-    timeout      = {'min': 256, 'max': 256, 'factor': 2}
+    timeout      = {'min': 180, 'max': 180, 'factor': 2}
 
     ONE_DAY = datetime.timedelta(days=1)
 

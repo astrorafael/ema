@@ -145,9 +145,10 @@ class Interval(object):
 
     def __call__(self):
         '''Call the interval with an id and produce a new value for that id'''
+        v = self._value
         self._value *= self.factor
         self._value = min(self._value, self.maxDelay)
-        return self._value
+        return v
 
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
@@ -501,30 +502,10 @@ class SerialService(ClientService):
             status.append(24.0)
         self.parent.onStatus(status, tstamp)
 
-    
-    # -------------
-    # EMA API
-    # -------------
-
-    
-    
-   
-  
 
 __all__ = [
-    "Watchdog",
-    "Voltmeter",
-    "RealTimeClock",
-    "RoofRelay",
-    "AuxiliarRelay",
-    "Anemometer",
-    "Barometer",
-    "CloudSensor",
-    "Photometer",
-    "Pluviometer",
-    "Pyranometer",
-    "RainSensor",
-    "Thermometer",
-    "Thermopile",
+    "EMATimeoutError",
+    "EMAProtocol",
+    "EMAProtocolFactory",
     "SerialService",
 ]

@@ -397,7 +397,7 @@ threshold = 5.0
 [watchdog]
 
 # sync parameters
-sync = no
+sync = yes
 
 # EMA keep alive limit [seconds]
 # When times out, the roof relay is switched off

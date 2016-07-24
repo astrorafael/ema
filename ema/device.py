@@ -806,11 +806,9 @@ class Watchdog(Device):
     def stop(self):
         self.pingTask.stop()
 
-    @inlineCallbacks
     def ping(self):
-        try:
-            val = yield self.presence 
-        except EMATimeoutError as e:
-            pass
+        d = self.presence
+        d.addErrback(lambda failure: None)
+       
         
 

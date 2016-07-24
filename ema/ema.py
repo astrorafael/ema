@@ -250,7 +250,8 @@ class EMAService(MultiService):
             log.info("At 10% of active time window {w}",w=activeInterval)
             self.logMQTTEvent(msg="At 30% of active time window {0}".format(activeInterval), kind='info')
             try:
-                dump = yield self.getDailyMinMaxDump()
+                cmd = command.GetDailyMinMaxDump()
+                dump = yield self.serialService.protocol.execute(cmd)
                 self.queue['minmax'].append(dump)
             except Exception as e:
                 self.logMQTTEvent(msg=str(e), kind='error')
@@ -260,7 +261,8 @@ class EMAService(MultiService):
             log.info("At 50% of active time window {w}",w=activeInterval)
             self.logMQTTEvent(msg="At 50% of active time window {0}".format(activeInterval), kind='info')
             try:
-                dump = yield self.get5MinAveragesDump()
+                cmd = command.Get5MinAveragesDump()
+                dump = yield self.serialService.protocol.execute(cmd)
                 self.queue['ave5min'].append(dump)
             except Exception as e:
                 self.logMQTTEvent(msg=str(e), kind='error')
@@ -387,27 +389,6 @@ class EMAService(MultiService):
         log.debug("PARAMETERS = {p}", p=mydict)
         returnValue(mydict)
        
-
-    def getDailyMinMaxDump(self):
-        '''
-        Get Daily Min Max accumulated measurements.
-        Retuns a Deferred whose success callback returns a complex structure (see README.md).
-        An errback may be invoked with EMATimeoutError after nretries have been made.
-        '''
-        cmd = command.GetDailyMinMaxDump()
-        return self.serialService.protocol.execute(cmd)
-
-
-    def get5MinAveragesDump(self):
-        '''
-        Get Daily Min Max accumulated measurements.
-        Retuns a Deferred whose success callback returns a complex structure (see README.md).
-        An errback may be invoked with EMATimeoutError after nretries have been made.
-        '''
-        cmd = command.Get5MinAveragesDump()
-        return self.serialService.protocol.execute(cmd)
-
-
 
     def onEventExecute(self, event, *args):
         '''
