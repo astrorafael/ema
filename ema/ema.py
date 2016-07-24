@@ -212,6 +212,19 @@ class EMAService(MultiService):
     # --------------------
 
     @inlineCallbacks
+    def getMinMaxBulkDump(self):
+        cmd = command.GetDailyMinMaxDump()
+        dump = yield self.serialService.protocol.execute(cmd)
+        returnValue(dump)
+
+    @inlineCallbacks
+    def getMinMaxBulkDump(self):
+        cmd = command.Get5MinAveragesDump()
+        dump = yield self.serialService.protocol.execute(cmd)
+        returnValue(dump)
+
+
+    @inlineCallbacks
     def syncRTCActivity(self, skipInternet = False):
         '''
         Sync RTC activity to be programmed under the scheduler.
@@ -269,8 +282,7 @@ class EMAService(MultiService):
             log.info("At 10% of active time window {w}",w=activeInterval)
             self.logMQTTEvent(msg="At 30% of active time window {0}".format(activeInterval), kind='info')
             try:
-                cmd = command.GetDailyMinMaxDump()
-                dump = yield self.serialService.protocol.execute(cmd)
+                dump = yield self.getDailyMinMaxDump()
                 self.queue['minmax'].append(dump)
             except Exception as e:
                 self.logMQTTEvent(msg=str(e), kind='error')
@@ -280,8 +292,7 @@ class EMAService(MultiService):
             log.info("At 50% of active time window {w}",w=activeInterval)
             self.logMQTTEvent(msg="At 50% of active time window {0}".format(activeInterval), kind='info')
             try:
-                cmd = command.Get5MinAveragesDump()
-                dump = yield self.serialService.protocol.execute(cmd)
+                dump = yield self.get5MinAveragesDump()
                 self.queue['ave5min'].append(dump)
             except Exception as e:
                 self.logMQTTEvent(msg=str(e), kind='error')
