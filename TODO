@@ -3,8 +3,6 @@ Prioridad alta
 
 *) Tracking cache de los dump para no volcar todo
 
-*) excepciones y booleans ¿ hace falta convertir de excp a booleans o propagamos all the way up ?
-
 *) Eventos JSON (con retained)
    - Ya estoy en linea de nuevo (y con uptime)
    - error de registro
