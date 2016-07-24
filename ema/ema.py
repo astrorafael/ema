@@ -81,6 +81,20 @@ class EMAService(MultiService):
             'register': deque(), 
         }
         setLogLevel(namespace='ema', levelStr=self.options['log_level'])
+        self.rtc         = None
+        self.voltmeter   = None
+        self.anemometer  = None
+        self.barometer   = None
+        self.cloudsensor = None
+        self.photometer  = None
+        self.pluviometer = None
+        self.pyranometer = None
+        self.rainsensor  = None
+        self.thermometer = None
+        self.watchdog    = None
+        self.aux_relay   = None
+        self.roof_relay  = None
+        self.devices     = []
         
 
     def reporter(self):
