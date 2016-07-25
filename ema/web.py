@@ -660,7 +660,7 @@ class WebService(Service):
             obj   = json.loads(body, object_hook=object_hook)
             value = obj['value']
         except Exception as e:
-            log.failure("exception {e}", e=e)
+            log.failure("exception {excp!s}", excp=e)
             raise UnprocessableEntry(str(e))
         else:
             return value

@@ -237,7 +237,7 @@ class EMAService(MultiService):
             self.watchdog.start()
 
         except Exception as e:
-            log.failure("{excp}", excp=e)
+            log.failure("{excp!s}", excp=e)
             log.critical("Problems initializing {name}. Exiting gracefully", name=self.serialService.name)
             reactor.callLater(0,reactor.stop)
         else:

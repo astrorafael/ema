@@ -1,15 +1,11 @@
 Prioridad alta
 ==============
 
-*) Tracking cache de los dump para no volcar todo
-
 *) Eventos JSON (con retained)
    - Ya estoy en linea de nuevo (y con uptime)
    - error de registro
 *) Reload parametros, repsar los que si y los que no
    Las ventanas de actividad no se pueden recargar, los efectos serían impredecibles
-
-*) Test de los 2 bulk dumps. A veces falla si no están las trazas puestas.
 
 *) pruebas de encendido y apagado reales con Cristobal
 

@@ -296,19 +296,17 @@ class ScriptsService(Service):
     def startService(self):
         log.info("starting {name}", name=self.name)
         Service.startService(self)
-        try:
-            self.addScript('low_voltage')
-            self.addScript('aux_relay')
-            self.addScript('roof_relay')
-            self.addScript('no_internet')
-            self.addScript('active10')
-            self.addScript('active30')
-            self.addScript('active50')
-            self.addScript('active70')
-            self.addScript('active90')
-        except Exception as e:
-            log.failure("{excp}", excp=e)
-            raise
+        # Exception will be caught by parent service
+        self.addScript('low_voltage')
+        self.addScript('aux_relay')
+        self.addScript('roof_relay')
+        self.addScript('no_internet')
+        self.addScript('active10')
+        self.addScript('active30')
+        self.addScript('active50')
+        self.addScript('active70')
+        self.addScript('active90')
+      
             
     def stopService(self):
         Service.stopService(self)
