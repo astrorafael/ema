@@ -51,8 +51,6 @@ import ema.device  as device
 # Module constants
 # ----------------
 
-# Service name
-NAME = 'EMA'
 
 # -----------------------
 # Module global variables
@@ -60,7 +58,9 @@ NAME = 'EMA'
 
 log = Logger(namespace='ema')
 
-
+# -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------    
+# -----------------------------------------------------------------------------  
 
 class DumpFilter(object):
 
@@ -89,7 +89,7 @@ class DumpFilter(object):
          f.write(self.today.strftime(self.STRFTIME) + '\n')
 
     def begin(self):
-        log.info("prepare to filter dump, overlap factor is {overlap}", overlap=self.overlap)
+        log.debug("prepare to filter dump, overlap factor is {overlap}", overlap=self.overlap)
         self.today     = datetime.datetime.utcnow()
         self.yesterday = self.today - self.ONE_DAY
         self.todayPage = self.toPage(self.today.time())
@@ -104,37 +104,39 @@ class DumpFilter(object):
         # possible page so that we do a full dump
         if not self.lastDay or (self.today - self.lastDay) >= self.ONE_DAY:
             self.lastPage = self.todayPage
-            log.info("lastPage is unknown or very old, setting to {today}", today=self.todayPage)
+            log.debug("lastPage is unknown or very old, setting to {today}", today=self.todayPage)
         else:
             self.lastPage = self.toPage(self.lastDay.time())
-            log.info("lastPage = {lastPage} computed from timestamp in file", lastPage=self.todayPage)
+            log.debug("lastPage = {lastPage} computed from timestamp in file", lastPage=self.todayPage)
 
 
     def filter(self, data):
         '''Filter the result array, taking into account an overlap factor'''
-        log.info("filtering dump")
+        log.debug("filtering dump")
         self.updateCache()
         distance = (self.lastPage - self.todayPage) % self.NPAGES
         overlap  = int(round(distance * self.overlap))
         lastPage = (self.lastPage - overlap) % self.NPAGES
-        log.info("last page[before]={bef}, [after]={aft} today={tod}", 
+        log.debug("last page[before]={bef}, [after]={aft} today={tod}", 
             bef=self.lastPage, 
             aft=lastPage, 
             tod=self.todayPage)
         i = lastPage
         j = self.todayPage
         if self.todayPage > lastPage:
-            log.info("Adding results of today only")
-            log.info("Trimminng data to [{i}:{j}] section", i=i, j=j)
+            log.debug("Adding results of today only")
+            log.debug("Trimminng data to [{i}:{j}] section", i=i, j=j)
             return data[i:j]
         else:
-            log.info("Adding yesterday's and today's results")
-            log.info("Trimminng data to [0:{j}] and [{i}:-] section", j=j, i=i)
+            log.debug("Adding yesterday's and today's results")
+            log.debug("Trimminng data to [0:{j}] and [{i}:-] section", j=j, i=i)
             subset1 = data[0:j]
             subset2 = data[i:]
             return subset1 + subset2
 
-
+# -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------    
+# -----------------------------------------------------------------------------  
 
 class MinMaxDumpFilter(DumpFilter):
 
@@ -151,7 +153,9 @@ class MinMaxDumpFilter(DumpFilter):
         '''Compues the end time coresponding to a given page'''
         return datetime.time(hour=page)
 
-
+# -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------    
+# -----------------------------------------------------------------------------  
 
 class Average5MinDumpFilter(DumpFilter):
   
@@ -171,7 +175,9 @@ class Average5MinDumpFilter(DumpFilter):
         return datetime.time(hour=hour, minute=minutes%60)
 
 
-    
+# -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------    
+# -----------------------------------------------------------------------------    
 
 class EMAService(MultiService):
 
