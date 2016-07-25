@@ -14,6 +14,7 @@ from __future__ import division, absolute_import
 import sys
 import datetime
 import random
+import os
 from collections import deque
 
 # ---------------
@@ -61,6 +62,117 @@ log = Logger(namespace='ema')
 
 
 
+class DumpFilter(object):
+
+    ONE_DAY  = datetime.timedelta(days=1)
+    STRFTIME = "%Y-%m-%dT%H:%M:%SZ"
+
+    def __init__(self, overlap):
+        self.overlap      = overlap/100
+
+    def toPage(self, time):
+        '''
+        Computes the flash page corresponding to a given time.
+        To be overriden
+        '''
+        pass
+
+    def toTime(self, page):
+        '''
+        Computes the end time coresponding to a given page.
+        To be overriden.
+        '''
+        pass
+
+    def updateCache(self):
+      with open(self.PATH,'w') as f:
+         f.write(self.today.strftime(self.STRFTIME) + '\n')
+
+    def begin(self):
+        log.info("prepare to filter dump, overlap factor is {overlap}", overlap=self.overlap)
+        self.today     = datetime.datetime.utcnow()
+        self.yesterday = self.today - self.ONE_DAY
+        self.todayPage = self.toPage(self.today.time())
+        self.lastDay   = None
+
+        if os.path.isfile(self.PATH):
+            with open(self.PATH, 'r') as f:
+                self.lastDay  = datetime.datetime.strptime(f.readline()[:-1],
+                                                       self.STRFTIME)
+
+        # If unknown of a long time ago, set the last page to the oldest
+        # possible page so that we do a full dump
+        if not self.lastDay or (self.today - self.lastDay) >= self.ONE_DAY:
+            self.lastPage = self.todayPage
+            log.info("lastPage is unknown or very old, setting to {today}", today=self.todayPage)
+        else:
+            self.lastPage = self.toPage(self.lastDay.time())
+            log.info("lastPage = {lastPage} computed from timestamp in file", lastPage=self.todayPage)
+
+
+    def filter(self, data):
+        '''Filter the result array, taking into account an overlap factor'''
+        log.info("filtering dump")
+        self.updateCache()
+        distance = (self.lastPage - self.todayPage) % self.NPAGES
+        overlap  = int(round(distance * self.overlap))
+        lastPage = (self.lastPage - overlap) % self.NPAGES
+        log.info("last page[before]={bef}, [after]={aft} today={tod}", 
+            bef=self.lastPage, 
+            aft=lastPage, 
+            tod=self.todayPage)
+        i = lastPage
+        j = self.todayPage
+        if self.todayPage > lastPage:
+            log.info("Adding results of today only")
+            log.info("Trimminng data to [{i}:{j}] section", i=i, j=j)
+            return data[i:j]
+        else:
+            log.info("Adding yesterday's and today's results")
+            log.info("Trimminng data to [0:{j}] and [{i}:-] section", j=j, i=i)
+            subset1 = data[0:j]
+            subset2 = data[i:]
+            return subset1 + subset2
+
+
+
+class MinMaxDumpFilter(DumpFilter):
+
+    PATH   = '/var/cache/ema/his1h.txt'
+    NPAGES = 24
+
+
+    def toPage(self, time):
+        '''Computes the flash page corresponding to a given time'''
+        return time.hour
+
+
+    def toTime(self, page):
+        '''Compues the end time coresponding to a given page'''
+        return datetime.time(hour=page)
+
+
+
+class Average5MinDumpFilter(DumpFilter):
+  
+    PATH = '/var/cache/ema/his5min.txt'
+    NPAGES = 288
+
+
+    def toPage(self, time):
+        '''Computes the flash page corresponding to a given time'''
+        return (time.hour*60 + time.minute)//5
+
+
+    def toTime(self, page):
+        '''Computes the end time coresponding to a given page'''
+        minutes = page*5 + 5
+        hour = (minutes//60) % 24
+        return datetime.time(hour=hour, minute=minutes%60)
+
+
+    
+
 class EMAService(MultiService):
 
     # Service name
@@ -81,7 +193,9 @@ class EMAService(MultiService):
             'log'     : deque(),
             'register': deque(), 
         }
-        self.devices     = []
+        self.devices       = []
+        self.minmaxFilter  = MinMaxDumpFilter(options['overlap'])
+        self.averageFilter = Average5MinDumpFilter(options['overlap'])
         
 
     @inlineCallbacks
@@ -213,14 +327,18 @@ class EMAService(MultiService):
 
     @inlineCallbacks
     def getMinMaxBulkDump(self):
-        cmd = command.GetDailyMinMaxDump()
+        self.minmaxFilter.begin()
+        cmd  = command.GetDailyMinMaxDump()
         dump = yield self.serialService.protocol.execute(cmd)
+        dump = self.minmaxFilter.filter(dump)
         returnValue(dump)
 
     @inlineCallbacks
-    def getMinMaxBulkDump(self):
-        cmd = command.Get5MinAveragesDump()
+    def get5MinAveragesDump(self):
+        self.averageFilter.begin()
+        cmd  = command.Get5MinAveragesDump()
         dump = yield self.serialService.protocol.execute(cmd)
+        dump = self.averageFilter.filter(dump)
         returnValue(dump)
 
 

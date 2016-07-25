@@ -342,7 +342,7 @@ class EMAProtocol(LineOnlyReceiver):
         request = self._queue[0]
         handled, finished = request.decode(line)
         if finished:
-            log.info("Completed -> {request.name} (retries={request.retries}/{request.nretries})", 
+            log.info("Completed <- {request.name} (retries={request.retries}/{request.nretries})", 
             request=request)
             self._queue.popleft()
             self.busy = False

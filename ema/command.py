@@ -1146,7 +1146,7 @@ class GetDailyMinMaxDump(BulkDumpCommand):
     iterations   = 24
     ema_time_format = '(%H:%M:%S %d/%m/%Y)'
     retries      = 0
-    timeout      = {'min': 120, 'max': 120, 'factor': 2}
+    timeout      = {'min': 60, 'max': 60, 'factor': 2}
 
     def accumulate(self, line, matchobj):
         '''Default implementation, maybe overriden in subclasses'''

@@ -169,7 +169,7 @@ class MQTTService(ClientService):
         # A LA ESPECIFICACION Y PUBLICAR VIA MQTT
         def logError(failure, topic):
             log.error("MQTT publishig failed in {topic}", topic=topic)
-            log.failure("{failure}",failure=failure)
+            log.failure("{excp!s}", excp=failure)
 
         if len(self.parent.queue['register']):
             msg = self.parent.queue['register'].popleft()
@@ -212,8 +212,8 @@ class MQTTService(ClientService):
             d4 = self.protocol.publish(topic=self.topic['minmax'], qos=2, message=flat)
             d4.addErrback(logError, self.topic['minmax'])
 
-        if len(self.parent.queue['minmax']):
-            dump = self.parent.queue['minmax'].popleft()
+        if len(self.parent.queue['ave5min']):
+            dump = self.parent.queue['ave5min'].popleft()
             msg = {}
             msg['who'] = self.options['id']
             msg['rev'] = PROTOCOL_REVISION

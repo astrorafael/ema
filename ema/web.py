@@ -550,7 +550,7 @@ class WebService(Service):
     def get_minmax(self, request):
         def enqueue(value, request):
             self.parent.queue['minmax'].append(value)
-            log.info("{req.method} {req.uri} ok.", req=request)
+            log.info("{req.method} {req.uri} ok. type = {type}, len={len}", req=request, type=type(value), len=len(value))
             request.setResponseCode(200)
             request.setHeader('Content-Type', 'application/json')
             result = {
@@ -559,8 +559,7 @@ class WebService(Service):
                 'range': 'n/a',
             }
             return json.dumps(result, cls=DateTimeEncoder)
-        cmd = command.GetDailyMinMaxDump()
-        d = self.parent.serialService.protocol.execute(cmd)
+        d = self.parent.getMinMaxBulkDump()
         d.addCallbacks(enqueue, self.errorCallback,
             callbackArgs=(request,), errbackArgs=(request,))
         return d
@@ -571,7 +570,7 @@ class WebService(Service):
     def get_averages(self, request):
         def enqueue(value, request):
             self.parent.queue['ave5min'].append(value)
-            log.info("{req.method} {req.uri} ok.", req=request)
+            log.info("{req.method} {req.uri} ok. type = {type}, len={len}", req=request, type=type(value), len=len(value))
             request.setResponseCode(200)
             request.setHeader('Content-Type', 'application/json')
             result = {
@@ -580,8 +579,7 @@ class WebService(Service):
                 'range': 'n/a',
             }
             return json.dumps(result, cls=DateTimeEncoder)
-        cmd = command.Get5MinAveragesDump()
-        d = self.parent.serialService.protocol.execute(cmd)
+        d = self.parent.get5MinAveragesDump()
         d.addCallbacks(enqueue, self.errorCallback,
             callbackArgs=(request,), errbackArgs=(request,))
         return d

@@ -49,6 +49,11 @@ period = 60
 # An script at 90% activity should do it.
 shutdown = yes
 
+# Overlap factor (%) to transmit some redundancy in historic data dumps
+# Useful if a given dump fails
+# 0% = no overlap, 100%=full historic data each time
+overlap = 25
+ 
 # component log level (debug, info, warn, error, critical)
 log_level = debug
 
