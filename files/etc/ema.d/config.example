@@ -1,63 +1,51 @@
-# ----------------------------------------------------------------------
+# ------------------------------------------------------------------------------------
 # Copyright (c) 2014 Rafael Gonzalez.
 #
-# Permission is hereby granted, free of charge, to any person obtaining
-# a copy of this software and associated documentation files (the
-# "Software"), to deal in the Software without restriction, including
-# without limitation the rights to use, copy, modify, merge, publish,
-# distribute, sublicense, and/or sell copies of the Software, and to
-# permit persons to whom the Software is furnished to do so, subject to
-# the following conditions:
-# 
-# The above copyright notice and this permission notice shall be
-# included in all copies or substantial portions of the Software.
-# 
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-# LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-# ----------------------------------------------------------------------
+# See the LICENSE file for details
+# ------------------------------------------------------------------------------------
 
-#========================================================================#
-#                      Generic configuration Data                        #
-#========================================================================#
+
+#==============================================================================#
+#                            Generic configuration Data                        #
+#==============================================================================#
 [ema]
 
-# Log File settings
+# Log File path
+# Not reloadable property
 log_file = /var/log/ema.log
 
-
-# The host computer (i.ea Raspberry Pi)  has a buli-in RTC
+# The host computer (i.e a Raspberry Pi)  has a buli-in RTC (yes/no)
+# Not reloadable property
 host_rtc = no
 
 # Number of retries to detect an EMA
 # Usually set to 3, set to 0 for debugging purposes
+# Not reloadable property
 nretries = 0
 
-# EMA sends status mesaages every 5 seconds
-# We may not wish to publish all the messages
-# so we subsample.
-# This si the subsample period in seconds
-# can be no less than 5 seconds
+# EMA sends status mesaages every 5 seconds.
+# We may not wish to publish all the messages, so we subsample.
+# This is the subsample period in seconds (>= 5 seconds)
+# reloadable property
 period = 60
 
 # Flag: shuts down this program when 90% active time interval been reached
 # Warning: This does not shut down the computer. 
 # An script at 90% activity should do it.
+# reloadable property
 shutdown = yes
 
 # Overlap factor (%) to transmit some redundancy in historic data dumps
 # Useful if a given dump fails
 # 0% = no overlap, 100%=full historic data each time
+# reloadable property
 overlap = 25
  
 # component log level (debug, info, warn, error, critical)
+# reloadable property
 log_level = debug
 
-#------------------------------------------------------------------------#
+#------------------------------------------------------------------------------#
 
 [serial]
 # Serial Port Settings. 
@@ -67,44 +55,41 @@ log_level = debug
 # Not reloadable property
 endpoint = serial:/dev/ttyUSB0:9600
 
-# Perform syncronization of calibration constants at startup
-# (except RTC and Aux Relay)
-sync = True
-
-# Upload period (in seconds).
-# EMA current state measurements upload period
-# Intermediate samples are discarded.
-upload_period = 60
-
 # component log level (debug, info, warn, error, critical)
+# reloadable property
 log_level = debug
 
 # log serial protocol messages from/to EMA ?
+# reloadable property
 log_messages = yes
 
-#------------------------------------------------------------------------#
+#------------------------------------------------------------------------------#
 [probe]
 # Internet connectivity probe
-# It is useful to know when the program has no Internet connectivity
-# If no network connectivity, then the program:
-# - will synchronize its clock from EMA RTC (insteado of the other way round)
+# If the host computer has not network connectivity, then this program:
+# - will synchronize its clock from EMA RTC (normally, it is EMA station
+#   RTC what gets synchronized to the host clock)
 # - will execute an script (i.e. probably to shut the host down)
 
 # 3 Sites to probe (no more, no less)
+# reloadable properties
 site1 = http://www.google.es
 site2 = http://www.facebook.es
 site3 = http://www.twitter.es
 
 # Number of probes
+# reloadable property
 attempts = 3
 
 # Interval (seconds) between probes
+# reloadable property
 interval = 30
 
 # component log level (debug, info, warn, error, critical)
+# reloadable property
 log_level = debug
 
-#------------------------------------------------------------------------#
+#------------------------------------------------------------------------------#
 [scripts]
 # Internet connectivity detection
 # It is useful to know when the program has no internet connectivity
@@ -116,55 +101,67 @@ log_level = debug
 # List of comma separated scripts to execute on change of roof relay switch 
 # Each script should show the full path. 
 # Leave empty if not used
+# reloadable property
 roof_relay = 
 
 # Format string for the script arguments
+# reloadable property
 roof_relay_args = "--status %s --reason %s"
 
 # Script mode: (Never, Once, Many)
 # When launched mutiple times, EMA server does not lauch a script
 # till the previous run is over
+# reloadable property
 roof_relay_mode = Many
 
 
 # List of comma separated scripts to execute on change of aux relay switch 
 # Each script should show the full path. 
 # Leave empty if not used
+# reloadable property
 aux_relay = 
 
 # Format string for the script arguments
+# reloadable property
 aux_relay_args = "--status %s --reason %s"
 
 # Script mode: (Never, Once, Many)
 # When launched mutiple times, EMA server does not lauch a script
 # till the previous run is over
+# reloadable property
 aux_relay_mode = Never
 
 # List of comma separated scripts to execute on low voltage 
 # Each script should show the full path. 
 # Leave empty if not used
+# reloadable property
 low_voltage = /home/pi/nto/ema/scripts/volt-script
 
 # Format string for the script arguments
+# reloadable property
 low_voltage_args = '--voltage %.1f --threshold %.1f --size %d'
 
 # Script mode: (Never, Once, Many)
 # When launched mutiple times, EMA server does not lauch a script
 # till the previous run is over
+# reloadable property
 low_voltage_mode = Once
 
 # List of comma separated scripts to execute when
 # no internet connection has been detected 
 # Each script should show the full path. 
 # Leave empty if not used
+# reloadable property
 no_internet =
 
 # Format string for the script arguments
+# reloadable property
 no_internet_args = ''
 
 # Script mode: (Never, Once, Many)
 # When launched mutiple times, EMA server does not lauch a script
 # till the previous run is over
+# reloadable property
 no_internet_mode = Once
 
 
@@ -172,6 +169,7 @@ no_internet_mode = Once
 # the current time reaches the 10%, 30%, 50%, 70%, 90% active interval
 # Each script should show the full path. 
 # Leave empty if not used
+# reloadable properties
 active10 =
 active30 =
 active50 =
@@ -181,6 +179,7 @@ active90 =
 # Script mode: (Never, Once, Many)
 # When launched mutiple times, EMA server does not lauch a script
 # till the previous run is over
+# reloadable properties
 active10_mode = Once
 active10_args = '--now %s --active-start %s --active-end %s --inactive-start %s --inactive-end %s'
 active30_mode = Once
@@ -193,23 +192,26 @@ active90_mode = Once
 active90_args = '--now %s --active-start %s --active-end %s --inactive-start %s --inactive-end %s'
 
 # component log level (debug, info, warn, error, critical)
+# reloadable property
 log_level = debug
 
-#------------------------------------------------------------------------#
+#------------------------------------------------------------------------------#
 
 [mqtt]
 # MQTT Client config
 
 # Unique Station Id among all EMA
+# Not reloadable property
 id = foo
 
 # The channel string used as the station id in topics (i.e EMA/<channel>/#)
 # and also as part of the client_id when connecting to the broker.
+# Not reloadable property
 channel = foo
 
 # Username/password credentials
 # leave blank if not needed
-# non reloadable properies
+# Not reloadable properties
 username = 
 password = 
 
@@ -218,6 +220,7 @@ password =
 keepalive = 60
 
 # Broker to connect
+# Not reloadable property
 broker = tcp:test.mosquitto.org:1883
 
 # Timeout is constant in all MQTT protocol except when
@@ -225,16 +228,19 @@ broker = tcp:test.mosquitto.org:1883
 # on PDU size and bandwith estimation is added
 
 # Tx Timeout, constant part (in seconds)
+# reloadable property
 timeout = 4
 
 # Tx Timeout, bandwith estimation for variable part (in bytes/sec)
-# Avoid tiemouts when transmitting large payloads
+# Avoid timeouts when transmitting large payloads
+# reloadable property
 bandwidth = 10000
 
 # component log level (debug, info, warn, error, critical)
+# reloadable property
 log_level = debug
 
-#------------------------------------------------------------------------#
+#------------------------------------------------------------------------------#
 
 [scheduler]
 # The scheduler keeps a list of active window to do things like
@@ -252,19 +258,23 @@ log_level = debug
 #    sudo service ema restart poweroff
 #
 # Time given in UTC Time.
+# Not reloadable property
 intervals = 12:00-12:15,20:00-20:15
 
 # component log level (debug, info, warn, error, critical)
+# reloadable property
 log_level = info
 
 
-#========================================================================#
-#                      Sensor configuration Data                         #
-#========================================================================#
+#==============================================================================#
+#                            Sensor configuration Data                         #
+#==============================================================================#
 
-#------------------------------------------------------------------------#
+#------------------------------------------------------------------------------#
 
+# Power Supply voltmeter
 [voltmeter]
+
 # sync parameters
 sync = no
 
@@ -286,7 +296,8 @@ threshold = 11.8
 # emeregency actions before relays switch off
 delta = 0.2
 
-#------------------------------------------------------------------------#
+#------------------------------------------------------------------------------#
+
 # Mechanical Anemometer
 [anemometer]
 
@@ -307,7 +318,7 @@ threshold = 20
 # avergae wind speed > wind_thres10 will close the roof relay
 ave_threshold = 66
 
-#------------------------------------------------------------------------#
+#------------------------------------------------------------------------------#
 
 [barometer]
 
@@ -321,7 +332,7 @@ height = 700
 offset = -19
 
 
-#------------------------------------------------------------------------#
+#------------------------------------------------------------------------------#
 
 # Peltier-based cloud sensor
 [cloudsensor]
@@ -335,7 +346,7 @@ gain = 1.0
 # Threshold to close roof relay [%]
 threshold = 67
 
-#------------------------------------------------------------------------#
+#------------------------------------------------------------------------------#
 
 # Unihedron-like, wide field photometer measuring night visual magnitude.
 [photometer]
@@ -350,17 +361,19 @@ offset = -0.5
 threshold  = 10.5
 
 
-#------------------------------------------------------------------------#
+#------------------------------------------------------------------------------#
+
 # Pluviometer (Rain Gauge) sensor
 [pluviometer]
 
 # sync parameters
 sync = no
 
-# Constant to give readiongs in litres.
+# Constant to give readings in litres.
 calibration = 124
 
-#------------------------------------------------------------------------#
+#------------------------------------------------------------------------------#
+
 # Pyranometer device, measuring solar radiation
 [pyranometer]
 
@@ -371,7 +384,7 @@ gain   = 1.6
 offset = 0
 
 
-#------------------------------------------------------------------------#
+#------------------------------------------------------------------------------#
 
 # Rain detection sensor
 [rainsensor]
@@ -382,10 +395,9 @@ sync = no
 # Rain threshold to close roof (0..9) [%]
 threshold = 1
 
+#------------------------------------------------------------------------------#
 
-#------------------------------------------------------------------------#
-
-# Themometer measuring ambient Temperature and dew point 
+# Themometer measuring ambient temperature and dew point 
 [thermometer]
 
 # sync parameters
@@ -396,8 +408,7 @@ sync = no
 # the roof relay will close.
 threshold = 5.0
 
-
-#------------------------------------------------------------------------#
+#------------------------------------------------------------------------------#
 
 [watchdog]
 
@@ -409,17 +420,18 @@ sync = yes
 # The program sends a keepalive message every period/2 seconds
 period = 200
 
-#------------------------------------------------------------------------#
+#------------------------------------------------------------------------------#
 
+# EMA Real Time Clock
 [rtc]
 
 # Max difference between EMA and host computer 
 # to synchronize time [seconds].
 max_drift  = 2
 
-#========================================================================#
-#                      Actuator configuration Data                       #
-#========================================================================#
+#==============================================================================#
+#                      Actuator configuration Data                             #
+#==============================================================================#
 
 # Auxiliar relay
 [aux_relay]
@@ -435,28 +447,33 @@ sync = yes
 mode = Auto
 
 
-#------------------------------------------------------------------------#
+#------------------------------------------------------------------------------#
 # Roof relay
 [roof_relay]
 
 # sync parameters
 sync = no
 
-#------------------------------------------------------------------------#
+#------------------------------------------------------------------------------#
 # Web Service: REST API where to configure EMA remotely (thresholds, etc.)
 [web]
 
 # server endpoint where it listens to for HTTP requests
+# Not reloadable property
 server = tcp:8080:0.0.0.0
 
 # HTTP access log file
+# Not reloadable property
 access = /var/log/ema-access.log
 
 # Basic Authentication password file path
+# Not reloadable property
 passwd = /etc/ema.d/passwd
 
 # Stores password in plain text
+# Not reloadable property
 plain = no
 
 # component log level (debug, info, warn, error, critical)
+# reloadable property
 log_level = info
