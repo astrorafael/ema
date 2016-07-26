@@ -275,11 +275,10 @@ class RWAttribute(Attribute):
 
 class Device(object):
     '''Base class for al EMA virtual instruments, actuators and other devices'''
-    def __init__(self, parent, options, global_sync):
+    def __init__(self, parent, options):
         self.name        = self.__class__.__name__ 
         self.options     = options
         self.parent      = parent
-        self.global_sync = global_sync
         self.sync_params = []
 
     @inlineCallbacks
@@ -318,7 +317,7 @@ class Device(object):
             if not self.paramEquals(value, configured):
                 log.warn("{title} values do not match [EMA = {read}] [file = {file}]", 
                     title=name, read=value, file=configured)
-                if self.options['sync'] and self.global_sync:
+                if self.options['sync']:
                         log.info("Synchronizing {title}", title=name)
                         setattr(self, name, configured)
             else:
@@ -332,7 +331,7 @@ class Device(object):
 class Thermopile(Device):
 
 
-    def __init__(self, parent, options, global_sync=True):
+    def __init__(self, parent, options):
         pass    
         
 # --------------------------------------------------------------------
@@ -368,8 +367,8 @@ class Anemometer(Device):
     calibration   = Attribute.deferred(parameter=Calibration())
     model         = Attribute.deferred(parameter=Model())
 
-    def __init__(self, parent, options, global_sync=True):
-        Device.__init__(self, parent, options, global_sync)
+    def __init__(self, parent, options):
+        Device.__init__(self, parent, options)
         self.sync_params = [Anemometer.Threshold.name, 
             Anemometer.AverageThreshold.name, 
             Anemometer.Calibration.name, 
@@ -397,8 +396,8 @@ class Barometer(Device):
     height    = Attribute.deferred(parameter=Height())
     offset    = Attribute.deferred(parameter=Offset())
 
-    def __init__(self, parent, options, global_sync=True):
-        Device.__init__(self, parent, options, global_sync)
+    def __init__(self, parent, options):
+        Device.__init__(self, parent, options)
         self.sync_params = [Barometer.Height.name, Barometer.Offset.name]
 
 # --------------------------------------------------------------------
@@ -422,8 +421,8 @@ class CloudSensor(Device):
     threshold = Attribute.deferred(parameter=Threshold())
     gain      = Attribute.deferred(parameter=Gain())
 
-    def __init__(self, parent, options, global_sync=True):
-        Device.__init__(self, parent, options, global_sync)
+    def __init__(self, parent, options):
+        Device.__init__(self, parent, options)
         self.sync_params = [CloudSensor.Threshold.name, CloudSensor.Gain.name]
 
 # --------------------------------------------------------------------
@@ -446,8 +445,8 @@ class Photometer(Device):
     # Deferred attribute handling via Descriptors
     threshold = Attribute.deferred(parameter=Threshold())
     offset    = Attribute.deferred(parameter=Offset())
-    def __init__(self, parent, options, global_sync=True):
-        Device.__init__(self, parent, options, global_sync)
+    def __init__(self, parent, options):
+        Device.__init__(self, parent, options)
         self.sync_params = [Photometer.Threshold.name, Photometer.Offset.name]
 
 
@@ -467,8 +466,8 @@ class Pluviometer(Device):
     # Deferred attribute handling via Descriptors
     calibration      = Attribute.deferred(parameter=CalibrationFactor())
 
-    def __init__(self, parent, options, global_sync=True):
-        Device.__init__(self, parent, options, global_sync)
+    def __init__(self, parent, options):
+        Device.__init__(self, parent, options)
         self.sync_params = [Pluviometer.CalibrationFactor.name]
 
 # --------------------------------------------------------------------
@@ -493,8 +492,8 @@ class Pyranometer(Device):
     gain      = Attribute.deferred(parameter=Gain())
     offset    = Attribute.deferred(parameter=Offset())
 
-    def __init__(self, parent, options, global_sync=True):
-        Device.__init__(self, parent, options, global_sync)
+    def __init__(self, parent, options):
+        Device.__init__(self, parent, options)
         self.sync_params = [Pyranometer.Gain.name, Pyranometer.Offset.name] 
 
 # --------------------------------------------------------------------
@@ -512,8 +511,8 @@ class RainSensor(Device):
     # Deferred attribute handling via Descriptors
     threshold = Attribute.deferred(parameter=Threshold())
 
-    def __init__(self, parent, options, global_sync=True):
-        Device.__init__(self, parent, options, global_sync)
+    def __init__(self, parent, options):
+        Device.__init__(self, parent, options)
         self.sync_params = [RainSensor.Threshold.name] 
 
 # --------------------------------------------------------------------
@@ -531,8 +530,8 @@ class Thermometer(Device):
     # Deferred attribute handling via Descriptors
     threshold = Attribute.deferred(parameter=Threshold())
 
-    def __init__(self, parent, options, global_sync=True):
-        Device.__init__(self, parent, options, global_sync)
+    def __init__(self, parent, options):
+        Device.__init__(self, parent, options)
         self.sync_params = [Thermometer.Threshold.name] 
 
 
@@ -551,8 +550,8 @@ class RoofRelay(Device):
     # Deferred attribute handling via Descriptors
     mode          = Attribute.deferred(parameter=Mode())
 
-    def __init__(self, parent, options, global_sync=True):
-        Device.__init__(self, parent, options, global_sync)
+    def __init__(self, parent, options):
+        Device.__init__(self, parent, options)
         self.sync_params = []
         self.switchon = deque(maxlen=2)
         self.parent.addStatusCallback(self.onStatus)
@@ -605,8 +604,8 @@ class AuxiliarRelay(Device):
     switchOffTime = Attribute.deferred(parameter=SwitchOffTime())
     mode          = Attribute.deferred(parameter=Mode())
 
-    def __init__(self, parent, options, global_sync=True):
-        Device.__init__(self, parent, options, global_sync)
+    def __init__(self, parent, options):
+        Device.__init__(self, parent, options)
         self.sync_params = [AuxiliarRelay.Mode.name]  
         self.switchon = deque(maxlen=2)
         self.parent.addStatusCallback(self.onStatus)
@@ -656,8 +655,8 @@ class RealTimeClock(Device):
     # Deferred attribute handling via Descriptors
     dateTime = Attribute.deferred(parameter=DateTime())
 
-    def __init__(self, parent, options, global_sync=True):
-        Device.__init__(self, parent, options, global_sync)
+    def __init__(self, parent, options):
+        Device.__init__(self, parent, options)
         self.sync_params = [RealTimeClock.DateTime.name]
 
 
@@ -751,11 +750,16 @@ class Voltmeter(Device):
     threshold = Attribute.deferred(parameter=Threshold())
     offset    = Attribute.deferred(parameter=Offset())
 
-    def __init__(self, parent, options, upload_period, global_sync=True):
-        Device.__init__(self, parent, options, global_sync)
+    def __init__(self, parent, options, upload_period):
+        Device.__init__(self, parent, options)
         self.sync_params = [Voltmeter.Threshold.name, Voltmeter.Offset.name]
         self.voltage = deque(maxlen=(upload_period//command.PERIOD))
         self.parent.addStatusCallback(self.onStatus)
+
+
+    def setUploadPeriod(upload_period):
+        '''To support reloading or setting new upload period'''
+        self.voltage = deque(maxlen=(upload_period//command.PERIOD))
 
 
     def onStatus(self, message, timestamp):
@@ -795,8 +799,8 @@ class Watchdog(Device):
     period   = Attribute.deferred(parameter=Period())
     presence = Attribute.deferred(parameter=Presence())
 
-    def __init__(self, parent, options, global_sync=True):
-        Device.__init__(self, parent, options, global_sync)
+    def __init__(self, parent, options):
+        Device.__init__(self, parent, options)
         self.sync_params = [Watchdog.Period.name]
         self.pingTask  = task.LoopingCall(self.ping)
 

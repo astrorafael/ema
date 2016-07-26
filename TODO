@@ -1,9 +1,14 @@
 Prioridad alta
 ==============
+*) Bug con e scehuler, miar el log, saca mal las trazas y no entiendo porque hace sincronizaciones
+
+*) Documentar
+ - APIs REST
+ - No soporte de windows
 
 *) Eventos JSON (con retained)
    - Ya estoy en linea de nuevo (y con uptime)
-   - error de registro
+   - error de registro (? -> se referira a la falta de sincronizacion total ?)
 *) Reload parametros, repsar los que si y los que no
    Las ventanas de actividad no se pueden recargar, los efectos serían impredecibles
 

@@ -254,29 +254,18 @@ class EMAService(MultiService):
         ''' 
         self.rtc         = device.RealTimeClock(self, self.options['rtc'])
         self.voltmeter   = device.Voltmeter(self, self.options['voltmeter'],
-                            upload_period=self.options['upload_period'], 
-                            global_sync=self.options['sync'])
-        self.anemometer  = device.Anemometer(self, self.options['anemometer'],
-                            global_sync=self.options['sync'])
-        self.barometer   = device.Barometer(self, self.options['barometer'],
-                            global_sync=self.options['sync'])
-        self.cloudsensor = device.CloudSensor(self, self.options['cloudsensor'],
-                            global_sync=self.options['sync'])
-        self.photometer  = device.Photometer(self, self.options['photometer'],
-                            global_sync=self.options['sync'])
-        self.pluviometer = device.Pluviometer(self, self.options['pluviometer'],
-                            global_sync=self.options['sync'])
-        self.pyranometer = device.Pyranometer(self, self.options['pyranometer'],
-                            global_sync=self.options['sync'])
-        self.rainsensor  = device.RainSensor(self, self.options['rainsensor'],
-                            global_sync=self.options['sync'])
-        self.thermometer = device.Thermometer(self, self.options['thermometer'],
-                            global_sync=self.options['sync'])
-        self.watchdog    = device.Watchdog(self, self.options['watchdog'],
-                            global_sync=self.options['sync'])
-        self.aux_relay   = device.AuxiliarRelay(self, self.options['aux_relay'],
-                            global_sync=self.options['sync'])
-        self.roof_relay  = device.RoofRelay(self, self.options['roof_relay'], global_sync=False)
+                            upload_period=self.options['period'])
+        self.anemometer  = device.Anemometer(self, self.options['anemometer'])
+        self.barometer   = device.Barometer(self, self.options['barometer'])
+        self.cloudsensor = device.CloudSensor(self, self.options['cloudsensor'])
+        self.photometer  = device.Photometer(self, self.options['photometer'])
+        self.pluviometer = device.Pluviometer(self, self.options['pluviometer'])
+        self.pyranometer = device.Pyranometer(self, self.options['pyranometer'])
+        self.rainsensor  = device.RainSensor(self, self.options['rainsensor'])
+        self.thermometer = device.Thermometer(self, self.options['thermometer'])
+        self.watchdog    = device.Watchdog(self, self.options['watchdog'])
+        self.aux_relay   = device.AuxiliarRelay(self, self.options['aux_relay'])
+        self.roof_relay  = device.RoofRelay(self, self.options['roof_relay'])
         self.devices     = [self.voltmeter, self.anemometer, self.barometer, self.cloudsensor,
                             self.photometer,self.pluviometer,self.pyranometer,self.rainsensor,
                             self.watchdog, self.aux_relay, self.roof_relay]       

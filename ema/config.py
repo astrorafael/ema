@@ -99,49 +99,58 @@ def loadCfgFile(path):
     options['ema']['overlap']    = parser.getint("ema","overlap")
     options['ema']['shutdown']   = parser.getboolean("ema","shutdown")
 
-    options['ema']['sync']          = parser.getboolean("serial","sync")
-    options['ema']['upload_period'] = parser.getint("serial","upload_period")
     options['ema']['voltmeter'] = {}
     options['ema']['voltmeter']['sync']            = parser.getboolean("voltmeter","sync")
     options['ema']['voltmeter']['offset']          = parser.getfloat("voltmeter","offset")
     options['ema']['voltmeter']['threshold']       = parser.getfloat("voltmeter","threshold")
     options['ema']['voltmeter']['delta']           = parser.getfloat("voltmeter","delta")
+
     options['ema']['anemometer'] = {}
     options['ema']['anemometer']['sync']            = parser.getboolean("anemometer","sync")
     options['ema']['anemometer']['calibration']     = parser.getint("anemometer","calibration")
     options['ema']['anemometer']['model']           = parser.get("anemometer","model")
     options['ema']['anemometer']['threshold']       = parser.getint("anemometer","threshold")
     options['ema']['anemometer']['ave_threshold']   = parser.getint("anemometer","ave_threshold")
+
     options['ema']['barometer'] = {}
     options['ema']['barometer']['sync']            = parser.getboolean("barometer","sync")
     options['ema']['barometer']['height']          = parser.getint("barometer","height")
     options['ema']['barometer']['offset']          = parser.getint("barometer","offset")
+
     options['ema']['cloudsensor'] = {}
     options['ema']['cloudsensor']['sync']            = parser.getboolean("cloudsensor","sync")
     options['ema']['cloudsensor']['threshold']       = parser.getint("cloudsensor","threshold")
     options['ema']['cloudsensor']['gain']            = parser.getfloat("cloudsensor","gain")
+
     options['ema']['photometer'] = {}
     options['ema']['photometer']['sync']            = parser.getboolean("photometer","sync")
     options['ema']['photometer']['threshold']       = parser.getfloat("photometer","threshold")
     options['ema']['photometer']['offset']          = parser.getfloat("photometer","offset")
+
     options['ema']['pluviometer'] = {}
     options['ema']['pluviometer']['sync']            = parser.getboolean("pluviometer","sync")
     options['ema']['pluviometer']['calibration']     = parser.getint("pluviometer","calibration")
+
     options['ema']['pyranometer'] = {}
     options['ema']['pyranometer']['sync']            = parser.getboolean("pyranometer","sync")
     options['ema']['pyranometer']['gain']            = parser.getfloat("pyranometer","gain")
     options['ema']['pyranometer']['offset']          = parser.getint("pyranometer","offset")
+
     options['ema']['rainsensor'] = {}
     options['ema']['rainsensor']['sync']            = parser.getboolean("rainsensor","sync")
     options['ema']['rainsensor']['threshold']       = parser.getint("rainsensor","threshold")
+
     options['ema']['thermometer'] = {}
     options['ema']['thermometer']['sync']            = parser.getboolean("thermometer","sync")
     options['ema']['thermometer']['threshold']      = parser.getfloat("thermometer","threshold")
+
     options['ema']['watchdog'] = {}
     options['ema']['watchdog']['sync']            = parser.getboolean("watchdog","sync")
     options['ema']['watchdog']['period']          = parser.getint("watchdog","period")
+
     options['ema']['rtc'] = {}
     options['ema']['rtc']['max_drift']          = parser.getint("rtc","max_drift")
+
     options['ema']['aux_relay'] = {}
     options['ema']['aux_relay']['sync']          = parser.getboolean("aux_relay","sync")
     options['ema']['aux_relay']['mode']          = parser.get("aux_relay","mode")
@@ -152,9 +161,6 @@ def loadCfgFile(path):
     options['serial']['endpoint']      = parser.get("serial","endpoint")
     options['serial']['log_level']     = parser.get("serial","log_level")
     options['serial']['log_messages']  = parser.getboolean("serial","log_messages")
-   
-
-    
   
     options['scripts'] = {}
     options['scripts']['roof_relay']       = parser.get("scripts","roof_relay")
