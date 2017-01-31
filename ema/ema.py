@@ -225,7 +225,7 @@ class EMAService(MultiService):
         '''
         log.info('starting {name}', name=self.name)
         self.scriptsService   = self.getServiceNamed(ScriptsService.NAME)
-        self.probeService    = self.getServiceNamed(ProbeService.NAME)
+        self.probeService     = self.getServiceNamed(ProbeService.NAME)
         self.serialService    = self.getServiceNamed(SerialService.NAME)
         self.schedulerService = self.getServiceNamed(SchedulerService.NAME)
         self.mqttService      = self.getServiceNamed(MQTTService.NAME)
