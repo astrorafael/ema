@@ -144,6 +144,7 @@ class MQTTService(ClientService):
         Connect to MQTT broker
         '''
         self.protocol = protocol
+        self.protocol.onDisconnection = self.onDisconnection
         try:
             self.protocol.setTimeout(self.options['timeout'])
             self.protocol.setBandwith(self.options['bandwidth'])
@@ -159,6 +160,17 @@ class MQTTService(ClientService):
             self.periodicTask = task.LoopingCall(self._publish)
             self.periodicTask.start(self.T, now=False) # call every T seconds
        
+
+    def onDisconnection(self, reason):
+        '''
+        Disconenction handler.
+        Tells ClientService what to do when the conenction is lost
+        '''
+        log.warn("Lost connection with MQTT broker")
+        if self.periodicTask:
+            self.periodicTask.stop()
+            self.periodicTask = None
+        self.whenConnected().addCallback(self.connectToBroker)
 
     #@inlineCallbacks
     def _publish(self):
