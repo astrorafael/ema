@@ -441,10 +441,12 @@ class SerialService(ClientService):
                 self.protocol = self.factory.buildProtocol(0)
                 self.serport  = SerialPort(self.protocol, self.endpoint[0], reactor, baudrate=self.endpoint[1])
             self.gotProtocol(self.protocol)
+            log.info("Using serial port {tty}", tty=self.endpoint[0])
         else:
             ClientService.startService(self)
             d = self.whenConnected()
             d.addCallback(self.gotProtocol)
+            log.info("Using TCP endpopint {endpoint} as serial port", endpoint=self.endpoint)
             return d
             
     @inlineCallbacks
