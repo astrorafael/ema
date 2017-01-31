@@ -1,6 +1,8 @@
 Prioridad alta
 ==============
-*) Bug con e scehuler, miar el log, saca mal las trazas y no entiendo porque hace sincronizaciones
+*) Reconexiones cuando se cae el broker
+
+*) Bug con el scheduler, miar el log, saca mal las trazas y no entiendo porque hace sincronizaciones
 
 *) Documentar
  - APIs REST
