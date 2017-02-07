@@ -167,11 +167,23 @@ class MQTTService(ClientService):
         Tells ClientService what to do when the conenction is lost
         '''
         log.warn("Lost connection with MQTT broker")
-        if self.periodicTask:
-            self.periodicTask.stop()
-            self.periodicTask = None
+        
+        self.periodicTask.stop()
+        self.periodicTask = task.LoopingCall(self._onHold)
+        self.periodicTask.start(60, now=False) # call every 60 seconds
         self.whenConnected().addCallback(self.connectToBroker)
 
+
+    def _onHold(self):
+        qnames  = ['register','log', 'status','minmax','ave5min']
+        qmaxlen = [10, 100, 5, 1000, 1000]
+        queues  = [self.parent.queue[item] for item in qnames]
+        for q in queues:
+            if len(q) >= qmaxlen[queues.index(q)]:
+                msg = q.popleft()
+                log.debug("dropping message {m!r} from {name} till MQTT connection is restored", 
+                    name=qnames[queues.index(q)], m=msg)
+                
 
     def _publish(self):
         '''

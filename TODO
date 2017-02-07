@@ -1,6 +1,6 @@
 Prioridad alta
 ==============
-*) Reconexiones cuando se cae el broker
+*) Maximo numero de mensajes en las  colas por tipo mejor factorizado. Ahora está a fuego.
 
 *) Bug con el scheduler, miar el log, saca mal las trazas y no entiendo porque hace sincronizaciones
 
@@ -19,7 +19,6 @@ Prioridad alta
 Prioridad baja
 ===============
 
-*) Servicio MQTTClient para stars4all
 *) compatibilidad con Python 3
 *) Compatibilidad con Windows:
    - Timezone info en windows
