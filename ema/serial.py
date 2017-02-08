@@ -191,6 +191,11 @@ class EMAProtocol(LineOnlyReceiver):
         self._queue        = deque()              # Command queue
         self.busy   = False
         self.paused = False
+        # stat counters
+        self.nreceived = 0
+        self.nresponse = 0
+        self.nunsolici = 0
+        self.nunknown  = 0
       
     def connectionMade(self):
         log.debug("connectionMade()")
@@ -200,12 +205,16 @@ class EMAProtocol(LineOnlyReceiver):
         now = datetime.datetime.utcnow() + datetime.timedelta(seconds=0.5)
         line = (line.lstrip(' \t\n\r') + b')').decode('latin-1')
         log2.info("<== EMA [{l:02d}] {line}", l=len(line), line=line)
+        self.nreceived += 1
         handled = self._handleCommandResponse(line, now)
         if handled:
+            self.nresponse += 1
             return
         handled = self._handleUnsolicitedResponse(line, now)
         if handled:
+            self.nunsolici += 1
             return
+        self.nunknown += 1
         log.debug("Unknown/Unexpected message {line}", line=line)
 
 
@@ -258,6 +267,15 @@ class EMAProtocol(LineOnlyReceiver):
         '''
         nretries = nretries or cmd.retries
         return self._enqueue(cmd, nretries=nretries)
+
+    def resetStats(self):
+        '''
+        Reset statistics counters.
+        '''
+        self.nreceived = 0
+        self.nresponse = 0
+        self.nunsolici = 0
+        self.nunknown  = 0
 
     # --------------
     # Helper methods
@@ -435,6 +453,8 @@ class SerialService(ClientService):
         By exception, this returns a deferred that is handled by emaservice
         '''
         log.info("starting Serial Service")
+        self.statTask = task.LoopingCall(self.printStats)
+        self.statTask.start(3600, now=False)  # call every hour
         if self.goSerial:
             Service.startService(self)
             if self.serport is None:
@@ -451,6 +471,7 @@ class SerialService(ClientService):
             
     @inlineCallbacks
     def stopService(self):
+        self.statTask.cancel()
         if not self.goSerial:
             try:
                 yield ClientService.stopService(self)
@@ -471,6 +492,22 @@ class SerialService(ClientService):
         setLogLevel(namespace='protoc', levelStr=protocol_level)
         log.info("new log level is {lvl}", lvl=options['log_level'])
         self.options = options
+
+    # --------------
+    # Periodic task
+    # ---------------
+
+    def printStats(self):
+        tot  = self.protocol.nreceived
+        nack = self.protocol.nresponse
+        nuns = self.protocol.nunsolici
+        nunk = self.protocol.nunknown 
+        quality = (nack + nuns)*100 / tot if tot != 0 else None 
+        log.info("EMA SERIAL STATS: TOTAL = {tot:03d}, UNKNOWN = {nunk:03d}", 
+            tot=tot, nunk=nunk)
+        log.info("EMA SERIAL LINE QUALITY = {q:0.2f}%", q=quality)
+        self.protocol.resetStats()
+
 
     # --------------
     # Helper methods
