@@ -183,6 +183,10 @@ class EMAService(MultiService):
 
     # Service name
     NAME = 'EMA'
+    # Queue names, by priority
+    QNAMES = ['register','log','status', 'minmax', 'ave5min' ]
+    # Queue sizes
+    QSIZES = [ 10, 1000, 10, 10*24*60, 10*24*60]
 
 
     def __init__(self, options, cfgFilePath):
