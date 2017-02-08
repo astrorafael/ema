@@ -22,4 +22,4 @@
 # ----------------------------------------------------------------------
 
 # Config file path for the EMA Service
-CONFIG_FILE="/etc/ema/config"
+CONFIG_FILE="/etc/ema.d/config"

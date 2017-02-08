@@ -21,7 +21,7 @@ host_rtc = no
 # Number of retries to detect an EMA
 # Usually set to 3, set to 0 for debugging purposes
 # Not reloadable property
-nretries = 0
+nretries = 3
 
 # EMA sends status mesaages every 5 seconds.
 # We may not wish to publish all the messages, so we subsample.
@@ -43,7 +43,7 @@ overlap = 25
  
 # component log level (debug, info, warn, error, critical)
 # reloadable property
-log_level = debug
+log_level = info
 
 #------------------------------------------------------------------------------#
 
@@ -53,7 +53,17 @@ log_level = debug
 # Baud rate supported only 9600 & 57600
 # As an alternative a tcp:<host>:port can be specified
 # Not reloadable property
+#endpoint = tcp:foo.bar.baz:20112
 endpoint = serial:/dev/ttyUSB0:9600
+
+# Perform syncronization of calibration constants at startup
+# (except RTC and Aux Relay)
+sync = True
+
+# Upload period (in seconds).
+# EMA current state measurements upload period
+# Intermediate samples are discarded.
+upload_period = 60
 
 # component log level (debug, info, warn, error, critical)
 # reloadable property
@@ -87,7 +97,7 @@ interval = 30
 
 # component log level (debug, info, warn, error, critical)
 # reloadable property
-log_level = debug
+log_level = info
 
 #------------------------------------------------------------------------------#
 [scripts]
@@ -135,7 +145,7 @@ aux_relay_mode = Never
 # Each script should show the full path. 
 # Leave empty if not used
 # reloadable property
-low_voltage = /home/pi/nto/ema/scripts/volt-script
+low_voltage = 
 
 # Format string for the script arguments
 # reloadable property
@@ -193,7 +203,7 @@ active90_args = '--now %s --active-start %s --active-end %s --inactive-start %s 
 
 # component log level (debug, info, warn, error, critical)
 # reloadable property
-log_level = debug
+log_level = info
 
 #------------------------------------------------------------------------------#
 
@@ -252,11 +262,6 @@ log_level = debug
 
 # List of comma-separated intervals hh1:mm1-hh2:mm2
 # Historic data is dumped at the interval midpoint
-# Host computer powers off at interval end 
-# if and only if the service is started in poweroff mode either by :
-#    sudo service ema start poweroff 
-#    sudo service ema restart poweroff
-#
 # Time given in UTC Time.
 # Not reloadable property
 intervals = 12:00-12:15,20:00-20:15
@@ -265,6 +270,30 @@ intervals = 12:00-12:15,20:00-20:15
 # reloadable property
 log_level = info
 
+#------------------------------------------------------------------------------#
+
+# Web Service: REST API where to configure EMA remotely (thresholds, etc.)
+[web]
+
+# server endpoint where it listens to for HTTP requests
+# Not reloadable property
+server = tcp:8080:0.0.0.0
+
+# HTTP access log file
+# Not reloadable property
+access = /var/log/ema-access.log
+
+# Basic Authentication password file path
+# Not reloadable property
+passwd = /etc/ema.d/passwd
+
+# Stores password in plain text
+# Not reloadable property
+plain = no
+
+# component log level (debug, info, warn, error, critical)
+# reloadable property
+log_level = info
 
 #==============================================================================#
 #                            Sensor configuration Data                         #
@@ -444,7 +473,7 @@ sync = yes
 # 'Manual' = manual, by explicit commands
 # 'Timer/On'   = Timed, with On/Off hour:minute
 # 'Timer/Off'  = Timed, with On/Off hour:minute
-mode = Auto
+mode = Timer/On
 
 
 #------------------------------------------------------------------------------#
@@ -454,26 +483,3 @@ mode = Auto
 # sync parameters
 sync = no
 
-#------------------------------------------------------------------------------#
-# Web Service: REST API where to configure EMA remotely (thresholds, etc.)
-[web]
-
-# server endpoint where it listens to for HTTP requests
-# Not reloadable property
-server = tcp:8080:0.0.0.0
-
-# HTTP access log file
-# Not reloadable property
-access = /var/log/ema-access.log
-
-# Basic Authentication password file path
-# Not reloadable property
-passwd = /etc/ema.d/passwd
-
-# Stores password in plain text
-# Not reloadable property
-plain = no
-
-# component log level (debug, info, warn, error, critical)
-# reloadable property
-log_level = info
