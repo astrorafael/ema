@@ -102,6 +102,7 @@ class MQTTService(ClientService):
             'minmax'   : 'EMA/{0}/historic/minmax'.format(options['channel']),
             'averages' : 'EMA/{0}/historic/average'.format(options['channel']),
         }
+        self.deferredList = []
    
 
     def startService(self):
@@ -175,14 +176,12 @@ class MQTTService(ClientService):
 
 
     def _onHold(self):
-        qnames  = ['register','log', 'status','minmax','ave5min']
-        qmaxlen = [10, 100, 5, 1000, 1000]
-        queues  = [self.parent.queue[item] for item in qnames]
+        queues  = [self.parent.queue[item] for item in self.parent.QNAMES]
         for q in queues:
-            if len(q) >= qmaxlen[queues.index(q)]:
+            if len(q) >= self.parent.QSIZES[queues.index(q)]:
                 msg = q.popleft()
                 log.debug("dropping message {m!r} from {name} till MQTT connection is restored", 
-                    name=qnames[queues.index(q)], m=msg)
+                    name=self.parent.QNAMES[queues.index(q)], m=msg)
                 
 
     def _publish(self):
@@ -192,6 +191,9 @@ class MQTTService(ClientService):
         # NOTA: DEPURAR EL JSON HASTA QURE ESTE CONFORME
         # A LA ESPECIFICACION Y PUBLICAR VIA MQTT
 
+        # Purge already called deferreds
+        self.deferredList = [ d for d in self.deferredList if not d.called ]
+        
         if len(self.parent.queue['register']):
             msg = self.parent.queue['register'].popleft()
             msg['who'] = self.options['id']
@@ -200,6 +202,7 @@ class MQTTService(ClientService):
             log.debug("MQTT Payload => {flat}", flat=flat)
             d1 = self.protocol.publish(topic=self.topic['register'], qos=2, message=flat)
             d1.addErrback(self._handleError, self.topic['register'], 'register', msg, requeue=True)
+            self.deferredList.append(d1)
 
         if len(self.parent.queue['log']):
             msg = self.parent.queue['log'].popleft()
@@ -209,6 +212,7 @@ class MQTTService(ClientService):
             log.debug("MQTT Payload => {flat}", flat=flat)
             d2 = self.protocol.publish(topic=self.topic['events'], qos=0, message=flat, retain=True)
             d2.addErrback(self._handleError, self.topic['events'], 'log', msg, requeue=True)
+            self.deferredList.append(d2)
 
         if len(self.parent.queue['status']):
             status, tstamp = self.parent.queue['status'].popleft()
@@ -221,6 +225,7 @@ class MQTTService(ClientService):
             log.debug("MQTT Payload => {flat}", flat=flat)
             d3 = self.protocol.publish(topic=self.topic['state'], qos=0, message=flat)
             d3.addErrback(self._handleError, self.topic['state'], 'status', (status, tstamp), requeue=False)
+            self.deferredList.append(d3)
 
         if len(self.parent.queue['minmax']):
             dump = self.parent.queue['minmax'].popleft()
@@ -232,6 +237,7 @@ class MQTTService(ClientService):
             log.debug("MQTT Payload => {flat}", flat=flat)
             d4 = self.protocol.publish(topic=self.topic['minmax'], qos=2, message=flat)
             d4.addErrback(self._handleError, self.topic['minmax'], 'minmax', dump, requeue=True)
+            self.deferredList.append(d4)
 
         if len(self.parent.queue['ave5min']):
             dump = self.parent.queue['ave5min'].popleft()
@@ -243,6 +249,7 @@ class MQTTService(ClientService):
             log.debug("MQTT Payload => {flat}", flat=flat)
             d5 = self.protocol.publish(topic=self.topic['averages'], qos=2, message=flat)
             d5.addErrback(self._handleError, self.topic['averages'], 'ave5min', dump, requeue=True)
+            self.deferredList.append(d5)
 
     def _handleError(self, topic, queue_key, msg, requeue):
         '''
