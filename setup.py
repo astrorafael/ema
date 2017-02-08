@@ -87,7 +87,7 @@ if os.name == "posix":
             ],
         )
 
-    args = shlex.split( "chmod 755 /etc/init.d/ema")
+    args = shlex.split( "chmod 755 /etc/init.d/emad")
     subprocess.call(args)
 
 
