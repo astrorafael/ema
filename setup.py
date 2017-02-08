@@ -78,7 +78,7 @@ if os.name == "posix":
           packages         = ["ema",  "ema.service", "ema.test", ],
           install_requires = ['twisted >= 16.3.0','twisted-mqtt','pyserial', 'klein'],
           data_files       = [ 
-              ('/etc/init.d' ,     ['files/init.d/emad']),
+              ('/etc/init.d' ,     ['files/etc/init.d/emad']),
               ('/etc/default',     ['files/etc/default/ema']),
               ('/etc/ema.d',       ['files/etc/ema.d/config.example','files/etc/ema.d/passwd.example']),
               ('/etc/logrotate.d', ['files/etc/logrotate.d/ema']),
