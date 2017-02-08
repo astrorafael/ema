@@ -57,11 +57,7 @@ if os.name == "posix":
     
     import shlex
 
-    # Some fixes before setup
-    if not os.path.exists("/etc/logrotate_astro.d"):
-      print("creating directory /etc/logrotate_astro.d")
-      args = shlex.split( "mkdir /etc/logrotate_astro.d")
-      subprocess.call(args)
+   
 
 
     setup(name             = 'ema',
@@ -90,6 +86,9 @@ if os.name == "posix":
                                     'files/usr/local/bin/ema-shutdown']),
             ],
         )
+    
+    args = shlex.split( "chmod 744 /etc/init.d/ema")
+    subprocess.call(args)
 
 
 elif os.name == "nt":
