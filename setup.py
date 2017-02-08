@@ -86,8 +86,8 @@ if os.name == "posix":
                                     'files/usr/local/bin/ema-shutdown']),
             ],
         )
-    
-    args = shlex.split( "chmod 744 /etc/init.d/ema")
+
+    args = shlex.split( "chmod 755 /etc/init.d/ema")
     subprocess.call(args)
 
 
