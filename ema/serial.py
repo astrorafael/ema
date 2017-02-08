@@ -506,6 +506,7 @@ class SerialService(ClientService):
         log.info("EMA SERIAL STATS: TOTAL = {tot:03d}, UNKNOWN = {nunk:03d}", 
             tot=tot, nunk=nunk)
         log.info("EMA SERIAL LINE QUALITY = {q:0.2f}%", q=quality)
+        self.parent.logMQTTEvent("Serial Line Quality (total-unknown)/total) = {q:0.2f}%".format(q=quality))
         self.protocol.resetStats()
 
 
