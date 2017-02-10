@@ -510,15 +510,15 @@ class SerialService(ClientService):
     # ---------------
 
     def printStats(self):
-        tot  = self.protocol.nreceived
-        nack = self.protocol.nresponse
-        nuns = self.protocol.nunsolici
-        nunk = self.protocol.nunknown 
-        quality = (nack + nuns)*100 / tot if tot != 0 else None 
-        log.info("EMA SERIAL STATS: TOTAL = {tot:03d}, UNKNOWN = {nunk:03d}", 
+        total  = self.protocol.nreceived
+        nresponse = self.protocol.nresponse
+        nunsolici = self.protocol.nunsolici
+        nunknown = self.protocol.nunknown 
+        quality = (nresponse + nunsolici)*100 / total if total != 0 else None 
+        log.info("Serial port statistics: Total = {tot:03d}, Unknown = {nunk:03d}", 
             tot=tot, nunk=nunk)
-        log.info("EMA SERIAL LINE QUALITY = {q:0.4f}%", q=quality)
-        self.parent.logMQTTEvent("Serial Line Quality (total-unknown)/total) = {q:0.4f}%".format(q=quality))
+        log.info("Serial link quality = {q:0.4f}%", q=quality)
+        self.parent.logMQTTEvent("Serial link quality = {q:0.4f}%".format(q=quality))
         self.protocol.resetStats()
 
 
