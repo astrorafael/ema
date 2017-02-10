@@ -330,7 +330,7 @@ class EMAService(MultiService):
     # --------------------
 
     @inlineCallbacks
-    def getMinMaxBulkDump(self):
+    def getDailyMinMaxDump(self):
         self.minmaxFilter.begin()
         cmd  = command.GetDailyMinMaxDump()
         dump = yield self.serialService.protocol.execute(cmd)
