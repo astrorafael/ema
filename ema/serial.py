@@ -63,6 +63,14 @@ UNSOLICITED_RESPONSES = (
         'name'    : 'Thermopile I2C',
         'pattern' : '^\(>10[01] ([+-]\d+\.\d+)\)',            
     },
+    {
+        'name'    : 'Timer',
+        'pattern' : '^\(\d{2}:\d{2}:\d{2} Timer (ON|OFF)\)',
+    }
+    {
+        'name'    : 'Datalogger',
+        'pattern' : '^\(\d{2}:\d{2}:\d{2}_\d{4}_\d{2}_\d{4}_\d{4}\)',
+    }
 )
 
 UNSOLICITED_PATTERNS = [ re.compile(ur['pattern']) for ur in UNSOLICITED_RESPONSES ]
@@ -215,7 +223,7 @@ class EMAProtocol(LineOnlyReceiver):
             self.nunsolici += 1
             return
         self.nunknown += 1
-        log.debug("Unknown/Unexpected message {line}", line=line)
+        log.warn("Unknown/Unexpected message {line}", line=line)
 
 
 
@@ -395,6 +403,10 @@ class EMAProtocol(LineOnlyReceiver):
             return True
         if ur['name'] == 'Thermopile I2C':
             return True
+        if ur['name'] == 'Timer':
+            return True
+        if ur['name'] == 'Datalogger':
+            return True
         log.error("We should never have reached this unsolicited response")
         return False
         
@@ -505,8 +517,8 @@ class SerialService(ClientService):
         quality = (nack + nuns)*100 / tot if tot != 0 else None 
         log.info("EMA SERIAL STATS: TOTAL = {tot:03d}, UNKNOWN = {nunk:03d}", 
             tot=tot, nunk=nunk)
-        log.info("EMA SERIAL LINE QUALITY = {q:0.2f}%", q=quality)
-        self.parent.logMQTTEvent("Serial Line Quality (total-unknown)/total) = {q:0.2f}%".format(q=quality))
+        log.info("EMA SERIAL LINE QUALITY = {q:0.4f}%", q=quality)
+        self.parent.logMQTTEvent("Serial Line Quality (total-unknown)/total) = {q:0.4f}%".format(q=quality))
         self.protocol.resetStats()
 
 
