@@ -66,7 +66,7 @@ UNSOLICITED_RESPONSES = (
     {
         'name'    : 'Timer',
         'pattern' : '^\(\d{2}:\d{2}:\d{2} Timer (ON|OFF)\)',
-    }
+    },
     {
         'name'    : 'Datalogger',
         'pattern' : '^\(\d{2}:\d{2}:\d{2}_\d{4}_\d{2}_\d{4}_\d{4}\)',
