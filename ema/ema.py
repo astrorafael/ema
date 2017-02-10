@@ -21,6 +21,7 @@ from collections import deque
 # Twisted imports
 # ---------------
 
+from twisted          import __version__ as __twisted_version__
 from twisted.logger   import Logger, LogLevel
 from twisted.internet import task, reactor, defer
 from twisted.internet.defer  import inlineCallbacks, returnValue, DeferredList
@@ -30,6 +31,7 @@ from twisted.internet.threads import deferToThread
 # local imports
 # -------------
 
+from ema import __version__
 from ema.config import VERSION_STRING, loadCfgFile
 from ema.logger import setLogLevel
 
@@ -227,7 +229,10 @@ class EMAService(MultiService):
         '''
         Starts only two services and see if we can continue.
         '''
-        log.info('starting {name}', name=self.name)
+        log.info('starting {name} {version} using Twisted {tw_version}', 
+            name=self.name,
+            version=__version__, 
+            tw_version=__twisted_version__)
         self.scriptsService   = self.getServiceNamed(ScriptsService.NAME)
         self.probeService     = self.getServiceNamed(ProbeService.NAME)
         self.serialService    = self.getServiceNamed(SerialService.NAME)
