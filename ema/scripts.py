@@ -254,7 +254,7 @@ class Script(object):
     def runMany(self, *args):
         '''
         Run one more time, if previous run completed
-        If scrip is already running raise AlreadyBeingExecutedScript.
+        If script is already running raise AlreadyBeingExecutedScript.
         Otherwise, spawns the script
         '''
         args = shlex.split(self.path + ' ' + self.fmt % args)
