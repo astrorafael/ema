@@ -379,8 +379,9 @@ class EMAService(MultiService):
                 window = inactiveInterval
             else:
                 window = activeInterval
-            log.info("At program start ({where} window {w})", where=where, w=window)
-            self.logMQTTEvent(msg="At program start ({0} window {1})".format(where, window), kind='info')
+            log.info("Starting a cycle in {where} window {w})", where=where, w=window)
+            self.logMQTTEvent(msg="Starting a cycle in {0} window {1}".format(where, window), 
+                kind='info')
             result = yield self.sync()
             if result:
                 record = yield self.getParameters()
@@ -393,7 +394,8 @@ class EMAService(MultiService):
             Synchronizes device parameters, then send MQTT registration
             '''
             log.info("At 10% of active time window {w}",w=activeInterval)
-            self.logMQTTEvent(msg="At 10% of active time window {0}".format(activeInterval), kind='info')
+            self.logMQTTEvent(msg="At 10% of active time window {0}".format(activeInterval), 
+                kind='info')
             result = yield self.sync()
             if result:
                 record = yield self.getParameters()
@@ -464,7 +466,7 @@ class EMAService(MultiService):
         '''
         Starts all services or exit gracefully on either these two conditions:
         1) No EMA has been detected
-        2) No RTC synchronoization took place
+        2) No RTC synchronization took place
         '''
         log.debug("results = {results!r}", results=results)
         if results[0][1] == False:

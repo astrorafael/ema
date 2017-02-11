@@ -65,7 +65,7 @@ UNSOLICITED_RESPONSES = (
     },
     {
         'name'    : 'Timer',
-        'pattern' : '^\(\d{2}:\d{2}:\d{2} Timer (ON|OFF)\)',
+        'pattern' : '^\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4} Timer (ON|OFF)\)',
     },
     {
         'name'    : 'Datalogger',
@@ -516,7 +516,7 @@ class SerialService(ClientService):
         nunknown = self.protocol.nunknown 
         quality = (nresponse + nunsolici)*100 / total if total != 0 else None 
         log.info("Serial port statistics: Total = {tot:03d}, Unknown = {nunk:03d}", 
-            tot=tot, nunk=nunk)
+            tot=total, nunk=nunknown)
         log.info("Serial link quality = {q:0.4f}%", q=quality)
         self.parent.logMQTTEvent("Serial link quality = {q:0.4f}%".format(q=quality))
         self.protocol.resetStats()
