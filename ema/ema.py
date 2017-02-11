@@ -379,7 +379,7 @@ class EMAService(MultiService):
                 window = inactiveInterval
             else:
                 window = activeInterval
-            log.info("Starting a cycle in {where} window {w})", where=where, w=window)
+            log.info("Starting a cycle in {where} window {w}", where=where, w=window)
             self.logMQTTEvent(msg="Starting a cycle in {0} window {1}".format(where, window), 
                 kind='info')
             result = yield self.sync()

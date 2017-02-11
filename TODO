@@ -1,6 +1,8 @@
 Prioridad alta
 ==============
 
+*) bug aqui: yield self.protocol.connect("TwistedMQTT-pub", 
+ deberia usar el client-id del fichero de configuracion
 
 *) Maximo numero de mensajes en las  colas por tipo mejor factorizado. Ahora está a fuego.
 
