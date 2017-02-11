@@ -90,10 +90,6 @@ if os.name == "posix":
             ],
         )
 
-    args = shlex.split( "chmod 755 /etc/init.d/emad")
-    subprocess.call(args)
-
-
 elif os.name == "nt":
 
     import sys
