@@ -91,7 +91,6 @@ def loadCfgFile(path):
     parser.read(path)
 
     options['ema'] = {}
-    options['ema']['log_file']   = parser.get("ema","log_file")
     options['ema']['log_level']  = parser.get("ema","log_level")
     options['ema']['host_rtc']   = parser.getboolean("ema","host_rtc")
     options['ema']['nretries']   = parser.getint("ema","nretries")
@@ -217,7 +216,6 @@ def loadCfgFile(path):
   
     options['web'] = {}
     options['web']['server']        = parser.get("web","server")
-    options['web']['access']        = parser.get("web","access")
     options['web']['passwd']        = parser.get("web","passwd")
     options['web']['plain']         = parser.getboolean("web","plain")
     options['web']['log_level']     = parser.get("web","log_level")

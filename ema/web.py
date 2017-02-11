@@ -54,6 +54,7 @@ from .serial    import EMATimeoutError
 # ----------------
 
 DEBUG_HTTP = 1
+LOG_ACCESS_FILE = "/var/log/ema-access.log"
 
 # ----------------
 # Global functions
@@ -198,7 +199,7 @@ class WebService(Service):
             [ FilePasswordDB(self.options['passwd'], hash=func) ] )
         credentialFactory = BasicCredentialFactory("EMA")
         root = HTTPAuthSessionWrapper(portal, [credentialFactory])
-        factory = Site(root, logPath=self.options['access'])
+        factory = Site(root, logPath=LOG_ACCESS_FILE)
         self._port = yield endpoint.listen(factory)
 
     @inlineCallbacks

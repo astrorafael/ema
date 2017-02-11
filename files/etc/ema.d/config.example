@@ -10,10 +10,6 @@
 #==============================================================================#
 [ema]
 
-# Log File path
-# Not reloadable property
-log_file = /var/log/ema.log
-
 # The host computer (i.e a Raspberry Pi)  has a buli-in RTC (yes/no)
 # Not reloadable property
 host_rtc = no
@@ -278,10 +274,6 @@ log_level = info
 # server endpoint where it listens to for HTTP requests
 # Not reloadable property
 server = tcp:8080:0.0.0.0
-
-# HTTP access log file
-# Not reloadable property
-access = /var/log/ema-access.log
 
 # Basic Authentication password file path
 # Not reloadable property

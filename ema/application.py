@@ -43,8 +43,8 @@ else:
    options = None
 
 # Start the logging subsystem
-log_file = options['ema']['log_file']
-startLogging(console=cmdline_opts.console, filepath=log_file)
+LOG_FILE = "/var/log/ema.log"
+startLogging(console=cmdline_opts.console, filepath=LOG_FILE)
 
 # ------------------------------------------------
 # Assemble application from its service components
