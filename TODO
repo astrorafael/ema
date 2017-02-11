@@ -1,11 +1,5 @@
 Prioridad alta
 ==============
-*) ¿ Realmente hacen falta que los argumentos de los scripts sean configurables ?
-  Sustituir esto
- self.addScript('low_voltage') ===>  self.addScript('low_voltage', fmt='--voltage %.1f --threshold %.1f --size %d')
-
- *) Realmente hace falta el modo Never ? Bastaria con dejar en blanco el script
-
 
 *) Maximo numero de mensajes en las  colas por tipo mejor factorizado. Ahora está a fuego.
 

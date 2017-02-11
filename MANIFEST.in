@@ -2,8 +2,8 @@ include versioneer.py
 include ema/_version.py
 include README.md
 include files/etc/init.d/ema
-include files/etc/ema.d/config.example
-include files/etc/ema.d/passwd.example
+include files/etc/ema/config.example
+include files/etc/ema/passwd.example
 include files/etc/logrotate.d/ema
 include files/usr/local/bin/ema
 include files/usr/local/bin/emapasswd
