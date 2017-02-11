@@ -1,10 +1,5 @@
 Prioridad alta
 ==============
-*) Quitar los nombres de los ficheros /var/log/ema.log y /var/log/ema-access.log de las
-propiedades configurables. SOn constantes a fuego debido al spec de logrotate.
-
-*) bug aqui: yield self.protocol.connect("TwistedMQTT-pub", 
- deberia usar el client-id del fichero de configuracion
 
 *) Maximo numero de mensajes en las  colas por tipo mejor factorizado. Ahora está a fuego.
 
@@ -19,6 +14,7 @@ propiedades configurables. SOn constantes a fuego debido al spec de logrotate.
    - error de registro (? -> se referira a la falta de sincronizacion total ?)
 *) Reload parametros, repsar los que si y los que no
    Las ventanas de actividad no se pueden recargar, los efectos serían impredecibles
+   Lo mas sensato serían que fueran recargables solo los scripts y nivel de logado
 
 *) pruebas de encendido y apagado reales con Cristobal
 

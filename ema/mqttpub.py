@@ -150,14 +150,19 @@ class MQTTService(ClientService):
             self.protocol.setTimeout(self.options['timeout'])
             self.protocol.setBandwith(self.options['bandwidth'])
             self.protocol.setWindowSize(4)
-            yield self.protocol.connect("TwistedMQTT-pub", 
-                username=self.options['username'], password=self.options['password'], 
+            yield self.protocol.connect(self.options['id'], 
+                username=self.options['username'], 
+                password=self.options['password'], 
                 keepalive=self.options['keepalive'])
         except Exception as e:
-            log.failure("Connecting to {broker} raised {excp!s}", 
-               broker=self.options['broker'], excp=e)
+            log.failure("Connecting to {broker} as {id} raised {excp!s}", 
+               broker=self.options['broker'],
+               id=self.options['id'], 
+               excp=e)
         else:
-            log.info("Connected to {broker}", broker=self.options['broker'])
+            log.info("Connected to {broker} as {id}", 
+                broker=self.options['broker'],
+                id=self.options['id'])
             self.periodicTask = task.LoopingCall(self._publish)
             self.periodicTask.start(self.T, now=False) # call every T seconds
        
