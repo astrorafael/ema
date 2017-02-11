@@ -2,7 +2,7 @@
 	copytruncate
 	daily
 	dateext
-	rotate 30
+	rotate 7
 	missingok
 	notifempty
 	compress
@@ -11,7 +11,7 @@
 	copytruncate
 	daily
 	dateext
-	rotate 30
+	rotate 7
 	missingok
 	notifempty
 }

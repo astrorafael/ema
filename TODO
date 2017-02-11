@@ -1,5 +1,7 @@
 Prioridad alta
 ==============
+*) Quitar los nombres de los ficheros /var/log/ema.log y /var/log/ema-access.log de las
+propiedades configurables. SOn constantes a fuego debido al spec de logrotate.
 
 *) bug aqui: yield self.protocol.connect("TwistedMQTT-pub", 
  deberia usar el client-id del fichero de configuracion

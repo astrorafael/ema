@@ -126,70 +126,70 @@ do_resume() {
 
 case "$1" in
     start)
-	[ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC" "$NAME"
-	do_start
-	case "$?" in
-	    0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
-	    2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
-	esac
-	;;
-    stop)
-	[ "$VERBOSE" != no ] && log_daemon_msg "Stopping $DESC" "$NAME"
-	do_stop
-	case "$?" in
-	    0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
-	    2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
-	esac
-	;;
-    status)
-	status_of_proc "$NAME" "$NAME" && exit 0 || exit $?
-	;;
-    reload|force-reload)
-	#
-	# If do_reload() is not implemented then leave this commented out
-	# and leave 'force-reload' as an alias for 'restart'.
-	#
-	[ "$VERBOSE" != no ] && log_daemon_msg "Reloading $DESC" "$NAME"
-	do_reload
-	[ "$VERBOSE" != no ] && log_end_msg $?
-	;;
-    pause)
-	[ "$VERBOSE" != no ] && log_daemon_msg "Pausing $DESC" "$NAME"
-	do_pause
-	[ "$VERBOSE" != no ] && log_end_msg $?
-	;;
-    resume)
-	#
-	# If do_pause() is not implemented then leave this commented out
-	#
-	[ "$VERBOSE" != no ] && log_daemon_msg "Resume $DESC" "$NAME"
-	do_resume
-	[ "$VERBOSE" != no ] && log_end_msg $?
-	;;
-    restart|force-reload)
-	#
-	# If the "reload" option is implemented then remove the
-	# 'force-reload' alias
-	#
-	[ "$VERBOSE" != no ] && log_daemon_msg "Restarting $DESC" "$NAME"
-	do_stop
-	case "$?" in
-	    0|1)
+		[ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC" "$NAME"
 		do_start
 		case "$?" in
-		    0) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
-		    1) [ "$VERBOSE" != no ] && log_end_msg 1 ;; # Old process is still running
-		    *) [ "$VERBOSE" != no ] && log_end_msg 1 ;; # Failed to start
+		    0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+		    2)   [ "$VERBOSE" != no ] && log_end_msg 1 ;;
 		esac
-		;;
-	    *)
-		# Failed to stop
-		[ "$VERBOSE" != no ] && log_end_msg 1
-		;;
-	esac
+	;;
+    stop)
+		[ "$VERBOSE" != no ] && log_daemon_msg "Stopping $DESC" "$NAME"
+		do_stop
+		case "$?" in
+		    0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+		    2)   [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+		esac
+	;;
+    status)
+		status_of_proc "$NAME" "$NAME" && exit 0 || exit $?
+	;;
+    reload|force-reload)
+		#
+		# If do_reload() is not implemented then leave this commented out
+		# and leave 'force-reload' as an alias for 'restart'.
+		#
+		[ "$VERBOSE" != no ] && log_daemon_msg "Reloading $DESC" "$NAME"
+		do_reload
+		[ "$VERBOSE" != no ] && log_end_msg $?
+	;;
+    pause)
+		[ "$VERBOSE" != no ] && log_daemon_msg "Pausing $DESC" "$NAME"
+		do_pause
+		[ "$VERBOSE" != no ] && log_end_msg $?
+	;;
+    resume)
+		#
+		# If do_pause() is not implemented then leave this commented out
+		#
+		[ "$VERBOSE" != no ] && log_daemon_msg "Resuming $DESC" "$NAME"
+		do_resume
+		[ "$VERBOSE" != no ] && log_end_msg $?
+	;;
+    restart|force-reload)
+		#
+		# If the "reload" option is implemented then remove the
+		# 'force-reload' alias
+		#
+		[ "$VERBOSE" != no ] && log_daemon_msg "Restarting $DESC" "$NAME"
+		do_stop
+		case "$?" in
+		    0|1)
+				do_start
+				case "$?" in
+				    0) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+				    1) [ "$VERBOSE" != no ] && log_end_msg 1 ;; # Old process is still running
+				    *) [ "$VERBOSE" != no ] && log_end_msg 1 ;; # Failed to start
+				esac
+			;;
+		    *)
+				# Failed to stop
+				[ "$VERBOSE" != no ] && log_end_msg 1
+			;;
+		esac
 	;;
     *)
-	echo "Usage: $SCRIPTNAME {start|stop|restart|reload|force-reload|pause|resume}" >&2
-	exit 3
+		echo "Usage: $SCRIPTNAME {start|stop|restart|reload|force-reload|pause|resume}" >&2
+		exit 3
 	;;
 esac

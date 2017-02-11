@@ -1,0 +1,5 @@
+#!/bin/bash
+
+echo "Invoked script ${0} with arguments $*"
+sleep 5
+echo "script ${0} finished"
