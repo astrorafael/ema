@@ -106,67 +106,58 @@ log_level = info
 
 # List of comma separated scripts to execute on change of roof relay switch 
 # Each script should show the full path. 
+# Each script receives the following arguments:
+# --status %s --reason %s
 # Leave empty if not used
 # reloadable property
 roof_relay = 
 
-# Format string for the script arguments
-# reloadable property
-roof_relay_args = "--status %s --reason %s"
 
-# Script mode: (Never, Once, Many)
-# When launched mutiple times, EMA server does not lauch a script
-# till the previous run is over
+# Script mode: (Once, Many)
+# When launched mutiple times, EMA server does not lauch a script till the previous run is over.
 # reloadable property
 roof_relay_mode = Many
 
 
 # List of comma separated scripts to execute on change of aux relay switch 
 # Each script should show the full path. 
+# Each script receives the following arguments:
+# --status %s --reason %s
 # Leave empty if not used
 # reloadable property
 aux_relay = 
 
-# Format string for the script arguments
-# reloadable property
-aux_relay_args = "--status %s --reason %s"
 
-# Script mode: (Never, Once, Many)
-# When launched mutiple times, EMA server does not lauch a script
-# till the previous run is over
+# Script mode: (Once, Many)
+# When launched mutiple times, EMA server does not lauch a script till the previous run is over.
 # reloadable property
-aux_relay_mode = Never
+aux_relay_mode = Once
 
 # List of comma separated scripts to execute on low voltage 
 # Each script should show the full path. 
+# Each script receives the following arguments:
+#  --voltage %.1f --threshold %.1f --size %d
 # Leave empty if not used
 # reloadable property
 low_voltage = 
 
-# Format string for the script arguments
-# reloadable property
-low_voltage_args = '--voltage %.1f --threshold %.1f --size %d'
 
-# Script mode: (Never, Once, Many)
-# When launched mutiple times, EMA server does not lauch a script
-# till the previous run is over
+# Script mode: (Once, Many)
+# When launched mutiple times, EMA server does not lauch a script till the previous run is over.
 # reloadable property
 low_voltage_mode = Once
 
 # List of comma separated scripts to execute when
 # no internet connection has been detected 
-# Each script should show the full path. 
+# Each script should show the full path.
+# Each script receives no arguments. 
 # Leave empty if not used
 # reloadable property
 no_internet =
 
-# Format string for the script arguments
-# reloadable property
-no_internet_args = ''
 
-# Script mode: (Never, Once, Many)
-# When launched mutiple times, EMA server does not lauch a script
-# till the previous run is over
+# Script mode: (Once, Many)
+# When launched mutiple times, EMA server does not lauch a script till the previous run is over.
 # reloadable property
 no_internet_mode = Once
 
@@ -174,6 +165,8 @@ no_internet_mode = Once
 # List of comma separated scripts to execute when
 # the current time reaches the 10%, 30%, 50%, 70%, 90% active interval
 # Each script should show the full path. 
+# Each script receives the following arguments:
+# --now %s --active-start %s --active-end %s --inactive-start %s --inactive-end %s
 # Leave empty if not used
 # reloadable properties
 active10 =
@@ -182,20 +175,14 @@ active50 =
 active70 =
 active90 =
 
-# Script mode: (Never, Once, Many)
-# When launched mutiple times, EMA server does not lauch a script
-# till the previous run is over
+# Script mode: (Once, Many)
+# When launched mutiple times, EMA server does not lauch a script till the previous run is over.
 # reloadable properties
 active10_mode = Once
-active10_args = '--now %s --active-start %s --active-end %s --inactive-start %s --inactive-end %s'
 active30_mode = Once
-active30_args = '--now %s --active-start %s --active-end %s --inactive-start %s --inactive-end %s'
 active50_mode = Once
-active50_args = '--now %s --active-start %s --active-end %s --inactive-start %s --inactive-end %s'
 active70_mode = Once
-active70_args = '--now %s --active-start %s --active-end %s --inactive-start %s --inactive-end %s'
 active90_mode = Once
-active90_args = '--now %s --active-start %s --active-end %s --inactive-start %s --inactive-end %s'
 
 # component log level (debug, info, warn, error, critical)
 # reloadable property

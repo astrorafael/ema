@@ -220,12 +220,11 @@ class Script(object):
     '''
 
     # modes as constants
-    NEVER = 0
-    ONCE  = 1
-    MANY  = 2
+    ONCE  = 0
+    MANY  = 1
 
     # mappping from strings to numbers
-    MODES = { 'Never' : NEVER, 'Once' : ONCE, 'Many' : MANY }
+    MODES = { 'Once' : ONCE, 'Many' : MANY }
 
     def __init__(self,  path, mode, fmt):
         self.mode        = self.MODES[mode]
@@ -297,15 +296,15 @@ class ScriptsService(Service):
         log.info("starting {name}", name=self.name)
         Service.startService(self)
         # Exception will be caught by parent service
-        self.addScript('low_voltage')
-        self.addScript('aux_relay')
-        self.addScript('roof_relay')
-        self.addScript('no_internet')
-        self.addScript('active10')
-        self.addScript('active30')
-        self.addScript('active50')
-        self.addScript('active70')
-        self.addScript('active90')
+        self.addScript('low_voltage', fmt='--voltage %.1f --threshold %.1f --size %d')
+        self.addScript('aux_relay',   fmt="--status %s --reason %s")
+        self.addScript('roof_relay',  fmt="--status %s --reason %s")
+        self.addScript('no_internet', fmt='')
+        self.addScript('active10', fmt='--now %s --active-start %s --active-end %s --inactive-start %s --inactive-end %s')
+        self.addScript('active30', fmt='--now %s --active-start %s --active-end %s --inactive-start %s --inactive-end %s')
+        self.addScript('active50', fmt='--now %s --active-start %s --active-end %s --inactive-start %s --inactive-end %s')
+        self.addScript('active70', fmt='--now %s --active-start %s --active-end %s --inactive-start %s --inactive-end %s')
+        self.addScript('active90', fmt='--now %s --active-start %s --active-end %s --inactive-start %s --inactive-end %s')
       
             
     def stopService(self):
@@ -341,14 +340,13 @@ class ScriptsService(Service):
     # Helper methods
     # ---------------
 
-    def addScript(self, event):
+    def addScript(self, event, fmt):
         '''
         *_script are tuples of (path, mode)
         '''
         mode    = self.options[event + '_mode']
-        if not mode in ['Once', 'Many', 'Never']:
+        if not mode in ['Once', 'Many']:
             raise BadScriptMode(mode)
-        fmt     = self.options[event + '_args']
         scripts = chop(self.options[event], ',')
         aList = self.scripts.get(event, [] )
         for path in scripts:
