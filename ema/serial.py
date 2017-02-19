@@ -70,6 +70,10 @@ UNSOLICITED_RESPONSES = (
     {
         'name'    : 'Datalogger',
         'pattern' : '^\(\d{2}:\d{2}:\d{2}_\d{4}_\d{2}_\d{4}_\d{4}\)',
+    },
+    {
+        'name'    : 'Timestamp',
+        'pattern' : '^\(\d{2}:\d{2}:\d{2} \d{2}/\d{2}/\d{4}\)',
     }
 )
 
@@ -406,6 +410,8 @@ class EMAProtocol(LineOnlyReceiver):
         if ur['name'] == 'Timer':
             return True
         if ur['name'] == 'Datalogger':
+            return True
+        if ur['name'] == 'Timestamp':
             return True
         log.error("We should never have reached this unsolicited response")
         return False
